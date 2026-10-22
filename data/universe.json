@@ -6,7 +6,7 @@
   "notes": {
    "TIT.MI": "OPAS Poste Italiane conclusa a set. 2026 con ~85.8%: possibile delisting futuro"
   },
-  "universeGeneratedAt": "2026-10-22T17:57:37.809Z",
+  "universeGeneratedAt": "2026-10-22T18:01:52.032Z",
   "xetraUrl": "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/22fa2294418b8da49cba5a9e108f0181/data/t7-xetr-allTradableInstruments.csv",
   "candidates": 5355
  },
@@ -2154,20 +2154,6 @@
    "netGain5y": 0.0428
   },
   {
-   "symbol": "1673.T",
-   "isin": "JE00B1VS3333",
-   "name": "WisdomTree Physical Silver",
-   "type": "etf",
-   "netGain5y": 184685.7411
-  },
-  {
-   "symbol": "18MF.DE",
-   "isin": "FR0010755611",
-   "name": "Amundi MSCI USA Daily (2x) Leveraged UCITS ETF Acc",
-   "type": "etf",
-   "netGain5y": 0.414
-  },
-  {
    "symbol": "QDVE.DE",
    "isin": "IE00B3WJKG14",
    "name": "iShares S&P 500 Information Technology Sector UCITS ETF",
@@ -3083,13 +3069,6 @@
    "name": "Amundi MSCI World Climate Paris Aligned UCITS ETF - Acc",
    "type": "etf",
    "netGain5y": 0.3244
-  },
-  {
-   "symbol": "SVLT.DE",
-   "isin": "XS2595675641",
-   "name": "LS Short Volatility Long Tech ETP",
-   "type": "etf",
-   "netGain5y": 0.3242
   },
   {
    "symbol": "SPP2.DE",
@@ -4252,6 +4231,27 @@
    "name": "JPMorgan ETFs (Ireland) ICAV - Japan Research Enhanced Index Equity Active UCITS ETF EUR Hedged (acc",
    "type": "etf",
    "netGain5y": 0.2922
+  },
+  {
+   "symbol": "CSYU.DE",
+   "isin": "IE0003B4BV34",
+   "name": "UBS MSCI USA Tech 125 Universal UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.292
+  },
+  {
+   "symbol": "EL42.DE",
+   "isin": "DE000ETFL284",
+   "name": "Deka MSCI Europe UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.292
+  },
+  {
+   "symbol": "DBXI.DE",
+   "isin": "LU0274212538",
+   "name": "Xtrackers FTSE MIB UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.2918
   },
   {
    "symbol": "BTC-EUR",

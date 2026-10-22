@@ -31,7 +31,8 @@ jobs:
       - run: node scripts/build-universe.js
       - name: Verifica accesso browser ai prezzi crypto (CORS Coinbase)
         continue-on-error: true
-        run: curl -s -D - -o /dev/null -H 'Origin: https://valfredalf-crypto.github.io' 'https://api.coinbase.com/v2/exchange-rates?currency=EUR' | grep -i -E '^(HTTP|access-control-allow-origin)'
+        run: |
+          curl -s -D - -o /dev/null -H 'Origin: https://valfredalf-crypto.github.io' 'https://api.coinbase.com/v2/exchange-rates?currency=EUR' | grep -i -E '^(HTTP|access-control-allow-origin)'
       - name: Salva la nuova selezione
         run: |
           git config user.name "github-actions[bot]"

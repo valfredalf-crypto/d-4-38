@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { isLeveraged, mergeUnique, selectTop } from '../lib/universe.js';
+import { isLeveraged, mergeUnique, selectTop, isEuroListing, hasImplausibleJumps } from '../lib/universe.js';
 import { findCsvLinks } from '../lib/xetra.js';
 import { parseInstrumentCsv } from '../lib/importer.js';
 import { applyLivePrice } from '../public/js/analyze.js';
@@ -47,4 +47,13 @@ test('prezzo live come ultima chiusura (ignorati valori anomali)', () => {
   assert.equal(applyLivePrice(h, 112).closesEur === h.closesEur, false);
   assert.equal(applyLivePrice(h, 1100), h);
   assert.equal(applyLivePrice(h, null), h);
+});
+
+test('fallback solo su borse in euro e scarto dei dati anomali', () => {
+  assert.ok(isEuroListing('IE00B8HGT870.SG') && isEuroListing('ECRD.MI') && isEuroListing('sap.de'));
+  assert.ok(!isEuroListing('1673.T') && !isEuroListing('3USL.L') && !isEuroListing('EYPT'));
+  assert.ok(hasImplausibleJumps([10, 11, 40, 41]));
+  assert.ok(!hasImplausibleJumps([10, 7, 12, 9]));
+  assert.ok(isLeveraged('Amundi MSCI USA Daily (2x) Leveraged UCITS ETF Acc'));
+  assert.ok(isLeveraged('LS Short Volatility Long Tech ETP'));
 });

@@ -9,7 +9,7 @@ import { seed } from '../lib/store.js';
 import { historyEur, outlook } from '../lib/market.js';
 import { search, pickListing } from '../lib/yahoo.js';
 import { analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS } from '../public/js/analyze.js';
-import { isLeveraged, mergeUnique, selectTop } from '../lib/universe.js';
+import { isLeveraged, mergeUnique, selectTop, isEuroListing, hasImplausibleJumps } from '../lib/universe.js';
 
 const PER_GROUP = Number(process.env.PER_GROUP || 300);
 const SHORTLIST = PER_GROUP * 2; // azioni per cui si scarica anche il consenso analisti
@@ -37,8 +37,9 @@ async function historyWithFallback(inst) {
     return { inst, history: await historyEur(inst.symbol) };
   } catch (e) {
     const hits = await search(inst.isin || `${inst.name}`).catch(() => []);
+    // Solo quotazioni su borse in euro: altrove (es. Tokyo, Londra) unità e valute di Yahoo sono meno affidabili.
     const ok = inst.isin
-      ? hits.filter((h) => h.type === inst.type)
+      ? hits.filter((h) => h.type === inst.type && isEuroListing(h.symbol))
       : hits.filter((h) => h.type === 'crypto' && h.symbol.endsWith('-EUR'));
     const alt = inst.isin ? pickListing(ok) : ok[0];
     if (!alt || alt.symbol === inst.symbol) throw e;
@@ -79,14 +80,18 @@ log(`Candidati: ${candidates.filter((i) => i.type === 'stock').length} azioni, $
 const benchmark = await historyEur(BENCHMARK_SYMBOL);
 const rows = [];
 const histories = new Map();
+const excluded = { leveraged: 0, badData: 0 };
 await pool([...candidates, ...crypto], 4, async (c) => {
   const { inst, history } = await historyWithFallback(c);
   if (history.name && (inst.source === 'xetra' || !inst.name)) inst.name = history.name;
+  if (isLeveraged(inst.name)) return void excluded.leveraged++;
+  if (inst.type !== 'crypto' && hasImplausibleJumps(history.closesEur)) return void excluded.badData++;
   const r = analyze({ instrument: inst, history, benchmark, fundamentals: null }, DEFAULT_SETTINGS);
   if (!r.sim.ok) return;
   histories.set(inst.symbol, history);
   rows.push({ inst, netGain: r.sim.netGain });
 });
+log(`Esclusi dopo verifica: ${excluded.leveraged} a leva/short (nome completo), ${excluded.badData} con dati storici anomali`);
 log(`Previsioni valide (storico ≥ ${DEFAULT_SETTINGS.mc.minYears} anni): ${rows.length}`);
 
 // --- 3. Azioni più promettenti: si aggiunge il consenso degli analisti e si ricalcola

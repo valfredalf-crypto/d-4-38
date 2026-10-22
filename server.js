@@ -2,7 +2,7 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { listInstruments, addInstruments, removeInstrument, seed } from './lib/store.js';
+import { listInstruments, addInstruments, removeInstrument, universe } from './lib/store.js';
 import { historyEur, quote, outlook } from './lib/market.js';
 import { search, pickListing } from './lib/yahoo.js';
 import { parseInstrumentCsv } from './lib/importer.js';
@@ -66,7 +66,7 @@ async function importCsv(text) {
 }
 
 const routes = {
-  'GET /api/meta': async () => ({ ...seed().meta, mock: process.env.MOCK === '1' }),
+  'GET /api/meta': async () => ({ ...universe().meta, mock: process.env.MOCK === '1' }),
   'GET /api/instruments': async () => listInstruments(),
   'POST /api/instruments': async (req) => {
     const body = JSON.parse(await readBody(req));
@@ -78,7 +78,11 @@ const routes = {
   },
   'GET /api/search': async (req, url) => search(url.searchParams.get('q') || ''),
   'GET /api/history': async (req, url) => historyEur(url.searchParams.get('symbol')),
-  'GET /api/outlook': async (req, url) => outlook(url.searchParams.get('symbol')),
+  'GET /api/outlook': async (req, url) => {
+    const symbol = url.searchParams.get('symbol');
+    const inst = listInstruments().find((i) => i.symbol === symbol);
+    return outlook(inst?.outlookSymbol || symbol);
+  },
   'GET /api/quotes': async (req, url) => {
     const symbols = (url.searchParams.get('symbols') || '').split(',').filter(Boolean).slice(0, 200);
     const list = await mapLimit(symbols, 8, (s) => quote(s));

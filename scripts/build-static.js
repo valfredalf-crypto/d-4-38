@@ -3,9 +3,9 @@
 // Uso: node scripts/build-static.js   (eseguito da .github/workflows/pages.yml)
 import fs from 'node:fs';
 import path from 'node:path';
-import { listInstruments, seed } from '../lib/store.js';
+import { listInstruments, universe } from '../lib/store.js';
 import { historyEur, quote, outlook } from '../lib/market.js';
-import { analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult } from '../public/js/analyze.js';
+import { analyze, applyLivePrice, BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult } from '../public/js/analyze.js';
 
 const OUT = path.resolve(process.env.OUT_DIR || '_site');
 const MIN_SUCCESS = 0.5; // sotto questa quota di storici scaricati non si pubblica (meglio i dati vecchi)
@@ -34,12 +34,12 @@ await Promise.all(
         const [history, q, fundamentals] = await Promise.all([
           historyEur(inst.symbol),
           quote(inst.symbol).catch(() => null),
-          inst.type !== 'crypto' ? outlook(inst.symbol).catch(() => null) : null,
+          inst.type !== 'crypto' ? outlook(inst.outlookSymbol || inst.symbol).catch(() => null) : null,
         ]);
         write(`data/history/${fileKey(inst.symbol)}.json`, history);
         if (fundamentals) write(`data/outlook/${fileKey(inst.symbol)}.json`, fundamentals);
         if (q) quotes[inst.symbol] = q;
-        const r = analyze({ instrument: inst, history, benchmark, fundamentals }, DEFAULT_SETTINGS);
+        const r = analyze({ instrument: inst, history: applyLivePrice(history, q?.priceEur), benchmark, fundamentals }, DEFAULT_SETTINGS);
         results[inst.symbol] = compactResult(r.sim.ok ? r : { error: r.sim.reason });
         ok++;
       } catch (e) {
@@ -51,7 +51,7 @@ await Promise.all(
 );
 
 const generatedAt = new Date().toISOString();
-write('data/meta.json', { ...seed().meta, static: true, mock: process.env.MOCK === '1', generatedAt });
+write('data/meta.json', { ...universe().meta, static: true, mock: process.env.MOCK === '1', generatedAt });
 write('data/instruments.json', instruments);
 write('data/quotes.json', quotes);
 write('data/results.json', { key: JSON.stringify(DEFAULT_SETTINGS), results });

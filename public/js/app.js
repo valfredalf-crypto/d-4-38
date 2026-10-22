@@ -1,4 +1,4 @@
-import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult } from './analyze.js';
+import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -13,6 +13,7 @@ const state = {
   quotes: {},
   data: new Map(), // symbol → { history, fundamentals }
   results: {}, // symbol → { forward, sim } | { error }
+  priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
   view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'ratio', dir: 1 }, limit: PAGE },
@@ -145,9 +146,97 @@ async function getData(inst) {
 async function analyzeOne(inst) {
   const d = await getData(inst);
   const benchmark = state.settings.outlook.mode === 'forward' ? await getBenchmark() : null;
-  const r = await runAnalysis({ instrument: inst, history: d.history, benchmark, fundamentals: d.fundamentals, settings: state.settings });
+  const price = state.quotes[inst.symbol]?.priceEur;
+  const history = applyLivePrice(d.history, price);
+  const r = await runAnalysis({ instrument: inst, history, benchmark, fundamentals: d.fundamentals, settings: state.settings });
   state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
+  state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
+}
+
+// ---------- aggiornamento automatico (ogni 60 s): quotazioni → previsioni
+async function recomputeChanged() {
+  const list = state.instruments.filter((i) => {
+    const r = state.results[i.symbol];
+    const p = state.quotes[i.symbol]?.priceEur;
+    return r && !r.error && p > 0 && p !== state.priced[i.symbol];
+  });
+  for (const inst of list) {
+    if (state.running) return; // un calcolo completo ha la precedenza
+    await analyzeOne(inst).catch(() => {});
+  }
+  if (list.length) {
+    saveResults();
+    render();
+  }
+}
+
+// Versione online: nuovi dati pubblicati dall'automazione (ogni ~15 minuti)
+async function checkNewData() {
+  const meta = await fetch(`data/meta.json?t=${Date.now()}`).then((r) => r.json());
+  if (meta.generatedAt === state.dataVersion) return;
+  state.dataVersion = meta.generatedAt;
+  const [instruments, quotes, pre] = await Promise.all([api('/api/instruments'), api('/api/quotes'), api('/api/results').catch(() => null)]);
+  state.instruments = instruments;
+  state.quotes = quotes;
+  state.data.clear();
+  if (pre && pre.key === settingsKey()) {
+    state.results = pre.results;
+    state.priced = Object.fromEntries(Object.entries(quotes).map(([k, q]) => [k, q?.priceEur]));
+  } else {
+    state.priced = {}; // parametri personalizzati: ricalcolo nel browser
+  }
+  updateStaticBanner(meta);
+  render();
+}
+
+// Versione online: prezzi crypto in tempo reale da Coinbase (API pubblica, nessuna chiave).
+async function liveCrypto() {
+  const res = await fetch('https://api.coinbase.com/v2/exchange-rates?currency=EUR');
+  if (!res.ok) return;
+  const rates = (await res.json())?.data?.rates || {};
+  let n = 0;
+  for (const inst of state.instruments) {
+    if (inst.type !== 'crypto') continue;
+    const base = inst.symbol.replace(/-EUR$/, '').replace(/\d+$/, '');
+    const rate = Number(rates[base]);
+    const q = state.quotes[inst.symbol];
+    if (!(rate > 0) || !q) continue;
+    if (q.prevEur == null) q.prevEur = q.priceEur && q.changePct != null ? q.priceEur / (1 + q.changePct) : null;
+    q.priceEur = 1 / rate;
+    q.changePct = q.prevEur ? q.priceEur / q.prevEur - 1 : q.changePct;
+    q.live = true;
+    n++;
+  }
+  if (n) state.liveAt = new Date();
+}
+
+function updateStaticBanner(meta) {
+  const b = $('#static-banner');
+  b.hidden = false;
+  const fmt = (d) => new Date(d).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' });
+  b.textContent =
+    `Azioni ed ETF aggiornati al ${fmt(meta.generatedAt)} (ogni ~15 minuti, quotazioni ritardate)` +
+    (state.liveAt ? ` · crypto in tempo reale alle ${state.liveAt.toLocaleTimeString('it-IT')}` : '') +
+    '. Previsioni ricalcolate a ogni aggiornamento.';
+  b.dataset.generatedAt = meta.generatedAt;
+}
+
+async function liveTick() {
+  if (!$('#auto-quotes').checked || document.hidden || state.running) return;
+  try {
+    if (STATIC) {
+      await checkNewData().catch(() => {});
+      await liveCrypto().catch(() => {});
+      updateStaticBanner({ generatedAt: state.dataVersion });
+      render();
+    } else {
+      await refreshQuotes(visibleSymbols());
+    }
+    await recomputeChanged();
+  } catch (e) {
+    console.warn('aggiornamento', e);
+  }
 }
 
 async function runAll(list) {
@@ -699,9 +788,7 @@ function bind() {
     if (q) doSearch(q);
   });
   $('#import-file').addEventListener('change', (e) => e.target.files[0] && doImport(e.target.files[0]));
-  setInterval(() => {
-    if ($('#auto-quotes').checked && !document.hidden && !state.running) refreshQuotes(visibleSymbols());
-  }, 60e3);
+  setInterval(liveTick, 60e3);
 }
 
 async function main() {
@@ -710,16 +797,21 @@ async function main() {
     const meta = await api('/api/meta');
     if (STATIC) {
       state.dataVersion = meta.generatedAt;
-      for (const sel of ['#btn-add', '#btn-quotes', '#auto-quotes']) $(sel).closest('label, button').hidden = true;
-      const b = $('#static-banner');
-      b.hidden = false;
-      b.textContent = `Dati aggiornati al ${new Date(meta.generatedAt).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })} (aggiornamento automatico due volte al giorno). Le quotazioni non sono in tempo reale.`;
+      for (const sel of ['#btn-add', '#btn-quotes']) $(sel).hidden = true;
+      $('#auto-label').lastChild.textContent = ' Aggiornamento automatico (60 s)';
+      updateStaticBanner(meta);
     }
     await loadResults();
     $('#demo-banner').hidden = !meta.mock;
-    $('#meta-line').textContent = `Universo iniziale verificato il ${new Date(meta.verifiedAt).toLocaleDateString('it-IT')}: ${meta.verification}`;
+    $('#meta-line').textContent = meta.universeGeneratedAt
+      ? `${meta.description} Selezione aggiornata il ${new Date(meta.universeGeneratedAt).toLocaleDateString('it-IT')}.`
+      : `Universo iniziale verificato il ${new Date(meta.verifiedAt).toLocaleDateString('it-IT')}: ${meta.verification}`;
     await loadInstruments();
-    refreshQuotes(visibleSymbols());
+    await refreshQuotes(visibleSymbols());
+    if (STATIC) {
+      state.priced = Object.fromEntries(Object.entries(state.quotes).map(([k, q]) => [k, q?.priceEur]));
+      liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
+    }
   } catch (e) {
     $('#table tbody').innerHTML = `<tr><td colspan="10" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }

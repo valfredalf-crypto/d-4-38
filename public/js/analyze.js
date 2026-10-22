@@ -12,6 +12,20 @@ export function fileKey(symbol) {
   return String(symbol).replace(/[^A-Za-z0-9._-]/g, '_');
 }
 
+/**
+ * Inserisce la quotazione corrente come ultima chiusura settimanale (la settimana in corso),
+ * così le previsioni seguono il prezzo aggiornato. Variazioni assurde (>50%) vengono ignorate.
+ */
+export function applyLivePrice(history, priceEur) {
+  const n = history?.closesEur?.length;
+  if (!n || !(priceEur > 0)) return history;
+  const last = history.closesEur[n - 1];
+  if (Math.abs(priceEur / last - 1) > 0.5) return history;
+  const closesEur = history.closesEur.slice();
+  closesEur[n - 1] = priceEur;
+  return { ...history, closesEur };
+}
+
 // Risultato senza i dati dei grafici, per salvarlo/pubblicarlo in forma compatta.
 export function compactResult(r) {
   if (r.error) return { error: r.error };

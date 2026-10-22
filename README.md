@@ -6,8 +6,15 @@ simulazioni **Monte Carlo** su parametri **prospettici** (non solo proiezione de
 
 Nessuna dipendenza esterna: serve solo Node.js ≥ 18.
 
-**Versione online (GitHub Pages):** https://valfredalf-crypto.github.io/d-4-38/ — sito statico aggiornato
-due volte al giorno da `.github/workflows/pages.yml` (scarica i dati, ricalcola la classifica, pubblica).
+**Versione online (GitHub Pages):** https://valfredalf-crypto.github.io/d-4-38/ — sito statico rigenerato
+ogni ~15 minuti da `.github/workflows/pages.yml` (quotazioni, previsioni, classifica). La pagina controlla ogni
+60 s se ci sono dati nuovi e li carica da sola; i prezzi crypto arrivano in tempo reale da Coinbase e le
+relative previsioni vengono ricalcolate nel browser.
+
+**Universo:** ogni domenica `.github/workflows/universe.yml` scarica la lista ufficiale Xetra di Deutsche Börse
+(migliaia di azioni ed ETF), calcola la previsione a 5 anni di ciascuno e salva in `data/universe.json` le
+300 azioni e i 300 ETF/ETC con il miglior guadagno netto previsto, più tutte le crypto (esclusi prodotti a
+leva e short).
 I parametri si possono cambiare: il ricalcolo avviene nel browser. Ricerca/import di nuovi strumenti e
 quotazioni in tempo reale sono disponibili solo nella versione locale. Per attivarla la prima volta:
 *Settings → Pages → Source: GitHub Actions*, poi *Actions → Pubblica sito → Run workflow*.

@@ -4,8 +4,11 @@ on:
   push:
     branches: [main, claude/trade-republic-monte-carlo-app-ysf7po]
   schedule:
-    # Due aggiornamenti al giorno: dopo l'apertura europea e dopo la chiusura di Wall Street (UTC)
-    - cron: '17 9,21 * * *'
+    # Ogni 15 minuti (GitHub può ritardare le esecuzioni programmate di qualche minuto)
+    - cron: '*/15 * * * *'
+  workflow_run:
+    workflows: ['Aggiorna universo strumenti']
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -20,11 +23,19 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Storici (validità 12 h) ed evidenze analisti riutilizzati tra un'esecuzione e l'altra:
+      # ogni 15 minuti si riscaricano solo le quotazioni.
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: market-cache-${{ github.run_id }}
+          restore-keys: market-cache-
       - run: npm test
       - run: node scripts/build-static.js
       - uses: actions/upload-pages-artifact@v3

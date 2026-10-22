@@ -27,7 +27,7 @@ await Promise.all(
       const inst = list[i++];
       try {
         const history = await historyEur(inst.symbol);
-        const fundamentals = settings.outlook.mode === 'forward' && inst.type !== 'crypto' ? await outlook(inst.symbol) : null;
+        const fundamentals = settings.outlook.mode === 'forward' && inst.type !== 'crypto' ? await outlook(inst.outlookSymbol || inst.symbol) : null;
         const { sim, forward } = analyze({ instrument: inst, history, benchmark, fundamentals }, settings);
         if (sim.ok) rows.push({ inst, sim, forward });
       } catch (e) {

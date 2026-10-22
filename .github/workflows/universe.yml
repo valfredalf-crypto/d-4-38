@@ -1,0 +1,42 @@
+name: Aggiorna universo strumenti
+
+on:
+  schedule:
+    # Ogni domenica: nuova selezione delle 300 azioni e 300 ETF con le migliori previsioni
+    - cron: '37 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: universe
+  cancel-in-progress: false
+
+jobs:
+  universe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: universe-cache-${{ github.run_id }}
+          restore-keys: universe-cache-
+      - run: npm test
+      - run: node scripts/build-universe.js
+      - name: Verifica accesso browser ai prezzi crypto (CORS Coinbase)
+        continue-on-error: true
+        run: curl -s -D - -o /dev/null -H 'Origin: https://valfredalf-crypto.github.io' 'https://api.coinbase.com/v2/exchange-rates?currency=EUR' | grep -i -E '^(HTTP|access-control-allow-origin)'
+      - name: Salva la nuova selezione
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/universe.json
+          git diff --cached --quiet && echo "Nessuna modifica" && exit 0
+          git commit -m "Aggiorna universo: migliori previsioni a 5 anni"
+          git push

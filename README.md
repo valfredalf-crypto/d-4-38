@@ -6,6 +6,10 @@ simulazioni **Monte Carlo** su parametri **prospettici** (non solo proiezione de
 
 Nessuna dipendenza esterna: serve solo Node.js ≥ 18.
 
+**Senza installare nulla (GitHub Codespaces):** su GitHub premi *Code → Codespaces → Create codespace*.
+L'app parte da sola e si apre in una nuova scheda del browser (porta 3000). Se la scheda non si apre,
+vai nel pannello *Ports* e clicca sull'icona del globo accanto alla porta 3000.
+
 ```bash
 npm start          # http://localhost:3000 — dati di mercato reali (serve accesso a internet)
 npm run demo       # stessa app con dati sintetici, per provarla offline

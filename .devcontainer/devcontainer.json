@@ -1,0 +1,12 @@
+{
+  "name": "TR Monte Carlo",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": { "label": "TR Monte Carlo", "onAutoForward": "openBrowser" }
+  },
+  "postAttachCommand": "npm start",
+  "customizations": {
+    "codespaces": { "openFiles": ["README.md"] }
+  }
+}

@@ -1,0 +1,4488 @@
+{
+ "meta": {
+  "description": "Le 300 azioni e i 300 ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra 5355 candidati negoziabili su Xetra/Trade Republic, più tutte le crypto. Esclusi prodotti a leva e short.",
+  "verifiedAt": "2026-10-22",
+  "verification": "ISIN validati con cifra di controllo ISO 6166 e corrispondenza simbolo/ISIN verificata su fonti pubbliche (Deutsche Börse, justETF, emittenti, SEC). Usa npm run verify per un controllo live contro Yahoo Finance.",
+  "notes": {
+   "TIT.MI": "OPAS Poste Italiane conclusa a set. 2026 con ~85.8%: possibile delisting futuro"
+  },
+  "universeGeneratedAt": "2026-10-22T17:57:37.809Z",
+  "xetraUrl": "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/22fa2294418b8da49cba5a9e108f0181/data/t7-xetr-allTradableInstruments.csv",
+  "candidates": 5355
+ },
+ "instruments": [
+  {
+   "symbol": "UU2.DE",
+   "isin": "US09290D1019",
+   "name": "BlackRock, Inc.",
+   "type": "stock",
+   "outlookSymbol": "BLK",
+   "netGain5y": 0.2573
+  },
+  {
+   "symbol": "DWD.DE",
+   "isin": "US6174464486",
+   "name": "Morgan Stanley",
+   "type": "stock",
+   "outlookSymbol": "MS",
+   "netGain5y": 0.2345
+  },
+  {
+   "symbol": "G.MI",
+   "isin": "IT0000062072",
+   "name": "Generali",
+   "type": "stock",
+   "netGain5y": 0.233
+  },
+  {
+   "symbol": "ABEC.DE",
+   "isin": "US02079K1079",
+   "name": "Alphabet Inc.",
+   "type": "stock",
+   "outlookSymbol": "GOOG",
+   "netGain5y": 0.2321
+  },
+  {
+   "symbol": "AI.PA",
+   "isin": "FR0000120073",
+   "name": "Air Liquide",
+   "type": "stock",
+   "netGain5y": 0.231
+  },
+  {
+   "symbol": "ASML.AS",
+   "isin": "NL0010273215",
+   "name": "ASML Holding",
+   "type": "stock",
+   "netGain5y": 0.2254
+  },
+  {
+   "symbol": "SU.PA",
+   "isin": "FR0000121972",
+   "name": "Schneider Electric",
+   "type": "stock",
+   "netGain5y": 0.2245
+  },
+  {
+   "symbol": "PST.MI",
+   "isin": "IT0003796171",
+   "name": "Poste Italiane",
+   "type": "stock",
+   "netGain5y": 0.2233
+  },
+  {
+   "symbol": "RMS.PA",
+   "isin": "FR0000052292",
+   "name": "Hermès",
+   "type": "stock",
+   "netGain5y": 0.2211
+  },
+  {
+   "symbol": "HABA.DE",
+   "isin": "DE000A3H2333",
+   "name": "Hamborner REIT AG",
+   "type": "stock",
+   "netGain5y": 0.2154
+  },
+  {
+   "symbol": "ISP.MI",
+   "isin": "IT0000072618",
+   "name": "Intesa Sanpaolo",
+   "type": "stock",
+   "netGain5y": 0.2105
+  },
+  {
+   "symbol": "TRVC.DE",
+   "isin": "US1729674242",
+   "name": "Citigroup Inc.",
+   "type": "stock",
+   "outlookSymbol": "C",
+   "netGain5y": 0.2054
+  },
+  {
+   "symbol": "0B2.DE",
+   "isin": "AT0000BAWAG2",
+   "name": "BAWAG Group AG",
+   "type": "stock",
+   "netGain5y": 0.2041
+  },
+  {
+   "symbol": "04Q.DE",
+   "isin": "FI4000297767",
+   "name": "Nordea Bank Abp",
+   "type": "stock",
+   "netGain5y": 0.2019
+  },
+  {
+   "symbol": "TRN.MI",
+   "isin": "IT0003242622",
+   "name": "Terna",
+   "type": "stock",
+   "netGain5y": 0.2019
+  },
+  {
+   "symbol": "AEC1.DE",
+   "isin": "US0258161092",
+   "name": "American Express Company",
+   "type": "stock",
+   "outlookSymbol": "AXP",
+   "netGain5y": 0.2018
+  },
+  {
+   "symbol": "ENEL.MI",
+   "isin": "IT0003128367",
+   "name": "Enel",
+   "type": "stock",
+   "netGain5y": 0.2013
+  },
+  {
+   "symbol": "IBE.MC",
+   "isin": "ES0144580Y14",
+   "name": "Iberdrola",
+   "type": "stock",
+   "netGain5y": 0.1983
+  },
+  {
+   "symbol": "FO4N.DE",
+   "isin": "BE0974264930",
+   "name": "ageas SA/NV",
+   "type": "stock",
+   "netGain5y": 0.1966
+  },
+  {
+   "symbol": "SIE.DE",
+   "isin": "DE0007236101",
+   "name": "Siemens",
+   "type": "stock",
+   "netGain5y": 0.1961
+  },
+  {
+   "symbol": "FBK.MI",
+   "isin": "IT0000072170",
+   "name": "FinecoBank",
+   "type": "stock",
+   "netGain5y": 0.1919
+  },
+  {
+   "symbol": "SRG.MI",
+   "isin": "IT0003153415",
+   "name": "Snam",
+   "type": "stock",
+   "netGain5y": 0.1893
+  },
+  {
+   "symbol": "DTE.DE",
+   "isin": "DE0005557508",
+   "name": "Deutsche Telekom",
+   "type": "stock",
+   "netGain5y": 0.1879
+  },
+  {
+   "symbol": "TLX.DE",
+   "isin": "DE000TLX1005",
+   "name": "Talanx AG",
+   "type": "stock",
+   "netGain5y": 0.1862
+  },
+  {
+   "symbol": "2NN.DE",
+   "isin": "NL0010773842",
+   "name": "NN Group N.V.",
+   "type": "stock",
+   "netGain5y": 0.1826
+  },
+  {
+   "symbol": "DB1.DE",
+   "isin": "DE0005810055",
+   "name": "Deutsche Börse",
+   "type": "stock",
+   "netGain5y": 0.1816
+  },
+  {
+   "symbol": "ENA.DE",
+   "isin": "ES0130670112",
+   "name": "Endesa, S.A.",
+   "type": "stock",
+   "netGain5y": 0.1809
+  },
+  {
+   "symbol": "DWS.DE",
+   "isin": "DE000DWS1007",
+   "name": "DWS Group GmbH & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.18
+  },
+  {
+   "symbol": "ALV.DE",
+   "isin": "DE0008404005",
+   "name": "Allianz",
+   "type": "stock",
+   "netGain5y": 0.1793
+  },
+  {
+   "symbol": "HNR1.DE",
+   "isin": "DE0008402215",
+   "name": "Hannover Rück",
+   "type": "stock",
+   "netGain5y": 0.1788
+  },
+  {
+   "symbol": "MC.PA",
+   "isin": "FR0000121014",
+   "name": "LVMH",
+   "type": "stock",
+   "netGain5y": 0.1781
+  },
+  {
+   "symbol": "TIMA.DE",
+   "isin": "DE000ZEAL241",
+   "name": "ZEAL Network SE",
+   "type": "stock",
+   "netGain5y": 0.178
+  },
+  {
+   "symbol": "DBAN.DE",
+   "isin": "DE000A1TNUT7",
+   "name": "Deutsche Beteiligungs AG",
+   "type": "stock",
+   "netGain5y": 0.1776
+  },
+  {
+   "symbol": "MVV1.DE",
+   "isin": "DE000A0H52F5",
+   "name": "MVV Energie AG",
+   "type": "stock",
+   "netGain5y": 0.1771
+  },
+  {
+   "symbol": "PRY.MI",
+   "isin": "IT0004176001",
+   "name": "Prysmian",
+   "type": "stock",
+   "netGain5y": 0.1765
+  },
+  {
+   "symbol": "UBSG.SW",
+   "isin": "CH0244767585",
+   "name": "UBS Group",
+   "type": "stock",
+   "netGain5y": 0.1762
+  },
+  {
+   "symbol": "DHL.DE",
+   "isin": "DE0005552004",
+   "name": "DHL Group",
+   "type": "stock",
+   "netGain5y": 0.1762
+  },
+  {
+   "symbol": "DG.PA",
+   "isin": "FR0000125486",
+   "name": "Vinci",
+   "type": "stock",
+   "netGain5y": 0.1743
+  },
+  {
+   "symbol": "SHL.DE",
+   "isin": "DE000SHL1006",
+   "name": "Siemens Healthineers",
+   "type": "stock",
+   "netGain5y": 0.1727
+  },
+  {
+   "symbol": "PFV.DE",
+   "isin": "DE0006916604",
+   "name": "Pfeiffer Vacuum Technology AG",
+   "type": "stock",
+   "netGain5y": 0.1716
+  },
+  {
+   "symbol": "HBH.DE",
+   "isin": "DE0006083405",
+   "name": "HORNBACH Holding AG & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1692
+  },
+  {
+   "symbol": "BNP.PA",
+   "isin": "FR0000131104",
+   "name": "BNP Paribas",
+   "type": "stock",
+   "netGain5y": 0.1681
+  },
+  {
+   "symbol": "OR.PA",
+   "isin": "FR0000120321",
+   "name": "L'Oréal",
+   "type": "stock",
+   "netGain5y": 0.1612
+  },
+  {
+   "symbol": "LIN.DE",
+   "isin": "IE000S9YS762",
+   "name": "Linde plc",
+   "type": "stock",
+   "netGain5y": 0.1611
+  },
+  {
+   "symbol": "DEF.DE",
+   "isin": "DE000A13SUL5",
+   "name": "DEFAMA Deutsche Fachmarkt AG",
+   "type": "stock",
+   "netGain5y": 0.1596
+  },
+  {
+   "symbol": "MUM.DE",
+   "isin": "DE0006580806",
+   "name": "Mensch und Maschine Software SE",
+   "type": "stock",
+   "netGain5y": 0.1596
+  },
+  {
+   "symbol": "RIO1.DE",
+   "isin": "GB0007188757",
+   "name": "Rio Tinto Group",
+   "type": "stock",
+   "netGain5y": 0.157
+  },
+  {
+   "symbol": "CWC.DE",
+   "isin": "DE0005403901",
+   "name": "CEWE Stiftung & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1559
+  },
+  {
+   "symbol": "NWT.DE",
+   "isin": "US9497461015",
+   "name": "Wells Fargo & Company",
+   "type": "stock",
+   "outlookSymbol": "WFC",
+   "netGain5y": 0.1554
+  },
+  {
+   "symbol": "SCT.DE",
+   "isin": "GB0007908733",
+   "name": "SSE plc",
+   "type": "stock",
+   "netGain5y": 0.1551
+  },
+  {
+   "symbol": "EBO.DE",
+   "isin": "AT0000652011",
+   "name": "Erste Group Bank AG",
+   "type": "stock",
+   "netGain5y": 0.1544
+  },
+  {
+   "symbol": "RYSD.DE",
+   "isin": "GB00BM8PJY71",
+   "name": "NatWest Group plc",
+   "type": "stock",
+   "netGain5y": 0.1542
+  },
+  {
+   "symbol": "PZS.DE",
+   "isin": "DE0006942808",
+   "name": "Scherzer & Co. AG",
+   "type": "stock",
+   "netGain5y": 0.1541
+  },
+  {
+   "symbol": "VVD.DE",
+   "isin": "FR0000124141",
+   "name": "Veolia Environnement SA",
+   "type": "stock",
+   "netGain5y": 0.1537
+  },
+  {
+   "symbol": "MONC.MI",
+   "isin": "IT0004965148",
+   "name": "Moncler",
+   "type": "stock",
+   "netGain5y": 0.1532
+  },
+  {
+   "symbol": "MUV2.DE",
+   "isin": "DE0008430026",
+   "name": "Münchener Rück",
+   "type": "stock",
+   "netGain5y": 0.1524
+  },
+  {
+   "symbol": "O3P.DE",
+   "isin": "AT0000APOST4",
+   "name": "Österreichische Post AG",
+   "type": "stock",
+   "netGain5y": 0.1507
+  },
+  {
+   "symbol": "ITX.MC",
+   "isin": "ES0148396007",
+   "name": "Inditex",
+   "type": "stock",
+   "netGain5y": 0.1496
+  },
+  {
+   "symbol": "EOAN.DE",
+   "isin": "DE000ENAG999",
+   "name": "E.ON",
+   "type": "stock",
+   "netGain5y": 0.1486
+  },
+  {
+   "symbol": "ANI.DE",
+   "isin": "FR0004125920",
+   "name": "Amundi S.A.",
+   "type": "stock",
+   "netGain5y": 0.1486
+  },
+  {
+   "symbol": "XY6.DE",
+   "isin": "US98419M1009",
+   "name": "Xylem Inc.",
+   "type": "stock",
+   "outlookSymbol": "XYL",
+   "netGain5y": 0.1483
+  },
+  {
+   "symbol": "AHOG.DE",
+   "isin": "NL0011794037",
+   "name": "Koninklijke Ahold Delhaize N.V.",
+   "type": "stock",
+   "netGain5y": 0.148
+  },
+  {
+   "symbol": "IVU.DE",
+   "isin": "DE0007448508",
+   "name": "IVU Traffic Technologies AG",
+   "type": "stock",
+   "netGain5y": 0.1474
+  },
+  {
+   "symbol": "BCY.DE",
+   "isin": "GB0031348658",
+   "name": "Barclays PLC",
+   "type": "stock",
+   "netGain5y": 0.1471
+  },
+  {
+   "symbol": "MLP.DE",
+   "isin": "DE0006569908",
+   "name": "MLP SE",
+   "type": "stock",
+   "netGain5y": 0.1468
+  },
+  {
+   "symbol": "FNTN.DE",
+   "isin": "DE000A0Z2ZZ5",
+   "name": "freenet AG",
+   "type": "stock",
+   "netGain5y": 0.1463
+  },
+  {
+   "symbol": "SAF.PA",
+   "isin": "FR0000073272",
+   "name": "Safran",
+   "type": "stock",
+   "netGain5y": 0.1451
+  },
+  {
+   "symbol": "WSU.DE",
+   "isin": "DE0007507501",
+   "name": "WashTec AG",
+   "type": "stock",
+   "netGain5y": 0.1447
+  },
+  {
+   "symbol": "MCD",
+   "isin": "US5801351017",
+   "name": "McDonald's",
+   "type": "stock",
+   "netGain5y": 0.1446
+  },
+  {
+   "symbol": "GIL.DE",
+   "isin": "DE0005878003",
+   "name": "DMG MORI AKTIENGESELLSCHAFT",
+   "type": "stock",
+   "netGain5y": 0.1434
+  },
+  {
+   "symbol": "UN9.DE",
+   "isin": "AT0000821103",
+   "name": "UNIQA Insurance Group AG",
+   "type": "stock",
+   "netGain5y": 0.1433
+  },
+  {
+   "symbol": "ACR.DE",
+   "isin": "FR0000120404",
+   "name": "Accor SA",
+   "type": "stock",
+   "netGain5y": 0.1416
+  },
+  {
+   "symbol": "KRN.DE",
+   "isin": "DE0006335003",
+   "name": "Krones AG",
+   "type": "stock",
+   "netGain5y": 0.1416
+  },
+  {
+   "symbol": "NOVN.SW",
+   "isin": "CH0012005267",
+   "name": "Novartis",
+   "type": "stock",
+   "netGain5y": 0.1416
+  },
+  {
+   "symbol": "SIS.DE",
+   "isin": "DE0007201907",
+   "name": "First Sensor AG",
+   "type": "stock",
+   "netGain5y": 0.141
+  },
+  {
+   "symbol": "FPE.DE",
+   "isin": "DE000A3E5D56",
+   "name": "Fuchs SE",
+   "type": "stock",
+   "netGain5y": 0.1405
+  },
+  {
+   "symbol": "LEG.DE",
+   "isin": "DE000LEG1110",
+   "name": "LEG Immobilien SE",
+   "type": "stock",
+   "netGain5y": 0.1402
+  },
+  {
+   "symbol": "COST",
+   "isin": "US22160K1051",
+   "name": "Costco Wholesale",
+   "type": "stock",
+   "netGain5y": 0.1379
+  },
+  {
+   "symbol": "RACE.MI",
+   "isin": "NL0011585146",
+   "name": "Ferrari",
+   "type": "stock",
+   "netGain5y": 0.1377
+  },
+  {
+   "symbol": "DTG.DE",
+   "isin": "DE000DTR0CK8",
+   "name": "Daimler Truck Holding AG",
+   "type": "stock",
+   "netGain5y": 0.1367
+  },
+  {
+   "symbol": "PCE1.DE",
+   "isin": "US09857L1089",
+   "name": "Booking Holdings Inc.",
+   "type": "stock",
+   "outlookSymbol": "BKNG",
+   "netGain5y": 0.1367
+  },
+  {
+   "symbol": "SWA.DE",
+   "isin": "DE0007229007",
+   "name": "Schloss Wachenheim AG",
+   "type": "stock",
+   "netGain5y": 0.1363
+  },
+  {
+   "symbol": "5UR.DE",
+   "isin": "US75513E1010",
+   "name": "RTX Corporation",
+   "type": "stock",
+   "outlookSymbol": "RTX",
+   "netGain5y": 0.1349
+  },
+  {
+   "symbol": "KBX.DE",
+   "isin": "DE000KBX1006",
+   "name": "Knorr-Bremse AG",
+   "type": "stock",
+   "netGain5y": 0.1342
+  },
+  {
+   "symbol": "VOW.DE",
+   "isin": "DE0007664005",
+   "name": "Volkswagen AG",
+   "type": "stock",
+   "netGain5y": 0.1329
+  },
+  {
+   "symbol": "SAN.PA",
+   "isin": "FR0000120578",
+   "name": "Sanofi",
+   "type": "stock",
+   "netGain5y": 0.1327
+  },
+  {
+   "symbol": "NNGF.DE",
+   "isin": "GB00BDR05C01",
+   "name": "National Grid plc",
+   "type": "stock",
+   "netGain5y": 0.1324
+  },
+  {
+   "symbol": "EWL.DE",
+   "isin": "US28176E1082",
+   "name": "Edwards Lifesciences Corporation",
+   "type": "stock",
+   "outlookSymbol": "EW",
+   "netGain5y": 0.1318
+  },
+  {
+   "symbol": "EBK.DE",
+   "isin": "DE0005220008",
+   "name": "EnBW Energie Baden-Württemberg AG",
+   "type": "stock",
+   "netGain5y": 0.1315
+  },
+  {
+   "symbol": "HEIA.AS",
+   "isin": "NL0000009165",
+   "name": "Heineken",
+   "type": "stock",
+   "netGain5y": 0.131
+  },
+  {
+   "symbol": "NESN.SW",
+   "isin": "CH0038863350",
+   "name": "Nestlé",
+   "type": "stock",
+   "netGain5y": 0.1309
+  },
+  {
+   "symbol": "GZF.DE",
+   "isin": "FR0010208488",
+   "name": "Engie SA",
+   "type": "stock",
+   "netGain5y": 0.1305
+  },
+  {
+   "symbol": "RAA.DE",
+   "isin": "DE0007010803",
+   "name": "RATIONAL Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1301
+  },
+  {
+   "symbol": "AZ2.DE",
+   "isin": "AT0000730007",
+   "name": "Andritz AG",
+   "type": "stock",
+   "netGain5y": 0.1291
+  },
+  {
+   "symbol": "HLE.DE",
+   "isin": "DE000A13SX22",
+   "name": "HELLA GmbH & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.128
+  },
+  {
+   "symbol": "GCP.DE",
+   "isin": "US3696043013",
+   "name": "General Electric Company",
+   "type": "stock",
+   "outlookSymbol": "GE",
+   "netGain5y": 0.1272
+  },
+  {
+   "symbol": "INGA.AS",
+   "isin": "NL0011821202",
+   "name": "ING Groep",
+   "type": "stock",
+   "netGain5y": 0.1269
+  },
+  {
+   "symbol": "TEG.DE",
+   "isin": "DE0008303504",
+   "name": "TAG Immobilien AG",
+   "type": "stock",
+   "netGain5y": 0.1258
+  },
+  {
+   "symbol": "WUW.DE",
+   "isin": "DE0008051004",
+   "name": "Wüstenrot & Württembergische AG",
+   "type": "stock",
+   "netGain5y": 0.1254
+  },
+  {
+   "symbol": "AXA.DE",
+   "isin": "FR0000120628",
+   "name": "AXA SA",
+   "type": "stock",
+   "netGain5y": 0.125
+  },
+  {
+   "symbol": "1BR1.DE",
+   "isin": "FR0013326246",
+   "name": "Unibail-Rodamco-Westfield SE",
+   "type": "stock",
+   "netGain5y": 0.1248
+  },
+  {
+   "symbol": "SY1.DE",
+   "isin": "DE000SYM9999",
+   "name": "Symrise AG",
+   "type": "stock",
+   "netGain5y": 0.1241
+  },
+  {
+   "symbol": "G24.DE",
+   "isin": "DE000A12DM80",
+   "name": "Scout24 SE",
+   "type": "stock",
+   "netGain5y": 0.1241
+  },
+  {
+   "symbol": "GOB.DE",
+   "isin": "FR0000125007",
+   "name": "Compagnie de Saint-Gobain S.A.",
+   "type": "stock",
+   "netGain5y": 0.1236
+  },
+  {
+   "symbol": "G1A.DE",
+   "isin": "DE0006602006",
+   "name": "GEA Group Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1228
+  },
+  {
+   "symbol": "OMV.DE",
+   "isin": "AT0000743059",
+   "name": "OMV Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1227
+  },
+  {
+   "symbol": "O4B.DE",
+   "isin": "DE0006286560",
+   "name": "OVB Holding AG",
+   "type": "stock",
+   "netGain5y": 0.1226
+  },
+  {
+   "symbol": "BVB.DE",
+   "isin": "DE0005493092",
+   "name": "Borussia Dortmund GmbH & Co. Kommanditgesellschaft auf Aktien",
+   "type": "stock",
+   "netGain5y": 0.1215
+  },
+  {
+   "symbol": "VNA.DE",
+   "isin": "DE000A1ML7J1",
+   "name": "Vonovia",
+   "type": "stock",
+   "netGain5y": 0.1199
+  },
+  {
+   "symbol": "BRK-B",
+   "isin": "US0846707026",
+   "name": "Berkshire Hathaway (B)",
+   "type": "stock",
+   "netGain5y": 0.1197
+  },
+  {
+   "symbol": "ADV.DE",
+   "isin": "DE0005103006",
+   "name": "Adtran Networks SE",
+   "type": "stock",
+   "netGain5y": 0.1195
+  },
+  {
+   "symbol": "SAN.MC",
+   "isin": "ES0113900J37",
+   "name": "Banco Santander",
+   "type": "stock",
+   "netGain5y": 0.1194
+  },
+  {
+   "symbol": "HHFA.DE",
+   "isin": "DE000A0S8488",
+   "name": "Hamburger Hafen und Logistik Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1186
+  },
+  {
+   "symbol": "GSC1.DE",
+   "isin": "DE000A1K0201",
+   "name": "Gesco SE",
+   "type": "stock",
+   "netGain5y": 0.1185
+  },
+  {
+   "symbol": "VVV3.DE",
+   "isin": "DE0005408686",
+   "name": "Ökoworld AG",
+   "type": "stock",
+   "netGain5y": 0.1182
+  },
+  {
+   "symbol": "NGL0.DE",
+   "isin": "GB00BTK05J60",
+   "name": "Anglo American plc",
+   "type": "stock",
+   "netGain5y": 0.1178
+  },
+  {
+   "symbol": "GS71.DE",
+   "isin": "GB00BN7SWP63",
+   "name": "GSK plc",
+   "type": "stock",
+   "netGain5y": 0.1175
+  },
+  {
+   "symbol": "TCO0.DE",
+   "isin": "GB00BLGZ9862",
+   "name": "Tesco PLC",
+   "type": "stock",
+   "netGain5y": 0.1162
+  },
+  {
+   "symbol": "SAP.DE",
+   "isin": "DE0007164600",
+   "name": "SAP",
+   "type": "stock",
+   "netGain5y": 0.1161
+  },
+  {
+   "symbol": "8GM.DE",
+   "isin": "US37045V1008",
+   "name": "General Motors Company",
+   "type": "stock",
+   "outlookSymbol": "GM",
+   "netGain5y": 0.116
+  },
+  {
+   "symbol": "PAH3.DE",
+   "isin": "DE000PAH0038",
+   "name": "Porsche Automobil Holding SE",
+   "type": "stock",
+   "netGain5y": 0.1146
+  },
+  {
+   "symbol": "SAX.DE",
+   "isin": "DE0007493991",
+   "name": "Ströer SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1146
+  },
+  {
+   "symbol": "AIR.PA",
+   "isin": "NL0000235190",
+   "name": "Airbus",
+   "type": "stock",
+   "netGain5y": 0.1139
+  },
+  {
+   "symbol": "ABL.DE",
+   "isin": "US0028241000",
+   "name": "Abbott Laboratories",
+   "type": "stock",
+   "outlookSymbol": "ABT",
+   "netGain5y": 0.1139
+  },
+  {
+   "symbol": "EIN.DE",
+   "isin": "DE000A40ESU3",
+   "name": "Einhell Germany AG",
+   "type": "stock",
+   "netGain5y": 0.1135
+  },
+  {
+   "symbol": "PAT.DE",
+   "isin": "DE000PAT1AG3",
+   "name": "PATRIZIA SE",
+   "type": "stock",
+   "netGain5y": 0.1131
+  },
+  {
+   "symbol": "MZX.DE",
+   "isin": "DE0005492938",
+   "name": "Masterflex SE",
+   "type": "stock",
+   "netGain5y": 0.1131
+  },
+  {
+   "symbol": "4PG.DE",
+   "isin": "US68902V1070",
+   "name": "Otis Worldwide Corporation",
+   "type": "stock",
+   "outlookSymbol": "OTIS",
+   "netGain5y": 0.1124
+  },
+  {
+   "symbol": "DEQ.DE",
+   "isin": "DE0007480204",
+   "name": "Deutsche EuroShop AG",
+   "type": "stock",
+   "netGain5y": 0.1124
+  },
+  {
+   "symbol": "FDX.DE",
+   "isin": "US31428X1063",
+   "name": "FedEx Corporation",
+   "type": "stock",
+   "outlookSymbol": "FDX",
+   "netGain5y": 0.1123
+  },
+  {
+   "symbol": "KWS.DE",
+   "isin": "DE0007074007",
+   "name": "KWS SAAT SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1118
+  },
+  {
+   "symbol": "VOW3.DE",
+   "isin": "DE0007664039",
+   "name": "Volkswagen (Vz)",
+   "type": "stock",
+   "netGain5y": 0.1115
+  },
+  {
+   "symbol": "4PN.DE",
+   "isin": "US14448C1045",
+   "name": "Carrier Global Corporation",
+   "type": "stock",
+   "outlookSymbol": "CARR",
+   "netGain5y": 0.1114
+  },
+  {
+   "symbol": "V",
+   "isin": "US92826C8394",
+   "name": "Visa",
+   "type": "stock",
+   "netGain5y": 0.111
+  },
+  {
+   "symbol": "DCO.DE",
+   "isin": "US2441991054",
+   "name": "Deere & Company",
+   "type": "stock",
+   "outlookSymbol": "DE",
+   "netGain5y": 0.1109
+  },
+  {
+   "symbol": "HEN.DE",
+   "isin": "DE0006048408",
+   "name": "Henkel AG & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1091
+  },
+  {
+   "symbol": "RWE.DE",
+   "isin": "DE0007037129",
+   "name": "RWE",
+   "type": "stock",
+   "netGain5y": 0.1081
+  },
+  {
+   "symbol": "IC2.DE",
+   "isin": "US45866F1049",
+   "name": "Intercontinental Exchange, Inc.",
+   "type": "stock",
+   "outlookSymbol": "ICE",
+   "netGain5y": 0.1077
+  },
+  {
+   "symbol": "GUI.DE",
+   "isin": "GB0002374006",
+   "name": "Diageo plc",
+   "type": "stock",
+   "netGain5y": 0.1075
+  },
+  {
+   "symbol": "STO3.DE",
+   "isin": "DE0007274136",
+   "name": "Sto SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1073
+  },
+  {
+   "symbol": "HOT.DE",
+   "isin": "DE0006070006",
+   "name": "HOCHTIEF Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1069
+  },
+  {
+   "symbol": "B7E.DE",
+   "isin": "DE000A0JM2M1",
+   "name": "Blue Cap AG",
+   "type": "stock",
+   "netGain5y": 0.1066
+  },
+  {
+   "symbol": "TGHN.DE",
+   "isin": "LU1618151879",
+   "name": "Logwin AG",
+   "type": "stock",
+   "netGain5y": 0.1062
+  },
+  {
+   "symbol": "MWZ.DE",
+   "isin": "US59156R1086",
+   "name": "MetLife, Inc.",
+   "type": "stock",
+   "outlookSymbol": "MET",
+   "netGain5y": 0.1056
+  },
+  {
+   "symbol": "PEO.DE",
+   "isin": "US30161N1019",
+   "name": "Exelon Corporation",
+   "type": "stock",
+   "outlookSymbol": "EXC",
+   "netGain5y": 0.1056
+  },
+  {
+   "symbol": "MA",
+   "isin": "US57636Q1040",
+   "name": "Mastercard",
+   "type": "stock",
+   "netGain5y": 0.1053
+  },
+  {
+   "symbol": "LEI.DE",
+   "isin": "DE0006464506",
+   "name": "Leifheit Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1046
+  },
+  {
+   "symbol": "EUZ.DE",
+   "isin": "DE0005659700",
+   "name": "Eckert & Ziegler SE",
+   "type": "stock",
+   "netGain5y": 0.1045
+  },
+  {
+   "symbol": "BBVA.MC",
+   "isin": "ES0113211835",
+   "name": "BBVA",
+   "type": "stock",
+   "netGain5y": 0.1045
+  },
+  {
+   "symbol": "HEI.DE",
+   "isin": "DE0006047004",
+   "name": "Heidelberg Materials AG",
+   "type": "stock",
+   "netGain5y": 0.1042
+  },
+  {
+   "symbol": "SRT.DE",
+   "isin": "DE0007165607",
+   "name": "Sartorius Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.1041
+  },
+  {
+   "symbol": "JPM",
+   "isin": "US46625H1005",
+   "name": "JPMorgan Chase",
+   "type": "stock",
+   "netGain5y": 0.1039
+  },
+  {
+   "symbol": "2M6.DE",
+   "isin": "IE00BTN1Y115",
+   "name": "Medtronic plc",
+   "type": "stock",
+   "netGain5y": 0.1022
+  },
+  {
+   "symbol": "OEWA.DE",
+   "isin": "AT0000746409",
+   "name": "VERBUND AG",
+   "type": "stock",
+   "netGain5y": 0.1019
+  },
+  {
+   "symbol": "TTE.PA",
+   "isin": "FR0000120271",
+   "name": "TotalEnergies",
+   "type": "stock",
+   "netGain5y": 0.1018
+  },
+  {
+   "symbol": "ENI.MI",
+   "isin": "IT0003132476",
+   "name": "Eni",
+   "type": "stock",
+   "netGain5y": 0.1018
+  },
+  {
+   "symbol": "KO",
+   "isin": "US1912161007",
+   "name": "Coca-Cola",
+   "type": "stock",
+   "netGain5y": 0.1011
+  },
+  {
+   "symbol": "MSFT",
+   "isin": "US5949181045",
+   "name": "Microsoft",
+   "type": "stock",
+   "netGain5y": 0.1008
+  },
+  {
+   "symbol": "RE21.DE",
+   "isin": "ES0173093024",
+   "name": "Redeia Corporación, S.A.",
+   "type": "stock",
+   "netGain5y": 0.1008
+  },
+  {
+   "symbol": "HSBA.L",
+   "isin": "GB0005405286",
+   "name": "HSBC Holdings",
+   "type": "stock",
+   "netGain5y": 0.1007
+  },
+  {
+   "symbol": "MRK.DE",
+   "isin": "DE0006599905",
+   "name": "Merck KGaA",
+   "type": "stock",
+   "netGain5y": 0.1005
+  },
+  {
+   "symbol": "TM5.DE",
+   "isin": "US8725901040",
+   "name": "T-Mobile US, Inc.",
+   "type": "stock",
+   "outlookSymbol": "TMUS",
+   "netGain5y": 0.1004
+  },
+  {
+   "symbol": "LLD.DE",
+   "isin": "GB0008706128",
+   "name": "Lloyds Banking Group plc",
+   "type": "stock",
+   "netGain5y": 0.0998
+  },
+  {
+   "symbol": "FPE3.DE",
+   "isin": "DE000A3E5D64",
+   "name": "Fuchs SE",
+   "type": "stock",
+   "netGain5y": 0.0995
+  },
+  {
+   "symbol": "SVE.DE",
+   "isin": "DE000A168205",
+   "name": "Shareholder Value Beteiligungen AG",
+   "type": "stock",
+   "netGain5y": 0.0994
+  },
+  {
+   "symbol": "CBHD.DE",
+   "isin": "DK0060448595",
+   "name": "Coloplast A/S",
+   "type": "stock",
+   "netGain5y": 0.0989
+  },
+  {
+   "symbol": "MBG.DE",
+   "isin": "DE0007100000",
+   "name": "Mercedes-Benz Group",
+   "type": "stock",
+   "netGain5y": 0.0979
+  },
+  {
+   "symbol": "FIE.DE",
+   "isin": "DE0005772206",
+   "name": "Fielmann Group AG",
+   "type": "stock",
+   "netGain5y": 0.0977
+  },
+  {
+   "symbol": "BMW.DE",
+   "isin": "DE0005190003",
+   "name": "BMW",
+   "type": "stock",
+   "netGain5y": 0.0974
+  },
+  {
+   "symbol": "BSN.DE",
+   "isin": "FR0000120644",
+   "name": "Danone S.A.",
+   "type": "stock",
+   "netGain5y": 0.0972
+  },
+  {
+   "symbol": "O",
+   "isin": "US7561091049",
+   "name": "Realty Income",
+   "type": "stock",
+   "netGain5y": 0.0971
+  },
+  {
+   "symbol": "PWO.DE",
+   "isin": "DE0006968001",
+   "name": "PWO AG",
+   "type": "stock",
+   "netGain5y": 0.0971
+  },
+  {
+   "symbol": "RRTL.DE",
+   "isin": "LU0061462528",
+   "name": "RTL Group S.A.",
+   "type": "stock",
+   "netGain5y": 0.097
+  },
+  {
+   "symbol": "IXX.DE",
+   "isin": "DE0005759807",
+   "name": "init innovation in traffic systems SE",
+   "type": "stock",
+   "netGain5y": 0.0965
+  },
+  {
+   "symbol": "BSP.DE",
+   "isin": "GB0002634946",
+   "name": "BAE Systems plc",
+   "type": "stock",
+   "netGain5y": 0.0965
+  },
+  {
+   "symbol": "BAS.DE",
+   "isin": "DE000BASF111",
+   "name": "BASF",
+   "type": "stock",
+   "netGain5y": 0.0957
+  },
+  {
+   "symbol": "DAP.DE",
+   "isin": "US2358511028",
+   "name": "Danaher Corporation",
+   "type": "stock",
+   "outlookSymbol": "DHR",
+   "netGain5y": 0.0951
+  },
+  {
+   "symbol": "SIX3.DE",
+   "isin": "DE0007231334",
+   "name": "Sixt SE",
+   "type": "stock",
+   "netGain5y": 0.0944
+  },
+  {
+   "symbol": "FMC1.DE",
+   "isin": "US3453708600",
+   "name": "Ford Motor Company",
+   "type": "stock",
+   "outlookSymbol": "F",
+   "netGain5y": 0.0944
+  },
+  {
+   "symbol": "BAC",
+   "isin": "US0605051046",
+   "name": "Bank of America",
+   "type": "stock",
+   "netGain5y": 0.0934
+  },
+  {
+   "symbol": "RHO.DE",
+   "isin": "CH0012032113",
+   "name": "Roche Holding AG",
+   "type": "stock",
+   "netGain5y": 0.0924
+  },
+  {
+   "symbol": "HEN3.DE",
+   "isin": "DE0006048432",
+   "name": "Henkel (Vz)",
+   "type": "stock",
+   "netGain5y": 0.092
+  },
+  {
+   "symbol": "KTF.DE",
+   "isin": "US6092071058",
+   "name": "Mondelez International, Inc.",
+   "type": "stock",
+   "outlookSymbol": "MDLZ",
+   "netGain5y": 0.0917
+  },
+  {
+   "symbol": "PG",
+   "isin": "US7427181091",
+   "name": "Procter & Gamble",
+   "type": "stock",
+   "netGain5y": 0.0911
+  },
+  {
+   "symbol": "CPA.DE",
+   "isin": "US1941621039",
+   "name": "Colgate-Palmolive Company",
+   "type": "stock",
+   "outlookSymbol": "CL",
+   "netGain5y": 0.0907
+  },
+  {
+   "symbol": "SIX2.DE",
+   "isin": "DE0007231326",
+   "name": "Sixt SE",
+   "type": "stock",
+   "netGain5y": 0.0898
+  },
+  {
+   "symbol": "AAPL",
+   "isin": "US0378331005",
+   "name": "Apple",
+   "type": "stock",
+   "netGain5y": 0.0893
+  },
+  {
+   "symbol": "UCG.MI",
+   "isin": "IT0005239360",
+   "name": "UniCredit",
+   "type": "stock",
+   "netGain5y": 0.0873
+  },
+  {
+   "symbol": "PHI1.DE",
+   "isin": "NL0000009538",
+   "name": "Koninklijke Philips N.V.",
+   "type": "stock",
+   "netGain5y": 0.0863
+  },
+  {
+   "symbol": "UNP.DE",
+   "isin": "US9078181081",
+   "name": "Union Pacific Corporation",
+   "type": "stock",
+   "outlookSymbol": "UNP",
+   "netGain5y": 0.0857
+  },
+  {
+   "symbol": "TSM",
+   "isin": "US8740391003",
+   "name": "Taiwan Semiconductor (ADR)",
+   "type": "stock",
+   "netGain5y": 0.0856
+  },
+  {
+   "symbol": "CON.DE",
+   "isin": "DE0005439004",
+   "name": "Continental Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0855
+  },
+  {
+   "symbol": "2KD.DE",
+   "isin": "US49456B1017",
+   "name": "Kinder Morgan, Inc.",
+   "type": "stock",
+   "outlookSymbol": "KMI",
+   "netGain5y": 0.0853
+  },
+  {
+   "symbol": "8TRA.DE",
+   "isin": "DE000TRAT0N7",
+   "name": "Traton SE",
+   "type": "stock",
+   "netGain5y": 0.085
+  },
+  {
+   "symbol": "NXS.DE",
+   "isin": "FR0000044448",
+   "name": "Nexans S.A.",
+   "type": "stock",
+   "netGain5y": 0.085
+  },
+  {
+   "symbol": "KSB3.DE",
+   "isin": "DE0006292030",
+   "name": "KSB SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.0849
+  },
+  {
+   "symbol": "PCZ.DE",
+   "isin": "DE0006223407",
+   "name": "ProCredit Holding AG",
+   "type": "stock",
+   "netGain5y": 0.0844
+  },
+  {
+   "symbol": "PES.DE",
+   "isin": "GB0006776081",
+   "name": "Pearson plc",
+   "type": "stock",
+   "netGain5y": 0.0828
+  },
+  {
+   "symbol": "VIB3.DE",
+   "isin": "DE0007657231",
+   "name": "Villeroy & Boch AG",
+   "type": "stock",
+   "netGain5y": 0.0824
+  },
+  {
+   "symbol": "BIJ.DE",
+   "isin": "DE0005229504",
+   "name": "Bijou Brigitte modische Accessoires Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0821
+  },
+  {
+   "symbol": "TM",
+   "isin": "US8923313071",
+   "name": "Toyota Motor (ADR)",
+   "type": "stock",
+   "netGain5y": 0.0819
+  },
+  {
+   "symbol": "BNR.DE",
+   "isin": "DE000A1DAHH0",
+   "name": "Brenntag SE",
+   "type": "stock",
+   "netGain5y": 0.0815
+  },
+  {
+   "symbol": "AZN.L",
+   "isin": "GB0009895292",
+   "name": "AstraZeneca",
+   "type": "stock",
+   "netGain5y": 0.0814
+  },
+  {
+   "symbol": "O5G.DE",
+   "isin": "LU0251710041",
+   "name": "CPI Property Group",
+   "type": "stock",
+   "netGain5y": 0.0813
+  },
+  {
+   "symbol": "COK.DE",
+   "isin": "DE0005419105",
+   "name": "Cancom SE",
+   "type": "stock",
+   "netGain5y": 0.081
+  },
+  {
+   "symbol": "MUB.DE",
+   "isin": "DE0006627201",
+   "name": "Mühlbauer Holding AG",
+   "type": "stock",
+   "netGain5y": 0.0801
+  },
+  {
+   "symbol": "BAMI.MI",
+   "isin": "IT0005218380",
+   "name": "Banco BPM",
+   "type": "stock",
+   "netGain5y": 0.0801
+  },
+  {
+   "symbol": "DMP.DE",
+   "isin": "DE000A2GS5D8",
+   "name": "Dermapharm Holding SE",
+   "type": "stock",
+   "netGain5y": 0.0797
+  },
+  {
+   "symbol": "TNE5.DE",
+   "isin": "ES0178430E18",
+   "name": "Telefónica, S.A.",
+   "type": "stock",
+   "netGain5y": 0.0786
+  },
+  {
+   "symbol": "EBA.DE",
+   "isin": "US2786421030",
+   "name": "eBay Inc.",
+   "type": "stock",
+   "outlookSymbol": "EBAY",
+   "netGain5y": 0.0777
+  },
+  {
+   "symbol": "SDRC.DE",
+   "isin": "FR0010411983",
+   "name": "SCOR SE",
+   "type": "stock",
+   "netGain5y": 0.0773
+  },
+  {
+   "symbol": "GOOGL",
+   "isin": "US02079K3059",
+   "name": "Alphabet (A)",
+   "type": "stock",
+   "netGain5y": 0.0773
+  },
+  {
+   "symbol": "DWNI.DE",
+   "isin": "DE000A0HN5C6",
+   "name": "Deutsche Wohnen SE",
+   "type": "stock",
+   "netGain5y": 0.0764
+  },
+  {
+   "symbol": "REP.DE",
+   "isin": "ES0173516115",
+   "name": "Repsol, S.A.",
+   "type": "stock",
+   "netGain5y": 0.0762
+  },
+  {
+   "symbol": "SLYG.DE",
+   "isin": "BG1100003166",
+   "name": "Shelly Group SE",
+   "type": "stock",
+   "netGain5y": 0.0762
+  },
+  {
+   "symbol": "FRE.DE",
+   "isin": "DE000FRE5EN2",
+   "name": "Fresenius SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.0759
+  },
+  {
+   "symbol": "GBRA.DE",
+   "isin": "CH0030170408",
+   "name": "Geberit AG",
+   "type": "stock",
+   "netGain5y": 0.0751
+  },
+  {
+   "symbol": "BFSA.DE",
+   "isin": "LU1704650164",
+   "name": "Befesa S.A.",
+   "type": "stock",
+   "netGain5y": 0.0745
+  },
+  {
+   "symbol": "DIE.DE",
+   "isin": "DE0005580005",
+   "name": "Dierig Holding AG",
+   "type": "stock",
+   "netGain5y": 0.0743
+  },
+  {
+   "symbol": "KTN.DE",
+   "isin": "AT0000A0E9W5",
+   "name": "Kontron AG",
+   "type": "stock",
+   "netGain5y": 0.0738
+  },
+  {
+   "symbol": "CPR.MI",
+   "isin": "NL0015435975",
+   "name": "Davide Campari-Milano",
+   "type": "stock",
+   "netGain5y": 0.0738
+  },
+  {
+   "symbol": "JNJ",
+   "isin": "US4781601046",
+   "name": "Johnson & Johnson",
+   "type": "stock",
+   "netGain5y": 0.0737
+  },
+  {
+   "symbol": "INH.DE",
+   "isin": "DE0006200108",
+   "name": "INDUS Holding AG",
+   "type": "stock",
+   "netGain5y": 0.0735
+  },
+  {
+   "symbol": "HRPK.DE",
+   "isin": "DE000A11QW68",
+   "name": "7C Solarparken AG",
+   "type": "stock",
+   "netGain5y": 0.0734
+  },
+  {
+   "symbol": "H6D0.DE",
+   "isin": "GB00BMX86B70",
+   "name": "Haleon plc",
+   "type": "stock",
+   "netGain5y": 0.0731
+  },
+  {
+   "symbol": "IFX.DE",
+   "isin": "DE0006231004",
+   "name": "Infineon Technologies",
+   "type": "stock",
+   "netGain5y": 0.0718
+  },
+  {
+   "symbol": "DBK.DE",
+   "isin": "DE0005140008",
+   "name": "Deutsche Bank",
+   "type": "stock",
+   "netGain5y": 0.0715
+  },
+  {
+   "symbol": "FTE.DE",
+   "isin": "FR0000133308",
+   "name": "Orange S.A.",
+   "type": "stock",
+   "netGain5y": 0.0714
+  },
+  {
+   "symbol": "VIA.DE",
+   "isin": "US92556V1061",
+   "name": "Viatris Inc.",
+   "type": "stock",
+   "outlookSymbol": "VTRS",
+   "netGain5y": 0.0711
+  },
+  {
+   "symbol": "SZ50.DE",
+   "isin": "DE000A35JR33",
+   "name": "Lübke Kelber AG",
+   "type": "stock",
+   "netGain5y": 0.0708
+  },
+  {
+   "symbol": "ST5.DE",
+   "isin": "DE000A0LR936",
+   "name": "STEICO SE",
+   "type": "stock",
+   "netGain5y": 0.0706
+  },
+  {
+   "symbol": "KFI1.DE",
+   "isin": "GB0033195214",
+   "name": "Kingfisher plc",
+   "type": "stock",
+   "netGain5y": 0.0706
+  },
+  {
+   "symbol": "KGX.DE",
+   "isin": "DE000KGX8881",
+   "name": "KION GROUP AG",
+   "type": "stock",
+   "netGain5y": 0.0705
+  },
+  {
+   "symbol": "FAS.DE",
+   "isin": "US3119001044",
+   "name": "Fastenal Company",
+   "type": "stock",
+   "outlookSymbol": "FAST",
+   "netGain5y": 0.0696
+  },
+  {
+   "symbol": "WMT",
+   "isin": "US9311421039",
+   "name": "Walmart",
+   "type": "stock",
+   "netGain5y": 0.0692
+  },
+  {
+   "symbol": "EDL.DE",
+   "isin": "DE0005649503",
+   "name": "Edel SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.0691
+  },
+  {
+   "symbol": "VZ",
+   "isin": "US92343V1044",
+   "name": "Verizon",
+   "type": "stock",
+   "netGain5y": 0.0689
+  },
+  {
+   "symbol": "P911.DE",
+   "isin": "DE000PAG9113",
+   "name": "Porsche AG",
+   "type": "stock",
+   "netGain5y": 0.0686
+  },
+  {
+   "symbol": "ITB.DE",
+   "isin": "GB0004544929",
+   "name": "Imperial Brands PLC",
+   "type": "stock",
+   "netGain5y": 0.0671
+  },
+  {
+   "symbol": "AWC.DE",
+   "isin": "US0304201033",
+   "name": "American Water Works Company, Inc.",
+   "type": "stock",
+   "outlookSymbol": "AWK",
+   "netGain5y": 0.0671
+  },
+  {
+   "symbol": "AOF.DE",
+   "isin": "DE0005104400",
+   "name": "ATOSS Software SE",
+   "type": "stock",
+   "netGain5y": 0.0667
+  },
+  {
+   "symbol": "PNP.DE",
+   "isin": "US6934751057",
+   "name": "The PNC Financial Services Group, Inc.",
+   "type": "stock",
+   "outlookSymbol": "PNC",
+   "netGain5y": 0.0654
+  },
+  {
+   "symbol": "PP9.DE",
+   "isin": "US69351T1060",
+   "name": "PPL Corporation",
+   "type": "stock",
+   "outlookSymbol": "PPL",
+   "netGain5y": 0.0647
+  },
+  {
+   "symbol": "ADS.DE",
+   "isin": "DE000A1EWWW0",
+   "name": "Adidas",
+   "type": "stock",
+   "netGain5y": 0.0645
+  },
+  {
+   "symbol": "ALG.DE",
+   "isin": "DE0006569403",
+   "name": "ALBIS Leasing AG",
+   "type": "stock",
+   "netGain5y": 0.0642
+  },
+  {
+   "symbol": "BEI.DE",
+   "isin": "DE0005200000",
+   "name": "Beiersdorf Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0641
+  },
+  {
+   "symbol": "JST.DE",
+   "isin": "DE000JST4000",
+   "name": "JOST Werke SE",
+   "type": "stock",
+   "netGain5y": 0.064
+  },
+  {
+   "symbol": "PFE",
+   "isin": "US7170811035",
+   "name": "Pfizer",
+   "type": "stock",
+   "netGain5y": 0.0636
+  },
+  {
+   "symbol": "GS",
+   "isin": "US38141G1040",
+   "name": "Goldman Sachs",
+   "type": "stock",
+   "netGain5y": 0.0632
+  },
+  {
+   "symbol": "3RB0.DE",
+   "isin": "GB00BSZBP530",
+   "name": "Reckitt Benckiser Group plc",
+   "type": "stock",
+   "netGain5y": 0.0631
+  },
+  {
+   "symbol": "NDA.DE",
+   "isin": "DE0006766504",
+   "name": "Aurubis AG",
+   "type": "stock",
+   "netGain5y": 0.0625
+  },
+  {
+   "symbol": "FC9.DE",
+   "isin": "DE000A1YC913",
+   "name": "FCR Immobilien AG",
+   "type": "stock",
+   "netGain5y": 0.0623
+  },
+  {
+   "symbol": "BMT.DE",
+   "isin": "GB0002875804",
+   "name": "British American Tobacco p.l.c.",
+   "type": "stock",
+   "netGain5y": 0.0623
+  },
+  {
+   "symbol": "690D.DE",
+   "isin": "CNE1000031C1",
+   "name": "Haier Smart Home Co., Ltd.",
+   "type": "stock",
+   "netGain5y": 0.0612
+  },
+  {
+   "symbol": "MBK.DE",
+   "isin": "DE0008148206",
+   "name": "Merkur PrivatBank KgaA",
+   "type": "stock",
+   "netGain5y": 0.061
+  },
+  {
+   "symbol": "VODI.DE",
+   "isin": "GB00BH4HKS39",
+   "name": "Vodafone Group Public Limited Company",
+   "type": "stock",
+   "netGain5y": 0.0605
+  },
+  {
+   "symbol": "BOSS.DE",
+   "isin": "DE000A1PHFF7",
+   "name": "Hugo Boss AG",
+   "type": "stock",
+   "netGain5y": 0.0599
+  },
+  {
+   "symbol": "EDC.DE",
+   "isin": "US2091151041",
+   "name": "Consolidated Edison, Inc.",
+   "type": "stock",
+   "outlookSymbol": "ED",
+   "netGain5y": 0.0598
+  },
+  {
+   "symbol": "BC8.DE",
+   "isin": "DE0005158703",
+   "name": "Bechtle AG",
+   "type": "stock",
+   "netGain5y": 0.0597
+  },
+  {
+   "symbol": "NBG6.DE",
+   "isin": "DE0008435967",
+   "name": "NÜRNBERGER Beteiligungs-AG",
+   "type": "stock",
+   "netGain5y": 0.0591
+  },
+  {
+   "symbol": "VAS.DE",
+   "isin": "AT0000937503",
+   "name": "Voestalpine AG",
+   "type": "stock",
+   "netGain5y": 0.0586
+  },
+  {
+   "symbol": "KNIA.DE",
+   "isin": "CH0025238863",
+   "name": "Kuehne + Nagel International AG",
+   "type": "stock",
+   "netGain5y": 0.058
+  },
+  {
+   "symbol": "BOG.DE",
+   "isin": "DE000A0S9QZ8",
+   "name": "Stock3 AG",
+   "type": "stock",
+   "netGain5y": 0.0573
+  },
+  {
+   "symbol": "SGE.DE",
+   "isin": "FR0000130809",
+   "name": "Société Générale Société anonyme",
+   "type": "stock",
+   "netGain5y": 0.0573
+  },
+  {
+   "symbol": "WYR.DE",
+   "isin": "US9831341071",
+   "name": "Wynn Resorts, Limited",
+   "type": "stock",
+   "outlookSymbol": "WYNN",
+   "netGain5y": 0.0571
+  },
+  {
+   "symbol": "CDZ0.DE",
+   "isin": "DE000A3E5C24",
+   "name": "MHP Hotel AG",
+   "type": "stock",
+   "netGain5y": 0.0569
+  },
+  {
+   "symbol": "RY4C.DE",
+   "isin": "IE00BYTBXV33",
+   "name": "Ryanair Holdings plc",
+   "type": "stock",
+   "netGain5y": 0.0568
+  },
+  {
+   "symbol": "7DZ.DE",
+   "isin": "US30233Q1085",
+   "name": "ExxonMobil Holdings Corporation",
+   "type": "stock",
+   "outlookSymbol": "XOM",
+   "netGain5y": 0.0566
+  },
+  {
+   "symbol": "FME.DE",
+   "isin": "DE0005785802",
+   "name": "Fresenius Medical Care AG",
+   "type": "stock",
+   "netGain5y": 0.0558
+  },
+  {
+   "symbol": "RSL2.DE",
+   "isin": "DE000A1PHBB5",
+   "name": "R. STAHL AG",
+   "type": "stock",
+   "netGain5y": 0.0555
+  },
+  {
+   "symbol": "BWB.DE",
+   "isin": "DE0005088108",
+   "name": "Baader Bank Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0555
+  },
+  {
+   "symbol": "KMY.DE",
+   "isin": "US4943681035",
+   "name": "Kimberly-Clark Corporation",
+   "type": "stock",
+   "outlookSymbol": "KMB",
+   "netGain5y": 0.0547
+  },
+  {
+   "symbol": "DUE.DE",
+   "isin": "DE0005565204",
+   "name": "Dürr Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0538
+  },
+  {
+   "symbol": "SMWN.DE",
+   "isin": "DE000A1RFMZ1",
+   "name": "SM Wirtschaftsberatungs AG",
+   "type": "stock",
+   "netGain5y": 0.0535
+  },
+  {
+   "symbol": "EMR.DE",
+   "isin": "US2910111044",
+   "name": "Emerson Electric Co.",
+   "type": "stock",
+   "outlookSymbol": "EMR",
+   "netGain5y": 0.0533
+  },
+  {
+   "symbol": "ULVR.L",
+   "isin": "GB00BVZK7T90",
+   "name": "Unilever",
+   "type": "stock",
+   "netGain5y": 0.0527
+  },
+  {
+   "symbol": "HD",
+   "isin": "US4370761029",
+   "name": "Home Depot",
+   "type": "stock",
+   "netGain5y": 0.0527
+  },
+  {
+   "symbol": "GYC.DE",
+   "isin": "LU0775917882",
+   "name": "Grand City Properties S.A.",
+   "type": "stock",
+   "netGain5y": 0.0524
+  },
+  {
+   "symbol": "VOS.DE",
+   "isin": "DE0007667107",
+   "name": "Vossloh AG",
+   "type": "stock",
+   "netGain5y": 0.0519
+  },
+  {
+   "symbol": "KER.PA",
+   "isin": "FR0000121485",
+   "name": "Kering",
+   "type": "stock",
+   "netGain5y": 0.0515
+  },
+  {
+   "symbol": "UTDI.DE",
+   "isin": "DE0005089031",
+   "name": "United Internet AG",
+   "type": "stock",
+   "netGain5y": 0.05
+  },
+  {
+   "symbol": "BRM.DE",
+   "isin": "US1101221083",
+   "name": "Bristol-Myers Squibb Company",
+   "type": "stock",
+   "outlookSymbol": "BMY",
+   "netGain5y": 0.0496
+  },
+  {
+   "symbol": "LIK.DE",
+   "isin": "DE000A0JDBC7",
+   "name": "LIMES Schlosskliniken AG",
+   "type": "stock",
+   "netGain5y": 0.0493
+  },
+  {
+   "symbol": "SRT3.DE",
+   "isin": "DE0007165631",
+   "name": "Sartorius Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0488
+  },
+  {
+   "symbol": "WIB.DE",
+   "isin": "AT0000831706",
+   "name": "Wienerberger AG",
+   "type": "stock",
+   "netGain5y": 0.0485
+  },
+  {
+   "symbol": "QB7.DE",
+   "isin": "DE0005202303",
+   "name": "Quirin Privatbank AG",
+   "type": "stock",
+   "netGain5y": 0.0477
+  },
+  {
+   "symbol": "SOT.DE",
+   "isin": "US8425871071",
+   "name": "The Southern Company",
+   "type": "stock",
+   "outlookSymbol": "SO",
+   "netGain5y": 0.0473
+  },
+  {
+   "symbol": "AMZN",
+   "isin": "US0231351067",
+   "name": "Amazon",
+   "type": "stock",
+   "netGain5y": 0.0466
+  },
+  {
+   "symbol": "RAW.DE",
+   "isin": "AT0000606306",
+   "name": "Raiffeisen Bank International AG",
+   "type": "stock",
+   "netGain5y": 0.0464
+  },
+  {
+   "symbol": "PM",
+   "isin": "US7181721090",
+   "name": "Philip Morris International",
+   "type": "stock",
+   "netGain5y": 0.0461
+  },
+  {
+   "symbol": "LHA.DE",
+   "isin": "DE0008232125",
+   "name": "Lufthansa",
+   "type": "stock",
+   "netGain5y": 0.0456
+  },
+  {
+   "symbol": "NEM.DE",
+   "isin": "DE0006452907",
+   "name": "Nemetschek SE",
+   "type": "stock",
+   "netGain5y": 0.045
+  },
+  {
+   "symbol": "ABBV",
+   "isin": "US00287Y1091",
+   "name": "AbbVie",
+   "type": "stock",
+   "netGain5y": 0.0447
+  },
+  {
+   "symbol": "MTX.DE",
+   "isin": "DE000A0D9PT0",
+   "name": "MTU Aero Engines AG",
+   "type": "stock",
+   "netGain5y": 0.0446
+  },
+  {
+   "symbol": "KOG.DE",
+   "isin": "US5010441013",
+   "name": "The Kroger Co.",
+   "type": "stock",
+   "outlookSymbol": "KR",
+   "netGain5y": 0.0442
+  },
+  {
+   "symbol": "INS.DE",
+   "isin": "DE000A2NBX80",
+   "name": "Instone Real Estate Group SE",
+   "type": "stock",
+   "netGain5y": 0.0439
+  },
+  {
+   "symbol": "EVK.DE",
+   "isin": "DE000EVNK013",
+   "name": "Evonik Industries AG",
+   "type": "stock",
+   "netGain5y": 0.0437
+  },
+  {
+   "symbol": "MX4A.DE",
+   "isin": "US12572Q1058",
+   "name": "CME Group Inc.",
+   "type": "stock",
+   "outlookSymbol": "CME",
+   "netGain5y": 0.0434
+  },
+  {
+   "symbol": "MO",
+   "isin": "US02209S1033",
+   "name": "Altria",
+   "type": "stock",
+   "netGain5y": 0.0431
+  },
+  {
+   "symbol": "ED4.DE",
+   "isin": "CH0303692047",
+   "name": "EDAG Engineering Group AG",
+   "type": "stock",
+   "netGain5y": 0.0428
+  },
+  {
+   "symbol": "1673.T",
+   "isin": "JE00B1VS3333",
+   "name": "WisdomTree Physical Silver",
+   "type": "etf",
+   "netGain5y": 184685.7411
+  },
+  {
+   "symbol": "18MF.DE",
+   "isin": "FR0010755611",
+   "name": "Amundi MSCI USA Daily (2x) Leveraged UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.414
+  },
+  {
+   "symbol": "QDVE.DE",
+   "isin": "IE00B3WJKG14",
+   "name": "iShares S&P 500 Information Technology Sector UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.4006
+  },
+  {
+   "symbol": "XUTC.DE",
+   "isin": "IE00BGQYRS42",
+   "name": "Xtrackers MSCI USA Information Technology UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3975
+  },
+  {
+   "symbol": "SXRV.DE",
+   "isin": "IE00B53SZB19",
+   "name": "iShares NASDAQ 100 UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3932
+  },
+  {
+   "symbol": "LYPG.DE",
+   "isin": "LU0533033667",
+   "name": "Amundi MSCI World Information Technology UCITS ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3871
+  },
+  {
+   "symbol": "6AQQ.DE",
+   "isin": "LU1681038243",
+   "name": "Amundi Index Solutions - Amundi Nasdaq-100 Swap ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3864
+  },
+  {
+   "symbol": "XDWT.DE",
+   "isin": "IE00BM67HT60",
+   "name": "Xtrackers MSCI World Information Technology UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3845
+  },
+  {
+   "symbol": "ZPDT.DE",
+   "isin": "IE00BWBXM948",
+   "name": "State Street SPDR S&P U.S. Technology Select Sector UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.378
+  },
+  {
+   "symbol": "CBUV.DE",
+   "isin": "IE000RN58M26",
+   "name": "iShares Metaverse UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3765
+  },
+  {
+   "symbol": "AUM5.DE",
+   "isin": "LU1681048804",
+   "name": "Amundi Index Solutions - Amundi S&P 500 Swap UCITS ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3747
+  },
+  {
+   "symbol": "EXI2.DE",
+   "isin": "DE0006289382",
+   "name": "iShares Dow Jones Global Titans 50 UCITS ETF (DE)",
+   "type": "etf",
+   "netGain5y": 0.3725
+  },
+  {
+   "symbol": "EQQQ.DE",
+   "isin": "IE0032077012",
+   "name": "Invesco EQQQ NASDAQ-100 UCITS ETF (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3716
+  },
+  {
+   "symbol": "EL4Z.DE",
+   "isin": "DE000ETFL268",
+   "name": "Deka MSCI USA UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.37
+  },
+  {
+   "symbol": "SXR8.DE",
+   "isin": "IE00B5BMR087",
+   "name": "iShares Core S&P 500 UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3667
+  },
+  {
+   "symbol": "D6RQ.DE",
+   "isin": "DE000ETFL573",
+   "name": "Deka MSCI USA Climate Change ESG CTB UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3663
+  },
+  {
+   "symbol": "FUSR.DE",
+   "isin": "IE00BKSBGS44",
+   "name": "Fidelity US Equity Research Enhanced UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3661
+  },
+  {
+   "symbol": "XD9U.DE",
+   "isin": "IE00BJ0KDR00",
+   "name": "Xtrackers MSCI USA UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3658
+  },
+  {
+   "symbol": "UBUT.DE",
+   "isin": "IE00BX7RRJ27",
+   "name": "UBS Factor MSCI USA Quality Screened UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3653
+  },
+  {
+   "symbol": "H4ZF.DE",
+   "isin": "IE00B5KQNG97",
+   "name": "HSBC S&P 500 UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3648
+  },
+  {
+   "symbol": "LYMS.DE",
+   "isin": "LU1829221024",
+   "name": "Amundi Core Nasdaq-100 Swap UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3648
+  },
+  {
+   "symbol": "VNRA.DE",
+   "isin": "IE00BK5BQW10",
+   "name": "Vanguard FTSE North America UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.3643
+  },
+  {
+   "symbol": "6TVM.DE",
+   "isin": "LU0496786657",
+   "name": "Amundi Core S&P 500 Swap UCITS ETF USD Dist",
+   "type": "etf",
+   "netGain5y": 0.3638
+  },
+  {
+   "symbol": "LYYB.DE",
+   "isin": "IE000QQ8Z0D8",
+   "name": "Amundi MSCI USA ESG Broad Transition UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3622
+  },
+  {
+   "symbol": "XMUS.DE",
+   "isin": "LU0274210672",
+   "name": "Xtrackers MSCI USA Swap UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3615
+  },
+  {
+   "symbol": "QDVR.DE",
+   "isin": "IE00BYVJRR92",
+   "name": "iShares MSCI USA SRI UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.361
+  },
+  {
+   "symbol": "SPY5.DE",
+   "isin": "IE00B6YX5C33",
+   "name": "State Street SPDR S&P 500 UCITS ETF USD Distribution UnHedged",
+   "type": "etf",
+   "netGain5y": 0.3596
+  },
+  {
+   "symbol": "JSUE.DE",
+   "isin": "IE00069JGT58",
+   "name": "JPM US Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.3591
+  },
+  {
+   "symbol": "4UBQ.DE",
+   "isin": "IE00BHXMHL11",
+   "name": "UBS S&P 500 Scored & Screened UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3587
+  },
+  {
+   "symbol": "JREU.DE",
+   "isin": "IE00BF4G7076",
+   "name": "JPMorgan ETFs (Ireland) ICAV - US Research Enhanced Index Equity Active UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.3581
+  },
+  {
+   "symbol": "5ESG.DE",
+   "isin": "IE00BKS7L097",
+   "name": "Invesco S&P 500 Scored & Screened ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3574
+  },
+  {
+   "symbol": "ZA30.DE",
+   "isin": "IE000R9FA4A0",
+   "name": "iShares S&P 500 Scored and Screened UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3573
+  },
+  {
+   "symbol": "H41C.DE",
+   "isin": "IE00BKY59K37",
+   "name": "HSBC Developed World Screened Equity UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3571
+  },
+  {
+   "symbol": "XDWL.DE",
+   "isin": "IE00BK1PV551",
+   "name": "Xtrackers MSCI World UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3569
+  },
+  {
+   "symbol": "FLX5.DE",
+   "isin": "IE00BMDPBZ72",
+   "name": "Franklin S&P 500 Paris Aligned Climate UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3557
+  },
+  {
+   "symbol": "WELL.DE",
+   "isin": "IE000GEHNQU9",
+   "name": "Amundi ETF ICAV - Amundi S&P World Information Technology Screened UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3556
+  },
+  {
+   "symbol": "H412.DE",
+   "isin": "IE00BKY40J65",
+   "name": "HSBC USA Screened Equity UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3554
+  },
+  {
+   "symbol": "4UBB.DE",
+   "isin": "IE00BD4TXS21",
+   "name": "UBS Core MSCI USA UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3546
+  },
+  {
+   "symbol": "EXXT.DE",
+   "isin": "DE000A0F5UF5",
+   "name": "iShares NASDAQ-100 UCITS ETF (DE)",
+   "type": "etf",
+   "netGain5y": 0.3542
+  },
+  {
+   "symbol": "SPPY.DE",
+   "isin": "IE00BH4GPZ28",
+   "name": "State Street SPDR S&P 500 Leaders UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3541
+  },
+  {
+   "symbol": "ETLQ.DE",
+   "isin": "IE00BFXR5S54",
+   "name": "L&G Global Equity UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3531
+  },
+  {
+   "symbol": "XZMU.DE",
+   "isin": "IE00BFMNPS42",
+   "name": "Xtrackers MSCI USA ESG UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3527
+  },
+  {
+   "symbol": "F500.DE",
+   "isin": "IE000KXCEXR3",
+   "name": "Amundi S&P 500 Screened UCITS ETF - Acc",
+   "type": "etf",
+   "netGain5y": 0.3527
+  },
+  {
+   "symbol": "ACU2.DE",
+   "isin": "LU1681042864",
+   "name": "Amundi PEA MSCI USA ESG Selection UCITS ETF - EUR",
+   "type": "etf",
+   "netGain5y": 0.3526
+  },
+  {
+   "symbol": "IUSA.DE",
+   "isin": "IE0031442068",
+   "name": "iShares Core S&P 500 UCITS ETF USD Dist",
+   "type": "etf",
+   "netGain5y": 0.3524
+  },
+  {
+   "symbol": "UEQD.DE",
+   "isin": "IE00BD34DK07",
+   "name": "UBS Core S&P 500 UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.3523
+  },
+  {
+   "symbol": "QDVB.DE",
+   "isin": "IE00BD1F4L37",
+   "name": "iShares Edge MSCI USA Quality Factor UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3516
+  },
+  {
+   "symbol": "EL4I.DE",
+   "isin": "DE000ETFL094",
+   "name": "Deka MSCI USA LC UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3516
+  },
+  {
+   "symbol": "XDWD.DE",
+   "isin": "IE00BJ0KDQ92",
+   "name": "Xtrackers MSCI World UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3515
+  },
+  {
+   "symbol": "SXR4.DE",
+   "isin": "IE00B52SFT06",
+   "name": "iShares VII PLC - iShares MSCI USA ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.351
+  },
+  {
+   "symbol": "ASRY.DE",
+   "isin": "IE000W8HP9L8",
+   "name": "BNP PARIBAS Easy ICAV - BNP Paribas Easy MSCI World Min TE UCITS ETF EUR CAPITALISATION",
+   "type": "etf",
+   "netGain5y": 0.3491
+  },
+  {
+   "symbol": "XD9D.DE",
+   "isin": "IE00BK1PV445",
+   "name": "Xtrackers MSCI USA UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3489
+  },
+  {
+   "symbol": "D6RP.DE",
+   "isin": "DE000ETFL581",
+   "name": "Deka MSCI World Climate Change ESG CTB UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3485
+  },
+  {
+   "symbol": "IQQW.DE",
+   "isin": "IE00B0M62Q58",
+   "name": "iShares MSCI World UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3484
+  },
+  {
+   "symbol": "VUSA.DE",
+   "isin": "IE00B3XXRP09",
+   "name": "Vanguard S&P 500 UCITS ETF (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3482
+  },
+  {
+   "symbol": "IQQN.DE",
+   "isin": "IE00B14X4M10",
+   "name": "iShares MSCI North America UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3481
+  },
+  {
+   "symbol": "FLXU.DE",
+   "isin": "IE00BF2B0P08",
+   "name": "Franklin U.S. Equity UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3478
+  },
+  {
+   "symbol": "FGLR.DE",
+   "isin": "IE00BKSBGV72",
+   "name": "Fidelity Global Equity Research Enhanced UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3474
+  },
+  {
+   "symbol": "XSXD.DE",
+   "isin": "LU2009147757",
+   "name": "Xtrackers S&P 500 Swap UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3471
+  },
+  {
+   "symbol": "LYPS.DE",
+   "isin": "LU0496786574",
+   "name": "Amundi Core S&P 500 Swap UCITS ETF EUR Dist",
+   "type": "etf",
+   "netGain5y": 0.3466
+  },
+  {
+   "symbol": "EMND.DE",
+   "isin": "IE00BG11HV38",
+   "name": "iShares MSCI World CTB Enhanced ESG UCITS ETF USD Inc",
+   "type": "etf",
+   "netGain5y": 0.3466
+  },
+  {
+   "symbol": "EDMW.DE",
+   "isin": "IE00BHZPJ569",
+   "name": "iShares MSCI World CTB Enhanced ESG UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3463
+  },
+  {
+   "symbol": "SPYL.DE",
+   "isin": "IE000XZSV718",
+   "name": "State Street SPDR S&P 500 UCITS ETF USD Accumulation UnHedged",
+   "type": "etf",
+   "netGain5y": 0.3445
+  },
+  {
+   "symbol": "AYEW.DE",
+   "isin": "IE00BJ5JNY98",
+   "name": "iShares MSCI World Information Technology Sector Advanced UCITS ETF USD Inc",
+   "type": "etf",
+   "netGain5y": 0.3444
+  },
+  {
+   "symbol": "MWOP.DE",
+   "isin": "IE00016PSX47",
+   "name": "Amundi MSCI World ESG Selection UCITS ETF ACC",
+   "type": "etf",
+   "netGain5y": 0.344
+  },
+  {
+   "symbol": "EDMU.DE",
+   "isin": "IE00BHZPJ908",
+   "name": "iShares MSCI USA CTB Enhanced ESG UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3432
+  },
+  {
+   "symbol": "ACM9.DE",
+   "isin": "FR0010756114",
+   "name": "Amundi MSCI World ex EMU UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3421
+  },
+  {
+   "symbol": "ESGU.DE",
+   "isin": "IE00BJQRDM08",
+   "name": "Invesco MSCI USA Universal Screened UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3414
+  },
+  {
+   "symbol": "JRUD.DE",
+   "isin": "IE00BJ06C044",
+   "name": "JPMorgan ETFs (Ireland) ICAV - US Research Enhanced Index Equity Active UCITS ETF - USD (dist)",
+   "type": "etf",
+   "netGain5y": 0.3413
+  },
+  {
+   "symbol": "JREG.DE",
+   "isin": "IE00BF4G6Y48",
+   "name": "JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.3403
+  },
+  {
+   "symbol": "IQSA.DE",
+   "isin": "IE00BJQRDN15",
+   "name": "Invesco Global Active ESG Equity UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.34
+  },
+  {
+   "symbol": "TOPB.DE",
+   "isin": "IE0007HKA9K1",
+   "name": "L&G Global Brands ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.3397
+  },
+  {
+   "symbol": "H41H.DE",
+   "isin": "IE000QMIHY81",
+   "name": "HSBC MSCI World UCITS ETF EUR Hedged (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3397
+  },
+  {
+   "symbol": "H4ZY.DE",
+   "isin": "IE000UQND7H4",
+   "name": "HSBC MSCI World UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3386
+  },
+  {
+   "symbol": "BBUS.DE",
+   "isin": "IE00BJK9H753",
+   "name": "JPMorgan ETFs (Ireland) ICAV - BetaBuilders US Equity UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.3381
+  },
+  {
+   "symbol": "SPYY.DE",
+   "isin": "IE00B44Z5B48",
+   "name": "State Street SPDR MSCI All Country World UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3381
+  },
+  {
+   "symbol": "XDEQ.DE",
+   "isin": "IE00BL25JL35",
+   "name": "Xtrackers MSCI World Quality UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3378
+  },
+  {
+   "symbol": "H4ZJ.DE",
+   "isin": "IE00B4X9L533",
+   "name": "HSBC MSCI World UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3375
+  },
+  {
+   "symbol": "JEGS.DE",
+   "isin": "IE0003JSNHV9",
+   "name": "JPM Global Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - EUR (acc)",
+   "type": "etf",
+   "netGain5y": 0.3372
+  },
+  {
+   "symbol": "D500.DE",
+   "isin": "IE00BYML9W36",
+   "name": "Invesco S&P 500 UCITS ETF (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3363
+  },
+  {
+   "symbol": "IN0B.DE",
+   "isin": "IE0004J37T45",
+   "name": "BNP PARIBAS Easy ICAV - BNP Paribas Easy S&P 500 Scored and Screened UCITS ETF EUR CAP",
+   "type": "etf",
+   "netGain5y": 0.3356
+  },
+  {
+   "symbol": "6PSE.DE",
+   "isin": "IE00BK5LYT47",
+   "name": "Invesco MSCI USA UCITS ETF Inc",
+   "type": "etf",
+   "netGain5y": 0.3355
+  },
+  {
+   "symbol": "FTWD.DE",
+   "isin": "IE0000QLH0G6",
+   "name": "Invesco FTSE All-World UCITS ETF USD Distribution",
+   "type": "etf",
+   "netGain5y": 0.3353
+  },
+  {
+   "symbol": "FWIA.DE",
+   "isin": "IE000716YHJ7",
+   "name": "Invesco FTSE All-World UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.3352
+  },
+  {
+   "symbol": "GACL.DE",
+   "isin": "IE000HPBRE54",
+   "name": "Goldman Sachs ActiveBeta Paris-Aligned Sustainable World Equity UCITS ETF Class USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.3344
+  },
+  {
+   "symbol": "VGVE.DE",
+   "isin": "IE00BKX55T58",
+   "name": "Vanguard FTSE Developed World UCITS ETF USD Distributing",
+   "type": "etf",
+   "netGain5y": 0.3342
+  },
+  {
+   "symbol": "CE8G.DE",
+   "isin": "LU1681045537",
+   "name": "Amundi Index Solutions - Amundi MSCI World Ex Europe ETF-C EUR",
+   "type": "etf",
+   "netGain5y": 0.333
+  },
+  {
+   "symbol": "D5BM.DE",
+   "isin": "LU0490618542",
+   "name": "Xtrackers S&P 500 Swap UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3329
+  },
+  {
+   "symbol": "UBUX.DE",
+   "isin": "IE00BWT3KN65",
+   "name": "UBS Factor MSCI USA Quality Screened UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.3329
+  },
+  {
+   "symbol": "WTDM.DE",
+   "isin": "IE00BZ56RG20",
+   "name": "WisdomTree US Quality Dividend Growth UCITS ETF - USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3327
+  },
+  {
+   "symbol": "IWLE.DE",
+   "isin": "IE00BKBF6H24",
+   "name": "iShares Core MSCI World UCITS ETF EUR Hedged (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3325
+  },
+  {
+   "symbol": "E500.DE",
+   "isin": "IE00BRKWGL70",
+   "name": "Invesco S&P 500 UCITS ETF (EUR Hdg)",
+   "type": "etf",
+   "netGain5y": 0.3323
+  },
+  {
+   "symbol": "JGSC.DE",
+   "isin": "IE000BXC49I6",
+   "name": "JPM Global Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.3323
+  },
+  {
+   "symbol": "ZPDD.DE",
+   "isin": "IE00BWBXM278",
+   "name": "State Street SPDR S&P U.S. Consumer Discretionary Select Sector UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3322
+  },
+  {
+   "symbol": "XWEU.DE",
+   "isin": "IE000ONQ3X90",
+   "name": "Xtrackers MSCI World ETF 2C EUR",
+   "type": "etf",
+   "netGain5y": 0.3319
+  },
+  {
+   "symbol": "OM3L.DE",
+   "isin": "IE00BHZPJ890",
+   "name": "iShares MSCI USA CTB Enhanced ESG UCITS ETF USD Inc",
+   "type": "etf",
+   "netGain5y": 0.3318
+  },
+  {
+   "symbol": "ESAP.DE",
+   "isin": "FR0011550177",
+   "name": "BNP Paribas Easy S&P 500 UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3317
+  },
+  {
+   "symbol": "WEBC.DE",
+   "isin": "IE000MJIXFE0",
+   "name": "Amundi MSCI North America ESG Broad Transition UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3312
+  },
+  {
+   "symbol": "H41D.DE",
+   "isin": "IE000LYBU7X5",
+   "name": "HSBC MSCI World Value Screened UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3302
+  },
+  {
+   "symbol": "JEUS.DE",
+   "isin": "IE000I5MBLC4",
+   "name": "JPM US Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - EUR (acc)",
+   "type": "etf",
+   "netGain5y": 0.33
+  },
+  {
+   "symbol": "VNRT.DE",
+   "isin": "IE00BKX55R35",
+   "name": "Vanguard FTSE North America UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3299
+  },
+  {
+   "symbol": "LYYA.DE",
+   "isin": "FR0010315770",
+   "name": "Amundi MSCI World Swap II UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3298
+  },
+  {
+   "symbol": "JPCT.DE",
+   "isin": "IE00BMDWYZ92",
+   "name": "JPM Carbon Transition Global Equity (CTB) UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.3296
+  },
+  {
+   "symbol": "4UBH.DE",
+   "isin": "IE00BK72HJ67",
+   "name": "UBS MSCI World Socially Responsible UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3296
+  },
+  {
+   "symbol": "WF1E.DE",
+   "isin": "IE00018LB0D8",
+   "name": "Invesco Markets II plc - Invesco S&P World Financials ESG UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3296
+  },
+  {
+   "symbol": "WELT.DE",
+   "isin": "IE00026BEVM6",
+   "name": "Amundi ETF ICAV - Amundi S&P World Industrials Screened UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3293
+  },
+  {
+   "symbol": "FUSD.DE",
+   "isin": "IE00BYXVGX24",
+   "name": "Fidelity US Quality Income UCITS ETF Inc",
+   "type": "etf",
+   "netGain5y": 0.3292
+  },
+  {
+   "symbol": "4UB9.DE",
+   "isin": "IE00BK72HH44",
+   "name": "UBS MSCI World Socially Responsible UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3291
+  },
+  {
+   "symbol": "UIM6.DE",
+   "isin": "LU0136234654",
+   "name": "UBS MSCI USA UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3289
+  },
+  {
+   "symbol": "WELR.DE",
+   "isin": "IE000ANYHV73",
+   "name": "Amundi ETF ICAV - Amundi S&P World Communication Services Screened UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3287
+  },
+  {
+   "symbol": "UBUJ.DE",
+   "isin": "IE00BD4TYG73",
+   "name": "UBS Core MSCI USA hEUR UCITS ETF EUR acc",
+   "type": "etf",
+   "netGain5y": 0.3285
+  },
+  {
+   "symbol": "SC0H.DE",
+   "isin": "IE00B60SX170",
+   "name": "Invesco MSCI USA UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3285
+  },
+  {
+   "symbol": "FUSA.DE",
+   "isin": "IE00BYXVGY31",
+   "name": "Fidelity US Quality Income UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3281
+  },
+  {
+   "symbol": "AMEW.DE",
+   "isin": "LU1681043599",
+   "name": "Amundi Index Solutions - Amundi MSCI World Swap UCITS ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3278
+  },
+  {
+   "symbol": "HNDX.DE",
+   "isin": "LU1681038599",
+   "name": "Amundi Index Solutions - Amundi Nasdaq-100 Swap ETF EUR Hedged Acc",
+   "type": "etf",
+   "netGain5y": 0.3277
+  },
+  {
+   "symbol": "CBUI.DE",
+   "isin": "IE000H1H16W5",
+   "name": "iShares MSCI World Value Factor Advaced UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3276
+  },
+  {
+   "symbol": "LWCR.DE",
+   "isin": "IE0001GSQ2O9",
+   "name": "Amundi MSCI World ESG Broad Transition UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3273
+  },
+  {
+   "symbol": "4UBK.DE",
+   "isin": "IE00BJXT3B87",
+   "name": "UBS MSCI USA Socially Responsible UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3271
+  },
+  {
+   "symbol": "UBU3.DE",
+   "isin": "IE00B77D4428",
+   "name": "UBS Core MSCI USA UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.327
+  },
+  {
+   "symbol": "UIMP.DE",
+   "isin": "LU0629460089",
+   "name": "UBS MSCI USA Socially Responsible UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3269
+  },
+  {
+   "symbol": "WELY.DE",
+   "isin": "IE000ENYES77",
+   "name": "Amundi ETF ICAV - Amundi S&P World Financials Screened UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3265
+  },
+  {
+   "symbol": "S5SG.DE",
+   "isin": "IE00BHXMHQ65",
+   "name": "UBS S&P 500 Scored & Screened UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.3264
+  },
+  {
+   "symbol": "2B7K.DE",
+   "isin": "IE00BYX2JD69",
+   "name": "iShares MSCI World SRI UCITS ETF EUR (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3264
+  },
+  {
+   "symbol": "SPFH.DE",
+   "isin": "IE000BZ1HVL2",
+   "name": "State Street SPDR MSCI World UCITS ETF EUR H Acc",
+   "type": "etf",
+   "netGain5y": 0.3264
+  },
+  {
+   "symbol": "WELH.DE",
+   "isin": "IE000LTA2082",
+   "name": "Amundi ETF ICAV - Amundi S&P World Industrials Screened UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3263
+  },
+  {
+   "symbol": "VWCE.DE",
+   "isin": "IE00BK5BQT80",
+   "name": "Vanguard FTSE All-World UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3259
+  },
+  {
+   "symbol": "XWEH.DE",
+   "isin": "LU0659579733",
+   "name": "Xtrackers - Xtrackers MSCI World Swap UCITS ETF 4C - EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.3259
+  },
+  {
+   "symbol": "2B7J.DE",
+   "isin": "IE00BDZZTM54",
+   "name": "iShares MSCI World SRI UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3258
+  },
+  {
+   "symbol": "ESGW.DE",
+   "isin": "IE00BJQRDK83",
+   "name": "Invesco MSCI World Universal Screened UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3254
+  },
+  {
+   "symbol": "UBU9.DE",
+   "isin": "IE00B7K93397",
+   "name": "UBS Core S&P 500 UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3251
+  },
+  {
+   "symbol": "IUSL.DE",
+   "isin": "IE00B57X3V84",
+   "name": "iShares Dow Jones Global Leaders Screened UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3251
+  },
+  {
+   "symbol": "NQSE.DE",
+   "isin": "IE00BYVQ9F29",
+   "name": "iShares VII PLC - iShares NASDAQ 100 ETF EUR Hdg Acc",
+   "type": "etf",
+   "netGain5y": 0.3245
+  },
+  {
+   "symbol": "PABW.DE",
+   "isin": "IE000CL68Z69",
+   "name": "Amundi MSCI World Climate Paris Aligned UCITS ETF - Acc",
+   "type": "etf",
+   "netGain5y": 0.3244
+  },
+  {
+   "symbol": "SVLT.DE",
+   "isin": "XS2595675641",
+   "name": "LS Short Volatility Long Tech ETP",
+   "type": "etf",
+   "netGain5y": 0.3242
+  },
+  {
+   "symbol": "SPP2.DE",
+   "isin": "IE00BF1B7272",
+   "name": "State Street SPDR MSCI All Country World UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3239
+  },
+  {
+   "symbol": "UFMA.DE",
+   "isin": "LU1169822266",
+   "name": "UBS Core MSCI Japan UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.3236
+  },
+  {
+   "symbol": "AW11.DE",
+   "isin": "IE00BN4PXC48",
+   "name": "UBS Climate Aware Global Developed Equity CTB UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3235
+  },
+  {
+   "symbol": "SELD.DE",
+   "isin": "LU1812092168",
+   "name": "Amundi Stoxx Europe Select Dividend 30 UCITS ETF D",
+   "type": "etf",
+   "netGain5y": 0.3234
+  },
+  {
+   "symbol": "ELFW.DE",
+   "isin": "DE000ETFL508",
+   "name": "Deka MSCI World UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3234
+  },
+  {
+   "symbol": "SPPW.DE",
+   "isin": "IE00BFY0GT14",
+   "name": "SPDR MSCI World UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3232
+  },
+  {
+   "symbol": "WELU.DE",
+   "isin": "IE000E7EI9P0",
+   "name": "Amundi ETF ICAV - Amundi S&P World Information Technology Screened UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3231
+  },
+  {
+   "symbol": "XZMD.DE",
+   "isin": "IE000UMV0L21",
+   "name": "Xtrackers MSCI USA ESG UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.323
+  },
+  {
+   "symbol": "EUNL.DE",
+   "isin": "IE00B4L5Y983",
+   "name": "iShares Core MSCI World UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3221
+  },
+  {
+   "symbol": "GOAI.DE",
+   "isin": "LU1861132840",
+   "name": "Amundi MSCI Robotics & AI UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3221
+  },
+  {
+   "symbol": "CBUM.DE",
+   "isin": "IE000CR7DJI8",
+   "name": "iShares S&P 500 Scored and Screened UCITS ETF EUR Hedged (Acc)",
+   "type": "etf",
+   "netGain5y": 0.322
+  },
+  {
+   "symbol": "V3YA.DE",
+   "isin": "IE000O58J820",
+   "name": "Vanguard ESG North America All Cap UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.322
+  },
+  {
+   "symbol": "IBCF.DE",
+   "isin": "IE00B3ZW0K18",
+   "name": "iShares S&P 500 EUR Hedged UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3216
+  },
+  {
+   "symbol": "XWD1.DE",
+   "isin": "LU2263803533",
+   "name": "Xtrackers MSCI World Swap UCITS ETF 1D USD",
+   "type": "etf",
+   "netGain5y": 0.3216
+  },
+  {
+   "symbol": "IS3Q.DE",
+   "isin": "IE00BP3QZ601",
+   "name": "iShares Edge MSCI World Quality Factor UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3214
+  },
+  {
+   "symbol": "IS3R.DE",
+   "isin": "IE00BP3QZ825",
+   "name": "iShares Edge MSCI World Momentum Factor UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3209
+  },
+  {
+   "symbol": "D6RH.DE",
+   "isin": "DE000ETFL623",
+   "name": "Deka Nasdaq-100 UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3206
+  },
+  {
+   "symbol": "DJAM.DE",
+   "isin": "FR0007056841",
+   "name": "Amundi Dow Jones Industrial Average UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3205
+  },
+  {
+   "symbol": "SPPE.DE",
+   "isin": "IE00BYYW2V44",
+   "name": "State Street SPDR S&P 500 UCITS ETF EUR Accumulation Hedged",
+   "type": "etf",
+   "netGain5y": 0.3202
+  },
+  {
+   "symbol": "XNGI.DE",
+   "isin": "IE000XOQ9TK4",
+   "name": "Xtrackers MSCI Next Generation Internet Innovation UCITS ETF 1C USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3199
+  },
+  {
+   "symbol": "USCP.DE",
+   "isin": "LU1079841273",
+   "name": "Ossiam Lux - Ossiam Shiller Barclays Cape US Sector Value TR 1C (EUR)",
+   "type": "etf",
+   "netGain5y": 0.3198
+  },
+  {
+   "symbol": "WTEM.DE",
+   "isin": "IE00BZ56SW52",
+   "name": "WisdomTree Global Quality Dividend Growth UCITS ETF - USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3197
+  },
+  {
+   "symbol": "VGWE.DE",
+   "isin": "IE00BK5BR626",
+   "name": "Vanguard FTSE All-World High Dividend Yield UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.3196
+  },
+  {
+   "symbol": "GACA.DE",
+   "isin": "IE00BJ5CNR11",
+   "name": "Goldman Sachs ActiveBeta Paris-Aligned Sustainable US Large Cap Equity UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3196
+  },
+  {
+   "symbol": "FGEQ.DE",
+   "isin": "IE00BYXVGZ48",
+   "name": "Fidelity Global Quality Income ETF Inc",
+   "type": "etf",
+   "netGain5y": 0.3194
+  },
+  {
+   "symbol": "OP7E.DE",
+   "isin": "IE000IIED424",
+   "name": "OSSIAM IRL ICAV - Ossiam Bloomberg USA PAB UCITS ETF - 1A EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3194
+  },
+  {
+   "symbol": "VGWL.DE",
+   "isin": "IE00B3RBWM25",
+   "name": "Vanguard FTSE All-World UCITS ETF (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3192
+  },
+  {
+   "symbol": "XUIN.DE",
+   "isin": "IE00BCHWNV48",
+   "name": "Xtrackers MSCI USA Industrials UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3191
+  },
+  {
+   "symbol": "JGSE.DE",
+   "isin": "IE000UZIKD07",
+   "name": "JPM Global Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - EUR Hedged (acc)",
+   "type": "etf",
+   "netGain5y": 0.3189
+  },
+  {
+   "symbol": "H1D5.DE",
+   "isin": "LU1681049109",
+   "name": "Amundi Index Solutions - Amundi S&P 500 Swap UCITS ETF EUR Hedged Acc",
+   "type": "etf",
+   "netGain5y": 0.3187
+  },
+  {
+   "symbol": "UBU7.DE",
+   "isin": "IE00B7KQ7B66",
+   "name": "UBS Core MSCI World UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3185
+  },
+  {
+   "symbol": "QDVI.DE",
+   "isin": "IE00BD1F4M44",
+   "name": "iShares Edge MSCI USA Value Factor UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3184
+  },
+  {
+   "symbol": "XUCD.DE",
+   "isin": "IE00BGQYRR35",
+   "name": "Xtrackers MSCI USA Consumer Discretionary UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3181
+  },
+  {
+   "symbol": "L0CK.DE",
+   "isin": "IE00BG0J4C88",
+   "name": "iShares Digital Security UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3178
+  },
+  {
+   "symbol": "SPP1.DE",
+   "isin": "IE00BF1B7389",
+   "name": "State Street SPDR MSCI All Country World EUR Hdg UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3177
+  },
+  {
+   "symbol": "JRGD.DE",
+   "isin": "IE000HFXP0D2",
+   "name": "JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF - USD (dist)",
+   "type": "etf",
+   "netGain5y": 0.3175
+  },
+  {
+   "symbol": "V3AL.DE",
+   "isin": "IE00BNG8L385",
+   "name": "Vanguard ESG Global All Cap UCITS ETF (USD) Distributing",
+   "type": "etf",
+   "netGain5y": 0.3173
+  },
+  {
+   "symbol": "IQSD.DE",
+   "isin": "IE0008YN55P8",
+   "name": "Invesco Global Active ESG Equity UCITS ETF EUR PfHedged Dist",
+   "type": "etf",
+   "netGain5y": 0.3173
+  },
+  {
+   "symbol": "WELK.DE",
+   "isin": "IE000KYX7IP4",
+   "name": "Amundi ETF ICAV - Amundi S&P World Financials Screened UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3171
+  },
+  {
+   "symbol": "UQAB.DE",
+   "isin": "IE00BMXC7V63",
+   "name": "iShares S&P 500 Paris-Aligned Climate UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3167
+  },
+  {
+   "symbol": "FWEA.DE",
+   "isin": "IE0006VDD4K1",
+   "name": "Invesco FTSE All-World UCITS ETF EUR PfHdg Accumulation ",
+   "type": "etf",
+   "netGain5y": 0.3167
+  },
+  {
+   "symbol": "XMAW.DE",
+   "isin": "IE00BGHQ0G80",
+   "name": "Xtrackers MSCI AC World Screened UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3166
+  },
+  {
+   "symbol": "XMAE.DE",
+   "isin": "IE000VXC51U5",
+   "name": "Xtrackers MSCI AC World Screened UCITS ETF 2C - EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.3162
+  },
+  {
+   "symbol": "UBUS.DE",
+   "isin": "IE00BX7RR706",
+   "name": "UBS Factor MSCI USA Prime Value Screened UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3162
+  },
+  {
+   "symbol": "IUSQ.DE",
+   "isin": "IE00B6R52259",
+   "name": "iShares MSCI ACWI UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3162
+  },
+  {
+   "symbol": "LYY0.DE",
+   "isin": "LU1829220216",
+   "name": "Amundi MSCI All Country World Swap UCITS ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3161
+  },
+  {
+   "symbol": "XNAS.DE",
+   "isin": "IE00BMFKG444",
+   "name": "Xtrackers NASDAQ 100 UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.316
+  },
+  {
+   "symbol": "JGSD.DE",
+   "isin": "IE000FYTRRJ6",
+   "name": "JPM Global Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - USD (dist)",
+   "type": "etf",
+   "netGain5y": 0.315
+  },
+  {
+   "symbol": "XDWY.DE",
+   "isin": "IE00BCHWNQ94",
+   "name": "Xtrackers MSCI World Screened UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3148
+  },
+  {
+   "symbol": "LOWD.DE",
+   "isin": "LU2194449075",
+   "name": "BNP PARIBAS EASY - Low Carbon 300 World PAB UCITS ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3144
+  },
+  {
+   "symbol": "PSWD.DE",
+   "isin": "IE00B23LNQ02",
+   "name": "Invesco RAFI All-World Fundamental Value UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3144
+  },
+  {
+   "symbol": "EWQA.DE",
+   "isin": "IE000L2SA8K5",
+   "name": "Invesco NASDAQ-100 Equal Weight UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3144
+  },
+  {
+   "symbol": "GMVM.DE",
+   "isin": "IE00BQQP9H09",
+   "name": "VanEck Morningstar US ESG Wide Moat UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3143
+  },
+  {
+   "symbol": "JSHE.DE",
+   "isin": "IE0006HMLPV6",
+   "name": "JPM US Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - EUR Hedged (acc)",
+   "type": "etf",
+   "netGain5y": 0.3142
+  },
+  {
+   "symbol": "CBUN.DE",
+   "isin": "IE00023EZQ82",
+   "name": "iShares Digital Entertainment and Education UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3136
+  },
+  {
+   "symbol": "SPYI.DE",
+   "isin": "IE00B3YLTY66",
+   "name": "State Street SPDR MSCI All Country World Investable Market UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3135
+  },
+  {
+   "symbol": "WTDX.DE",
+   "isin": "IE00BVXC4854",
+   "name": "WisdomTree Japan Equity UCITS ETF - USD Hedged",
+   "type": "etf",
+   "netGain5y": 0.3131
+  },
+  {
+   "symbol": "CSMIB.MI",
+   "isin": "IE00B53L4X51",
+   "name": "iShares FTSE MIB UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3131
+  },
+  {
+   "symbol": "USUE.DE",
+   "isin": "IE00BDGV0415",
+   "name": "UBS MSCI USA Select Factor Mix UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.313
+  },
+  {
+   "symbol": "IN0A.DE",
+   "isin": "IE0000VX9GN7",
+   "name": "BNP PARIBAS Easy ICAV - BNP Paribas Easy S&P 500 Scored and Screened UCITS ETF USD CAP",
+   "type": "etf",
+   "netGain5y": 0.313
+  },
+  {
+   "symbol": "RS2K.DE",
+   "isin": "LU1681038672",
+   "name": "Amundi Index Solutions - Amundi Russell 2000 ETF-C EUR",
+   "type": "etf",
+   "netGain5y": 0.313
+  },
+  {
+   "symbol": "QDVD.DE",
+   "isin": "IE00BKM4H312",
+   "name": "iShares MSCI USA Quality Dividend Advanced UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3128
+  },
+  {
+   "symbol": "CBUQ.DE",
+   "isin": "IE00013A2XD6",
+   "name": "iShares MSCI All Country World SRI UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.3128
+  },
+  {
+   "symbol": "JPVD.DE",
+   "isin": "IE000DTA2ZH9",
+   "name": "JPMorgan ETFs (Ireland) ICAV - US Value Active UCITS ETF USD Distribution",
+   "type": "etf",
+   "netGain5y": 0.3123
+  },
+  {
+   "symbol": "SLUS.DE",
+   "isin": "IE00BFNM3H51",
+   "name": "iShares MSCI USA Screened UCITS ETF USD Distribution",
+   "type": "etf",
+   "netGain5y": 0.3121
+  },
+  {
+   "symbol": "CSY1.DE",
+   "isin": "IE000OULL4R4",
+   "name": "UBS MSCI USA NSL UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3119
+  },
+  {
+   "symbol": "FGA1.DE",
+   "isin": "XS2595675724",
+   "name": "LS FAANG+ ETP",
+   "type": "etf",
+   "netGain5y": 0.3114
+  },
+  {
+   "symbol": "FTGU.DE",
+   "isin": "IE00B8X9NW27",
+   "name": "First Trust US Large Cap Core AlphaDEX UCITS ETF Class A USD",
+   "type": "etf",
+   "netGain5y": 0.3113
+  },
+  {
+   "symbol": "DELG.DE",
+   "isin": "IE00BKLWY790",
+   "name": "L&G US ESG Paris Aligned UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3111
+  },
+  {
+   "symbol": "QDVA.DE",
+   "isin": "IE00BD1F4N50",
+   "name": "iShares Edge MSCI USA Momentum Factor UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3111
+  },
+  {
+   "symbol": "C9DF.DE",
+   "isin": "LU2439874319",
+   "name": "Frankfurter UCITS-ETF - Modern Value",
+   "type": "etf",
+   "netGain5y": 0.3099
+  },
+  {
+   "symbol": "XRSM.DE",
+   "isin": "IE00BJZ2DC62",
+   "name": "Xtrackers MSCI USA Screened UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3098
+  },
+  {
+   "symbol": "WDTE.DE",
+   "isin": "IE000Q0IU5T1",
+   "name": "Invesco Markets II plc - Invesco S&P World Information Technology ESG UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3087
+  },
+  {
+   "symbol": "QVMP.DE",
+   "isin": "IE00BDZCKK11",
+   "name": "Invesco S&P 500 QVM UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3087
+  },
+  {
+   "symbol": "XNUS.DE",
+   "isin": "IE0002ZM3JI1",
+   "name": "Xtrackers USA Net Zero Pathway Paris Aligned UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3086
+  },
+  {
+   "symbol": "IU5C.DE",
+   "isin": "IE00BDDRF478",
+   "name": "iShares S&P 500 Communication Sector UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3086
+  },
+  {
+   "symbol": "AW1F.DE",
+   "isin": "IE00BNC0M350",
+   "name": "UBS MSCI USA Universal UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3084
+  },
+  {
+   "symbol": "T3MP.DE",
+   "isin": "IE000O8S1EX4",
+   "name": "JPMorgan ETFs (Ireland) ICAV - Climate Change Solutions Active UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3081
+  },
+  {
+   "symbol": "QAIU.DE",
+   "isin": "IE0000XTDDA8",
+   "name": "Global X Artificial Intelligence UCITS ETF USD Accumulating",
+   "type": "etf",
+   "netGain5y": 0.308
+  },
+  {
+   "symbol": "UIM7.DE",
+   "isin": "LU0340285161",
+   "name": "UBS MSCI World UCITS ETF USD dis",
+   "type": "etf",
+   "netGain5y": 0.3079
+  },
+  {
+   "symbol": "D6RI.DE",
+   "isin": "DE000ETFL631",
+   "name": "Deka S&P 500 ETF",
+   "type": "etf",
+   "netGain5y": 0.3076
+  },
+  {
+   "symbol": "SXRU.DE",
+   "isin": "IE00B53L4350",
+   "name": "iShares VII PLC - iShares Dow Jones Indust Avg ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3076
+  },
+  {
+   "symbol": "V3AA.DE",
+   "isin": "IE00BNG8L278",
+   "name": "Vanguard ESG Global All Cap UCITS ETF (USD) Accumulating",
+   "type": "etf",
+   "netGain5y": 0.3071
+  },
+  {
+   "symbol": "XD9E.DE",
+   "isin": "IE00BG04M077",
+   "name": "Xtrackers MSCI USA UCITS ETF 2C - EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.307
+  },
+  {
+   "symbol": "TTPX.DE",
+   "isin": "LU1681037864",
+   "name": "Amundi Index Solutions - Amundi Japan Topix UCITS ETF-C EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.3066
+  },
+  {
+   "symbol": "WELX.DE",
+   "isin": "IE000EFHIFG3",
+   "name": "Amundi ETF ICAV - Amundi S&P World Communication Services Screened UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3063
+  },
+  {
+   "symbol": "EQEU.DE",
+   "isin": "IE00BYVTMS52",
+   "name": "Invesco EQQQ NASDAQ-100 UCITS ETF (EUR Hdg)",
+   "type": "etf",
+   "netGain5y": 0.3063
+  },
+  {
+   "symbol": "AVWC.DE",
+   "isin": "IE000RJECXS5",
+   "name": "Avantis Global Equity UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3063
+  },
+  {
+   "symbol": "VGVF.DE",
+   "isin": "IE00BK5BQV03",
+   "name": "Vanguard FTSE Developed World UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.306
+  },
+  {
+   "symbol": "ESIF.DE",
+   "isin": "IE00BMW42306",
+   "name": "iShares MSCI Europe Financials Sector UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3058
+  },
+  {
+   "symbol": "SXRG.DE",
+   "isin": "IE00B3VWM098",
+   "name": "iShares MSCI USA Small Cap CTB Enhanced ESG UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3057
+  },
+  {
+   "symbol": "XDPE.DE",
+   "isin": "IE00BM67HW99",
+   "name": "Xtrackers S&P 500 UCITS ETF 1C - EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.3056
+  },
+  {
+   "symbol": "XDPD.DE",
+   "isin": "IE00BGJWX091",
+   "name": "Xtrackers S&P 500 UCITS ETF 1D - EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.3055
+  },
+  {
+   "symbol": "LGGE.DE",
+   "isin": "IE00BMYDM919",
+   "name": "L&G Europe ex-UK Quality Dividends UCITS ETF EUR Dis",
+   "type": "etf",
+   "netGain5y": 0.3055
+  },
+  {
+   "symbol": "SP2Q.DE",
+   "isin": "IE00BNGJJT35",
+   "name": "Invesco S&P 500 Equal Weight Index ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3055
+  },
+  {
+   "symbol": "ZPDK.DE",
+   "isin": "IE00BFWFPX50",
+   "name": "State Street SPDR S&P U.S. Communication Services Select Sector UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3053
+  },
+  {
+   "symbol": "AW1P.DE",
+   "isin": "IE00BDR55471",
+   "name": "UBS MSCI ACWI Socially Responsible UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3053
+  },
+  {
+   "symbol": "V3YL.DE",
+   "isin": "IE000L2ZNB07",
+   "name": "Vanguard ESG North America All Cap UCITS ETF USD Income",
+   "type": "etf",
+   "netGain5y": 0.3045
+  },
+  {
+   "symbol": "N1ES.DE",
+   "isin": "IE000COQKPO9",
+   "name": "Invesco Markets II plc - Invesco NASDAQ-100 ESG UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3043
+  },
+  {
+   "symbol": "GERD.DE",
+   "isin": "IE0001UQQ933",
+   "name": "L&G Gerd Kommer Multifactor Equity UCITS ETF USD Accumulating",
+   "type": "etf",
+   "netGain5y": 0.304
+  },
+  {
+   "symbol": "SNAW.DE",
+   "isin": "IE00BFNM3J75",
+   "name": "iShares MSCI World Screened UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3034
+  },
+  {
+   "symbol": "XUSW.DE",
+   "isin": "LU2581375073",
+   "name": "Xtrackers MSCI USA Swap UCITS ETF 1D",
+   "type": "etf",
+   "netGain5y": 0.3033
+  },
+  {
+   "symbol": "SGAS.DE",
+   "isin": "IE00BFNM3G45",
+   "name": "iShares MSCI USA Screened UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.3032
+  },
+  {
+   "symbol": "K0MR.DE",
+   "isin": "IE000FPWSL69",
+   "name": "L&G Gerd Kommer Multifactor Equity UCITS ETF USD Distributing",
+   "type": "etf",
+   "netGain5y": 0.303
+  },
+  {
+   "symbol": "EL41.DE",
+   "isin": "DE000ETFL276",
+   "name": "Deka MSCI USA MC UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3026
+  },
+  {
+   "symbol": "4UBI.DE",
+   "isin": "IE00BJXT3C94",
+   "name": "UBS MSCI USA Socially Responsible UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.3024
+  },
+  {
+   "symbol": "EKUS.DE",
+   "isin": "LU1659681669",
+   "name": "BNP Paribas Easy MSCI USA SRI PAB UCITS ETF EUR Distribution",
+   "type": "etf",
+   "netGain5y": 0.3024
+  },
+  {
+   "symbol": "DBXW.DE",
+   "isin": "LU0274208692",
+   "name": "Xtrackers MSCI World Swap UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3024
+  },
+  {
+   "symbol": "D100.DE",
+   "isin": "LU1650492256",
+   "name": "Amundi FTSE 100 Swap UCITS ETF Dist",
+   "type": "etf",
+   "netGain5y": 0.3023
+  },
+  {
+   "symbol": "AW1R.DE",
+   "isin": "IE00BDR55927",
+   "name": "UBS MSCI ACWI Socially Responsible UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.3021
+  },
+  {
+   "symbol": "XDWC.DE",
+   "isin": "IE00BM67HP23",
+   "name": "Xtrackers MSCI World Consumer Discretionary UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.302
+  },
+  {
+   "symbol": "FLXX.DE",
+   "isin": "IE00BF2B0M76",
+   "name": "Franklin Global Quality Dividend UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3019
+  },
+  {
+   "symbol": "LYPD.DE",
+   "isin": "LU0533032859",
+   "name": "Amundi MSCI World Financials UCITS ETF EUR Acc",
+   "type": "etf",
+   "netGain5y": 0.3018
+  },
+  {
+   "symbol": "XDEW.DE",
+   "isin": "IE00BLNMYC90",
+   "name": "Xtrackers S&P 500 Equal Weight UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.3016
+  },
+  {
+   "symbol": "JNHD.DE",
+   "isin": "LU2133056387",
+   "name": "Amundi Core MSCI Japan UCITS ETF EUR Hedged Dist",
+   "type": "etf",
+   "netGain5y": 0.3016
+  },
+  {
+   "symbol": "IBCZ.DE",
+   "isin": "IE00BZ0PKT83",
+   "name": "iShares STOXX World Equity Multifactor UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.3014
+  },
+  {
+   "symbol": "LYP2.DE",
+   "isin": "LU0959211243",
+   "name": "Amundi Core S&P 500 Swap UCITS ETF EUR Hedged Dist",
+   "type": "etf",
+   "netGain5y": 0.3012
+  },
+  {
+   "symbol": "MXUE.DE",
+   "isin": "IE000CH3OQ51",
+   "name": "Invesco MSCI USA UCITS ETF EUR Hedged Acc",
+   "type": "etf",
+   "netGain5y": 0.3011
+  },
+  {
+   "symbol": "XMK9.DE",
+   "isin": "LU0659580079",
+   "name": "Xtrackers MSCI Japan UCITS ETF 4C EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.3006
+  },
+  {
+   "symbol": "LVLC.DE",
+   "isin": "IE000N42HDP2",
+   "name": "Invesco Markets II plc - Invesco Global Active Defensive ESG Equity UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.3006
+  },
+  {
+   "symbol": "FGEA.DE",
+   "isin": "IE000YUTMIU2",
+   "name": "Fidelity Global Quality Income UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.3004
+  },
+  {
+   "symbol": "XDEM.DE",
+   "isin": "IE00BL25JP72",
+   "name": "Xtrackers MSCI World Momentum UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.3003
+  },
+  {
+   "symbol": "BCFG.DE",
+   "isin": "IE0009WWNY77",
+   "name": "UBS S&P 500 Climate Transition ESG UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.3
+  },
+  {
+   "symbol": "FUSU.DE",
+   "isin": "IE00BYV1Y969",
+   "name": "Fidelity US Quality Income UCITS ETF EUR Hedged Acc",
+   "type": "etf",
+   "netGain5y": 0.2999
+  },
+  {
+   "symbol": "WDGE.DE",
+   "isin": "IE000CXVOXQ1",
+   "name": "WisdomTree US Quality Dividend Growth UCITS ETF - EUR Hedged Acc",
+   "type": "etf",
+   "netGain5y": 0.2999
+  },
+  {
+   "symbol": "UET1.DE",
+   "isin": "LU1280303014",
+   "name": "UBS MSCI USA Socially Responsible UCITS ETF hEUR dis",
+   "type": "etf",
+   "netGain5y": 0.2996
+  },
+  {
+   "symbol": "XNZW.DE",
+   "isin": "IE000UZCJS58",
+   "name": "Xtrackers World Net Zero Pathway Paris Aligned UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.2996
+  },
+  {
+   "symbol": "VDIV.DE",
+   "isin": "NL0011683594",
+   "name": "VanEck Morningstar Developed Markets Dividend Leaders UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2995
+  },
+  {
+   "symbol": "FTGM.DE",
+   "isin": "IE000CY30YV9",
+   "name": "First Trust US Momentum UCITS ETF Class A USD Acc",
+   "type": "etf",
+   "netGain5y": 0.2995
+  },
+  {
+   "symbol": "IUS3.DE",
+   "isin": "IE00B2QWCY14",
+   "name": "iShares S&P SmallCap 600 UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.2993
+  },
+  {
+   "symbol": "SC0J.DE",
+   "isin": "IE00B60SX394",
+   "name": "Invesco MSCI World UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2992
+  },
+  {
+   "symbol": "LM9D.DE",
+   "isin": "IE0000LVTJ08",
+   "name": "BNP PARIBAS Easy ICAV - BNP Paribas Easy ESG Enhanced US UCITS ETF EUR Capitalisation",
+   "type": "etf",
+   "netGain5y": 0.2991
+  },
+  {
+   "symbol": "SADH.DE",
+   "isin": "IE000IP0UC52",
+   "name": "Amundi MSCI USA ESG Selection UCITS ETF Acc EUR HEDGED",
+   "type": "etf",
+   "netGain5y": 0.2991
+  },
+  {
+   "symbol": "QDVK.DE",
+   "isin": "IE00B4MCHD36",
+   "name": "iShares S&P 500 Consumer Discretionary Sector UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.299
+  },
+  {
+   "symbol": "I500.DE",
+   "isin": "IE00BMTX1Y45",
+   "name": "iShares S&P 500 Swap UCITS ETF USD (Acc)",
+   "type": "etf",
+   "netGain5y": 0.2985
+  },
+  {
+   "symbol": "ESAA.DE",
+   "isin": "IE000Q6C8036",
+   "name": "BNP PARIBAS Easy ICAV - BNP Paribas Easy S&P 500 Scored and Screened UCITS ETF HEURCAP",
+   "type": "etf",
+   "netGain5y": 0.2984
+  },
+  {
+   "symbol": "QDVC.DE",
+   "isin": "IE00BD1F4K20",
+   "name": "iShares MSCI USA Mid-Cap Equal Weight UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2983
+  },
+  {
+   "symbol": "IBCH.DE",
+   "isin": "IE00B441G979",
+   "name": "iShares MSCI World EUR Hedged UCITS ETF (Acc)",
+   "type": "etf",
+   "netGain5y": 0.2983
+  },
+  {
+   "symbol": "BCFI.DE",
+   "isin": "IE000TB15RC6",
+   "name": "UBS Core MSCI World UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.2979
+  },
+  {
+   "symbol": "4UB1.DE",
+   "isin": "IE00BK72HM96",
+   "name": "UBS MSCI World Socially Responsible UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.2979
+  },
+  {
+   "symbol": "XZSP.DE",
+   "isin": "IE0007ULOZS8",
+   "name": "Xtrackers S&P 500 Scored & Screened UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.2975
+  },
+  {
+   "symbol": "QDVW.DE",
+   "isin": "IE00BYYHSQ67",
+   "name": "iShares MSCI World Quality Dividend Advanced UCITS ETF USD (Dist)",
+   "type": "etf",
+   "netGain5y": 0.2975
+  },
+  {
+   "symbol": "ZPDF.DE",
+   "isin": "IE00BWBXM500",
+   "name": "State Street SPDR S&P U.S. Financials Select Sector UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2969
+  },
+  {
+   "symbol": "CSY5.DE",
+   "isin": "IE000TG1LGI4",
+   "name": "UBS MSCI World Selection UCITS ETF USD acc",
+   "type": "etf",
+   "netGain5y": 0.2967
+  },
+  {
+   "symbol": "XZWE.DE",
+   "isin": "IE00BMY76136",
+   "name": "Xtrackers MSCI World ESG UCITS ETF 2C - EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.2967
+  },
+  {
+   "symbol": "AIUT.DE",
+   "isin": "IE000AXIKJM8",
+   "name": "BNP PARIBAS EASY II MSCI USA PAB UCITS ETFUSD Acc",
+   "type": "etf",
+   "netGain5y": 0.2966
+  },
+  {
+   "symbol": "AMES.DE",
+   "isin": "FR0010655746",
+   "name": "Amundi IBEX 35 UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.2961
+  },
+  {
+   "symbol": "ZPRS.DE",
+   "isin": "IE00BCBJG560",
+   "name": "State Street SPDR MSCI World Small Cap UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2957
+  },
+  {
+   "symbol": "JSUD.DE",
+   "isin": "IE0002UMVXQ1",
+   "name": "JPM US Research Enhanced Index Equity SRI Paris Aligned Active UCITS ETF - USD (dist)",
+   "type": "etf",
+   "netGain5y": 0.2957
+  },
+  {
+   "symbol": "WGES.DE",
+   "isin": "IE000004V778",
+   "name": "Amundi MSCI World SRI Climate Net Zero Ambition PAB UCITS ETF EUR Dis",
+   "type": "etf",
+   "netGain5y": 0.2956
+  },
+  {
+   "symbol": "AW1B.DE",
+   "isin": "IE00BLSN7W87",
+   "name": "UBS S&P 500 ESG Elite UCITS ETF hEUR acc",
+   "type": "etf",
+   "netGain5y": 0.2956
+  },
+  {
+   "symbol": "CEB7.DE",
+   "isin": "IE000Z3S26J2",
+   "name": "iShares S&P 500 Swap UCITS ETF EUR Hedged (Acc)",
+   "type": "etf",
+   "netGain5y": 0.2955
+  },
+  {
+   "symbol": "DX2D.DE",
+   "isin": "LU0322250712",
+   "name": "Xtrackers LPX Private Equity Swap UCITS ETF 1C",
+   "type": "etf",
+   "netGain5y": 0.295
+  },
+  {
+   "symbol": "QYLE.DE",
+   "isin": "IE00BM8R0J59",
+   "name": "Global X NASDAQ 100 Covered Call UCITS ETF Dis",
+   "type": "etf",
+   "netGain5y": 0.2945
+  },
+  {
+   "symbol": "XRME.DE",
+   "isin": "IE000TSML5I8",
+   "name": "Xtrackers MSCI USA Screened UCITS ETF 2C EUR Hedged",
+   "type": "etf",
+   "netGain5y": 0.2941
+  },
+  {
+   "symbol": "EQQX.DE",
+   "isin": "IE00BNRQM384",
+   "name": "Invesco NASDAQ-100 Swap UCITS ETF Acc",
+   "type": "etf",
+   "netGain5y": 0.294
+  },
+  {
+   "symbol": "JPSC.DE",
+   "isin": "IE000JNKVS10",
+   "name": "JPM BetaBuilders US Small Cap Equity UCITS ETF - USD (acc)",
+   "type": "etf",
+   "netGain5y": 0.2939
+  },
+  {
+   "symbol": "ZPDW.DE",
+   "isin": "IE00BZ0G8C04",
+   "name": "State Street SPDR MSCI Japan EUR Hdg UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2938
+  },
+  {
+   "symbol": "ETLH.DE",
+   "isin": "IE00BF0M6N54",
+   "name": "L&G Ecommerce Logistics UCITS ETF",
+   "type": "etf",
+   "netGain5y": 0.2935
+  },
+  {
+   "symbol": "SPFT.DE",
+   "isin": "IE00BYTRRD19",
+   "name": "State Street SPDR MSCI World Technology UCITS ETF USD Acc",
+   "type": "etf",
+   "netGain5y": 0.2932
+  },
+  {
+   "symbol": "XNNV.DE",
+   "isin": "IE0006FFX5U1",
+   "name": "Xtrackers MSCI Innovation UCITS ETF 1C USD Acc",
+   "type": "etf",
+   "netGain5y": 0.2931
+  },
+  {
+   "symbol": "JPGR.DE",
+   "isin": "IE0005CH3U28",
+   "name": "JPMorgan ETFs (Ireland) ICAV - US Growth Active UCITS ETF USD Accumulation",
+   "type": "etf",
+   "netGain5y": 0.2929
+  },
+  {
+   "symbol": "QGRW.DE",
+   "isin": "IE000YGEAK03",
+   "name": "WisdomTree US Quality Growth UCITS ETF - USD Acc",
+   "type": "etf",
+   "netGain5y": 0.2924
+  },
+  {
+   "symbol": "EXH2.DE",
+   "isin": "DE000A0H08G5",
+   "name": "iShares STOXX Europe 600 Financial Services UCITS ETF (DE)",
+   "type": "etf",
+   "netGain5y": 0.2923
+  },
+  {
+   "symbol": "IQSE.DE",
+   "isin": "IE00BJQRDP39",
+   "name": "Invesco Global Active ESG Equity UCITS ETF EUR PfHedged Acc",
+   "type": "etf",
+   "netGain5y": 0.2922
+  },
+  {
+   "symbol": "JJEH.DE",
+   "isin": "IE000QGWZZO0",
+   "name": "JPMorgan ETFs (Ireland) ICAV - Japan Research Enhanced Index Equity Active UCITS ETF EUR Hedged (acc",
+   "type": "etf",
+   "netGain5y": 0.2922
+  },
+  {
+   "symbol": "BTC-EUR",
+   "isin": null,
+   "name": "Bitcoin",
+   "type": "crypto",
+   "netGain5y": -0.4711
+  },
+  {
+   "symbol": "ETH-EUR",
+   "isin": null,
+   "name": "Ethereum",
+   "type": "crypto",
+   "netGain5y": -0.7244
+  },
+  {
+   "symbol": "BNB-EUR",
+   "isin": null,
+   "name": "BNB",
+   "type": "crypto",
+   "netGain5y": -0.7444
+  },
+  {
+   "symbol": "LTC-EUR",
+   "isin": null,
+   "name": "Litecoin",
+   "type": "crypto",
+   "netGain5y": -0.8019
+  },
+  {
+   "symbol": "ATOM-EUR",
+   "isin": null,
+   "name": "Cosmos",
+   "type": "crypto",
+   "netGain5y": -0.8102
+  },
+  {
+   "symbol": "ETC-EUR",
+   "isin": null,
+   "name": "Ethereum Classic",
+   "type": "crypto",
+   "netGain5y": -0.8351
+  },
+  {
+   "symbol": "DOT-EUR",
+   "isin": null,
+   "name": "Polkadot",
+   "type": "crypto",
+   "netGain5y": -0.8416
+  },
+  {
+   "symbol": "TRX-EUR",
+   "isin": null,
+   "name": "TRON",
+   "type": "crypto",
+   "netGain5y": -0.8596
+  },
+  {
+   "symbol": "YFI-EUR",
+   "isin": null,
+   "name": "yearn.finance",
+   "type": "crypto",
+   "netGain5y": -0.862
+  },
+  {
+   "symbol": "HBAR-EUR",
+   "isin": null,
+   "name": "Hedera",
+   "type": "crypto",
+   "netGain5y": -0.8751
+  },
+  {
+   "symbol": "EOS-EUR",
+   "isin": null,
+   "name": "EOS",
+   "type": "crypto",
+   "netGain5y": -0.8889
+  },
+  {
+   "symbol": "SOL-EUR",
+   "isin": null,
+   "name": "Solana",
+   "type": "crypto",
+   "netGain5y": -0.8924
+  },
+  {
+   "symbol": "VET-EUR",
+   "isin": null,
+   "name": "VeChain",
+   "type": "crypto",
+   "netGain5y": -0.8931
+  },
+  {
+   "symbol": "LINK-EUR",
+   "isin": null,
+   "name": "Chainlink",
+   "type": "crypto",
+   "netGain5y": -0.894
+  },
+  {
+   "symbol": "GRT6719-EUR",
+   "isin": null,
+   "name": "The Graph",
+   "type": "crypto",
+   "netGain5y": -0.8968
+  },
+  {
+   "symbol": "XRP-EUR",
+   "isin": null,
+   "name": "XRP",
+   "type": "crypto",
+   "netGain5y": -0.9
+  },
+  {
+   "symbol": "XTZ-EUR",
+   "isin": null,
+   "name": "Tezos",
+   "type": "crypto",
+   "netGain5y": -0.9023
+  },
+  {
+   "symbol": "BCH-EUR",
+   "isin": null,
+   "name": "Bitcoin Cash",
+   "type": "crypto",
+   "netGain5y": -0.9065
+  },
+  {
+   "symbol": "UNI7083-EUR",
+   "isin": null,
+   "name": "Uniswap",
+   "type": "crypto",
+   "netGain5y": -0.9078
+  },
+  {
+   "symbol": "AAVE-EUR",
+   "isin": null,
+   "name": "Aave",
+   "type": "crypto",
+   "netGain5y": -0.9083
+  },
+  {
+   "symbol": "ALGO-EUR",
+   "isin": null,
+   "name": "Algorand",
+   "type": "crypto",
+   "netGain5y": -0.9103
+  },
+  {
+   "symbol": "ICP-EUR",
+   "isin": null,
+   "name": "Internet Computer",
+   "type": "crypto",
+   "netGain5y": -0.9152
+  },
+  {
+   "symbol": "XLM-EUR",
+   "isin": null,
+   "name": "Stellar",
+   "type": "crypto",
+   "netGain5y": -0.9302
+  },
+  {
+   "symbol": "AVAX-EUR",
+   "isin": null,
+   "name": "Avalanche",
+   "type": "crypto",
+   "netGain5y": -0.9324
+  },
+  {
+   "symbol": "FIL-EUR",
+   "isin": null,
+   "name": "Filecoin",
+   "type": "crypto",
+   "netGain5y": -0.9377
+  },
+  {
+   "symbol": "DOGE-EUR",
+   "isin": null,
+   "name": "Dogecoin",
+   "type": "crypto",
+   "netGain5y": -0.9441
+  },
+  {
+   "symbol": "CRV-EUR",
+   "isin": null,
+   "name": "Curve DAO",
+   "type": "crypto",
+   "netGain5y": -0.9474
+  },
+  {
+   "symbol": "MANA-EUR",
+   "isin": null,
+   "name": "Decentraland",
+   "type": "crypto",
+   "netGain5y": -0.9527
+  },
+  {
+   "symbol": "SNX-EUR",
+   "isin": null,
+   "name": "Synthetix",
+   "type": "crypto",
+   "netGain5y": -0.9531
+  },
+  {
+   "symbol": "ADA-EUR",
+   "isin": null,
+   "name": "Cardano",
+   "type": "crypto",
+   "netGain5y": -0.9548
+  },
+  {
+   "symbol": "AXS-EUR",
+   "isin": null,
+   "name": "Axie Infinity",
+   "type": "crypto",
+   "netGain5y": -0.9738
+  },
+  {
+   "symbol": "SAND-EUR",
+   "isin": null,
+   "name": "The Sandbox",
+   "type": "crypto",
+   "netGain5y": -0.9777
+  },
+  {
+   "symbol": "SHIB-EUR",
+   "isin": null,
+   "name": "Shiba Inu",
+   "type": "crypto",
+   "netGain5y": -0.9908
+  }
+ ]
+}

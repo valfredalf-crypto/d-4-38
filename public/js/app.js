@@ -1,0 +1,700 @@
+import { DEFAULT_OPTIONS } from './montecarlo.js';
+import { DEFAULT_OUTLOOK } from './outlook.js';
+import { BENCHMARK_SYMBOL } from './analyze.js';
+
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+
+const { targetDrift, targetVol, seed, ...MC_DEFAULTS } = DEFAULT_OPTIONS;
+const DEFAULT_SETTINGS = { mc: { ...MC_DEFAULTS, cryptoSpreadPct: 0 }, outlook: { ...DEFAULT_OUTLOOK } };
+const TYPE_LABEL = { stock: 'Azione', etf: 'ETF/ETC', crypto: 'Crypto' };
+const PAGE = 150;
+
+const state = {
+  instruments: [],
+  quotes: {},
+  data: new Map(), // symbol → { history, fundamentals }
+  results: {}, // symbol → { forward, sim } | { error }
+  benchmark: null,
+  settings: loadSettings(),
+  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'ratio', dir: 1 }, limit: PAGE },
+  running: false,
+  stop: false,
+};
+
+// ---------- persistenza locale (solo comodità: tutto funziona anche senza)
+function store(key, value) {
+  try {
+    if (value === undefined) return JSON.parse(localStorage.getItem(key));
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    return null;
+  }
+}
+function loadSettings() {
+  const s = store('trmc.settings');
+  return {
+    mc: { ...DEFAULT_SETTINGS.mc, ...(s?.mc || {}) },
+    outlook: { ...DEFAULT_SETTINGS.outlook, ...(s?.outlook || {}) },
+  };
+}
+const settingsKey = () => JSON.stringify(state.settings);
+function saveResults() {
+  const compact = {};
+  for (const [k, r] of Object.entries(state.results)) {
+    if (r.error) compact[k] = { error: r.error };
+    else compact[k] = { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined } };
+  }
+  store('trmc.results', { key: settingsKey(), day: new Date().toDateString(), results: compact });
+}
+function loadResults() {
+  const saved = store('trmc.results');
+  if (saved && saved.key === settingsKey() && saved.day === new Date().toDateString()) state.results = saved.results || {};
+}
+
+// ---------- API
+async function api(path, opts) {
+  const res = await fetch(path, opts);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+  return body;
+}
+
+// ---------- formattazione
+const nf2 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nf4 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+function pct(x, sign = false, digits = 1) {
+  if (x == null || !Number.isFinite(x)) return '–';
+  const s = (x * 100).toLocaleString('it-IT', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  return (sign && x > 0 ? '+' : '') + s + '%';
+}
+function eur(x) {
+  if (x == null || !Number.isFinite(x)) return '–';
+  return (x >= 1 ? nf2 : nf4).format(x) + ' €';
+}
+function cls(x) {
+  return x > 0 ? 'pos' : x < 0 ? 'neg' : '';
+}
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+}
+
+// ---------- worker pool
+const POOL = Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1));
+const workers = [];
+const pending = new Map();
+let jobId = 0;
+let rr = 0;
+function getWorker() {
+  if (workers.length < POOL) {
+    const w = new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });
+    w.onmessage = (e) => {
+      const { id, result, error } = e.data;
+      const p = pending.get(id);
+      pending.delete(id);
+      error ? p.reject(new Error(error)) : p.resolve(result);
+    };
+    workers.push(w);
+    return w;
+  }
+  return workers[rr++ % workers.length];
+}
+function runAnalysis(payload) {
+  return new Promise((resolve, reject) => {
+    const id = ++jobId;
+    pending.set(id, { resolve, reject });
+    getWorker().postMessage({ id, payload });
+  });
+}
+
+// ---------- dati
+async function getBenchmark() {
+  if (!state.benchmark) state.benchmark = await api(`/api/history?symbol=${encodeURIComponent(BENCHMARK_SYMBOL)}`).catch(() => null);
+  return state.benchmark;
+}
+
+async function getData(inst) {
+  if (state.data.has(inst.symbol)) return state.data.get(inst.symbol);
+  const q = encodeURIComponent(inst.symbol);
+  const needsOutlook = state.settings.outlook.mode === 'forward' && inst.type !== 'crypto';
+  const [history, fundamentals] = await Promise.all([
+    api(`/api/history?symbol=${q}`),
+    needsOutlook ? api(`/api/outlook?symbol=${q}`).catch(() => null) : null,
+  ]);
+  const d = { history, fundamentals };
+  state.data.set(inst.symbol, d);
+  return d;
+}
+
+async function analyzeOne(inst) {
+  const d = await getData(inst);
+  const benchmark = state.settings.outlook.mode === 'forward' ? await getBenchmark() : null;
+  const r = await runAnalysis({ instrument: inst, history: d.history, benchmark, fundamentals: d.fundamentals, settings: state.settings });
+  state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
+  return state.results[inst.symbol];
+}
+
+async function runAll(list) {
+  if (state.running) return;
+  state.running = true;
+  state.stop = false;
+  $('#btn-run').disabled = true;
+  const prog = $('#progress');
+  prog.hidden = false;
+  let done = 0;
+  let errors = 0;
+  const update = () => {
+    prog.style.setProperty('--p', `${(done / list.length) * 100}%`);
+    $('.label', prog).textContent = `${done}/${list.length} analizzati${errors ? ` · ${errors} senza dati` : ''}`;
+  };
+  update();
+  let i = 0;
+  let lastRender = 0;
+  const workersN = 4;
+  await Promise.all(
+    Array.from({ length: workersN }, async () => {
+      while (i < list.length && !state.stop) {
+        const inst = list[i++];
+        try {
+          const r = await analyzeOne(inst);
+          if (r.error) errors++;
+        } catch (e) {
+          state.results[inst.symbol] = { error: e.message };
+          errors++;
+        }
+        done++;
+        update();
+        if (Date.now() - lastRender > 700) {
+          lastRender = Date.now();
+          render();
+        }
+      }
+    }),
+  );
+  state.running = false;
+  $('#btn-run').disabled = false;
+  prog.hidden = true;
+  saveResults();
+  render();
+  refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
+}
+
+async function refreshQuotes(symbols) {
+  for (let k = 0; k < symbols.length; k += 100) {
+    const chunk = symbols.slice(k, k + 100);
+    try {
+      Object.assign(state.quotes, await api(`/api/quotes?symbols=${chunk.map(encodeURIComponent).join(',')}`));
+    } catch (e) {
+      console.warn('quotazioni', e);
+    }
+  }
+  render();
+}
+
+// ---------- vista
+function filtered() {
+  const { type, q, onlyComputed } = state.view;
+  const needle = q.trim().toLowerCase();
+  return state.instruments.filter((i) => {
+    if (type !== 'all' && i.type !== type) return false;
+    if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
+    if (!needle) return true;
+    return `${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle);
+  });
+}
+
+function rowValues(i) {
+  const r = state.results[i.symbol];
+  const q = state.quotes[i.symbol];
+  const sim = r && !r.error ? r.sim : null;
+  return {
+    inst: i,
+    name: i.name.toLowerCase(),
+    type: i.type,
+    price: q?.priceEur ?? null,
+    change: q?.changePct ?? null,
+    expected: r?.forward?.expected ?? null,
+    maxLoss: sim?.maxLoss ?? null,
+    netGain: sim?.netGain ?? null,
+    ratio: sim ? sim.ratio : null,
+    probLoss: sim?.probLoss ?? null,
+    error: r?.error || null,
+  };
+}
+
+function sortRows(rows) {
+  const { key, dir } = state.view.sort;
+  const k = key === 'rank' ? 'ratio' : key;
+  return rows.sort((a, b) => {
+    const va = a[k];
+    const vb = b[k];
+    const na = va == null || (typeof va === 'number' && Number.isNaN(va));
+    const nb = vb == null || (typeof vb === 'number' && Number.isNaN(vb));
+    if (na !== nb) return na ? 1 : -1; // valori mancanti sempre in fondo
+    if (na) return a.name.localeCompare(b.name);
+    if (typeof va === 'string') return va.localeCompare(vb) * dir;
+    if (va === vb) return 0;
+    return (va < vb ? -1 : 1) * dir;
+  });
+}
+
+function rankMap(rows) {
+  // La posizione in classifica è sempre per rapporto crescente, indipendentemente dall'ordinamento scelto.
+  const ranked = rows.filter((r) => r.ratio != null && Number.isFinite(r.ratio)).sort((a, b) => a.ratio - b.ratio);
+  return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
+}
+
+function render() {
+  const all = filtered();
+  const rows = sortRows(all.map(rowValues));
+  const ranks = rankMap(rows);
+  const finiteRatios = rows.map((r) => r.ratio).filter((x) => x != null && Number.isFinite(x));
+  const maxRatio = Math.max(1, ...finiteRatios.map((x) => Math.min(x, 10)));
+  const visible = rows.slice(0, state.view.limit);
+
+  $('#table tbody').innerHTML = visible
+    .map((r) => {
+      const i = r.inst;
+      const rank = ranks.get(i.symbol);
+      let ratioCell = '<span class="muted">–</span>';
+      if (r.error) ratioCell = `<span class="muted" title="${esc(r.error)}">n.d.</span>`;
+      else if (r.ratio === Infinity) ratioCell = '<span class="neg" title="Guadagno netto mediano ≤ 0">∞</span>';
+      else if (r.ratio != null) {
+        const w = Math.max(4, 100 - (Math.min(r.ratio, 10) / maxRatio) * 100);
+        ratioCell = `<span class="ratio-bar"><i style="width:${w}%"></i></span>${nf2.format(r.ratio)}`;
+      }
+      return `<tr data-symbol="${esc(i.symbol)}">
+        <td class="num muted">${rank ?? ''}</td>
+        <td><span class="name" title="${esc(i.name)}">${esc(i.name)}</span><span class="ids">${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
+        <td class="num">${eur(r.price)}</td>
+        <td class="num ${cls(r.change)}">${pct(r.change, true, 2)}</td>
+        <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
+        <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) : '–'}</td>
+        <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
+        <td class="num">${ratioCell}</td>
+        <td class="num">${pct(r.probLoss, false, 0)}</td>
+      </tr>`;
+    })
+    .join('');
+  $('#empty').hidden = rows.length > 0;
+  const moreBtn = $('#btn-more');
+  moreBtn.hidden = rows.length <= state.view.limit;
+  moreBtn.textContent = `Mostra altri (${rows.length - visible.length} rimanenti)`;
+
+  for (const t of ['all', 'stock', 'etf', 'crypto']) {
+    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => t === 'all' || i.type === t).length;
+  }
+  $$('#table th').forEach((th) => {
+    const on = th.dataset.sort === state.view.sort.key;
+    th.classList.toggle('sorted', on);
+    th.dataset.dir = on ? (state.view.sort.dir > 0 ? '▲' : '▼') : '';
+  });
+}
+
+function visibleSymbols() {
+  const rows = sortRows(filtered().map(rowValues)).slice(0, state.view.limit);
+  return rows.map((r) => r.inst.symbol);
+}
+
+// ---------- dettaglio
+async function openDetail(symbol) {
+  const inst = state.instruments.find((i) => i.symbol === symbol);
+  if (!inst) return;
+  const dlg = $('#detail');
+  $('#d-title').textContent = inst.name;
+  $('#d-sub').innerHTML = `${esc(inst.symbol)}${inst.isin ? ' · ' + esc(inst.isin) : ''} · ${TYPE_LABEL[inst.type]}${inst.note ? ` · <span class="neg">${esc(inst.note)}</span>` : ''}`;
+  $('#d-body').innerHTML = '<p class="muted">Calcolo in corso…</p>';
+  dlg.showModal();
+  try {
+    let r = state.results[inst.symbol];
+    if (!r || r.error || !r.sim.fan) r = await analyzeOne(inst);
+    saveResults();
+    render();
+    if (r.error) {
+      $('#d-body').innerHTML = `<p class="neg">${esc(r.error)}</p>${removeButton(inst)}`;
+      bindRemove(inst);
+      return;
+    }
+    renderDetail(inst, r, state.data.get(inst.symbol));
+  } catch (e) {
+    $('#d-body').innerHTML = `<p class="neg">Impossibile recuperare i dati: ${esc(e.message)}</p>${removeButton(inst)}`;
+    bindRemove(inst);
+  }
+}
+
+function removeButton(inst) {
+  return `<p><button id="d-remove" class="ghost small">Rimuovi dalla lista</button></p>`;
+}
+function bindRemove(inst) {
+  $('#d-remove')?.addEventListener('click', async () => {
+    await api(`/api/instruments?symbol=${encodeURIComponent(inst.symbol)}`, { method: 'DELETE' });
+    state.instruments = state.instruments.filter((i) => i.symbol !== inst.symbol);
+    delete state.results[inst.symbol];
+    $('#detail').close();
+    render();
+  });
+}
+
+function renderDetail(inst, r, d) {
+  const { sim, forward: f } = r;
+  const s = state.settings;
+  const q = state.quotes[inst.symbol];
+  const fu = d?.fundamentals || {};
+  const lossLabel = { mdd_p95: 'max drawdown, 95° percentile', mdd_median: 'max drawdown mediano', final_p5: 'perdita finale, 5% peggiore' }[s.mc.lossMetric];
+  const amt = s.mc.amount;
+  const comp = f?.components || {};
+  const w = f?.weights || {};
+  const compRow = (label, key, note) =>
+    `<tr><td>${label}</td><td class="num">${comp[key] != null ? pct(comp[key], true) : '<span class="muted">n.d.</span>'}</td><td class="num">${w[key] != null ? pct(w[key], false, 0) : '–'}</td><td class="muted">${note}</td></tr>`;
+
+  $('#d-body').innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
+      <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
+      <div class="kpi"><div class="k">Guadagno netto ${s.mc.years}a</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
+      <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
+      <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Ventaglio Monte Carlo (${s.mc.sims.toLocaleString('it-IT')} scenari)</h3>
+        <canvas id="c-fan"></canvas>
+        <div class="legend"><span><i style="background:var(--fan-outer)"></i>5–95%</span><span><i style="background:var(--fan-inner)"></i>25–75%</span><span><i style="background:var(--chart-line)"></i>mediana</span></div>
+      </div>
+      <div class="card">
+        <h3>Distribuzione del guadagno netto a ${s.mc.years} anni</h3>
+        <canvas id="c-hist"></canvas>
+        <div class="legend"><span>5%: ${pct(sim.netP5, true)}</span><span>25%: ${pct(sim.netP25, true)}</span><span>mediana: ${pct(sim.netMedian, true)}</span><span>75%: ${pct(sim.netP75, true)}</span><span>95%: ${pct(sim.netP95, true)}</span></div>
+      </div>
+      <div class="card">
+        <h3>Stima prospettica del rendimento annuo</h3>
+        <table class="mini">
+          <thead><tr><th>Componente</th><th class="num">Atteso</th><th class="num">Peso</th><th>Fonte</th></tr></thead>
+          <tbody>
+            ${compRow('Storico', 'history', f?.mode === 'forward' ? `${sim.historyYears.toFixed(1)} anni, grezzo ${pct(f.historyRaw, true)}, credibilità ${pct(f.credibility, false, 0)}` : `${sim.historyYears.toFixed(1)} anni di dati`)}
+            ${f?.mode === 'forward' ? compRow('Equilibrio', 'equilibrium', inst.type === 'crypto' ? `risk-free ${s.outlook.riskFree}% + premio crypto ${s.outlook.cryptoPremium}%` : `risk-free ${s.outlook.riskFree}% + β ${nf2.format(f.beta)} × ${s.outlook.equityPremium}%`) : ''}
+            ${f?.mode === 'forward' ? compRow('Analisti', 'analysts', fu.analysts ? `${fu.analysts} analisti, target ${nf2.format(fu.targetMean)} ${esc(fu.currency || '')} (${pct(f.analystUpside, true)}), ${esc(fu.recommendation || '')}` : 'nessuna copertura') : ''}
+            <tr><th>Rendimento atteso</th><th class="num">${pct(f?.expected, true)}</th><th></th><th></th></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Volatilità e rischio</h3>
+        <table class="mini"><tbody>
+          <tr><td>Volatilità usata nella simulazione</td><td class="num">${pct(sim.annualVol)}</td></tr>
+          <tr><td>Volatilità storica (lungo periodo)</td><td class="num">${pct(sim.histVol)}</td></tr>
+          ${f?.mode === 'forward' ? `<tr><td>Volatilità recente (EWMA)</td><td class="num">${pct(f.sigmaEwma)}</td></tr>
+          <tr><td>Volatilità implicita opzioni</td><td class="num">${f.sigmaImpl ? pct(f.sigmaImpl) + ` <span class="muted">(${fu.impliedVolDays} gg)</span>` : '<span class="muted">n.d.</span>'}</td></tr>
+          <tr><td>Beta vs MSCI World (EUR)</td><td class="num">${f.betaRaw != null ? nf2.format(f.betaRaw) : 'n.d.'} <span class="muted">(aggiustato ${nf2.format(f.beta)})</span></td></tr>` : ''}
+          <tr><td>Max drawdown storico (periodo usato)</td><td class="num neg">−${pct(sim.historicalMdd)}</td></tr>
+          <tr><td>Max drawdown simulato: mediano / 95°</td><td class="num neg">−${pct(sim.mddMedian)} / −${pct(sim.mddP95)}</td></tr>
+          ${fu.dividendYield ? `<tr><td>Rendimento da dividendi</td><td class="num">${pct(fu.dividendYield)}</td></tr>` : ''}
+        </tbody></table>
+      </div>
+      <div class="card" style="grid-column: 1 / -1">
+        <h3>Storico prezzi in EUR (aggiustati per dividendi)</h3>
+        <canvas id="c-price"></canvas>
+      </div>
+    </div>
+    ${removeButton(inst)}`;
+  bindRemove(inst);
+  drawFan($('#c-fan'), sim.fan, s.mc.years);
+  drawHist($('#c-hist'), sim.histogram);
+  drawPrice($('#c-price'), d.history);
+}
+
+// ---------- grafici (canvas)
+function setupCanvas(c) {
+  const dpr = window.devicePixelRatio || 1;
+  const w = c.clientWidth;
+  const h = c.clientHeight;
+  c.width = w * dpr;
+  c.height = h * dpr;
+  const ctx = c.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const css = getComputedStyle(document.documentElement);
+  const v = (n) => css.getPropertyValue(n).trim();
+  return { ctx, w, h, color: { line: v('--chart-line'), grid: v('--chart-grid'), muted: v('--muted'), outer: v('--fan-outer'), inner: v('--fan-inner'), neg: v('--neg'), pos: v('--pos') } };
+}
+
+function axes(ctx, color, pad, w, h, yMin, yMax, fmt) {
+  ctx.font = '11px system-ui, sans-serif';
+  ctx.fillStyle = color.muted;
+  ctx.strokeStyle = color.grid;
+  ctx.lineWidth = 1;
+  for (let k = 0; k <= 4; k++) {
+    const val = yMin + ((yMax - yMin) * k) / 4;
+    const y = pad.t + (h - pad.t - pad.b) * (1 - k / 4);
+    ctx.beginPath();
+    ctx.moveTo(pad.l, y);
+    ctx.lineTo(w - pad.r, y);
+    ctx.stroke();
+    ctx.fillText(fmt(val), 4, y + 4);
+  }
+}
+
+function drawFan(c, fan, years) {
+  const { ctx, w, h, color } = setupCanvas(c);
+  const pad = { l: 52, r: 10, t: 10, b: 22 };
+  const yMin = Math.min(-0.5, ...fan.map((p) => p.p5));
+  const yMax = Math.max(0.5, ...fan.map((p) => p.p95));
+  const X = (k) => pad.l + ((w - pad.l - pad.r) * k) / (fan.length - 1);
+  const Y = (v) => pad.t + (h - pad.t - pad.b) * (1 - (v - yMin) / (yMax - yMin));
+  axes(ctx, color, pad, w, h, yMin, yMax, (v) => pct(v, true, 0));
+  const band = (lo, hi, fill) => {
+    ctx.beginPath();
+    fan.forEach((p, k) => (k ? ctx.lineTo(X(k), Y(p[hi])) : ctx.moveTo(X(k), Y(p[hi]))));
+    for (let k = fan.length - 1; k >= 0; k--) ctx.lineTo(X(k), Y(fan[k][lo]));
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+  };
+  band('p5', 'p95', color.outer);
+  band('p25', 'p75', color.inner);
+  ctx.beginPath();
+  fan.forEach((p, k) => (k ? ctx.lineTo(X(k), Y(p.p50)) : ctx.moveTo(X(k), Y(p.p50))));
+  ctx.strokeStyle = color.line;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.strokeStyle = color.muted;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.l, Y(0));
+  ctx.lineTo(w - pad.r, Y(0));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = color.muted;
+  for (let y = 0; y <= years; y++) {
+    const k = Math.round((y * 52) / 13);
+    if (k < fan.length) ctx.fillText(`${y}a`, X(k) - 6, h - 6);
+  }
+}
+
+function drawHist(c, hist) {
+  const { ctx, w, h, color } = setupCanvas(c);
+  const pad = { l: 10, r: 10, t: 10, b: 22 };
+  const max = Math.max(...hist.counts);
+  const bw = (w - pad.l - pad.r) / hist.counts.length;
+  hist.counts.forEach((n, k) => {
+    const x0 = hist.lo + k * hist.width;
+    const bh = ((h - pad.t - pad.b) * n) / max;
+    ctx.fillStyle = x0 + hist.width / 2 < 0 ? color.neg : color.line;
+    ctx.globalAlpha = 0.75;
+    ctx.fillRect(pad.l + k * bw + 1, h - pad.b - bh, bw - 2, bh);
+  });
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = color.muted;
+  ctx.font = '11px system-ui, sans-serif';
+  const hi = hist.lo + hist.width * hist.counts.length;
+  ctx.fillText(pct(hist.lo, true, 0), pad.l, h - 6);
+  const t = pct(hi, true, 0);
+  ctx.fillText(t, w - pad.r - ctx.measureText(t).width, h - 6);
+  if (hist.lo < 0 && hi > 0) {
+    const x = pad.l + ((0 - hist.lo) / (hi - hist.lo)) * (w - pad.l - pad.r);
+    ctx.fillText('0%', x - 8, h - 6);
+  }
+}
+
+function drawPrice(c, history) {
+  const { ctx, w, h, color } = setupCanvas(c);
+  const pad = { l: 64, r: 10, t: 10, b: 22 };
+  const ys = history.closesEur;
+  const ts = history.timestamps;
+  const yMin = Math.min(...ys);
+  const yMax = Math.max(...ys);
+  const X = (k) => pad.l + ((w - pad.l - pad.r) * k) / (ys.length - 1);
+  const Y = (v) => pad.t + (h - pad.t - pad.b) * (1 - (v - yMin) / (yMax - yMin || 1));
+  axes(ctx, color, pad, w, h, yMin, yMax, (v) => eur(v));
+  ctx.beginPath();
+  ys.forEach((v, k) => (k ? ctx.lineTo(X(k), Y(v)) : ctx.moveTo(X(k), Y(v))));
+  ctx.strokeStyle = color.line;
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.fillStyle = color.muted;
+  let lastYear = null;
+  ts.forEach((t, k) => {
+    const y = new Date(t * 1000).getFullYear();
+    if (y !== lastYear && k > 0) ctx.fillText(String(y), X(k) - 12, h - 6);
+    lastYear = y;
+  });
+}
+
+// ---------- parametri
+function fillSettings() {
+  for (const el of $$('#settings-form [name]')) {
+    const [g, k] = el.name.split('.');
+    el.value = state.settings[g][k];
+  }
+}
+function readSettings() {
+  const s = { mc: { ...state.settings.mc }, outlook: { ...state.settings.outlook } };
+  for (const el of $$('#settings-form [name]')) {
+    const [g, k] = el.name.split('.');
+    s[g][k] = el.type === 'number' ? Number(el.value) : el.value;
+  }
+  return s;
+}
+
+async function recomputeComputed() {
+  const symbols = Object.keys(state.results);
+  state.results = {};
+  const list = state.instruments.filter((i) => symbols.includes(i.symbol));
+  if (list.length) await runAll(list);
+  else render();
+}
+
+// ---------- aggiunta / import
+async function doSearch(q) {
+  const ul = $('#search-results');
+  ul.innerHTML = '<li class="muted">Ricerca…</li>';
+  try {
+    const res = await api(`/api/search?q=${encodeURIComponent(q)}`);
+    const have = new Set(state.instruments.map((i) => i.symbol));
+    ul.innerHTML = res.length
+      ? res
+          .map(
+            (r, k) => `<li><div><strong>${esc(r.name)}</strong><div class="muted">${esc(r.symbol)} · ${esc(r.exchange || '')} · ${TYPE_LABEL[r.type]}</div></div>
+            ${have.has(r.symbol) ? '<span class="muted">già presente</span>' : `<button class="small" data-k="${k}">Aggiungi</button>`}</li>`,
+          )
+          .join('')
+      : '<li class="muted">Nessun risultato</li>';
+    $$('button[data-k]', ul).forEach((b) =>
+      b.addEventListener('click', async () => {
+        const r = res[Number(b.dataset.k)];
+        const isin = /^[A-Z]{2}[A-Z0-9]{9}\d$/.test(q.trim().toUpperCase()) ? q.trim().toUpperCase() : null;
+        await api('/api/instruments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...r, isin }) });
+        b.outerHTML = '<span class="pos">aggiunto</span>';
+        await loadInstruments();
+      }),
+    );
+  } catch (e) {
+    ul.innerHTML = `<li class="neg">${esc(e.message)}</li>`;
+  }
+}
+
+async function doImport(file) {
+  const out = $('#import-result');
+  out.textContent = 'Importazione in corso (la risoluzione degli ISIN può richiedere qualche minuto)…';
+  try {
+    const r = await api('/api/import', { method: 'POST', body: await file.text() });
+    out.innerHTML = `Formato: <strong>${esc(r.format)}</strong> · righe valide: ${r.parsed} · aggiunti: <strong>${r.added}</strong>${r.unresolved.length ? ` · non risolti: ${r.unresolved.length}` : ''}${r.skipped ? ` · oltre il limite (ripeti l'import): ${r.skipped}` : ''}`;
+    await loadInstruments();
+  } catch (e) {
+    out.innerHTML = `<span class="neg">${esc(e.message)}</span>`;
+  }
+}
+
+function exportCsv() {
+  const rows = sortRows(filtered().map(rowValues));
+  const ranks = rankMap(rows);
+  const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno netto 5a', 'Rapporto', 'Prob. perdita'].join(';')];
+  for (const r of rows) {
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.expected), num(r.maxLoss), num(r.netGain), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss)].join(';'));
+  }
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `classifica-tr-montecarlo-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ---------- avvio
+async function loadInstruments() {
+  state.instruments = await api('/api/instruments');
+  render();
+}
+
+function bind() {
+  $$('.tab').forEach((t) =>
+    t.addEventListener('click', () => {
+      $$('.tab').forEach((x) => x.classList.toggle('active', x === t));
+      state.view.type = t.dataset.type;
+      state.view.limit = PAGE;
+      render();
+      refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
+    }),
+  );
+  let ft;
+  $('#filter').addEventListener('input', (e) => {
+    state.view.q = e.target.value;
+    state.view.limit = PAGE;
+    render();
+    clearTimeout(ft);
+    ft = setTimeout(() => refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s])), 400);
+  });
+  $('#only-computed').addEventListener('change', (e) => {
+    state.view.onlyComputed = e.target.checked;
+    render();
+  });
+  $$('#table th').forEach((th) =>
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      const s = state.view.sort;
+      if (s.key === key) s.dir = -s.dir;
+      else {
+        s.key = key;
+        s.dir = ['netGain', 'expected', 'change', 'price'].includes(key) ? -1 : 1;
+      }
+      render();
+    }),
+  );
+  $('#table tbody').addEventListener('click', (e) => {
+    const tr = e.target.closest('tr[data-symbol]');
+    if (tr) openDetail(tr.dataset.symbol);
+  });
+  $('#btn-more').addEventListener('click', () => {
+    state.view.limit += PAGE;
+    render();
+    refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
+  });
+  $('#btn-run').addEventListener('click', () => runAll(filtered()));
+  $('#btn-stop').addEventListener('click', () => (state.stop = true));
+  $('#btn-quotes').addEventListener('click', () => refreshQuotes(visibleSymbols()));
+  $('#btn-export').addEventListener('click', exportCsv);
+  $('#btn-settings').addEventListener('click', () => {
+    fillSettings();
+    $('#settings').showModal();
+  });
+  $('#btn-reset').addEventListener('click', () => {
+    state.settings = structuredClone(DEFAULT_SETTINGS);
+    fillSettings();
+  });
+  $('#settings-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const prevMode = state.settings.outlook.mode;
+    state.settings = readSettings();
+    store('trmc.settings', state.settings);
+    if (prevMode !== state.settings.outlook.mode) state.data.clear();
+    $('#settings').close();
+    recomputeComputed();
+  });
+  $('#btn-add').addEventListener('click', () => $('#add').showModal());
+  $('#search-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = $('#search-q').value.trim();
+    if (q) doSearch(q);
+  });
+  $('#import-file').addEventListener('change', (e) => e.target.files[0] && doImport(e.target.files[0]));
+  setInterval(() => {
+    if ($('#auto-quotes').checked && !document.hidden && !state.running) refreshQuotes(visibleSymbols());
+  }, 60e3);
+}
+
+async function main() {
+  bind();
+  loadResults();
+  try {
+    const meta = await api('/api/meta');
+    $('#demo-banner').hidden = !meta.mock;
+    $('#meta-line').textContent = `Universo iniziale verificato il ${new Date(meta.verifiedAt).toLocaleDateString('it-IT')}: ${meta.verification}`;
+    await loadInstruments();
+    refreshQuotes(visibleSymbols());
+  } catch (e) {
+    $('#table tbody').innerHTML = `<tr><td colspan="10" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+  }
+}
+
+main();

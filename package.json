@@ -1,0 +1,17 @@
+{
+  "name": "tr-montecarlo",
+  "version": "1.0.0",
+  "description": "Screener per ETF, azioni e crypto disponibili su Trade Republic con quotazioni aggiornate e classifica rischio/rendimento a 5 anni via Monte Carlo",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "demo": "MOCK=1 node server.js",
+    "rank": "node scripts/rank.js",
+    "test": "node --test test/*.test.js",
+    "verify": "node scripts/verify.js"
+  }
+}

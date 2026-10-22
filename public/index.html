@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TR Monte Carlo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23111'/%3E%3Cpath d='M6 22l6-7 5 4 9-11' stroke='%2334d399' stroke-width='3' fill='none'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <h1>TR Monte Carlo</h1>
+      <span class="sub">Azioni, ETF e crypto di Trade Republic · classifica rischio/rendimento a 5 anni</span>
+    </div>
+    <div class="actions">
+      <button id="btn-add" class="ghost">+ Aggiungi strumenti</button>
+      <button id="btn-settings" class="ghost">Parametri</button>
+      <button id="btn-quotes" class="ghost">Aggiorna quotazioni</button>
+      <button id="btn-run" class="primary">Calcola classifica</button>
+    </div>
+  </header>
+
+  <div id="demo-banner" class="banner warn" hidden>Modalità DEMO: dati sintetici, non reali. Avvia con <code>npm start</code> per i dati di mercato.</div>
+
+  <section class="toolbar">
+    <div class="tabs" role="tablist">
+      <button data-type="all" class="tab active">Tutti <span class="count" data-count="all"></span></button>
+      <button data-type="stock" class="tab">Azioni <span class="count" data-count="stock"></span></button>
+      <button data-type="etf" class="tab">ETF / ETC <span class="count" data-count="etf"></span></button>
+      <button data-type="crypto" class="tab">Crypto <span class="count" data-count="crypto"></span></button>
+    </div>
+    <input id="filter" type="search" placeholder="Filtra per nome, ticker o ISIN…" autocomplete="off">
+    <label class="check"><input type="checkbox" id="only-computed"> Solo calcolati</label>
+    <label class="check"><input type="checkbox" id="auto-quotes" checked> Quotazioni live (60 s)</label>
+    <button id="btn-export" class="ghost small">Esporta CSV</button>
+  </section>
+
+  <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span><button id="btn-stop" class="ghost small">Interrompi</button></div>
+
+  <main>
+    <div class="table-wrap">
+      <table id="table">
+        <thead>
+          <tr>
+            <th data-sort="rank" class="num">#</th>
+            <th data-sort="name">Strumento</th>
+            <th data-sort="type">Tipo</th>
+            <th data-sort="price" class="num">Prezzo €</th>
+            <th data-sort="change" class="num">Var. oggi</th>
+            <th data-sort="expected" class="num" title="Rendimento annuo atteso dal modello prospettico">Atteso / anno</th>
+            <th data-sort="maxLoss" class="num" title="Perdita massima simulata in 5 anni (metrica configurabile)">Perdita max 5a</th>
+            <th data-sort="netGain" class="num" title="Guadagno netto simulato a 5 anni, dopo costi e tasse">Guadagno netto 5a</th>
+            <th data-sort="ratio" class="num" title="Perdita massima / guadagno netto: più basso è meglio">Rapporto</th>
+            <th data-sort="probLoss" class="num" title="Probabilità di chiudere i 5 anni in perdita">P(perdita)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div id="empty" class="empty" hidden>Nessuno strumento corrisponde ai filtri.</div>
+      <button id="btn-more" class="ghost more" hidden>Mostra altri</button>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p id="meta-line"></p>
+    <p>Quotazioni e storici: Yahoo Finance (ritardati, prezzi di riferimento della borsa principale; i prezzi su Trade Republic/LS Exchange possono differire leggermente). Le stime sono simulazioni statistiche, non previsioni né consulenza finanziaria.</p>
+  </footer>
+
+  <!-- Dettaglio strumento -->
+  <dialog id="detail" class="sheet">
+    <form method="dialog" class="sheet-head">
+      <div>
+        <h2 id="d-title"></h2>
+        <div id="d-sub" class="muted"></div>
+      </div>
+      <button class="ghost" aria-label="Chiudi">✕</button>
+    </form>
+    <div id="d-body"></div>
+  </dialog>
+
+  <!-- Parametri -->
+  <dialog id="settings" class="sheet">
+    <form method="dialog" class="sheet-head">
+      <h2>Parametri</h2>
+      <button class="ghost" aria-label="Chiudi">✕</button>
+    </form>
+    <form id="settings-form" class="settings">
+      <fieldset>
+        <legend>Simulazione Monte Carlo</legend>
+        <label>Orizzonte (anni)<input name="mc.years" type="number" min="1" max="20" step="1"></label>
+        <label>Numero simulazioni<input name="mc.sims" type="number" min="200" max="20000" step="100"></label>
+        <label>Metodo
+          <select name="mc.method">
+            <option value="bootstrap">Bootstrap a blocchi dei rendimenti reali</option>
+            <option value="gbm">Moto browniano geometrico (normale)</option>
+          </select>
+        </label>
+        <label>Storico usato (anni)<input name="mc.lookbackYears" type="number" min="2" max="10" step="1"></label>
+        <label>Storico minimo (anni)<input name="mc.minYears" type="number" min="1" max="10" step="1"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Stima prospettica</legend>
+        <label>Modello
+          <select name="outlook.mode">
+            <option value="forward">Prospettico (storico + equilibrio + analisti + volatilità recente)</option>
+            <option value="historical">Solo storico</option>
+          </select>
+        </label>
+        <label>Tasso privo di rischio EUR (%)<input name="outlook.riskFree" type="number" step="0.1"></label>
+        <label>Premio rischio azionario (%)<input name="outlook.equityPremium" type="number" step="0.1"></label>
+        <label>Premio crypto (%)<input name="outlook.cryptoPremium" type="number" step="0.5"></label>
+        <label>Peso storico<input name="outlook.weightHistory" type="number" min="0" max="1" step="0.05"></label>
+        <label>Peso equilibrio (CAPM)<input name="outlook.weightEquilibrium" type="number" min="0" max="1" step="0.05"></label>
+        <label>Peso consenso analisti<input name="outlook.weightAnalysts" type="number" min="0" max="1" step="0.05"></label>
+        <label>Incertezza sull'equilibrio (%)<input name="outlook.priorUncertainty" type="number" min="0.5" step="0.5"></label>
+        <label>Quota creduta dei target analisti<input name="outlook.analystHaircut" type="number" min="0" max="1" step="0.05"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Costi, tasse e metriche</legend>
+        <label>Capitale investito (€)<input name="mc.amount" type="number" min="10" step="10"></label>
+        <label>Costo per ordine (€)<input name="mc.orderCost" type="number" min="0" step="0.5"></label>
+        <label>Spread stimato azioni/ETF (%)<input name="mc.spreadPct" type="number" min="0" step="0.05"></label>
+        <label>Spread stimato crypto (%)<input name="mc.cryptoSpreadPct" type="number" min="0" step="0.05"></label>
+        <label>Tasse su plusvalenze (%)<input name="mc.taxRate" type="number" min="0" max="60" step="0.5"></label>
+        <label>Perdita massima =
+          <select name="mc.lossMetric">
+            <option value="mdd_p95">Max drawdown, scenario sfavorevole (95° percentile)</option>
+            <option value="mdd_median">Max drawdown mediano</option>
+            <option value="final_p5">Perdita finale nel 5% peggiore dei casi</option>
+          </select>
+        </label>
+        <label>Guadagno netto =
+          <select name="mc.gainMetric">
+            <option value="median">Mediana</option>
+            <option value="mean">Media</option>
+          </select>
+        </label>
+      </fieldset>
+      <div class="settings-actions">
+        <button type="button" id="btn-reset" class="ghost">Ripristina predefiniti</button>
+        <button type="submit" class="primary">Applica e ricalcola</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Aggiunta strumenti -->
+  <dialog id="add" class="sheet">
+    <form method="dialog" class="sheet-head">
+      <h2>Aggiungi strumenti</h2>
+      <button class="ghost" aria-label="Chiudi">✕</button>
+    </form>
+    <div class="add-body">
+      <h3>Cerca per nome, ticker o ISIN</h3>
+      <form id="search-form" class="row">
+        <input id="search-q" type="search" placeholder="es. IE00B4L5Y983, Ferrari, PLTR" autocomplete="off">
+        <button class="primary">Cerca</button>
+      </form>
+      <ul id="search-results" class="results"></ul>
+      <h3>Importa elenco (CSV)</h3>
+      <p class="muted">Accetta la lista ufficiale Xetra “All tradable instruments” di Deutsche Börse (gran parte di azioni ed ETF di Trade Republic), un CSV con colonne ISIN/nome/simbolo/tipo, oppure un semplice elenco di ISIN, uno per riga. Gli ISIN senza ticker vengono risolti automaticamente (max 500 per import).</p>
+      <input id="import-file" type="file" accept=".csv,.txt,text/csv,text/plain">
+      <div id="import-result" class="muted"></div>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

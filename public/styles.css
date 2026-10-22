@@ -75,6 +75,7 @@ code { font-family: var(--mono); }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .banner { padding: 8px 20px; font-size: 13px; }
+.banner.info { background: var(--row-hover); color: var(--muted); }
 .banner.warn { background: var(--warn-bg); color: var(--warn-text); }
 
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 20px; }
@@ -156,5 +157,17 @@ table.mini .num { white-space: nowrap; }
   main { padding: 0 16px 16px; }
   .foot { padding: 0 16px 24px; }
   .progress { margin: 0 16px 10px; }
-  td .name { max-width: 180px; }
+  td .name { max-width: 140px; }
+  /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */
+  #table th:nth-child(3), #table td:nth-child(3),
+  #table th:nth-child(4), #table td:nth-child(4),
+  #table th:nth-child(5), #table td:nth-child(5),
+  #table th:nth-child(6), #table td:nth-child(6),
+  #table th:nth-child(10), #table td:nth-child(10) { display: none; }
+  th, td { padding: 8px 5px; }
+  th { white-space: normal; font-size: 11px; line-height: 1.25; }
+  td .name { max-width: 120px; font-size: 13px; }
+  td .ids { display: block; font-size: 10px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+  td .name { max-width: 110px; }
+  .ratio-bar { display: none; }
 }

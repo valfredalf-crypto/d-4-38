@@ -1,12 +1,10 @@
-import { DEFAULT_OPTIONS } from './montecarlo.js';
-import { DEFAULT_OUTLOOK } from './outlook.js';
-import { BENCHMARK_SYMBOL } from './analyze.js';
+import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult } from './analyze.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 
-const { targetDrift, targetVol, seed, ...MC_DEFAULTS } = DEFAULT_OPTIONS;
-const DEFAULT_SETTINGS = { mc: { ...MC_DEFAULTS, cryptoSpreadPct: 0 }, outlook: { ...DEFAULT_OUTLOOK } };
+// Versione statica (GitHub Pages): i dati sono file JSON generati periodicamente, senza server.
+const STATIC = document.documentElement.hasAttribute('data-static');
 const TYPE_LABEL = { stock: 'Azione', etf: 'ETF/ETC', crypto: 'Crypto' };
 const PAGE = 150;
 
@@ -41,20 +39,38 @@ function loadSettings() {
 const settingsKey = () => JSON.stringify(state.settings);
 function saveResults() {
   const compact = {};
-  for (const [k, r] of Object.entries(state.results)) {
-    if (r.error) compact[k] = { error: r.error };
-    else compact[k] = { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined } };
-  }
-  store('trmc.results', { key: settingsKey(), day: new Date().toDateString(), results: compact });
+  for (const [k, r] of Object.entries(state.results)) compact[k] = compactResult(r);
+  store('trmc.results', { key: settingsKey(), day: state.dataVersion || new Date().toDateString(), results: compact });
 }
-function loadResults() {
+async function loadResults() {
   const saved = store('trmc.results');
-  if (saved && saved.key === settingsKey() && saved.day === new Date().toDateString()) state.results = saved.results || {};
+  if (saved && saved.key === settingsKey() && saved.day === (state.dataVersion || new Date().toDateString())) {
+    state.results = saved.results || {};
+  } else if (STATIC) {
+    // Classifica precalcolata con i parametri predefiniti
+    const pre = await api('/api/results').catch(() => null);
+    if (pre && pre.key === settingsKey()) state.results = pre.results;
+  }
 }
 
 // ---------- API
+function staticPath(path) {
+  const u = new URL(path, 'http://x');
+  const sym = u.searchParams.get('symbol');
+  const map = {
+    '/api/meta': 'data/meta.json',
+    '/api/instruments': 'data/instruments.json',
+    '/api/quotes': 'data/quotes.json',
+    '/api/results': 'data/results.json',
+    '/api/history': `data/history/${fileKey(sym)}.json`,
+    '/api/outlook': `data/outlook/${fileKey(sym)}.json`,
+  };
+  if (!map[u.pathname]) throw new Error('Funzione non disponibile nella versione online');
+  return `${map[u.pathname]}?v=${encodeURIComponent(state.dataVersion || '')}`;
+}
+
 async function api(path, opts) {
-  const res = await fetch(path, opts);
+  const res = await fetch(STATIC ? staticPath(path) : path, opts);
   const body = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
   return body;
@@ -180,6 +196,10 @@ async function runAll(list) {
 }
 
 async function refreshQuotes(symbols) {
+  if (STATIC) {
+    if (!Object.keys(state.quotes).length) state.quotes = await api('/api/quotes').catch(() => ({}));
+    return render();
+  }
   for (let k = 0; k < symbols.length; k += 100) {
     const chunk = symbols.slice(k, k + 100);
     try {
@@ -324,6 +344,7 @@ async function openDetail(symbol) {
 }
 
 function removeButton(inst) {
+  if (STATIC) return '';
   return `<p><button id="d-remove" class="ghost small">Rimuovi dalla lista</button></p>`;
 }
 function bindRemove(inst) {
@@ -685,9 +706,16 @@ function bind() {
 
 async function main() {
   bind();
-  loadResults();
   try {
     const meta = await api('/api/meta');
+    if (STATIC) {
+      state.dataVersion = meta.generatedAt;
+      for (const sel of ['#btn-add', '#btn-quotes', '#auto-quotes']) $(sel).closest('label, button').hidden = true;
+      const b = $('#static-banner');
+      b.hidden = false;
+      b.textContent = `Dati aggiornati al ${new Date(meta.generatedAt).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' })} (aggiornamento automatico due volte al giorno). Le quotazioni non sono in tempo reale.`;
+    }
+    await loadResults();
     $('#demo-banner').hidden = !meta.mock;
     $('#meta-line').textContent = `Universo iniziale verificato il ${new Date(meta.verifiedAt).toLocaleDateString('it-IT')}: ${meta.verification}`;
     await loadInstruments();

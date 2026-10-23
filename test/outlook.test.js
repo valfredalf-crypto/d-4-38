@@ -88,3 +88,15 @@ test('shrinkage: lo storico di uno strumento molto volatile pesa poco', () => {
   const eq = fw.components.equilibrium;
   assert.ok(Math.abs(fw.components.history - (eq + fw.credibility * (fw.historyRaw - eq))) < 1e-12);
 });
+
+test('beta: media con quello di Yahoo e minimo 0,5 per le azioni', () => {
+  const b = series(400, 1);
+  const flat = series(400, 9); // indipendente dal benchmark → beta ≈ 0
+  const base = { timestamps: flat.ts, prices: flat.p, benchmark: { timestamps: b.ts, closesEur: b.p }, years: 5, lookbackYears: 10 };
+  const stock = forwardParams({ ...base, type: 'stock' }, {});
+  assert.ok(Math.abs(stock.beta - 0.5) < 1e-12, String(stock.beta));
+  const etf = forwardParams({ ...base, type: 'etf' }, {});
+  assert.ok(etf.beta < 0.5); // per ETF (es. obbligazionari, oro) nessun minimo
+  const withYahoo = forwardParams({ ...base, type: 'stock', fundamentals: { beta: 1.2 } }, {});
+  assert.ok(Math.abs(withYahoo.betaRaw - (estimateBeta(flat.ts, flat.p, b.ts, b.p, 5).raw + 1.2) / 2) < 1e-12);
+});

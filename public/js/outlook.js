@@ -19,6 +19,7 @@ export const DEFAULT_OUTLOOK = {
   minAnalysts: 3,
   ewmaLambda: 0.97,       // decadimento settimanale per la volatilità recente
   betaYears: 5,
+  minStockBeta: 0.5,      // beta minimo per le singole azioni (dopo l'aggiustamento di Blume)
 };
 
 const WEEK = 7 * 86400;
@@ -104,7 +105,14 @@ export function forwardParams(p, settings = {}) {
   // --- Rendimento atteso di equilibrio
   const rf = s.riskFree / 100;
   const betaEst = estimateBeta(p.timestamps, p.prices, p.benchmark?.timestamps, p.benchmark?.closesEur, s.betaYears);
-  const beta = betaEst ? betaEst.adjusted : f.beta != null ? 0.67 * f.beta + 0.33 : 1;
+  // Beta grezzo: media tra la stima settimanale contro l'MSCI World in EUR e quella pubblicata da Yahoo
+  // (5 anni, mensile); poi aggiustamento di Blume verso 1. Per le singole azioni minimo `minStockBeta`:
+  // un beta vicino a zero (o negativo) di un'azienda quotata è quasi sempre un artefatto di un periodo
+  // in cui il titolo si è mosso per motivi propri, non una vera assenza di rischio di mercato.
+  const rawBetas = [betaEst?.raw, f.beta].filter((b) => b != null && Number.isFinite(b));
+  const betaRaw = rawBetas.length ? rawBetas.reduce((a, b) => a + b, 0) / rawBetas.length : 1;
+  let beta = 0.67 * betaRaw + 0.33;
+  if (p.type === 'stock') beta = Math.max(beta, s.minStockBeta);
   const equilibrium = p.type === 'crypto' ? rf + s.cryptoPremium / 100 : rf + Math.max(beta, 0) * (s.equityPremium / 100);
 
   // --- Storico "credibile": shrinkage bayesiano (modello normale-normale) verso l'equilibrio.
@@ -141,7 +149,7 @@ export function forwardParams(p, settings = {}) {
     vol,
     expected,
     beta,
-    betaRaw: betaEst?.raw ?? f.beta ?? null,
+    betaRaw: rawBetas.length ? betaRaw : null,
     sigmaLong,
     sigmaEwma,
     sigmaImpl,

@@ -16,8 +16,25 @@ fs.mkdirSync(path.join(OUT, 'data/history'), { recursive: true });
 fs.mkdirSync(path.join(OUT, 'data/outlook'), { recursive: true });
 const write = (rel, obj) => fs.writeFileSync(path.join(OUT, rel), JSON.stringify(obj));
 
+// Versione nei nomi dei file: il browser (anche l'app sulla schermata Home) scarica sempre il codice nuovo.
+const BUILD = (process.env.GITHUB_SHA || Date.now().toString(36)).slice(0, 10);
 const indexFile = path.join(OUT, 'index.html');
-fs.writeFileSync(indexFile, fs.readFileSync(indexFile, 'utf8').replace('<html lang="it">', '<html lang="it" data-static>'));
+fs.writeFileSync(
+  indexFile,
+  fs
+    .readFileSync(indexFile, 'utf8')
+    .replace('<html lang="it">', '<html lang="it" data-static>')
+    .replace('href="styles.css"', `href="styles.css?v=${BUILD}"`)
+    .replace('src="js/app.js"', `src="js/app.js?v=${BUILD}"`),
+);
+for (const f of fs.readdirSync(path.join(OUT, 'js'))) {
+  const file = path.join(OUT, 'js', f);
+  const code = fs
+    .readFileSync(file, 'utf8')
+    .replace(/(from\s+'\.\/[\w-]+\.js)'/g, `$1?v=${BUILD}'`)
+    .replace(/new URL\('\.\/worker\.js'/g, `new URL('./worker.js?v=${BUILD}'`);
+  fs.writeFileSync(file, code);
+}
 
 const { instruments, quotes, results, ok, key, generatedAt } = await computeSnapshot({
   onData(inst, history, fundamentals) {

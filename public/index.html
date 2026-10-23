@@ -16,6 +16,7 @@
     <div class="actions">
       <button id="btn-add" class="ghost">+ Aggiungi ISIN</button>
       <button id="btn-settings" class="ghost">Parametri</button>
+      <button id="btn-backtest" class="ghost">Backtest</button>
       <button id="btn-quotes" class="ghost">Aggiorna quotazioni</button>
       <button id="btn-run" class="primary">Calcola classifica</button>
     </div>
@@ -98,6 +99,18 @@
       <button class="ghost" aria-label="Chiudi">✕</button>
     </form>
     <div id="d-body"></div>
+  </dialog>
+
+  <!-- Backtest -->
+  <dialog id="backtest" class="sheet">
+    <form method="dialog" class="sheet-head">
+      <div>
+        <h2>Backtest del modello</h2>
+        <div id="bt-sub" class="muted"></div>
+      </div>
+      <button class="ghost" aria-label="Chiudi">✕</button>
+    </form>
+    <div id="bt-body" class="bt"></div>
   </dialog>
 
   <!-- Parametri -->

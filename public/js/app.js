@@ -81,6 +81,7 @@ function staticPath(path) {
     '/api/instruments': 'data/instruments.json',
     '/api/quotes': 'data/quotes.json',
     '/api/results': 'data/results.json',
+    '/api/backtest': 'data/backtest.json',
     '/api/history': `data/history/${fileKey(sym)}.json`,
     '/api/outlook': `data/outlook/${fileKey(sym)}.json`,
   };
@@ -202,6 +203,7 @@ async function checkNewData() {
   state.instruments = instruments;
   state.quotes = quotes;
   state.data.clear();
+  state.backtest = null;
   if (arrived.length) {
     state.pendingIsins = state.pendingIsins.filter((x) => !arrived.some((i) => i.isin === x));
     const m = $('#isin-msg');
@@ -675,6 +677,157 @@ function renderDetail(inst, r, d) {
   drawPrice($('#c-price'), d.history);
 }
 
+// ---------- backtest
+async function openBacktest() {
+  const dlg = $('#backtest');
+  $('#bt-body').innerHTML = '<p class="muted">Caricamento…</p>';
+  $('#bt-sub').textContent = '';
+  dlg.showModal();
+  try {
+    if (!state.backtest) state.backtest = await api('/api/backtest');
+    renderBacktest(state.backtest);
+  } catch (e) {
+    $('#bt-body').innerHTML = `<p class="neg">Backtest non disponibile: ${esc(e.message)}</p>`;
+  }
+}
+
+function verdict(value, good, mid, higherIsBetter = true) {
+  if (value == null) return '';
+  const ok = higherIsBetter ? value >= good : value <= good;
+  const so = higherIsBetter ? value >= mid : value <= mid;
+  return ok ? 'good' : so ? 'mid' : 'bad';
+}
+const VERDICT_LABEL = { good: 'buono', mid: 'discreto', bad: 'debole' };
+const num2 = (x) => (x == null ? '–' : nf2.format(x));
+
+function renderBacktest(bt) {
+  const f = bt.modes?.forward?.summary;
+  const h = bt.modes?.historical?.summary;
+  if (!f) {
+    $('#bt-body').innerHTML = '<p class="muted">Nessuno strumento con storico sufficiente (servono almeno 7 anni).</p>';
+    return;
+  }
+  const date = (t) => new Date(t * 1000).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+  $('#bt-sub').textContent = `Previsioni fatte con i soli dati disponibili il ${date(bt.t0)} e confrontate con com'è andata davvero nei 5 anni successivi · ${f.n.toLocaleString('it-IT')} strumenti`;
+  const vRisk = verdict(f.risk.mddAboveP95, 0.08, 0.15, false);
+  const vRange = verdict(f.returns.inside90, 0.8, 0.65);
+  const vRank = verdict(f.returns.medianRankCorr, 0.3, 0.1);
+  const card = (v, title, value, expl) => `<div class="verdict ${v}"><div class="muted">${title}<span class="tag">${VERDICT_LABEL[v] || ''}</span></div><b>${value}</b><div class="muted">${expl}</div></div>`;
+  const row = (label, key, fmt, expected, group = 'risk') =>
+    `<tr><td>${label}</td><td class="num">${expected}</td><td class="num"><b>${fmt(f[group][key])}</b></td><td class="num">${fmt(h?.[group]?.[key])}</td></tr>`;
+  const p0 = (x) => pct(x, false, 0);
+  const q = f.byRatio;
+  const types = bt.modes.forward.byType || {};
+  const TYPE_NAMES = { stock: 'Azioni', etf: 'ETF/ETC', crypto: 'Crypto' };
+  const cal = bt.calibration;
+  const calInUse = bt.calibrationInUse?.meta;
+  const PARAM_NAMES = { weightHistory: 'Peso dello storico', equityPremium: 'Premio rischio azionario (%)', priorUncertainty: "Incertezza sull'equilibrio (%)", minStockBeta: 'Beta minimo azioni', ewmaWeight: 'Peso volatilità recente', volScale: 'Scala della volatilità' };
+
+  $('#bt-body').innerHTML = `
+    <div class="verdicts">
+      ${card(vRisk, 'Stima del rischio', p0(f.risk.mddAboveP95), 'strumenti che hanno perso più dello scenario sfavorevole previsto (ideale ≈ 5%)')}
+      ${card(vRange, 'Intervallo di rendimento', p0(f.returns.inside90), 'risultati reali dentro la forchetta prevista 5–95% (ideale ≈ 90%)')}
+      ${card(vRank, 'Capacità di ordinare', num2(f.returns.medianRankCorr), 'correlazione tra guadagno previsto e reale (0 = nessuna, 1 = perfetta)')}
+    </div>
+
+    <h3>Rischio: le perdite previste erano realistiche?</h3>
+    <div class="scroll"><table>
+      <thead><tr><th></th><th class="num">Ideale</th><th class="num">Modello prospettico</th><th class="num">Solo storico</th></tr></thead>
+      <tbody>
+        ${row('Perdita max reale oltre lo scenario sfavorevole (95°)', 'mddAboveP95', p0, '≈ 5%')}
+        ${row('Perdita max reale oltre quella mediana prevista', 'mddAboveMedian', p0, '≈ 50%')}
+        ${row('Ordine: perdita prevista vs reale (correlazione)', 'mddRankCorr', num2, 'alta')}
+        ${row('Ordine: volatilità prevista vs reale (correlazione)', 'volRankCorr', num2, 'alta')}
+      </tbody></table></div>
+
+    <h3>Rendimento: le forchette previste contenevano il risultato?</h3>
+    <div class="scroll"><table>
+      <thead><tr><th></th><th class="num">Ideale</th><th class="num">Modello prospettico</th><th class="num">Solo storico</th></tr></thead>
+      <tbody>
+        ${row('Risultato reale dentro la forchetta 5–95%', 'inside90', p0, '≈ 90%', 'returns')}
+        ${row('Sotto lo scenario peggiore (5%)', 'belowP5', p0, '≈ 5%', 'returns')}
+        ${row('Sopra lo scenario migliore (95%)', 'aboveP95', p0, '≈ 5%', 'returns')}
+        ${row('Sopra la mediana prevista', 'aboveMedian', p0, '≈ 50%', 'returns')}
+        ${row('Ordine: guadagno previsto vs reale (correlazione)', 'medianRankCorr', num2, 'alta', 'returns')}
+        <tr><td>Guadagno netto mediano: previsto → reale</td><td></td><td class="num"><b>${pct(f.returns.predNetMedian, true)} → ${pct(f.returns.realNetMedian, true)}</b></td><td class="num">${pct(h?.returns?.predNetMedian, true)} → ${pct(h?.returns?.realNetMedian, true)}</td></tr>
+      </tbody></table></div>
+
+    <h3>La classifica funziona? (5 gruppi secondo il rapporto previsto)</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Gruppo</th><th class="num">Rapporto previsto</th><th class="num">Guadagno reale medio</th><th class="num">Guadagno reale mediano</th><th class="num">Perdita max reale</th><th class="num">In perdita</th></tr></thead>
+      <tbody>${q
+        .map(
+          (g, k) => `<tr><td>${k === 0 ? '1 (migliori)' : k === 4 ? '5 (peggiori)' : k + 1}</td><td class="num">${g.predicted >= 1e8 ? '∞' : num2(g.predicted)}</td><td class="num ${cls(g.realNetMean)}">${pct(g.realNetMean, true)}</td><td class="num ${cls(g.realNetMedian)}">${pct(g.realNetMedian, true)}</td><td class="num neg">−${pct(g.realMddMedian)}</td><td class="num">${p0(g.realLossShare)}</td></tr>`,
+        )
+        .join('')}</tbody></table></div>
+
+    <h3>Probabilità di perdita: prevista vs reale</h3>
+    <div class="scroll"><table>
+      <thead><tr><th>Prevista</th><th class="num">Strumenti</th><th class="num">Media prevista</th><th class="num">Finiti in perdita</th></tr></thead>
+      <tbody>${f.probLoss.map((b) => `<tr><td>${p0(b.from)}–${p0(b.to)}</td><td class="num">${b.n}</td><td class="num">${p0(b.predicted)}</td><td class="num"><b>${p0(b.realized)}</b></td></tr>`).join('')}</tbody></table></div>
+
+    <h3>Per tipo di strumento (modello prospettico)</h3>
+    <div class="scroll"><table>
+      <thead><tr><th></th><th class="num">Strumenti</th><th class="num">Dentro 5–95%</th><th class="num">Oltre perdita sfavorevole</th><th class="num">Correlazione guadagno</th></tr></thead>
+      <tbody>${Object.entries(types)
+        .filter(([, v]) => v)
+        .map(([t, v]) => `<tr><td>${TYPE_NAMES[t]}</td><td class="num">${v.n}</td><td class="num">${p0(v.returns.inside90)}</td><td class="num">${p0(v.risk.mddAboveP95)}</td><td class="num">${num2(v.returns.medianRankCorr)}</td></tr>`)
+        .join('')}</tbody></table></div>
+
+    <h3>Guadagno previsto (mediano) vs reale</h3>
+    <canvas id="bt-scatter"></canvas>
+    <div class="legend"><span>ogni punto è uno strumento · linea tratteggiata = previsione perfetta</span></div>
+
+    <h3>Taratura automatica del modello</h3>
+    ${
+      cal
+        ? `<p>Ultima taratura: ${new Date(cal.generatedAt).toLocaleDateString('it-IT')} · ${cal.sample.pool.toLocaleString('it-IT')} strumenti con storico sufficiente, previsioni da ${cal.origins.join(', ')} anni fa, taratura su ${cal.sample.train} strumenti e verifica su ${cal.sample.validation} mai usati nella taratura.</p>
+      <p>Errore delle previsioni sugli strumenti di verifica: <b>${num2(cal.loss.validationBefore * 100)} → ${num2(cal.loss.validationAfter * 100)}</b> (${pct(cal.loss.improvement, true)} di miglioramento) · ${cal.adopted ? '<b class="pos">parametri adottati</b>' : '<b>parametri non adottati</b> (nessun miglioramento sui dati di verifica)'}</p>
+      <div class="scroll"><table><thead><tr><th>Parametro</th><th class="num">Predefinito</th><th class="num">Tarato</th></tr></thead><tbody>
+        ${Object.keys(cal.params.after).map((k) => `<tr><td>${PARAM_NAMES[k] || k}</td><td class="num">${cal.params.before[k]}</td><td class="num"><b>${cal.params.after[k]}</b></td></tr>`).join('')}
+      </tbody></table></div>
+      <p class="muted">Sugli strumenti di verifica: forchetta 5–95% ${p0(cal.validation.before.returns.inside90)} → ${p0(cal.validation.after.returns.inside90)}, perdite oltre lo scenario sfavorevole ${p0(cal.validation.before.risk.mddAboveP95)} → ${p0(cal.validation.after.risk.mddAboveP95)}.</p>`
+        : '<p class="muted">La taratura automatica non è ancora stata eseguita.</p>'
+    }
+    ${calInUse ? `<p class="muted">Parametri in uso nell'app: ${bt.calibrationInUse.meta.adopted === false ? 'predefiniti' : 'tarati il ' + new Date(calInUse.generatedAt).toLocaleDateString('it-IT')}.</p>` : ''}
+
+    <h3>Limiti di questo test</h3>
+    <ul class="muted">
+      <li>Le stime degli analisti di 5 anni fa non sono disponibili: qui il modello lavora senza (nell'app le usa).</li>
+      <li>Si testano solo strumenti che esistono ancora oggi: chi è fallito o è stato tolto dal listino manca, quindi i risultati sono un po' ottimistici.</li>
+      <li>I periodi di 5 anni si sovrappongono e vengono da un solo decennio (con un mercato azionario molto favorevole): un decennio diverso può dare risultati diversi.</li>
+      <li>Un buon backtest non garantisce previsioni future altrettanto buone.</li>
+    </ul>`;
+  drawBacktestScatter($('#bt-scatter'), bt.points || []);
+}
+
+function drawBacktestScatter(c, points) {
+  const { ctx, w, h, color } = setupCanvas(c);
+  const pad = { l: 52, r: 10, t: 10, b: 28 };
+  const lo = -1;
+  const hi = 3;
+  const X = (v) => pad.l + ((Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (w - pad.l - pad.r);
+  const Y = (v) => pad.t + (1 - (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo)) * (h - pad.t - pad.b);
+  axes(ctx, color, pad, w, h, lo, hi, (v) => pct(v, true, 0));
+  ctx.fillStyle = color.line;
+  ctx.globalAlpha = 0.35;
+  for (const p of points) {
+    if (p[1] == null || p[2] == null) continue;
+    ctx.fillRect(X(p[1]) - 1.5, Y(p[2]) - 1.5, 3, 3);
+  }
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = color.muted;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath();
+  ctx.moveTo(X(lo), Y(lo));
+  ctx.lineTo(X(hi), Y(hi));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = color.muted;
+  ctx.fillText('previsto →', w - pad.r - 60, h - 6);
+  ctx.fillText('reale ↑', 4, pad.t + 10);
+}
+
 // ---------- grafici (canvas)
 function setupCanvas(c) {
   const dpr = window.devicePixelRatio || 1;
@@ -944,6 +1097,7 @@ function bind() {
   $('#btn-stop').addEventListener('click', () => (state.stop = true));
   $('#btn-quotes').addEventListener('click', () => refreshQuotes(visibleSymbols()));
   $('#btn-export').addEventListener('click', exportCsv);
+  $('#btn-backtest').addEventListener('click', openBacktest);
   $('#btn-settings').addEventListener('click', () => {
     fillSettings();
     $('#settings').showModal();

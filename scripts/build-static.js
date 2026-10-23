@@ -5,7 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { universe } from '../lib/store.js';
 import { computeSnapshot } from '../lib/snapshot.js';
-import { fileKey } from '../public/js/analyze.js';
+import { fileKey, DEFAULT_SETTINGS, BENCHMARK_SYMBOL } from '../public/js/analyze.js';
+import { runBacktest, backtestPayload } from '../public/js/backtest.js';
+import { CALIBRATION } from '../public/js/calibration.js';
 
 const OUT = path.resolve(process.env.OUT_DIR || '_site');
 const MIN_SUCCESS = 0.5; // sotto questa quota di storici scaricati non si pubblica (meglio i dati vecchi)
@@ -36,8 +38,10 @@ for (const f of fs.readdirSync(path.join(OUT, 'js'))) {
   fs.writeFileSync(file, code);
 }
 
+const histories = [];
 const { instruments, quotes, results, ok, key, generatedAt } = await computeSnapshot({
   onData(inst, history, fundamentals) {
+    histories.push({ instrument: inst, history });
     write(`data/history/${fileKey(inst.symbol)}.json`, history);
     if (fundamentals) write(`data/outlook/${fileKey(inst.symbol)}.json`, fundamentals);
   },
@@ -48,6 +52,18 @@ write('data/instruments.json', instruments);
 write('data/quotes.json', quotes);
 write('data/results.json', { key, results });
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
+
+// Backtest: previsioni fatte con i dati di 5 anni fa confrontate con l'esito reale.
+const benchmark = histories.find((h) => h.instrument.symbol === BENCHMARK_SYMBOL)?.history;
+const bt = runBacktest(histories.map((h) => ({ ...h, benchmark })), DEFAULT_SETTINGS);
+let calibration = null;
+try {
+  calibration = JSON.parse(fs.readFileSync('data/calibration-report.json', 'utf8'));
+} catch {
+  /* taratura non ancora eseguita */
+}
+write('data/backtest.json', backtestPayload(bt, { generatedAt, calibration, calibrationInUse: CALIBRATION }));
+console.log(`Backtest: ${bt.modes.forward.summary?.n ?? 0} strumenti con almeno 7 anni di storico.`);
 
 console.log(`Sito generato in ${OUT}: ${ok}/${instruments.length} strumenti con dati, ${Object.keys(quotes).length} quotazioni.`);
 if (ok < instruments.length * MIN_SUCCESS) {

@@ -7,7 +7,7 @@ on:
     # Ogni 2 ore: storici e analisti. Quotazioni e previsioni frequenti arrivano da live.yml
     - cron: '23 */2 * * *'
   workflow_run:
-    workflows: ['Aggiorna universo strumenti', 'Aggiungi o rimuovi ISIN', 'Importa ISIN']
+    workflows: ['Aggiorna universo strumenti', 'Aggiungi o rimuovi ISIN', 'Importa ISIN', 'Taratura modello']
     types: [completed]
   workflow_dispatch:
 

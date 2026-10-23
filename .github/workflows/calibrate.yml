@@ -1,0 +1,57 @@
+name: Taratura modello
+
+# Ogni settimana (dopo la nuova selezione degli strumenti) il backtest sceglie i parametri del modello
+# prospettico che rendono le previsioni più precise; vengono adottati solo se migliorano anche sugli
+# strumenti di verifica. Poi il sito si ripubblica e gli aggiornamenti live ripartono col modello nuovo.
+on:
+  schedule:
+    - cron: '37 6 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: calibrate
+  cancel-in-progress: false
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: calibrate-cache-${{ github.run_id }}
+          restore-keys: |
+            live-cache-
+            market-cache-
+            import-cache-
+            universe-cache-
+      - run: npm test
+      - run: node scripts/calibrate.js
+      - name: Salva
+        id: save
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/js/calibration.js data/calibration-report.json
+          git diff --cached --quiet && echo "Nessuna modifica" && exit 0
+          git commit -m "Taratura modello dal backtest"
+          git pull --rebase --quiet origin "$GITHUB_REF_NAME"
+          git push
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+      - name: Riavvia aggiornamenti live con il modello tarato
+        if: steps.save.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in $(gh run list --repo "$GITHUB_REPOSITORY" --workflow live.yml --status in_progress --json databaseId -q '.[].databaseId'); do gh run cancel "$id" --repo "$GITHUB_REPOSITORY" || true; done
+          sleep 15
+          gh workflow run live.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"

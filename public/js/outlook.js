@@ -5,8 +5,9 @@
 //    applicato al solo primo anno e poi convergente all'equilibrio
 //  • volatilità: media tra lungo periodo, regime recente (EWMA) e volatilità implicita delle opzioni
 import { logReturns, WEEKS_PER_YEAR } from './montecarlo.js';
+import { CALIBRATION } from './calibration.js';
 
-export const DEFAULT_OUTLOOK = {
+export const BASE_OUTLOOK = {
   mode: 'forward',        // 'forward' (prospettico) | 'historical' (solo storico)
   riskFree: 2.0,          // % annuo, tasso privo di rischio in EUR
   equityPremium: 5.0,     // % annuo, premio per il rischio azionario globale
@@ -20,7 +21,12 @@ export const DEFAULT_OUTLOOK = {
   ewmaLambda: 0.97,       // decadimento settimanale per la volatilità recente
   betaYears: 5,
   minStockBeta: 0.5,      // beta minimo per le singole azioni (dopo l'aggiustamento di Blume)
+  ewmaWeight: 0.4,        // peso della volatilità recente (EWMA) rispetto a quella di lungo periodo
+  volScale: 1.0,          // correzione complessiva della volatilità (tarata sulle perdite massime reali)
 };
+
+// Valori in uso: predefiniti + eventuale taratura dal backtest.
+export const DEFAULT_OUTLOOK = { ...BASE_OUTLOOK, ...(CALIBRATION.outlook || {}) };
 
 const WEEK = 7 * 86400;
 
@@ -98,9 +104,10 @@ export function forwardParams(p, settings = {}) {
   const sigmaEwma = ewmaVol(rets, s.ewmaLambda);
   const f = p.fundamentals || {};
   const sigmaImpl = f.impliedVol > 0 ? f.impliedVol : null;
-  const vol = sigmaImpl
-    ? 0.4 * sigmaLong + 0.3 * sigmaEwma + 0.3 * sigmaImpl
-    : 0.6 * sigmaLong + 0.4 * sigmaEwma;
+  // Lungo periodo + regime recente (+ implicita dalle opzioni, quando c'è, con peso 0,3).
+  const wE = Math.min(Math.max(s.ewmaWeight, 0), 1);
+  const blend = (1 - wE) * sigmaLong + wE * sigmaEwma;
+  const vol = s.volScale * (sigmaImpl ? 0.7 * blend + 0.3 * sigmaImpl : blend);
 
   // --- Rendimento atteso di equilibrio
   const rf = s.riskFree / 100;

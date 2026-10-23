@@ -6,6 +6,10 @@ import { listInstruments, addInstruments, removeInstrument, universe } from './l
 import { historyEur, quote, outlook, recentEur, performanceFrom } from './lib/market.js';
 import { search, pickListing } from './lib/yahoo.js';
 import { parseInstrumentCsv } from './lib/importer.js';
+import { cached } from './lib/cache.js';
+import { runBacktest, backtestPayload } from './public/js/backtest.js';
+import { DEFAULT_SETTINGS, BENCHMARK_SYMBOL } from './public/js/analyze.js';
+import { CALIBRATION } from './public/js/calibration.js';
 
 const PORT = Number(process.env.PORT || 3000);
 const PUBLIC = path.resolve('public');
@@ -93,6 +97,24 @@ const routes = {
     return Object.fromEntries(symbols.map((s, k) => [s, list[k]]));
   },
   'POST /api/import': async (req) => importCsv(await readBody(req)),
+  'GET /api/backtest': async () =>
+    cached('backtest_local', 12 * 3600e3, async () => {
+      const list = listInstruments();
+      const benchmark = await historyEur(BENCHMARK_SYMBOL).catch(() => null);
+      const items = [];
+      for (const instrument of list) {
+        const history = await historyEur(instrument.symbol).catch(() => null);
+        if (history) items.push({ instrument, history, benchmark });
+      }
+      const report = (() => {
+        try {
+          return JSON.parse(fs.readFileSync('data/calibration-report.json', 'utf8'));
+        } catch {
+          return null;
+        }
+      })();
+      return backtestPayload(runBacktest(items, DEFAULT_SETTINGS), { generatedAt: new Date().toISOString(), calibration: report, calibrationInUse: CALIBRATION });
+    }),
 };
 
 const server = http.createServer(async (req, res) => {

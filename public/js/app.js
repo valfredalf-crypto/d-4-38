@@ -1,5 +1,6 @@
 import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
 import { isValidIsin } from './isin.js';
+import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -17,12 +18,19 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'ratio', dir: 1 }, limit: PAGE },
+  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'ratio', dir: 1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
 
 // ---------- persistenza locale (solo comodità: tutto funziona anche senza)
+function loadFilters() {
+  try {
+    return JSON.parse(localStorage.getItem('trmc.filters')) || {};
+  } catch {
+    return {};
+  }
+}
 function store(key, value) {
   try {
     if (value === undefined) return JSON.parse(localStorage.getItem(key));
@@ -338,12 +346,79 @@ async function refreshQuotes(symbols) {
 function filtered() {
   const { type, q, onlyComputed } = state.view;
   const needle = q.trim().toLowerCase();
+  const active = activeFilters(state.view.filters);
   return state.instruments.filter((i) => {
     if (type === 'growth' ? i.growth == null : type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
-    if (!needle) return true;
-    return `${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle);
+    if (needle && !`${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle)) return false;
+    return !active.length || passes(rowValues(i), active);
   });
+}
+
+// ---------- pannello filtri sugli indicatori
+function saveFilters() {
+  try {
+    localStorage.setItem('trmc.filters', JSON.stringify(state.view.filters));
+  } catch {
+    /* solo comodità */
+  }
+}
+
+function updateFiltersUi() {
+  const n = activeFilters(state.view.filters).length;
+  const badge = $('#filters-count');
+  badge.hidden = !n;
+  badge.textContent = n;
+  for (const el of $$('#filters-panel input[data-key]')) {
+    const v = state.view.filters[el.dataset.key]?.[el.dataset.bound] ?? '';
+    if (document.activeElement !== el) el.value = v;
+    el.classList.toggle('on', String(v).trim() !== '');
+  }
+  const total = filtered().length;
+  $('#filters-summary').textContent = n ? `${n} filtr${n === 1 ? 'o' : 'i'} attiv${n === 1 ? 'o' : 'i'} · ${total.toLocaleString('it-IT')} strumenti corrispondono` : 'Nessun filtro attivo';
+}
+
+function buildFiltersPanel() {
+  $('#filters-panel .filters-grid').innerHTML = INDICATORS.map(
+    (ind) => `<div class="frow"><span>${esc(ind.label)}${ind.pct ? ' <span class="unit">%</span>' : ''}</span>
+      <input data-key="${ind.key}" data-bound="min" inputmode="decimal" placeholder="min" aria-label="${esc(ind.label)} minimo">
+      <input data-key="${ind.key}" data-bound="max" inputmode="decimal" placeholder="max" aria-label="${esc(ind.label)} massimo"></div>`,
+  ).join('');
+  const presets = $('#filters-panel .presets');
+  PRESETS.forEach((p, k) => presets.insertAdjacentHTML('beforeend', `<button class="ghost" data-preset="${k}">${esc(p.label)}</button>`));
+  presets.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-preset]');
+    if (!b) return;
+    for (const [key, val] of Object.entries(PRESETS[Number(b.dataset.preset)].filters)) state.view.filters[key] = { ...val };
+    applyFilters();
+  });
+  let t;
+  $('#filters-panel .filters-grid').addEventListener('input', (e) => {
+    const el = e.target.closest('input[data-key]');
+    if (!el) return;
+    const f = (state.view.filters[el.dataset.key] ||= {});
+    f[el.dataset.bound] = el.value;
+    clearTimeout(t);
+    t = setTimeout(applyFilters, 250);
+  });
+  $('#btn-filters-reset').addEventListener('click', () => {
+    state.view.filters = {};
+    applyFilters();
+  });
+  $('#btn-filters').addEventListener('click', () => {
+    const panel = $('#filters-panel');
+    panel.hidden = !panel.hidden;
+    $('#btn-filters').setAttribute('aria-expanded', String(!panel.hidden));
+  });
+  updateFiltersUi();
+}
+
+function applyFilters() {
+  saveFilters();
+  state.view.limit = PAGE;
+  render();
+  updateFiltersUi();
+  refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
 }
 
 function rowValues(i) {
@@ -425,6 +500,11 @@ function render() {
     })
     .join('');
   $('#empty').hidden = rows.length > 0;
+  if ($('#filters-count')) {
+    const n = activeFilters(state.view.filters).length;
+    $('#filters-count').hidden = !n;
+    $('#filters-count').textContent = n;
+  }
   const moreBtn = $('#btn-more');
   moreBtn.hidden = rows.length <= state.view.limit;
   moreBtn.textContent = `Mostra altri (${rows.length - visible.length} rimanenti)`;
@@ -881,6 +961,7 @@ function bind() {
 
 async function main() {
   bind();
+  buildFiltersPanel();
   try {
     const meta = await api('/api/meta');
     state.meta = meta;

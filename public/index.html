@@ -35,7 +35,18 @@
     <input id="filter" type="search" placeholder="Filtra per nome, ticker o ISIN…" autocomplete="off">
     <label class="check"><input type="checkbox" id="only-computed"> Solo calcolati</label>
     <label class="check" id="auto-label"><input type="checkbox" id="auto-quotes" checked> Quotazioni e previsioni live (60 s)</label>
+    <button id="btn-filters" class="ghost small" aria-expanded="false">Filtri <span id="filters-count" class="badge" hidden></span></button>
     <button id="btn-export" class="ghost small">Esporta CSV</button>
+  </section>
+
+  <section id="filters-panel" class="filters" hidden>
+    <div class="presets"><span class="muted">Rapidi:</span></div>
+    <div class="filters-grid"></div>
+    <div class="filters-foot">
+      <span id="filters-summary" class="muted"></span>
+      <button id="btn-filters-reset" class="ghost small">Azzera filtri</button>
+    </div>
+    <p class="muted small-note">Valori in %: es. “Perdita massima ≤ 40” = perdita fino al 40%. Gli strumenti senza previsione vengono esclusi quando un filtro è attivo.</p>
   </section>
 
   <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span><button id="btn-stop" class="ghost small">Interrompi</button></div>

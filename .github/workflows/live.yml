@@ -1,0 +1,41 @@
+name: Dati live
+
+# In orario di borsa un job resta attivo e ogni 5 minuti ricalcola quotazioni e previsioni di tutti
+# gli strumenti, pubblicandole sul ramo `live-data` (l'app lo legge ogni 60 s). Allo scadere del
+# tempo massimo si rilancia da solo; l'esecuzione oraria fa da riserva se la catena si interrompe.
+on:
+  schedule:
+    - cron: '7 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: live
+  cancel-in-progress: false
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: live-cache-${{ github.run_id }}
+          restore-keys: |
+            live-cache-
+            market-cache-
+      - id: loop
+        run: node scripts/live-loop.js
+      - name: Rilancio
+        if: steps.loop.outputs.restart == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run live.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME"

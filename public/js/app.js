@@ -197,6 +197,28 @@ async function checkNewData() {
   render();
 }
 
+// Versione online: quotazioni e previsioni aggiornate ogni ~5 minuti in orario di borsa
+// (workflow live.yml → ramo live-data, letto da raw.githubusercontent.com).
+async function checkLiveData() {
+  const m = state.meta;
+  if (!m?.repo) return;
+  const res = await fetch(`https://raw.githubusercontent.com/${m.repo}/${m.liveBranch || 'live-data'}/live.json`, { cache: 'no-store' });
+  if (!res.ok) return;
+  const live = await res.json();
+  if (!live.generatedAt || live.generatedAt <= (state.liveVersion || state.dataVersion || '')) return;
+  state.liveVersion = live.generatedAt;
+  const known = new Set(state.instruments.map((i) => i.symbol));
+  for (const [k, q] of Object.entries(live.quotes || {})) if (known.has(k) && q) state.quotes[k] = q;
+  if (live.key === settingsKey()) {
+    for (const [k, r] of Object.entries(live.results || {})) {
+      if (!known.has(k)) continue;
+      state.results[k] = r;
+      state.priced[k] = live.quotes?.[k]?.priceEur;
+    }
+    saveResults();
+  }
+}
+
 // Versione online: prezzi crypto in tempo reale da Coinbase (API pubblica, nessuna chiave).
 async function liveCrypto() {
   const res = await fetch('https://api.coinbase.com/v2/exchange-rates?currency=EUR');
@@ -222,8 +244,9 @@ function updateStaticBanner(meta) {
   const b = $('#static-banner');
   b.hidden = false;
   const fmt = (d) => new Date(d).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' });
+  const latest = [meta.generatedAt, state.liveVersion].filter(Boolean).sort().at(-1);
   b.textContent =
-    `Azioni ed ETF aggiornati al ${fmt(meta.generatedAt)} (ogni ~15 minuti, quotazioni ritardate)` +
+    `Azioni ed ETF aggiornati al ${fmt(latest)} (ogni ~5 minuti in orario di borsa, quotazioni ritardate)` +
     (state.liveAt ? ` · crypto in tempo reale alle ${state.liveAt.toLocaleTimeString('it-IT')}` : '') +
     '. Previsioni ricalcolate a ogni aggiornamento.';
   b.dataset.generatedAt = meta.generatedAt;
@@ -234,6 +257,7 @@ async function liveTick() {
   try {
     if (STATIC) {
       await checkNewData().catch(() => {});
+      await checkLiveData().catch(() => {});
       await liveCrypto().catch(() => {});
       updateStaticBanner({ generatedAt: state.dataVersion });
       render();

@@ -14,7 +14,7 @@
       <span class="sub">Azioni, ETF e crypto di Trade Republic · classifica rischio/rendimento a 5 anni</span>
     </div>
     <div class="actions">
-      <button id="btn-add" class="ghost">+ Aggiungi strumenti</button>
+      <button id="btn-add" class="ghost">+ Aggiungi ISIN</button>
       <button id="btn-settings" class="ghost">Parametri</button>
       <button id="btn-quotes" class="ghost">Aggiorna quotazioni</button>
       <button id="btn-run" class="primary">Calcola classifica</button>
@@ -151,8 +151,21 @@
       <h2>Aggiungi strumenti</h2>
       <button class="ghost" aria-label="Chiudi">✕</button>
     </form>
-    <div class="add-body">
-      <h3>Cerca per nome, ticker o ISIN</h3>
+    <!-- Versione online: la richiesta passa da GitHub (issue) e un'automazione aggiunge lo strumento -->
+    <div class="add-body" id="add-static" hidden>
+      <h3>Aggiungi per ISIN</h3>
+      <form id="isin-form" class="row">
+        <input id="isin-q" type="text" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12" placeholder="es. IE00B4L5Y983">
+        <button class="primary">Aggiungi</button>
+      </form>
+      <div id="isin-msg" class="muted"></div>
+      <p class="muted">Si apre GitHub con la richiesta già compilata: tocca <strong>“Create” / “Submit new issue”</strong> per confermare.
+      Un'automazione verifica l'ISIN, trova la quotazione (preferibilmente su borse in euro) e aggiunge lo strumento:
+      compare qui da solo in circa 3 minuti, con previsione e posizione in classifica. Gli strumenti aggiunti restano
+      sempre in lista. L'esito è scritto anche nella richiesta su GitHub.</p>
+    </div>
+    <div class="add-body" id="add-local">
+      <h3>Cerca per ISIN, nome o ticker</h3>
       <form id="search-form" class="row">
         <input id="search-q" type="search" placeholder="es. IE00B4L5Y983, Ferrari, PLTR" autocomplete="off">
         <button class="primary">Cerca</button>

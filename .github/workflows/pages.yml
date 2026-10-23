@@ -7,7 +7,7 @@ on:
     # Ogni 15 minuti (GitHub può ritardare le esecuzioni programmate di qualche minuto)
     - cron: '*/15 * * * *'
   workflow_run:
-    workflows: ['Aggiorna universo strumenti']
+    workflows: ['Aggiorna universo strumenti', 'Aggiungi o rimuovi ISIN']
     types: [completed]
   workflow_dispatch:
 

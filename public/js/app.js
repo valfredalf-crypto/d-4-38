@@ -1,4 +1,5 @@
 import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
+import { isValidIsin } from './isin.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -177,9 +178,15 @@ async function checkNewData() {
   if (meta.generatedAt === state.dataVersion) return;
   state.dataVersion = meta.generatedAt;
   const [instruments, quotes, pre] = await Promise.all([api('/api/instruments'), api('/api/quotes'), api('/api/results').catch(() => null)]);
+  const arrived = instruments.filter((i) => state.pendingIsins?.includes(i.isin));
   state.instruments = instruments;
   state.quotes = quotes;
   state.data.clear();
+  if (arrived.length) {
+    state.pendingIsins = state.pendingIsins.filter((x) => !arrived.some((i) => i.isin === x));
+    const m = $('#isin-msg');
+    if (m) m.innerHTML = `<span class="pos">Aggiunto: ${arrived.map((i) => esc(i.name)).join(', ')}.</span>`;
+  }
   if (pre && pre.key === settingsKey()) {
     state.results = pre.results;
     state.priced = Object.fromEntries(Object.entries(quotes).map(([k, q]) => [k, q?.priceEur]));
@@ -374,7 +381,7 @@ function render() {
       }
       return `<tr data-symbol="${esc(i.symbol)}">
         <td class="num muted">${rank ?? ''}</td>
-        <td><span class="name" title="${esc(i.name)}">${esc(i.name)}</span><span class="ids">${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td><span class="name" title="${esc(i.name)}">${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${esc(i.name)}</span><span class="ids">${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
         <td class="num">${eur(r.price)}</td>
         <td class="num ${cls(r.change)}">${pct(r.change, true, 2)}</td>
@@ -432,12 +439,28 @@ async function openDetail(symbol) {
   }
 }
 
+// Versione online: richieste di aggiunta/rimozione come issue GitHub (gestite da manage-isin.yml).
+function issueUrl(action, isin) {
+  const repo = state.meta?.repo;
+  if (!repo) return null;
+  const title = `${action} ISIN ${isin}`;
+  const body = `Richiesta inviata dall'app TR Monte Carlo.\n\nL'esito verrà scritto qui automaticamente in pochi minuti.`;
+  return `https://github.com/${repo}/issues/new?title=${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+}
+
 function removeButton(inst) {
-  if (STATIC) return '';
+  if (STATIC) {
+    if (inst.source !== 'extra' || !inst.isin || !state.meta?.repo) return '';
+    return `<p><button id="d-remove" class="ghost small">Rimuovi dalla lista</button> <span class="muted">(strumento aggiunto da te: la rimozione passa da GitHub)</span></p>`;
+  }
   return `<p><button id="d-remove" class="ghost small">Rimuovi dalla lista</button></p>`;
 }
 function bindRemove(inst) {
   $('#d-remove')?.addEventListener('click', async () => {
+    if (STATIC) {
+      window.open(issueUrl('Rimuovi', inst.isin), '_blank', 'noopener');
+      return;
+    }
     await api(`/api/instruments?symbol=${encodeURIComponent(inst.symbol)}`, { method: 'DELETE' });
     state.instruments = state.instruments.filter((i) => i.symbol !== inst.symbol);
     delete state.results[inst.symbol];
@@ -781,7 +804,34 @@ function bind() {
     $('#settings').close();
     recomputeComputed();
   });
-  $('#btn-add').addEventListener('click', () => $('#add').showModal());
+  $('#btn-add').addEventListener('click', () => {
+    $('#add-static').hidden = !STATIC;
+    $('#add-local').hidden = STATIC;
+    $('#add').showModal();
+    if (STATIC) $('#isin-q').focus();
+  });
+  $('#isin-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const isin = $('#isin-q').value.trim().toUpperCase().replace(/\s+/g, '');
+    const msg = $('#isin-msg');
+    if (!isValidIsin(isin)) {
+      msg.innerHTML = '<span class="neg">ISIN non valido: deve avere 12 caratteri (es. IE00B4L5Y983) e la cifra di controllo corretta.</span>';
+      return;
+    }
+    const have = state.instruments.find((i) => i.isin === isin);
+    if (have) {
+      msg.innerHTML = `<span class="pos">Già presente: ${esc(have.name)} (${esc(have.symbol)}).</span>`;
+      return;
+    }
+    const url = issueUrl('Aggiungi', isin);
+    if (!url) {
+      msg.innerHTML = '<span class="neg">Funzione non configurata per questo sito.</span>';
+      return;
+    }
+    window.open(url, '_blank', 'noopener');
+    state.pendingIsins = [...(state.pendingIsins || []), isin];
+    msg.innerHTML = `Richiesta per <strong>${esc(isin)}</strong> aperta su GitHub: confermala lì. Lo strumento comparirà qui da solo in circa 3 minuti.`;
+  });
   $('#search-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const q = $('#search-q').value.trim();
@@ -795,9 +845,11 @@ async function main() {
   bind();
   try {
     const meta = await api('/api/meta');
+    state.meta = meta;
     if (STATIC) {
       state.dataVersion = meta.generatedAt;
-      for (const sel of ['#btn-add', '#btn-quotes']) $(sel).hidden = true;
+      $('#btn-quotes').hidden = true;
+      $('#btn-add').hidden = !meta.repo;
       $('#auto-label').lastChild.textContent = ' Aggiornamento automatico (60 s)';
       updateStaticBanner(meta);
     }

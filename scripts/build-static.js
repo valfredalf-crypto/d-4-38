@@ -51,7 +51,7 @@ await Promise.all(
 );
 
 const generatedAt = new Date().toISOString();
-write('data/meta.json', { ...universe().meta, static: true, mock: process.env.MOCK === '1', generatedAt });
+write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, static: true, mock: process.env.MOCK === '1', generatedAt });
 write('data/instruments.json', instruments);
 write('data/quotes.json', quotes);
 write('data/results.json', { key: JSON.stringify(DEFAULT_SETTINGS), results });

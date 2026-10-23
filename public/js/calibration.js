@@ -3,8 +3,8 @@
 export const CALIBRATION = {
   "outlook": {},
   "meta": {
-    "generatedAt": "2026-10-23T23:27:32.957Z",
-    "improvement": 0.0573,
+    "generatedAt": "2026-10-23T23:48:01.867Z",
+    "improvement": 0.0343,
     "adopted": false
   }
 };

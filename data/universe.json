@@ -1,92 +1,61 @@
 {
  "meta": {
-  "description": "Le 300 azioni e i 300 ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra 5364 candidati negoziabili su Xetra/Trade Republic, più le 0 azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.",
+  "description": "Le 300 azioni e i 300 ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra 5364 candidati negoziabili su Xetra/Trade Republic, più le 100 azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.",
   "verifiedAt": "2026-10-22",
   "verification": "ISIN validati con cifra di controllo ISO 6166 e corrispondenza simbolo/ISIN verificata su fonti pubbliche (Deutsche Börse, justETF, emittenti, SEC). Usa npm run verify per un controllo live contro Yahoo Finance.",
   "notes": {
    "TIT.MI": "OPAS Poste Italiane conclusa a set. 2026 con ~85.8%: possibile delisting futuro"
   },
-  "universeGeneratedAt": "2026-10-23T14:33:25.878Z",
+  "universeGeneratedAt": "2026-10-23T14:40:47.021Z",
   "xetraUrl": "https://www.cashmarket.deutsche-boerse.com/resource/blob/1528/46db27a6cc5264ccd9a87f006a458948/data/t7-xetr-allTradableInstruments.csv",
   "candidates": 5364
  },
  "instruments": [
   {
-   "symbol": "ABEC.DE",
-   "isin": "US02079K1079",
-   "name": "Alphabet Inc.",
+   "symbol": "AEC1.DE",
+   "isin": "US0258161092",
+   "name": "American Express Company",
    "type": "stock",
-   "netGain5y": 0.263
-  },
-  {
-   "symbol": "DWD.DE",
-   "isin": "US6174464486",
-   "name": "Morgan Stanley",
-   "type": "stock",
-   "netGain5y": 0.2547
+   "outlookSymbol": "AXP",
+   "netGain5y": 0.2433
   },
   {
    "symbol": "UU2.DE",
    "isin": "US09290D1019",
    "name": "BlackRock, Inc.",
    "type": "stock",
-   "netGain5y": 0.2532
+   "outlookSymbol": "BLK",
+   "netGain5y": 0.2362
   },
   {
-   "symbol": "IBE.MC",
-   "isin": "ES0144580Y14",
-   "name": "Iberdrola",
+   "symbol": "ABEC.DE",
+   "isin": "US02079K1079",
+   "name": "Alphabet Inc.",
    "type": "stock",
-   "netGain5y": 0.251
-  },
-  {
-   "symbol": "AEC1.DE",
-   "isin": "US0258161092",
-   "name": "American Express Company",
-   "type": "stock",
-   "netGain5y": 0.2504
-  },
-  {
-   "symbol": "G.MI",
-   "isin": "IT0000062072",
-   "name": "Generali",
-   "type": "stock",
-   "netGain5y": 0.25
-  },
-  {
-   "symbol": "ALV.DE",
-   "isin": "DE0008404005",
-   "name": "Allianz",
-   "type": "stock",
-   "netGain5y": 0.2454
+   "outlookSymbol": "GOOG",
+   "netGain5y": 0.2334
   },
   {
    "symbol": "UBSG.SW",
    "isin": "CH0244767585",
    "name": "UBS Group",
    "type": "stock",
-   "netGain5y": 0.2366
+   "netGain5y": 0.2297
   },
   {
-   "symbol": "DB1.DE",
-   "isin": "DE0005810055",
-   "name": "Deutsche Börse",
+   "symbol": "DWD.DE",
+   "isin": "US6174464486",
+   "name": "Morgan Stanley",
    "type": "stock",
-   "netGain5y": 0.2278
+   "outlookSymbol": "MS",
+   "netGain5y": 0.2258
   },
   {
-   "symbol": "PST.MI",
-   "isin": "IT0003796171",
-   "name": "Poste Italiane",
+   "symbol": "ALV.DE",
+   "isin": "DE0008404005",
+   "name": "Allianz",
    "type": "stock",
-   "netGain5y": 0.2197
-  },
-  {
-   "symbol": "AI.PA",
-   "isin": "FR0000120073",
-   "name": "Air Liquide",
-   "type": "stock",
-   "netGain5y": 0.2192
+   "netGain5y": 0.2223
   },
   {
    "symbol": "FO4N.DE",
@@ -96,25 +65,46 @@
    "netGain5y": 0.2192
   },
   {
-   "symbol": "TRN.MI",
-   "isin": "IT0003242622",
-   "name": "Terna",
+   "symbol": "PST.MI",
+   "isin": "IT0003796171",
+   "name": "Poste Italiane",
    "type": "stock",
-   "netGain5y": 0.2167
+   "netGain5y": 0.2166
   },
   {
-   "symbol": "HNR1.DE",
-   "isin": "DE0008402215",
-   "name": "Hannover Rück",
+   "symbol": "G.MI",
+   "isin": "IT0000062072",
+   "name": "Generali",
    "type": "stock",
-   "netGain5y": 0.2069
+   "netGain5y": 0.2162
+  },
+  {
+   "symbol": "SU.PA",
+   "isin": "FR0000121972",
+   "name": "Schneider Electric",
+   "type": "stock",
+   "netGain5y": 0.2123
   },
   {
    "symbol": "RMS.PA",
    "isin": "FR0000052292",
    "name": "Hermès",
    "type": "stock",
-   "netGain5y": 0.2017
+   "netGain5y": 0.2086
+  },
+  {
+   "symbol": "IBE.MC",
+   "isin": "ES0144580Y14",
+   "name": "Iberdrola",
+   "type": "stock",
+   "netGain5y": 0.206
+  },
+  {
+   "symbol": "AI.PA",
+   "isin": "FR0000120073",
+   "name": "Air Liquide",
+   "type": "stock",
+   "netGain5y": 0.2052
   },
   {
    "symbol": "04Q.DE",
@@ -124,46 +114,33 @@
    "netGain5y": 0.2008
   },
   {
-   "symbol": "DHL.DE",
-   "isin": "DE0005552004",
-   "name": "DHL Group",
+   "symbol": "HABA.DE",
+   "isin": "DE000A3H2333",
+   "name": "Hamborner REIT AG",
    "type": "stock",
-   "netGain5y": 0.1984
+   "netGain5y": 0.1975
   },
   {
-   "symbol": "OR.PA",
-   "isin": "FR0000120321",
-   "name": "L'Oréal",
+   "symbol": "TRN.MI",
+   "isin": "IT0003242622",
+   "name": "Terna",
    "type": "stock",
-   "netGain5y": 0.1968
+   "netGain5y": 0.1959
   },
   {
-   "symbol": "RACE.MI",
-   "isin": "NL0011585146",
-   "name": "Ferrari",
+   "symbol": "ASML.AS",
+   "isin": "NL0010273215",
+   "name": "ASML Holding",
    "type": "stock",
-   "netGain5y": 0.1954
+   "netGain5y": 0.1936,
+   "growth": 0.3221
   },
   {
    "symbol": "SHL.DE",
    "isin": "DE000SHL1006",
    "name": "Siemens Healthineers",
    "type": "stock",
-   "netGain5y": 0.1946
-  },
-  {
-   "symbol": "SU.PA",
-   "isin": "FR0000121972",
-   "name": "Schneider Electric",
-   "type": "stock",
-   "netGain5y": 0.1905
-  },
-  {
-   "symbol": "ENEL.MI",
-   "isin": "IT0003128367",
-   "name": "Enel",
-   "type": "stock",
-   "netGain5y": 0.1902
+   "netGain5y": 0.1918
   },
   {
    "symbol": "ENA.DE",
@@ -173,60 +150,47 @@
    "netGain5y": 0.19
   },
   {
-   "symbol": "SIE.DE",
-   "isin": "DE0007236101",
-   "name": "Siemens",
-   "type": "stock",
-   "netGain5y": 0.1893
-  },
-  {
-   "symbol": "ITX.MC",
-   "isin": "ES0148396007",
-   "name": "Inditex",
-   "type": "stock",
-   "netGain5y": 0.1863
-  },
-  {
-   "symbol": "LONN.SW",
-   "isin": "CH0013841017",
-   "name": "Lonza Group",
-   "type": "stock",
-   "netGain5y": 0.1861
-  },
-  {
-   "symbol": "MUV2.DE",
-   "isin": "DE0008430026",
-   "name": "Münchener Rück",
-   "type": "stock",
-   "netGain5y": 0.1833
-  },
-  {
    "symbol": "TRVC.DE",
    "isin": "US1729674242",
    "name": "Citigroup Inc.",
    "type": "stock",
-   "netGain5y": 0.1833
+   "outlookSymbol": "C",
+   "netGain5y": 0.1897
   },
   {
-   "symbol": "ASML.AS",
-   "isin": "NL0010273215",
-   "name": "ASML Holding",
+   "symbol": "SIE.DE",
+   "isin": "DE0007236101",
+   "name": "Siemens",
    "type": "stock",
-   "netGain5y": 0.1829
+   "netGain5y": 0.1865
   },
   {
-   "symbol": "TLX.DE",
-   "isin": "DE000TLX1005",
-   "name": "Talanx AG",
+   "symbol": "DB1.DE",
+   "isin": "DE0005810055",
+   "name": "Deutsche Börse",
    "type": "stock",
-   "netGain5y": 0.1825
+   "netGain5y": 0.1857
   },
   {
-   "symbol": "DWS.DE",
-   "isin": "DE000DWS1007",
-   "name": "DWS Group GmbH & Co. KGaA",
+   "symbol": "ENEL.MI",
+   "isin": "IT0003128367",
+   "name": "Enel",
    "type": "stock",
-   "netGain5y": 0.1802
+   "netGain5y": 0.1835
+  },
+  {
+   "symbol": "HNR1.DE",
+   "isin": "DE0008402215",
+   "name": "Hannover Rück",
+   "type": "stock",
+   "netGain5y": 0.183
+  },
+  {
+   "symbol": "DHL.DE",
+   "isin": "DE0005552004",
+   "name": "DHL Group",
+   "type": "stock",
+   "netGain5y": 0.1801
   },
   {
    "symbol": "MVV1.DE",
@@ -236,11 +200,18 @@
    "netGain5y": 0.1786
   },
   {
-   "symbol": "SRG.MI",
-   "isin": "IT0003153415",
-   "name": "Snam",
+   "symbol": "DWS.DE",
+   "isin": "DE000DWS1007",
+   "name": "DWS Group GmbH & Co. KGaA",
    "type": "stock",
-   "netGain5y": 0.1776
+   "netGain5y": 0.1769
+  },
+  {
+   "symbol": "DG.PA",
+   "isin": "FR0000125486",
+   "name": "Vinci",
+   "type": "stock",
+   "netGain5y": 0.1766
   },
   {
    "symbol": "VVD.DE",
@@ -248,6 +219,13 @@
    "name": "Veolia Environnement SA",
    "type": "stock",
    "netGain5y": 0.1764
+  },
+  {
+   "symbol": "FBK.MI",
+   "isin": "IT0000072170",
+   "name": "FinecoBank",
+   "type": "stock",
+   "netGain5y": 0.1763
   },
   {
    "symbol": "2NN.DE",
@@ -264,11 +242,69 @@
    "netGain5y": 0.1759
   },
   {
+   "symbol": "ITX.MC",
+   "isin": "ES0148396007",
+   "name": "Inditex",
+   "type": "stock",
+   "netGain5y": 0.1727
+  },
+  {
+   "symbol": "SRG.MI",
+   "isin": "IT0003153415",
+   "name": "Snam",
+   "type": "stock",
+   "netGain5y": 0.1714
+  },
+  {
    "symbol": "PFV.DE",
    "isin": "DE0006916604",
    "name": "Pfeiffer Vacuum Technology AG",
    "type": "stock",
    "netGain5y": 0.1708
+  },
+  {
+   "symbol": "CWC.DE",
+   "isin": "DE0005403901",
+   "name": "CEWE Stiftung & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1685
+  },
+  {
+   "symbol": "GCP.DE",
+   "isin": "US3696043013",
+   "name": "General Electric Company",
+   "type": "stock",
+   "outlookSymbol": "GE",
+   "netGain5y": 0.1678
+  },
+  {
+   "symbol": "ISP.MI",
+   "isin": "IT0000072618",
+   "name": "Intesa Sanpaolo",
+   "type": "stock",
+   "netGain5y": 0.1675
+  },
+  {
+   "symbol": "DTE.DE",
+   "isin": "DE0005557508",
+   "name": "Deutsche Telekom",
+   "type": "stock",
+   "netGain5y": 0.1673
+  },
+  {
+   "symbol": "RACE.MI",
+   "isin": "NL0011585146",
+   "name": "Ferrari",
+   "type": "stock",
+   "netGain5y": 0.1673
+  },
+  {
+   "symbol": "PRY.MI",
+   "isin": "IT0004176001",
+   "name": "Prysmian",
+   "type": "stock",
+   "netGain5y": 0.167,
+   "growth": 0.1832
   },
   {
    "symbol": "UN9.DE",
@@ -278,18 +314,18 @@
    "netGain5y": 0.1668
   },
   {
-   "symbol": "COST",
-   "isin": "US22160K1051",
-   "name": "Costco Wholesale",
+   "symbol": "OR.PA",
+   "isin": "FR0000120321",
+   "name": "L'Oréal",
    "type": "stock",
-   "netGain5y": 0.1653
+   "netGain5y": 0.1654
   },
   {
-   "symbol": "MWZ.DE",
-   "isin": "US59156R1086",
-   "name": "MetLife, Inc.",
+   "symbol": "LONN.SW",
+   "isin": "CH0013841017",
+   "name": "Lonza Group",
    "type": "stock",
-   "netGain5y": 0.1651
+   "netGain5y": 0.1645
   },
   {
    "symbol": "O3P.DE",
@@ -306,25 +342,11 @@
    "netGain5y": 0.1624
   },
   {
-   "symbol": "EOAN.DE",
-   "isin": "DE000ENAG999",
-   "name": "E.ON",
+   "symbol": "DBAN.DE",
+   "isin": "DE000A1TNUT7",
+   "name": "Deutsche Beteiligungs AG",
    "type": "stock",
-   "netGain5y": 0.1614
-  },
-  {
-   "symbol": "FBK.MI",
-   "isin": "IT0000072170",
-   "name": "FinecoBank",
-   "type": "stock",
-   "netGain5y": 0.1614
-  },
-  {
-   "symbol": "MSFT",
-   "isin": "US5949181045",
-   "name": "Microsoft",
-   "type": "stock",
-   "netGain5y": 0.1607
+   "netGain5y": 0.1622
   },
   {
    "symbol": "AZ2.DE",
@@ -348,18 +370,18 @@
    "netGain5y": 0.1587
   },
   {
-   "symbol": "MRK.DE",
-   "isin": "DE0006599905",
-   "name": "Merck KGaA",
+   "symbol": "SAF.PA",
+   "isin": "FR0000073272",
+   "name": "Safran",
    "type": "stock",
-   "netGain5y": 0.1578
+   "netGain5y": 0.1577
   },
   {
-   "symbol": "HBH.DE",
-   "isin": "DE0006083405",
-   "name": "HORNBACH Holding AG & Co. KGaA",
+   "symbol": "INGA.AS",
+   "isin": "NL0011821202",
+   "name": "ING Groep",
    "type": "stock",
-   "netGain5y": 0.1564
+   "netGain5y": 0.1563
   },
   {
    "symbol": "ACR.DE",
@@ -369,25 +391,18 @@
    "netGain5y": 0.1558
   },
   {
-   "symbol": "MLP.DE",
-   "isin": "DE0006569908",
-   "name": "MLP SE",
+   "symbol": "MUM.DE",
+   "isin": "DE0006580806",
+   "name": "Mensch und Maschine Software SE",
    "type": "stock",
-   "netGain5y": 0.1556
+   "netGain5y": 0.1554
   },
   {
-   "symbol": "EWL.DE",
-   "isin": "US28176E1082",
-   "name": "Edwards Lifesciences Corporation",
+   "symbol": "MUV2.DE",
+   "isin": "DE0008430026",
+   "name": "Münchener Rück",
    "type": "stock",
-   "netGain5y": 0.1551
-  },
-  {
-   "symbol": "ISP.MI",
-   "isin": "IT0000072618",
-   "name": "Intesa Sanpaolo",
-   "type": "stock",
-   "netGain5y": 0.1547
+   "netGain5y": 0.1553
   },
   {
    "symbol": "DEF.DE",
@@ -395,6 +410,27 @@
    "name": "DEFAMA Deutsche Fachmarkt AG",
    "type": "stock",
    "netGain5y": 0.1545
+  },
+  {
+   "symbol": "TLX.DE",
+   "isin": "DE000TLX1005",
+   "name": "Talanx AG",
+   "type": "stock",
+   "netGain5y": 0.1543
+  },
+  {
+   "symbol": "MC.PA",
+   "isin": "FR0000121014",
+   "name": "LVMH",
+   "type": "stock",
+   "netGain5y": 0.1541
+  },
+  {
+   "symbol": "HBH.DE",
+   "isin": "DE0006083405",
+   "name": "HORNBACH Holding AG & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.1527
   },
   {
    "symbol": "OEWA.DE",
@@ -411,6 +447,20 @@
    "netGain5y": 0.1524
   },
   {
+   "symbol": "MRK.DE",
+   "isin": "DE0006599905",
+   "name": "Merck KGaA",
+   "type": "stock",
+   "netGain5y": 0.1515
+  },
+  {
+   "symbol": "VNA.DE",
+   "isin": "DE000A1ML7J1",
+   "name": "Vonovia",
+   "type": "stock",
+   "netGain5y": 0.151
+  },
+  {
    "symbol": "HLE.DE",
    "isin": "DE000A13SX22",
    "name": "HELLA GmbH & Co. KGaA",
@@ -418,11 +468,12 @@
    "netGain5y": 0.151
   },
   {
-   "symbol": "INGA.AS",
-   "isin": "NL0011821202",
-   "name": "ING Groep",
+   "symbol": "NWT.DE",
+   "isin": "US9497461015",
+   "name": "Wells Fargo & Company",
    "type": "stock",
-   "netGain5y": 0.1506
+   "outlookSymbol": "WFC",
+   "netGain5y": 0.1509
   },
   {
    "symbol": "FPE.DE",
@@ -439,39 +490,32 @@
    "netGain5y": 0.1504
   },
   {
-   "symbol": "V",
-   "isin": "US92826C8394",
-   "name": "Visa",
+   "symbol": "EOAN.DE",
+   "isin": "DE000ENAG999",
+   "name": "E.ON",
    "type": "stock",
-   "netGain5y": 0.1497
+   "netGain5y": 0.1493
   },
   {
-   "symbol": "BRK-B",
-   "isin": "US0846707026",
-   "name": "Berkshire Hathaway (B)",
+   "symbol": "TIMA.DE",
+   "isin": "DE000ZEAL241",
+   "name": "ZEAL Network SE",
    "type": "stock",
-   "netGain5y": 0.1491
+   "netGain5y": 0.1493
   },
   {
-   "symbol": "TTE.PA",
-   "isin": "FR0000120271",
-   "name": "TotalEnergies",
+   "symbol": "LEG.DE",
+   "isin": "DE000LEG1110",
+   "name": "LEG Immobilien SE",
    "type": "stock",
-   "netGain5y": 0.148
+   "netGain5y": 0.1483
   },
   {
-   "symbol": "DCO.DE",
-   "isin": "US2441991054",
-   "name": "Deere & Company",
+   "symbol": "RAA.DE",
+   "isin": "DE0007010803",
+   "name": "RATIONAL Aktiengesellschaft",
    "type": "stock",
-   "netGain5y": 0.1467
-  },
-  {
-   "symbol": "DG.PA",
-   "isin": "FR0000125486",
-   "name": "Vinci",
-   "type": "stock",
-   "netGain5y": 0.1461
+   "netGain5y": 0.1483
   },
   {
    "symbol": "BCY.DE",
@@ -481,18 +525,11 @@
    "netGain5y": 0.1461
   },
   {
-   "symbol": "CWC.DE",
-   "isin": "DE0005403901",
-   "name": "CEWE Stiftung & Co. KGaA",
+   "symbol": "GYC.DE",
+   "isin": "LU0775917882",
+   "name": "Grand City Properties S.A.",
    "type": "stock",
-   "netGain5y": 0.1455
-  },
-  {
-   "symbol": "PCE1.DE",
-   "isin": "US09857L1089",
-   "name": "Booking Holdings Inc.",
-   "type": "stock",
-   "netGain5y": 0.1451
+   "netGain5y": 0.145
   },
   {
    "symbol": "IVU.DE",
@@ -502,20 +539,6 @@
    "netGain5y": 0.1443
   },
   {
-   "symbol": "GCP.DE",
-   "isin": "US3696043013",
-   "name": "General Electric Company",
-   "type": "stock",
-   "netGain5y": 0.1441
-  },
-  {
-   "symbol": "NESN.SW",
-   "isin": "CH0038863350",
-   "name": "Nestlé",
-   "type": "stock",
-   "netGain5y": 0.1438
-  },
-  {
    "symbol": "AHOG.DE",
    "isin": "NL0011794037",
    "name": "Koninklijke Ahold Delhaize N.V.",
@@ -523,18 +546,11 @@
    "netGain5y": 0.1431
   },
   {
-   "symbol": "MCD",
-   "isin": "US5801351017",
-   "name": "McDonald's",
+   "symbol": "WSU.DE",
+   "isin": "DE0007507501",
+   "name": "WashTec AG",
    "type": "stock",
-   "netGain5y": 0.142
-  },
-  {
-   "symbol": "NWT.DE",
-   "isin": "US9497461015",
-   "name": "Wells Fargo & Company",
-   "type": "stock",
-   "netGain5y": 0.1417
+   "netGain5y": 0.143
   },
   {
    "symbol": "RYSD.DE",
@@ -544,25 +560,18 @@
    "netGain5y": 0.1415
   },
   {
-   "symbol": "PRY.MI",
-   "isin": "IT0004176001",
-   "name": "Prysmian",
+   "symbol": "NESN.SW",
+   "isin": "CH0038863350",
+   "name": "Nestlé",
    "type": "stock",
-   "netGain5y": 0.1406
+   "netGain5y": 0.1412
   },
   {
-   "symbol": "CPA.DE",
-   "isin": "US1941621039",
-   "name": "Colgate-Palmolive Company",
+   "symbol": "SAN.MC",
+   "isin": "ES0113900J37",
+   "name": "Banco Santander",
    "type": "stock",
-   "netGain5y": 0.1402
-  },
-  {
-   "symbol": "MA",
-   "isin": "US57636Q1040",
-   "name": "Mastercard",
-   "type": "stock",
-   "netGain5y": 0.1395
+   "netGain5y": 0.1408
   },
   {
    "symbol": "GIL.DE",
@@ -572,39 +581,25 @@
    "netGain5y": 0.1393
   },
   {
-   "symbol": "SAN.MC",
-   "isin": "ES0113900J37",
-   "name": "Banco Santander",
-   "type": "stock",
-   "netGain5y": 0.1393
-  },
-  {
-   "symbol": "SAF.PA",
-   "isin": "FR0000073272",
-   "name": "Safran",
-   "type": "stock",
-   "netGain5y": 0.1382
-  },
-  {
-   "symbol": "NOVN.SW",
-   "isin": "CH0012005267",
-   "name": "Novartis",
-   "type": "stock",
-   "netGain5y": 0.1382
-  },
-  {
-   "symbol": "SAP.DE",
-   "isin": "DE0007164600",
-   "name": "SAP",
+   "symbol": "TTE.PA",
+   "isin": "FR0000120271",
+   "name": "TotalEnergies",
    "type": "stock",
    "netGain5y": 0.1379
   },
   {
-   "symbol": "4PG.DE",
-   "isin": "US68902V1070",
-   "name": "Otis Worldwide Corporation",
+   "symbol": "EL.PA",
+   "isin": "FR0000121667",
+   "name": "EssilorLuxottica",
    "type": "stock",
-   "netGain5y": 0.1378
+   "netGain5y": 0.1376
+  },
+  {
+   "symbol": "KRN.DE",
+   "isin": "DE0006335003",
+   "name": "Krones AG",
+   "type": "stock",
+   "netGain5y": 0.1376
   },
   {
    "symbol": "GZF.DE",
@@ -614,25 +609,25 @@
    "netGain5y": 0.1367
   },
   {
-   "symbol": "JPM",
-   "isin": "US46625H1005",
-   "name": "JPMorgan Chase",
+   "symbol": "B7E.DE",
+   "isin": "DE000A0JM2M1",
+   "name": "Blue Cap AG",
    "type": "stock",
    "netGain5y": 0.1367
   },
   {
-   "symbol": "MC.PA",
-   "isin": "FR0000121014",
-   "name": "LVMH",
+   "symbol": "MLP.DE",
+   "isin": "DE0006569908",
+   "name": "MLP SE",
    "type": "stock",
-   "netGain5y": 0.1359
+   "netGain5y": 0.1367
   },
   {
-   "symbol": "ABL.DE",
-   "isin": "US0028241000",
-   "name": "Abbott Laboratories",
+   "symbol": "MONC.MI",
+   "isin": "IT0004965148",
+   "name": "Moncler",
    "type": "stock",
-   "netGain5y": 0.1348
+   "netGain5y": 0.1358
   },
   {
    "symbol": "SIS.DE",
@@ -649,11 +644,25 @@
    "netGain5y": 0.1334
   },
   {
+   "symbol": "SAN.PA",
+   "isin": "FR0000120578",
+   "name": "Sanofi",
+   "type": "stock",
+   "netGain5y": 0.1328
+  },
+  {
    "symbol": "2M6.DE",
    "isin": "IE00BTN1Y115",
    "name": "Medtronic plc",
    "type": "stock",
    "netGain5y": 0.1323
+  },
+  {
+   "symbol": "SWA.DE",
+   "isin": "DE0007229007",
+   "name": "Schloss Wachenheim AG",
+   "type": "stock",
+   "netGain5y": 0.1319
   },
   {
    "symbol": "ADV.DE",
@@ -663,16 +672,16 @@
    "netGain5y": 0.1318
   },
   {
-   "symbol": "G1A.DE",
-   "isin": "DE0006602006",
-   "name": "GEA Group Aktiengesellschaft",
+   "symbol": "MCD",
+   "isin": "US5801351017",
+   "name": "McDonald's",
    "type": "stock",
    "netGain5y": 0.1317
   },
   {
-   "symbol": "KO",
-   "isin": "US1912161007",
-   "name": "Coca-Cola",
+   "symbol": "GSC1.DE",
+   "isin": "DE000A1K0201",
+   "name": "Gesco SE",
    "type": "stock",
    "netGain5y": 0.1315
   },
@@ -691,20 +700,6 @@
    "netGain5y": 0.131
   },
   {
-   "symbol": "4PN.DE",
-   "isin": "US14448C1045",
-   "name": "Carrier Global Corporation",
-   "type": "stock",
-   "netGain5y": 0.1307
-  },
-  {
-   "symbol": "EL.PA",
-   "isin": "FR0000121667",
-   "name": "EssilorLuxottica",
-   "type": "stock",
-   "netGain5y": 0.1302
-  },
-  {
    "symbol": "EIN.DE",
    "isin": "DE000A40ESU3",
    "name": "Einhell Germany AG",
@@ -712,25 +707,11 @@
    "netGain5y": 0.129
   },
   {
-   "symbol": "TSM",
-   "isin": "US8740391003",
-   "name": "Taiwan Semiconductor (ADR)",
+   "symbol": "COST",
+   "isin": "US22160K1051",
+   "name": "Costco Wholesale",
    "type": "stock",
-   "netGain5y": 0.129
-  },
-  {
-   "symbol": "RAA.DE",
-   "isin": "DE0007010803",
-   "name": "RATIONAL Aktiengesellschaft",
-   "type": "stock",
-   "netGain5y": 0.1286
-  },
-  {
-   "symbol": "DTE.DE",
-   "isin": "DE0005557508",
-   "name": "Deutsche Telekom",
-   "type": "stock",
-   "netGain5y": 0.1283
+   "netGain5y": 0.1263
   },
   {
    "symbol": "SCT.DE",
@@ -740,18 +721,86 @@
    "netGain5y": 0.1251
   },
   {
+   "symbol": "FIE.DE",
+   "isin": "DE0005772206",
+   "name": "Fielmann Group AG",
+   "type": "stock",
+   "netGain5y": 0.1249
+  },
+  {
    "symbol": "UNP.DE",
    "isin": "US9078181081",
    "name": "Union Pacific Corporation",
    "type": "stock",
-   "netGain5y": 0.1236
+   "outlookSymbol": "UNP",
+   "netGain5y": 0.1242
+  },
+  {
+   "symbol": "SAP.DE",
+   "isin": "DE0007164600",
+   "name": "SAP",
+   "type": "stock",
+   "netGain5y": 0.1242
+  },
+  {
+   "symbol": "MSFT",
+   "isin": "US5949181045",
+   "name": "Microsoft",
+   "type": "stock",
+   "netGain5y": 0.1241,
+   "growth": 0.1984
+  },
+  {
+   "symbol": "JPM",
+   "isin": "US46625H1005",
+   "name": "JPMorgan Chase",
+   "type": "stock",
+   "netGain5y": 0.121
+  },
+  {
+   "symbol": "ABL.DE",
+   "isin": "US0028241000",
+   "name": "Abbott Laboratories",
+   "type": "stock",
+   "outlookSymbol": "ABT",
+   "netGain5y": 0.1201
+  },
+  {
+   "symbol": "MBG.DE",
+   "isin": "DE0007100000",
+   "name": "Mercedes-Benz Group",
+   "type": "stock",
+   "netGain5y": 0.12
   },
   {
    "symbol": "FPE3.DE",
    "isin": "DE000A3E5D64",
    "name": "Fuchs SE",
    "type": "stock",
-   "netGain5y": 0.1221
+   "netGain5y": 0.1193
+  },
+  {
+   "symbol": "8GM.DE",
+   "isin": "US37045V1008",
+   "name": "General Motors Company",
+   "type": "stock",
+   "outlookSymbol": "GM",
+   "netGain5y": 0.1192
+  },
+  {
+   "symbol": "PCE1.DE",
+   "isin": "US09857L1089",
+   "name": "Booking Holdings Inc.",
+   "type": "stock",
+   "outlookSymbol": "BKNG",
+   "netGain5y": 0.1183
+  },
+  {
+   "symbol": "BRK-B",
+   "isin": "US0846707026",
+   "name": "Berkshire Hathaway (B)",
+   "type": "stock",
+   "netGain5y": 0.1177
   },
   {
    "symbol": "RHO.DE",
@@ -775,11 +824,33 @@
    "netGain5y": 0.1174
   },
   {
+   "symbol": "CPA.DE",
+   "isin": "US1941621039",
+   "name": "Colgate-Palmolive Company",
+   "type": "stock",
+   "outlookSymbol": "CL",
+   "netGain5y": 0.1174
+  },
+  {
+   "symbol": "G24.DE",
+   "isin": "DE000A12DM80",
+   "name": "Scout24 SE",
+   "type": "stock",
+   "netGain5y": 0.1171
+  },
+  {
    "symbol": "CBHD.DE",
    "isin": "DK0060448595",
    "name": "Coloplast A/S",
    "type": "stock",
    "netGain5y": 0.1171
+  },
+  {
+   "symbol": "DTG.DE",
+   "isin": "DE000DTR0CK8",
+   "name": "Daimler Truck Holding AG",
+   "type": "stock",
+   "netGain5y": 0.1168
   },
   {
    "symbol": "LLD.DE",
@@ -789,32 +860,43 @@
    "netGain5y": 0.1166
   },
   {
-   "symbol": "AAPL",
-   "isin": "US0378331005",
-   "name": "Apple",
+   "symbol": "5UR.DE",
+   "isin": "US75513E1010",
+   "name": "RTX Corporation",
    "type": "stock",
-   "netGain5y": 0.1162
+   "outlookSymbol": "RTX",
+   "netGain5y": 0.116
   },
   {
-   "symbol": "GS",
-   "isin": "US38141G1040",
-   "name": "Goldman Sachs",
+   "symbol": "VOW.DE",
+   "isin": "DE0007664005",
+   "name": "Volkswagen AG",
    "type": "stock",
-   "netGain5y": 0.1159
+   "netGain5y": 0.1157,
+   "growth": 0.2243
   },
   {
-   "symbol": "DAP.DE",
-   "isin": "US2358511028",
-   "name": "Danaher Corporation",
+   "symbol": "EWL.DE",
+   "isin": "US28176E1082",
+   "name": "Edwards Lifesciences Corporation",
    "type": "stock",
-   "netGain5y": 0.1158
+   "outlookSymbol": "EW",
+   "netGain5y": 0.1153
   },
   {
-   "symbol": "MONC.MI",
-   "isin": "IT0004965148",
-   "name": "Moncler",
+   "symbol": "G1A.DE",
+   "isin": "DE0006602006",
+   "name": "GEA Group Aktiengesellschaft",
    "type": "stock",
-   "netGain5y": 0.1155
+   "netGain5y": 0.1153
+  },
+  {
+   "symbol": "HOT.DE",
+   "isin": "DE0006070006",
+   "name": "HOCHTIEF Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.115,
+   "growth": 0.1996
   },
   {
    "symbol": "TCO0.DE",
@@ -824,13 +906,6 @@
    "netGain5y": 0.1148
   },
   {
-   "symbol": "KRN.DE",
-   "isin": "DE0006335003",
-   "name": "Krones AG",
-   "type": "stock",
-   "netGain5y": 0.1147
-  },
-  {
    "symbol": "GOB.DE",
    "isin": "FR0000125007",
    "name": "Compagnie de Saint-Gobain S.A.",
@@ -838,46 +913,34 @@
    "netGain5y": 0.1138
   },
   {
-   "symbol": "EBA.DE",
-   "isin": "US2786421030",
-   "name": "eBay Inc.",
+   "symbol": "RRTL.DE",
+   "isin": "LU0061462528",
+   "name": "RTL Group S.A.",
    "type": "stock",
-   "netGain5y": 0.1138
+   "netGain5y": 0.1137,
+   "growth": 0.2152
   },
   {
-   "symbol": "PEO.DE",
-   "isin": "US30161N1019",
-   "name": "Exelon Corporation",
+   "symbol": "FNTN.DE",
+   "isin": "DE000A0Z2ZZ5",
+   "name": "freenet AG",
    "type": "stock",
-   "netGain5y": 0.1134
+   "netGain5y": 0.1129
   },
   {
-   "symbol": "IC2.DE",
-   "isin": "US45866F1049",
-   "name": "Intercontinental Exchange, Inc.",
+   "symbol": "BNP.PA",
+   "isin": "FR0000131104",
+   "name": "BNP Paribas",
    "type": "stock",
-   "netGain5y": 0.1132
+   "netGain5y": 0.1126
   },
   {
    "symbol": "FDX.DE",
    "isin": "US31428X1063",
    "name": "FedEx Corporation",
    "type": "stock",
-   "netGain5y": 0.1127
-  },
-  {
-   "symbol": "G24.DE",
-   "isin": "DE000A12DM80",
-   "name": "Scout24 SE",
-   "type": "stock",
-   "netGain5y": 0.1126
-  },
-  {
-   "symbol": "BBVA.MC",
-   "isin": "ES0113211835",
-   "name": "BBVA",
-   "type": "stock",
-   "netGain5y": 0.1126
+   "outlookSymbol": "FDX",
+   "netGain5y": 0.1122
   },
   {
    "symbol": "OMV.DE",
@@ -887,39 +950,11 @@
    "netGain5y": 0.1121
   },
   {
-   "symbol": "SY1.DE",
-   "isin": "DE000SYM9999",
-   "name": "Symrise AG",
+   "symbol": "KBX.DE",
+   "isin": "DE000KBX1006",
+   "name": "Knorr-Bremse AG",
    "type": "stock",
-   "netGain5y": 0.1117
-  },
-  {
-   "symbol": "PG",
-   "isin": "US7427181091",
-   "name": "Procter & Gamble",
-   "type": "stock",
-   "netGain5y": 0.1116
-  },
-  {
-   "symbol": "MUM.DE",
-   "isin": "DE0006580806",
-   "name": "Mensch und Maschine Software SE",
-   "type": "stock",
-   "netGain5y": 0.1115
-  },
-  {
-   "symbol": "VIA.DE",
-   "isin": "US92556V1061",
-   "name": "Viatris Inc.",
-   "type": "stock",
-   "netGain5y": 0.1114
-  },
-  {
-   "symbol": "EDC.DE",
-   "isin": "US2091151041",
-   "name": "Consolidated Edison, Inc.",
-   "type": "stock",
-   "netGain5y": 0.1104
+   "netGain5y": 0.1118
   },
   {
    "symbol": "VAS.DE",
@@ -929,6 +964,14 @@
    "netGain5y": 0.1099
   },
   {
+   "symbol": "TSM",
+   "isin": "US8740391003",
+   "name": "Taiwan Semiconductor (ADR)",
+   "type": "stock",
+   "netGain5y": 0.1098,
+   "growth": 0.3558
+  },
+  {
    "symbol": "GS71.DE",
    "isin": "GB00BN7SWP63",
    "name": "GSK plc",
@@ -936,30 +979,16 @@
    "netGain5y": 0.1096
   },
   {
-   "symbol": "7DZ.DE",
-   "isin": "US30233Q1085",
-   "name": "ExxonMobil Holdings Corporation",
+   "symbol": "V",
+   "isin": "US92826C8394",
+   "name": "Visa",
    "type": "stock",
-   "netGain5y": 0.1094
+   "netGain5y": 0.1091
   },
   {
-   "symbol": "XY6.DE",
-   "isin": "US98419M1009",
-   "name": "Xylem Inc.",
-   "type": "stock",
-   "netGain5y": 0.1092
-  },
-  {
-   "symbol": "HABA.DE",
-   "isin": "DE000A3H2333",
-   "name": "Hamborner REIT AG",
-   "type": "stock",
-   "netGain5y": 0.109
-  },
-  {
-   "symbol": "AIR.PA",
-   "isin": "NL0000235190",
-   "name": "Airbus",
+   "symbol": "MA",
+   "isin": "US57636Q1040",
+   "name": "Mastercard",
    "type": "stock",
    "netGain5y": 0.1085
   },
@@ -971,39 +1000,26 @@
    "netGain5y": 0.1081
   },
   {
-   "symbol": "BNR.DE",
-   "isin": "DE000A1DAHH0",
-   "name": "Brenntag SE",
+   "symbol": "NOVN.SW",
+   "isin": "CH0012005267",
+   "name": "Novartis",
    "type": "stock",
-   "netGain5y": 0.1071
+   "netGain5y": 0.1074
   },
   {
-   "symbol": "5UR.DE",
-   "isin": "US75513E1010",
-   "name": "RTX Corporation",
+   "symbol": "AIR.PA",
+   "isin": "NL0000235190",
+   "name": "Airbus",
    "type": "stock",
    "netGain5y": 0.107
   },
   {
-   "symbol": "WMT",
-   "isin": "US9311421039",
-   "name": "Walmart",
+   "symbol": "MWZ.DE",
+   "isin": "US59156R1086",
+   "name": "MetLife, Inc.",
    "type": "stock",
+   "outlookSymbol": "MET",
    "netGain5y": 0.1068
-  },
-  {
-   "symbol": "RRTL.DE",
-   "isin": "LU0061462528",
-   "name": "RTL Group S.A.",
-   "type": "stock",
-   "netGain5y": 0.1065
-  },
-  {
-   "symbol": "LEG.DE",
-   "isin": "DE000LEG1110",
-   "name": "LEG Immobilien SE",
-   "type": "stock",
-   "netGain5y": 0.1064
   },
   {
    "symbol": "GUI.DE",
@@ -1013,11 +1029,33 @@
    "netGain5y": 0.1062
   },
   {
-   "symbol": "CPR.MI",
-   "isin": "NL0015435975",
-   "name": "Davide Campari-Milano",
+   "symbol": "PEO.DE",
+   "isin": "US30161N1019",
+   "name": "Exelon Corporation",
    "type": "stock",
-   "netGain5y": 0.1058
+   "outlookSymbol": "EXC",
+   "netGain5y": 0.1049
+  },
+  {
+   "symbol": "BAC",
+   "isin": "US0605051046",
+   "name": "Bank of America",
+   "type": "stock",
+   "netGain5y": 0.1047
+  },
+  {
+   "symbol": "PAH3.DE",
+   "isin": "DE000PAH0038",
+   "name": "Porsche Automobil Holding SE",
+   "type": "stock",
+   "netGain5y": 0.1041
+  },
+  {
+   "symbol": "KO",
+   "isin": "US1912161007",
+   "name": "Coca-Cola",
+   "type": "stock",
+   "netGain5y": 0.1036
   },
   {
    "symbol": "VVV3.DE",
@@ -1027,74 +1065,56 @@
    "netGain5y": 0.1029
   },
   {
-   "symbol": "SWA.DE",
-   "isin": "DE0007229007",
-   "name": "Schloss Wachenheim AG",
+   "symbol": "HEIA.AS",
+   "isin": "NL0000009165",
+   "name": "Heineken",
    "type": "stock",
-   "netGain5y": 0.1021
+   "netGain5y": 0.1024
   },
   {
-   "symbol": "SAN.PA",
-   "isin": "FR0000120578",
-   "name": "Sanofi",
+   "symbol": "4PN.DE",
+   "isin": "US14448C1045",
+   "name": "Carrier Global Corporation",
    "type": "stock",
-   "netGain5y": 0.1019
+   "outlookSymbol": "CARR",
+   "netGain5y": 0.1001
   },
   {
-   "symbol": "8GM.DE",
-   "isin": "US37045V1008",
-   "name": "General Motors Company",
+   "symbol": "BBVA.MC",
+   "isin": "ES0113211835",
+   "name": "BBVA",
    "type": "stock",
-   "netGain5y": 0.1012
+   "netGain5y": 0.0997
   },
   {
    "symbol": "RWE.DE",
    "isin": "DE0007037129",
    "name": "RWE",
    "type": "stock",
-   "netGain5y": 0.1009
+   "netGain5y": 0.0994
   },
   {
-   "symbol": "TIMA.DE",
-   "isin": "DE000ZEAL241",
-   "name": "ZEAL Network SE",
-   "type": "stock",
-   "netGain5y": 0.1008
-  },
-  {
-   "symbol": "SRT.DE",
-   "isin": "DE0007165607",
-   "name": "Sartorius Aktiengesellschaft",
-   "type": "stock",
-   "netGain5y": 0.1008
-  },
-  {
-   "symbol": "DBAN.DE",
-   "isin": "DE000A1TNUT7",
-   "name": "Deutsche Beteiligungs AG",
-   "type": "stock",
-   "netGain5y": 0.1004
-  },
-  {
-   "symbol": "GYC.DE",
-   "isin": "LU0775917882",
-   "name": "Grand City Properties S.A.",
-   "type": "stock",
-   "netGain5y": 0.0997
-  },
-  {
-   "symbol": "ENI.MI",
-   "isin": "IT0003132476",
-   "name": "Eni",
+   "symbol": "CPR.MI",
+   "isin": "NL0015435975",
+   "name": "Davide Campari-Milano",
    "type": "stock",
    "netGain5y": 0.0992
   },
   {
-   "symbol": "JNJ",
-   "isin": "US4781601046",
-   "name": "Johnson & Johnson",
+   "symbol": "XY6.DE",
+   "isin": "US98419M1009",
+   "name": "Xylem Inc.",
    "type": "stock",
-   "netGain5y": 0.0991
+   "outlookSymbol": "XYL",
+   "netGain5y": 0.0988
+  },
+  {
+   "symbol": "2KD.DE",
+   "isin": "US49456B1017",
+   "name": "Kinder Morgan, Inc.",
+   "type": "stock",
+   "outlookSymbol": "KMI",
+   "netGain5y": 0.0986
   },
   {
    "symbol": "SLYG.DE",
@@ -1102,6 +1122,20 @@
    "name": "Shelly Group SE",
    "type": "stock",
    "netGain5y": 0.0985
+  },
+  {
+   "symbol": "HEI.DE",
+   "isin": "DE0006047004",
+   "name": "Heidelberg Materials AG",
+   "type": "stock",
+   "netGain5y": 0.0985
+  },
+  {
+   "symbol": "PAT.DE",
+   "isin": "DE000PAT1AG3",
+   "name": "PATRIZIA SE",
+   "type": "stock",
+   "netGain5y": 0.0981
   },
   {
    "symbol": "SDRC.DE",
@@ -1139,6 +1173,14 @@
    "netGain5y": 0.0963
   },
   {
+   "symbol": "4PG.DE",
+   "isin": "US68902V1070",
+   "name": "Otis Worldwide Corporation",
+   "type": "stock",
+   "outlookSymbol": "OTIS",
+   "netGain5y": 0.0963
+  },
+  {
    "symbol": "MZX.DE",
    "isin": "DE0005492938",
    "name": "Masterflex SE",
@@ -1146,23 +1188,32 @@
    "netGain5y": 0.0959
   },
   {
-   "symbol": "KBX.DE",
-   "isin": "DE000KBX1006",
-   "name": "Knorr-Bremse AG",
+   "symbol": "PG",
+   "isin": "US7427181091",
+   "name": "Procter & Gamble",
    "type": "stock",
-   "netGain5y": 0.0949
+   "netGain5y": 0.0956
   },
   {
-   "symbol": "KTF.DE",
-   "isin": "US6092071058",
-   "name": "Mondelez International, Inc.",
+   "symbol": "DCO.DE",
+   "isin": "US2441991054",
+   "name": "Deere & Company",
    "type": "stock",
-   "netGain5y": 0.0938
+   "outlookSymbol": "DE",
+   "netGain5y": 0.0955,
+   "growth": 0.1775
   },
   {
-   "symbol": "DTG.DE",
-   "isin": "DE000DTR0CK8",
-   "name": "Daimler Truck Holding AG",
+   "symbol": "ADS.DE",
+   "isin": "DE000A1EWWW0",
+   "name": "Adidas",
+   "type": "stock",
+   "netGain5y": 0.0954
+  },
+  {
+   "symbol": "GS",
+   "isin": "US38141G1040",
+   "name": "Goldman Sachs",
    "type": "stock",
    "netGain5y": 0.0937
   },
@@ -1174,11 +1225,18 @@
    "netGain5y": 0.0937
   },
   {
-   "symbol": "GOOGL",
-   "isin": "US02079K3059",
-   "name": "Alphabet (A)",
+   "symbol": "BVB.DE",
+   "isin": "DE0005493092",
+   "name": "Borussia Dortmund GmbH & Co. Kommanditgesellschaft auf Aktien",
    "type": "stock",
-   "netGain5y": 0.0933
+   "netGain5y": 0.0934
+  },
+  {
+   "symbol": "SY1.DE",
+   "isin": "DE000SYM9999",
+   "name": "Symrise AG",
+   "type": "stock",
+   "netGain5y": 0.093
   },
   {
    "symbol": "RE21.DE",
@@ -1195,16 +1253,24 @@
    "netGain5y": 0.092
   },
   {
+   "symbol": "UCG.MI",
+   "isin": "IT0005239360",
+   "name": "UniCredit",
+   "type": "stock",
+   "netGain5y": 0.0915
+  },
+  {
+   "symbol": "DAP.DE",
+   "isin": "US2358511028",
+   "name": "Danaher Corporation",
+   "type": "stock",
+   "outlookSymbol": "DHR",
+   "netGain5y": 0.0914
+  },
+  {
    "symbol": "SIX3.DE",
    "isin": "DE0007231334",
    "name": "Sixt SE",
-   "type": "stock",
-   "netGain5y": 0.0911
-  },
-  {
-   "symbol": "HEIA.AS",
-   "isin": "NL0000009165",
-   "name": "Heineken",
    "type": "stock",
    "netGain5y": 0.0911
   },
@@ -1216,25 +1282,33 @@
    "netGain5y": 0.0908
   },
   {
-   "symbol": "BAC",
-   "isin": "US0605051046",
-   "name": "Bank of America",
+   "symbol": "IC2.DE",
+   "isin": "US45866F1049",
+   "name": "Intercontinental Exchange, Inc.",
    "type": "stock",
-   "netGain5y": 0.0905
-  },
-  {
-   "symbol": "ABBV",
-   "isin": "US00287Y1091",
-   "name": "AbbVie",
-   "type": "stock",
+   "outlookSymbol": "ICE",
    "netGain5y": 0.0904
   },
   {
-   "symbol": "FNTN.DE",
-   "isin": "DE000A0Z2ZZ5",
-   "name": "freenet AG",
+   "symbol": "DMP.DE",
+   "isin": "DE000A2GS5D8",
+   "name": "Dermapharm Holding SE",
    "type": "stock",
-   "netGain5y": 0.0899
+   "netGain5y": 0.0903
+  },
+  {
+   "symbol": "LEI.DE",
+   "isin": "DE0006464506",
+   "name": "Leifheit Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0903
+  },
+  {
+   "symbol": "AZN.L",
+   "isin": "GB0009895292",
+   "name": "AstraZeneca",
+   "type": "stock",
+   "netGain5y": 0.09
   },
   {
    "symbol": "PES.DE",
@@ -1244,25 +1318,18 @@
    "netGain5y": 0.0895
   },
   {
-   "symbol": "VNA.DE",
-   "isin": "DE000A1ML7J1",
-   "name": "Vonovia",
+   "symbol": "SAX.DE",
+   "isin": "DE0007493991",
+   "name": "Ströer SE & Co. KGaA",
    "type": "stock",
-   "netGain5y": 0.0893
+   "netGain5y": 0.0887
   },
   {
-   "symbol": "AWC.DE",
-   "isin": "US0304201033",
-   "name": "American Water Works Company, Inc.",
+   "symbol": "SRT.DE",
+   "isin": "DE0007165607",
+   "name": "Sartorius Aktiengesellschaft",
    "type": "stock",
-   "netGain5y": 0.0893
-  },
-  {
-   "symbol": "HOT.DE",
-   "isin": "DE0006070006",
-   "name": "HOCHTIEF Aktiengesellschaft",
-   "type": "stock",
-   "netGain5y": 0.0892
+   "netGain5y": 0.0884
   },
   {
    "symbol": "1BR1.DE",
@@ -1272,18 +1339,25 @@
    "netGain5y": 0.0883
   },
   {
-   "symbol": "B7E.DE",
-   "isin": "DE000A0JM2M1",
-   "name": "Blue Cap AG",
-   "type": "stock",
-   "netGain5y": 0.0882
-  },
-  {
-   "symbol": "KMY.DE",
-   "isin": "US4943681035",
-   "name": "Kimberly-Clark Corporation",
+   "symbol": "HEN3.DE",
+   "isin": "DE0006048432",
+   "name": "Henkel (Vz)",
    "type": "stock",
    "netGain5y": 0.0881
+  },
+  {
+   "symbol": "BNR.DE",
+   "isin": "DE000A1DAHH0",
+   "name": "Brenntag SE",
+   "type": "stock",
+   "netGain5y": 0.0881
+  },
+  {
+   "symbol": "KWS.DE",
+   "isin": "DE0007074007",
+   "name": "KWS SAAT SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.0878
   },
   {
    "symbol": "BSP.DE",
@@ -1300,18 +1374,19 @@
    "netGain5y": 0.0876
   },
   {
-   "symbol": "HEN3.DE",
-   "isin": "DE0006048432",
-   "name": "Henkel (Vz)",
+   "symbol": "BFSA.DE",
+   "isin": "LU1704650164",
+   "name": "Befesa S.A.",
    "type": "stock",
-   "netGain5y": 0.087
+   "netGain5y": 0.0866
   },
   {
-   "symbol": "WSU.DE",
-   "isin": "DE0007507501",
-   "name": "WashTec AG",
+   "symbol": "7DZ.DE",
+   "isin": "US30233Q1085",
+   "name": "ExxonMobil Holdings Corporation",
    "type": "stock",
-   "netGain5y": 0.0862
+   "outlookSymbol": "XOM",
+   "netGain5y": 0.0854
   },
   {
    "symbol": "BIJ.DE",
@@ -1321,11 +1396,11 @@
    "netGain5y": 0.0853
   },
   {
-   "symbol": "TM",
-   "isin": "US8923313071",
-   "name": "Toyota Motor (ADR)",
+   "symbol": "VOW3.DE",
+   "isin": "DE0007664039",
+   "name": "Volkswagen (Vz)",
    "type": "stock",
-   "netGain5y": 0.0843
+   "netGain5y": 0.0851
   },
   {
    "symbol": "690D.DE",
@@ -1342,18 +1417,26 @@
    "netGain5y": 0.0836
   },
   {
-   "symbol": "PM",
-   "isin": "US7181721090",
-   "name": "Philip Morris International",
+   "symbol": "TEG.DE",
+   "isin": "DE0008303504",
+   "name": "TAG Immobilien AG",
    "type": "stock",
-   "netGain5y": 0.0835
+   "netGain5y": 0.0826
   },
   {
-   "symbol": "AZN.L",
-   "isin": "GB0009895292",
-   "name": "AstraZeneca",
+   "symbol": "DUE.DE",
+   "isin": "DE0005565204",
+   "name": "Dürr Aktiengesellschaft",
    "type": "stock",
-   "netGain5y": 0.0828
+   "netGain5y": 0.0825
+  },
+  {
+   "symbol": "FMC1.DE",
+   "isin": "US3453708600",
+   "name": "Ford Motor Company",
+   "type": "stock",
+   "outlookSymbol": "F",
+   "netGain5y": 0.0819
   },
   {
    "symbol": "3RB0.DE",
@@ -1370,41 +1453,6 @@
    "netGain5y": 0.0817
   },
   {
-   "symbol": "AMZN",
-   "isin": "US0231351067",
-   "name": "Amazon",
-   "type": "stock",
-   "netGain5y": 0.0816
-  },
-  {
-   "symbol": "EMR.DE",
-   "isin": "US2910111044",
-   "name": "Emerson Electric Co.",
-   "type": "stock",
-   "netGain5y": 0.0816
-  },
-  {
-   "symbol": "2KD.DE",
-   "isin": "US49456B1017",
-   "name": "Kinder Morgan, Inc.",
-   "type": "stock",
-   "netGain5y": 0.0815
-  },
-  {
-   "symbol": "DSY.PA",
-   "isin": "FR0014003TT8",
-   "name": "Dassault Systèmes",
-   "type": "stock",
-   "netGain5y": 0.0815
-  },
-  {
-   "symbol": "FAS.DE",
-   "isin": "US3119001044",
-   "name": "Fastenal Company",
-   "type": "stock",
-   "netGain5y": 0.0814
-  },
-  {
    "symbol": "O5G.DE",
    "isin": "LU0251710041",
    "name": "CPI Property Group",
@@ -1412,11 +1460,12 @@
    "netGain5y": 0.0814
   },
   {
-   "symbol": "MBG.DE",
-   "isin": "DE0007100000",
-   "name": "Mercedes-Benz Group",
+   "symbol": "AWC.DE",
+   "isin": "US0304201033",
+   "name": "American Water Works Company, Inc.",
    "type": "stock",
-   "netGain5y": 0.0813
+   "outlookSymbol": "AWK",
+   "netGain5y": 0.0807
   },
   {
    "symbol": "KFI1.DE",
@@ -1426,11 +1475,18 @@
    "netGain5y": 0.0805
   },
   {
-   "symbol": "ADS.DE",
-   "isin": "DE000A1EWWW0",
-   "name": "Adidas",
+   "symbol": "O",
+   "isin": "US7561091049",
+   "name": "Realty Income",
    "type": "stock",
-   "netGain5y": 0.08
+   "netGain5y": 0.0802
+  },
+  {
+   "symbol": "IXX.DE",
+   "isin": "DE0005759807",
+   "name": "init innovation in traffic systems SE",
+   "type": "stock",
+   "netGain5y": 0.0797
   },
   {
    "symbol": "ITB.DE",
@@ -1440,11 +1496,18 @@
    "netGain5y": 0.0794
   },
   {
-   "symbol": "FIE.DE",
-   "isin": "DE0005772206",
-   "name": "Fielmann Group AG",
+   "symbol": "VOS.DE",
+   "isin": "DE0007667107",
+   "name": "Vossloh AG",
    "type": "stock",
    "netGain5y": 0.0787
+  },
+  {
+   "symbol": "FRE.DE",
+   "isin": "DE000FRE5EN2",
+   "name": "Fresenius SE & Co. KGaA",
+   "type": "stock",
+   "netGain5y": 0.0785
   },
   {
    "symbol": "MBK.DE",
@@ -1454,18 +1517,33 @@
    "netGain5y": 0.0782
   },
   {
-   "symbol": "BRM.DE",
-   "isin": "US1101221083",
-   "name": "Bristol-Myers Squibb Company",
+   "symbol": "TM",
+   "isin": "US8923313071",
+   "name": "Toyota Motor (ADR)",
    "type": "stock",
-   "netGain5y": 0.0781
+   "netGain5y": 0.0778
   },
   {
-   "symbol": "UCG.MI",
-   "isin": "IT0005239360",
-   "name": "UniCredit",
+   "symbol": "KTN.DE",
+   "isin": "AT0000A0E9W5",
+   "name": "Kontron AG",
    "type": "stock",
-   "netGain5y": 0.0772
+   "netGain5y": 0.0778
+  },
+  {
+   "symbol": "GOOGL",
+   "isin": "US02079K3059",
+   "name": "Alphabet (A)",
+   "type": "stock",
+   "netGain5y": 0.0777
+  },
+  {
+   "symbol": "TM5.DE",
+   "isin": "US8725901040",
+   "name": "T-Mobile US, Inc.",
+   "type": "stock",
+   "outlookSymbol": "TMUS",
+   "netGain5y": 0.0773
   },
   {
    "symbol": "HRPK.DE",
@@ -1482,11 +1560,11 @@
    "netGain5y": 0.0766
   },
   {
-   "symbol": "MX4A.DE",
-   "isin": "US12572Q1058",
-   "name": "CME Group Inc.",
+   "symbol": "ENI.MI",
+   "isin": "IT0003132476",
+   "name": "Eni",
    "type": "stock",
-   "netGain5y": 0.0759
+   "netGain5y": 0.0761
   },
   {
    "symbol": "NGL0.DE",
@@ -1496,25 +1574,11 @@
    "netGain5y": 0.0756
   },
   {
-   "symbol": "GSC1.DE",
-   "isin": "DE000A1K0201",
-   "name": "Gesco SE",
+   "symbol": "PCZ.DE",
+   "isin": "DE0006223407",
+   "name": "ProCredit Holding AG",
    "type": "stock",
-   "netGain5y": 0.0756
-  },
-  {
-   "symbol": "TM5.DE",
-   "isin": "US8725901040",
-   "name": "T-Mobile US, Inc.",
-   "type": "stock",
-   "netGain5y": 0.075
-  },
-  {
-   "symbol": "HD",
-   "isin": "US4370761029",
-   "name": "Home Depot",
-   "type": "stock",
-   "netGain5y": 0.0744
+   "netGain5y": 0.0745
   },
   {
    "symbol": "DIE.DE",
@@ -1524,11 +1588,18 @@
    "netGain5y": 0.0741
   },
   {
-   "symbol": "QIA.DE",
-   "isin": "NL0015002SN0",
-   "name": "Qiagen N.V.",
+   "symbol": "P911.DE",
+   "isin": "DE000PAG9113",
+   "name": "Porsche AG",
    "type": "stock",
-   "netGain5y": 0.074
+   "netGain5y": 0.0738
+  },
+  {
+   "symbol": "CON.DE",
+   "isin": "DE0005439004",
+   "name": "Continental Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": 0.0728
   },
   {
    "symbol": "RAW.DE",
@@ -1538,18 +1609,27 @@
    "netGain5y": 0.0727
   },
   {
-   "symbol": "BEI.DE",
-   "isin": "DE0005200000",
-   "name": "Beiersdorf Aktiengesellschaft",
+   "symbol": "JST.DE",
+   "isin": "DE000JST4000",
+   "name": "JOST Werke SE",
    "type": "stock",
-   "netGain5y": 0.0726
+   "netGain5y": 0.0716
   },
   {
-   "symbol": "QTS.DE",
-   "isin": "US46266C1053",
-   "name": "IQVIA Holdings Inc.",
+   "symbol": "KMY.DE",
+   "isin": "US4943681035",
+   "name": "Kimberly-Clark Corporation",
    "type": "stock",
-   "netGain5y": 0.0715
+   "outlookSymbol": "KMB",
+   "netGain5y": 0.071
+  },
+  {
+   "symbol": "KTF.DE",
+   "isin": "US6092071058",
+   "name": "Mondelez International, Inc.",
+   "type": "stock",
+   "outlookSymbol": "MDLZ",
+   "netGain5y": 0.0709
   },
   {
    "symbol": "SZ50.DE",
@@ -1557,6 +1637,28 @@
    "name": "Lübke Kelber AG",
    "type": "stock",
    "netGain5y": 0.0708
+  },
+  {
+   "symbol": "MTX.DE",
+   "isin": "DE000A0D9PT0",
+   "name": "MTU Aero Engines",
+   "type": "stock",
+   "netGain5y": 0.0705
+  },
+  {
+   "symbol": "JEN.DE",
+   "isin": "DE000A2NB601",
+   "name": "Jenoptik AG",
+   "type": "stock",
+   "netGain5y": 0.0705,
+   "growth": 0.2088
+  },
+  {
+   "symbol": "JNJ",
+   "isin": "US4781601046",
+   "name": "Johnson & Johnson",
+   "type": "stock",
+   "netGain5y": 0.0705
   },
   {
    "symbol": "H6D0.DE",
@@ -1570,14 +1672,28 @@
    "isin": "DE000BASF111",
    "name": "BASF",
    "type": "stock",
-   "netGain5y": 0.07
+   "netGain5y": 0.0701
   },
   {
-   "symbol": "HEI.DE",
-   "isin": "DE0006047004",
-   "name": "Heidelberg Materials AG",
+   "symbol": "AAPL",
+   "isin": "US0378331005",
+   "name": "Apple",
+   "type": "stock",
+   "netGain5y": 0.0694
+  },
+  {
+   "symbol": "EUZ.DE",
+   "isin": "DE0005659700",
+   "name": "Eckert & Ziegler SE",
    "type": "stock",
    "netGain5y": 0.069
+  },
+  {
+   "symbol": "DEQ.DE",
+   "isin": "DE0007480204",
+   "name": "Deutsche EuroShop AG",
+   "type": "stock",
+   "netGain5y": 0.0687
   },
   {
    "symbol": "OBS.DE",
@@ -1587,20 +1703,6 @@
    "netGain5y": 0.0683
   },
   {
-   "symbol": "WMB.DE",
-   "isin": "US9694571004",
-   "name": "The Williams Companies, Inc.",
-   "type": "stock",
-   "netGain5y": 0.0681
-  },
-  {
-   "symbol": "BNP.PA",
-   "isin": "FR0000131104",
-   "name": "BNP Paribas",
-   "type": "stock",
-   "netGain5y": 0.0675
-  },
-  {
    "symbol": "WIB.DE",
    "isin": "AT0000831706",
    "name": "Wienerberger AG",
@@ -1608,16 +1710,23 @@
    "netGain5y": 0.0673
   },
   {
-   "symbol": "KWS.DE",
-   "isin": "DE0007074007",
-   "name": "KWS SAAT SE & Co. KGaA",
+   "symbol": "AMZN",
+   "isin": "US0231351067",
+   "name": "Amazon",
    "type": "stock",
-   "netGain5y": 0.0668
+   "netGain5y": 0.0669
   },
   {
    "symbol": "PWO.DE",
    "isin": "DE0006968001",
    "name": "PWO AG",
+   "type": "stock",
+   "netGain5y": 0.0666
+  },
+  {
+   "symbol": "SIX2.DE",
+   "isin": "DE0007231326",
+   "name": "Sixt SE",
    "type": "stock",
    "netGain5y": 0.0666
   },
@@ -1629,13 +1738,6 @@
    "netGain5y": 0.0662
   },
   {
-   "symbol": "DMP.DE",
-   "isin": "DE000A2GS5D8",
-   "name": "Dermapharm Holding SE",
-   "type": "stock",
-   "netGain5y": 0.0661
-  },
-  {
    "symbol": "FTE.DE",
    "isin": "FR0000133308",
    "name": "Orange S.A.",
@@ -1643,25 +1745,11 @@
    "netGain5y": 0.0661
   },
   {
-   "symbol": "EVK.DE",
-   "isin": "DE000EVNK013",
-   "name": "Evonik Industries AG",
+   "symbol": "BMW.DE",
+   "isin": "DE0005190003",
+   "name": "BMW",
    "type": "stock",
-   "netGain5y": 0.066
-  },
-  {
-   "symbol": "1KT.DE",
-   "isin": "US49338L1035",
-   "name": "Keysight Technologies, Inc.",
-   "type": "stock",
-   "netGain5y": 0.0659
-  },
-  {
-   "symbol": "O",
-   "isin": "US7561091049",
-   "name": "Realty Income",
-   "type": "stock",
-   "netGain5y": 0.0655
+   "netGain5y": 0.0653
   },
   {
    "symbol": "QB7.DE",
@@ -1671,32 +1759,40 @@
    "netGain5y": 0.0653
   },
   {
-   "symbol": "BOSS.DE",
-   "isin": "DE000A1PHFF7",
-   "name": "Hugo Boss AG",
+   "symbol": "HD",
+   "isin": "US4370761029",
+   "name": "Home Depot",
    "type": "stock",
-   "netGain5y": 0.0652
+   "netGain5y": 0.0649
   },
   {
-   "symbol": "KOG.DE",
-   "isin": "US5010441013",
-   "name": "The Kroger Co.",
+   "symbol": "WMT",
+   "isin": "US9311421039",
+   "name": "Walmart",
+   "type": "stock",
+   "netGain5y": 0.0642
+  },
+  {
+   "symbol": "DBK.DE",
+   "isin": "DE0005140008",
+   "name": "Deutsche Bank",
+   "type": "stock",
+   "netGain5y": 0.0641
+  },
+  {
+   "symbol": "KSB3.DE",
+   "isin": "DE0006292030",
+   "name": "KSB SE & Co. KGaA",
    "type": "stock",
    "netGain5y": 0.0639
   },
   {
-   "symbol": "P911.DE",
-   "isin": "DE000PAG9113",
-   "name": "Porsche AG",
+   "symbol": "KER.PA",
+   "isin": "FR0000121485",
+   "name": "Kering",
    "type": "stock",
-   "netGain5y": 0.0635
-  },
-  {
-   "symbol": "PEP",
-   "isin": "US7134481081",
-   "name": "PepsiCo",
-   "type": "stock",
-   "netGain5y": 0.0635
+   "netGain5y": 0.0634,
+   "growth": 0.296
   },
   {
    "symbol": "SGE.DE",
@@ -1713,6 +1809,21 @@
    "netGain5y": 0.0629
   },
   {
+   "symbol": "PM",
+   "isin": "US7181721090",
+   "name": "Philip Morris International",
+   "type": "stock",
+   "netGain5y": 0.0628
+  },
+  {
+   "symbol": "SJ3.DE",
+   "isin": "US8243481061",
+   "name": "The Sherwin-Williams Company",
+   "type": "stock",
+   "outlookSymbol": "SHW",
+   "netGain5y": 0.0628
+  },
+  {
    "symbol": "1NBA.DE",
    "isin": "BE0974293251",
    "name": "Anheuser-Busch InBev SA/NV",
@@ -1720,9 +1831,9 @@
    "netGain5y": 0.0628
   },
   {
-   "symbol": "CXU.DE",
-   "isin": "US1713401024",
-   "name": "Church & Dwight Co., Inc.",
+   "symbol": "BEI.DE",
+   "isin": "DE0005200000",
+   "name": "Beiersdorf Aktiengesellschaft",
    "type": "stock",
    "netGain5y": 0.0624
   },
@@ -1748,11 +1859,12 @@
    "netGain5y": 0.0618
   },
   {
-   "symbol": "PAE.DE",
-   "isin": "US6937181088",
-   "name": "PACCAR Inc",
+   "symbol": "EBA.DE",
+   "isin": "US2786421030",
+   "name": "eBay Inc.",
    "type": "stock",
-   "netGain5y": 0.0612
+   "outlookSymbol": "EBAY",
+   "netGain5y": 0.0608
   },
   {
    "symbol": "KNIA.DE",
@@ -1762,20 +1874,6 @@
    "netGain5y": 0.0606
   },
   {
-   "symbol": "MTX.DE",
-   "isin": "DE000A0D9PT0",
-   "name": "MTU Aero Engines",
-   "type": "stock",
-   "netGain5y": 0.0606
-  },
-  {
-   "symbol": "SJ3.DE",
-   "isin": "US8243481061",
-   "name": "The Sherwin-Williams Company",
-   "type": "stock",
-   "netGain5y": 0.06
-  },
-  {
    "symbol": "NBG6.DE",
    "isin": "DE0008435967",
    "name": "NÜRNBERGER Beteiligungs-AG",
@@ -1783,11 +1881,11 @@
    "netGain5y": 0.0599
   },
   {
-   "symbol": "PSAN.DE",
-   "isin": "DE000A0Z1JH9",
-   "name": "PSI Software SE",
+   "symbol": "DSY.PA",
+   "isin": "FR0014003TT8",
+   "name": "Dassault Systèmes",
    "type": "stock",
-   "netGain5y": 0.0599
+   "netGain5y": 0.0598
   },
   {
    "symbol": "EDL.DE",
@@ -1797,18 +1895,18 @@
    "netGain5y": 0.0591
   },
   {
-   "symbol": "SAX.DE",
-   "isin": "DE0007493991",
-   "name": "Ströer SE & Co. KGaA",
+   "symbol": "BAMI.MI",
+   "isin": "IT0005218380",
+   "name": "Banco BPM",
    "type": "stock",
-   "netGain5y": 0.0581
+   "netGain5y": 0.0582
   },
   {
-   "symbol": "SFQ.DE",
-   "isin": "DE000SAFH001",
-   "name": "SAF-Holland SE",
+   "symbol": "BOSS.DE",
+   "isin": "DE000A1PHFF7",
+   "name": "Hugo Boss AG",
    "type": "stock",
-   "netGain5y": 0.0574
+   "netGain5y": 0.0573
   },
   {
    "symbol": "CDZ0.DE",
@@ -1818,46 +1916,56 @@
    "netGain5y": 0.0571
   },
   {
+   "symbol": "MX4A.DE",
+   "isin": "US12572Q1058",
+   "name": "CME Group Inc.",
+   "type": "stock",
+   "outlookSymbol": "CME",
+   "netGain5y": 0.057
+  },
+  {
+   "symbol": "ABBV",
+   "isin": "US00287Y1091",
+   "name": "AbbVie",
+   "type": "stock",
+   "netGain5y": 0.0567
+  },
+  {
+   "symbol": "INS.DE",
+   "isin": "DE000A2NBX80",
+   "name": "Instone Real Estate Group SE",
+   "type": "stock",
+   "netGain5y": 0.0563
+  },
+  {
    "symbol": "ULVR.L",
    "isin": "GB00BVZK7T90",
    "name": "Unilever",
    "type": "stock",
-   "netGain5y": 0.0568
+   "netGain5y": 0.0558
   },
   {
-   "symbol": "SONY",
-   "isin": "US8356993076",
-   "name": "Sony Group (ADR)",
+   "symbol": "PEP",
+   "isin": "US7134481081",
+   "name": "PepsiCo",
    "type": "stock",
-   "netGain5y": 0.0562
+   "netGain5y": 0.0551
   },
   {
-   "symbol": "FRE.DE",
-   "isin": "DE000FRE5EN2",
-   "name": "Fresenius SE & Co. KGaA",
+   "symbol": "VIA.DE",
+   "isin": "US92556V1061",
+   "name": "Viatris Inc.",
    "type": "stock",
-   "netGain5y": 0.0559
+   "outlookSymbol": "VTRS",
+   "netGain5y": 0.0541
   },
   {
-   "symbol": "JEN.DE",
-   "isin": "DE000A2NB601",
-   "name": "Jenoptik AG",
+   "symbol": "PNP.DE",
+   "isin": "US6934751057",
+   "name": "The PNC Financial Services Group, Inc.",
    "type": "stock",
-   "netGain5y": 0.0556
-  },
-  {
-   "symbol": "OCN.DE",
-   "isin": "US6819191064",
-   "name": "Omnicom Group Inc.",
-   "type": "stock",
-   "netGain5y": 0.0545
-  },
-  {
-   "symbol": "BFSA.DE",
-   "isin": "LU1704650164",
-   "name": "Befesa S.A.",
-   "type": "stock",
-   "netGain5y": 0.0539
+   "outlookSymbol": "PNC",
+   "netGain5y": 0.0538
   },
   {
    "symbol": "SMWN.DE",
@@ -1874,123 +1982,91 @@
    "netGain5y": 0.0535
   },
   {
-   "symbol": "VOW.DE",
-   "isin": "DE0007664005",
-   "name": "Volkswagen AG",
-   "type": "stock",
-   "netGain5y": 0.0535
-  },
-  {
-   "symbol": "SOT.DE",
-   "isin": "US8425871071",
-   "name": "The Southern Company",
-   "type": "stock",
-   "netGain5y": 0.0533
-  },
-  {
-   "symbol": "PAH3.DE",
-   "isin": "DE000PAH0038",
-   "name": "Porsche Automobil Holding SE",
-   "type": "stock",
-   "netGain5y": 0.0532
-  },
-  {
-   "symbol": "DBK.DE",
-   "isin": "DE0005140008",
-   "name": "Deutsche Bank",
-   "type": "stock",
-   "netGain5y": 0.0529
-  },
-  {
-   "symbol": "CON.DE",
-   "isin": "DE0005439004",
-   "name": "Continental Aktiengesellschaft",
-   "type": "stock",
-   "netGain5y": 0.0529
-  },
-  {
-   "symbol": "ISRG",
-   "isin": "US46120E6023",
-   "name": "Intuitive Surgical",
-   "type": "stock",
-   "netGain5y": 0.0529
-  },
-  {
-   "symbol": "PNP.DE",
-   "isin": "US6934751057",
-   "name": "The PNC Financial Services Group, Inc.",
-   "type": "stock",
-   "netGain5y": 0.0522
-  },
-  {
-   "symbol": "PFE",
-   "isin": "US7170811035",
-   "name": "Pfizer",
-   "type": "stock",
-   "netGain5y": 0.0514
-  },
-  {
-   "symbol": "JST.DE",
-   "isin": "DE000JST4000",
-   "name": "JOST Werke SE",
-   "type": "stock",
-   "netGain5y": 0.051
-  },
-  {
-   "symbol": "KTN.DE",
-   "isin": "AT0000A0E9W5",
-   "name": "Kontron AG",
-   "type": "stock",
-   "netGain5y": 0.0509
-  },
-  {
    "symbol": "HSBA.L",
    "isin": "GB0005405286",
    "name": "HSBC Holdings",
    "type": "stock",
-   "netGain5y": 0.0498
+   "netGain5y": 0.0532
   },
   {
-   "symbol": "SRT3.DE",
-   "isin": "DE0007165631",
-   "name": "Sartorius (Vz)",
+   "symbol": "SFQ.DE",
+   "isin": "DE000SAFH001",
+   "name": "SAF-Holland SE",
    "type": "stock",
-   "netGain5y": 0.0488
+   "netGain5y": 0.0531
   },
   {
-   "symbol": "CSCO",
-   "isin": "US17275R1023",
-   "name": "Cisco Systems",
+   "symbol": "INH.DE",
+   "isin": "DE0006200108",
+   "name": "INDUS Holding AG",
    "type": "stock",
-   "netGain5y": 0.0484
+   "netGain5y": 0.053
   },
   {
-   "symbol": "GILD",
-   "isin": "US3755581036",
-   "name": "Gilead Sciences",
+   "symbol": "NDA.DE",
+   "isin": "DE0006766504",
+   "name": "Aurubis AG",
    "type": "stock",
-   "netGain5y": 0.0478
+   "netGain5y": 0.0526
   },
   {
-   "symbol": "CAT",
-   "isin": "US1491231015",
-   "name": "Caterpillar",
+   "symbol": "COK.DE",
+   "isin": "DE0005419105",
+   "name": "Cancom SE",
    "type": "stock",
-   "netGain5y": 0.0475
+   "netGain5y": 0.0522
   },
   {
-   "symbol": "BAMI.MI",
-   "isin": "IT0005218380",
-   "name": "Banco BPM",
+   "symbol": "LQAG.DE",
+   "isin": "DE000A12UP29",
+   "name": "Laiqon AG",
    "type": "stock",
-   "netGain5y": 0.0472
+   "netGain5y": 0.0507
   },
   {
-   "symbol": "LLY",
-   "isin": "US5324571083",
-   "name": "Eli Lilly",
+   "symbol": "FAS.DE",
+   "isin": "US3119001044",
+   "name": "Fastenal Company",
    "type": "stock",
-   "netGain5y": 0.047
+   "outlookSymbol": "FAST",
+   "netGain5y": 0.05
+  },
+  {
+   "symbol": "EVK.DE",
+   "isin": "DE000EVNK013",
+   "name": "Evonik Industries AG",
+   "type": "stock",
+   "netGain5y": 0.0489
+  },
+  {
+   "symbol": "ASM.AS",
+   "isin": "NL0000334118",
+   "name": "ASM International",
+   "type": "stock",
+   "netGain5y": 0.0485,
+   "growth": 0.3265
+  },
+  {
+   "symbol": "8TRA.DE",
+   "isin": "DE000TRAT0N7",
+   "name": "Traton SE",
+   "type": "stock",
+   "netGain5y": 0.0477
+  },
+  {
+   "symbol": "BC8.DE",
+   "isin": "DE0005158703",
+   "name": "Bechtle AG",
+   "type": "stock",
+   "netGain5y": 0.0473
+  },
+  {
+   "symbol": "IFX.DE",
+   "isin": "DE0006231004",
+   "name": "Infineon Technologies",
+   "type": "stock",
+   "netGain5y": 0.0469,
+   "growth": 0.4338
   },
   {
    "symbol": "AJ91.DE",
@@ -1998,13 +2074,6 @@
    "name": "DocCheck AG",
    "type": "stock",
    "netGain5y": 0.0467
-  },
-  {
-   "symbol": "8TRA.DE",
-   "isin": "DE000TRAT0N7",
-   "name": "Traton SE",
-   "type": "stock",
-   "netGain5y": 0.0466
   },
   {
    "symbol": "GBRA.DE",
@@ -2028,39 +2097,26 @@
    "netGain5y": 0.0453
   },
   {
-   "symbol": "MRK",
-   "isin": "US58933Y1055",
-   "name": "Merck & Co.",
-   "type": "stock",
-   "netGain5y": 0.0453
-  },
-  {
-   "symbol": "IXX.DE",
-   "isin": "DE0005759807",
-   "name": "init innovation in traffic systems SE",
+   "symbol": "QIA.DE",
+   "isin": "NL0015002SN0",
+   "name": "Qiagen N.V.",
    "type": "stock",
    "netGain5y": 0.0451
   },
   {
-   "symbol": "NEM.DE",
-   "isin": "DE0006452907",
-   "name": "Nemetschek SE",
-   "type": "stock",
-   "netGain5y": 0.045
-  },
-  {
-   "symbol": "EUZ.DE",
-   "isin": "DE0005659700",
-   "name": "Eckert & Ziegler SE",
+   "symbol": "PFE",
+   "isin": "US7170811035",
+   "name": "Pfizer",
    "type": "stock",
    "netGain5y": 0.0443
   },
   {
-   "symbol": "NDA.DE",
-   "isin": "DE0006766504",
-   "name": "Aurubis AG",
+   "symbol": "EDC.DE",
+   "isin": "US2091151041",
+   "name": "Consolidated Edison, Inc.",
    "type": "stock",
-   "netGain5y": 0.0443
+   "outlookSymbol": "ED",
+   "netGain5y": 0.0442
   },
   {
    "symbol": "BOG.DE",
@@ -2070,13 +2126,6 @@
    "netGain5y": 0.0442
   },
   {
-   "symbol": "FMC1.DE",
-   "isin": "US3453708600",
-   "name": "Ford Motor Company",
-   "type": "stock",
-   "netGain5y": 0.0437
-  },
-  {
    "symbol": "RY4C.DE",
    "isin": "IE00BYTBXV33",
    "name": "Ryanair Holdings plc",
@@ -2084,32 +2133,34 @@
    "netGain5y": 0.0432
   },
   {
-   "symbol": "BC8.DE",
-   "isin": "DE0005158703",
-   "name": "Bechtle AG",
+   "symbol": "BRM.DE",
+   "isin": "US1101221083",
+   "name": "Bristol-Myers Squibb Company",
    "type": "stock",
-   "netGain5y": 0.0424
+   "outlookSymbol": "BMY",
+   "netGain5y": 0.0429
   },
   {
-   "symbol": "SIX2.DE",
-   "isin": "DE0007231326",
-   "name": "Sixt SE",
+   "symbol": "PP9.DE",
+   "isin": "US69351T1060",
+   "name": "PPL Corporation",
    "type": "stock",
-   "netGain5y": 0.0417
+   "outlookSymbol": "PPL",
+   "netGain5y": 0.0422
   },
   {
-   "symbol": "TEG.DE",
-   "isin": "DE0008303504",
-   "name": "TAG Immobilien AG",
+   "symbol": "ABO.DE",
+   "isin": "DE000A1EWXA4",
+   "name": "clearvise AG",
    "type": "stock",
-   "netGain5y": 0.0416
+   "netGain5y": 0.0413
   },
   {
-   "symbol": "BVB.DE",
-   "isin": "DE0005493092",
-   "name": "Borussia Dortmund GmbH & Co. Kommanditgesellschaft auf Aktien",
+   "symbol": "VZ",
+   "isin": "US92343V1044",
+   "name": "Verizon",
    "type": "stock",
-   "netGain5y": 0.0415
+   "netGain5y": 0.041
   },
   {
    "symbol": "QDVE.DE",
@@ -4441,6 +4492,717 @@
    "name": "Shiba Inu",
    "type": "crypto",
    "netGain5y": -0.99
+  },
+  {
+   "symbol": "CRSP",
+   "isin": "CH0334081137",
+   "name": "CRISPR Therapeutics",
+   "type": "stock",
+   "netGain5y": -0.3913,
+   "growth": 1.5042
+  },
+  {
+   "symbol": "ASTS",
+   "isin": "US00217D1000",
+   "name": "AST SpaceMobile",
+   "type": "stock",
+   "netGain5y": -0.8173,
+   "growth": 1.4578
+  },
+  {
+   "symbol": "AMD",
+   "isin": "US0079031078",
+   "name": "Advanced Micro Devices",
+   "type": "stock",
+   "netGain5y": -0.3895,
+   "growth": 0.8747
+  },
+  {
+   "symbol": "NBIS",
+   "isin": "NL0009805522",
+   "name": "Nebius Group",
+   "type": "stock",
+   "netGain5y": -0.8545,
+   "growth": 0.8298
+  },
+  {
+   "symbol": "FYB.DE",
+   "isin": "DE000A1EWVY8",
+   "name": "Formycon AG",
+   "type": "stock",
+   "netGain5y": -0.1231,
+   "growth": 0.7733
+  },
+  {
+   "symbol": "NVDA",
+   "isin": "US67066G1040",
+   "name": "NVIDIA",
+   "type": "stock",
+   "netGain5y": 0.0033,
+   "growth": 0.6952
+  },
+  {
+   "symbol": "MRVL",
+   "isin": "US5738741041",
+   "name": "Marvell Technology",
+   "type": "stock",
+   "netGain5y": -0.4015,
+   "growth": 0.6848
+  },
+  {
+   "symbol": "AVGO",
+   "isin": "US11135F1012",
+   "name": "Broadcom",
+   "type": "stock",
+   "netGain5y": -0.0643,
+   "growth": 0.6548
+  },
+  {
+   "symbol": "COIN",
+   "isin": "US19260Q1076",
+   "name": "Coinbase Global",
+   "type": "stock",
+   "netGain5y": -0.6436,
+   "growth": 0.6509
+  },
+  {
+   "symbol": "SOI.PA",
+   "isin": "FR0013227113",
+   "name": "Soitec",
+   "type": "stock",
+   "netGain5y": -0.588,
+   "growth": 0.6474
+  },
+  {
+   "symbol": "HIMS",
+   "isin": "US4330001060",
+   "name": "Hims & Hers Health",
+   "type": "stock",
+   "netGain5y": -0.755,
+   "growth": 0.623
+  },
+  {
+   "symbol": "NIO",
+   "isin": "US62914V1061",
+   "name": "NIO (ADR)",
+   "type": "stock",
+   "netGain5y": -0.5614,
+   "growth": 0.5916
+  },
+  {
+   "symbol": "TEAM",
+   "isin": "US0494681010",
+   "name": "Atlassian",
+   "type": "stock",
+   "netGain5y": -0.5048,
+   "growth": 0.5744
+  },
+  {
+   "symbol": "BA",
+   "isin": "US0970231058",
+   "name": "Boeing",
+   "type": "stock",
+   "netGain5y": -0.0079,
+   "growth": 0.5739
+  },
+  {
+   "symbol": "GILD",
+   "isin": "US3755581036",
+   "name": "Gilead Sciences",
+   "type": "stock",
+   "netGain5y": 0.0041,
+   "growth": 0.5344
+  },
+  {
+   "symbol": "A1G.DE",
+   "isin": "US02376R1023",
+   "name": "American Airlines Group Inc.",
+   "type": "stock",
+   "outlookSymbol": "AAL",
+   "netGain5y": -0.0913,
+   "growth": 0.5318
+  },
+  {
+   "symbol": "PUM.DE",
+   "isin": "DE0006969603",
+   "name": "PUMA SE",
+   "type": "stock",
+   "netGain5y": -0.0397,
+   "growth": 0.5272
+  },
+  {
+   "symbol": "RKLB",
+   "isin": "US7731221062",
+   "name": "Rocket Lab",
+   "type": "stock",
+   "netGain5y": -0.68,
+   "growth": 0.5249
+  },
+  {
+   "symbol": "MRK",
+   "isin": "US58933Y1055",
+   "name": "Merck & Co.",
+   "type": "stock",
+   "netGain5y": 0.0158,
+   "growth": 0.5215
+  },
+  {
+   "symbol": "SZU.DE",
+   "isin": "DE0007297004",
+   "name": "Südzucker AG",
+   "type": "stock",
+   "netGain5y": -0.0031,
+   "growth": 0.5211
+  },
+  {
+   "symbol": "KOG.OL",
+   "isin": null,
+   "name": "Kongsberg Gruppen",
+   "type": "stock",
+   "netGain5y": -0.0613,
+   "growth": 0.5199
+  },
+  {
+   "symbol": "SHA0.DE",
+   "isin": "DE000SHA0100",
+   "name": "Schaeffler AG",
+   "type": "stock",
+   "netGain5y": -0.0409,
+   "growth": 0.5169
+  },
+  {
+   "symbol": "WCH.DE",
+   "isin": "DE000WCH8881",
+   "name": "Wacker Chemie AG",
+   "type": "stock",
+   "netGain5y": -0.0218,
+   "growth": 0.5129
+  },
+  {
+   "symbol": "MSTR",
+   "isin": "US5949724083",
+   "name": "Strategy (MicroStrategy)",
+   "type": "stock",
+   "netGain5y": -0.6196,
+   "growth": 0.5111
+  },
+  {
+   "symbol": "IONQ",
+   "isin": "US46222L1089",
+   "name": "IonQ",
+   "type": "stock",
+   "netGain5y": -0.5921,
+   "growth": 0.4943
+  },
+  {
+   "symbol": "DASH",
+   "isin": "US25809K1051",
+   "name": "DoorDash",
+   "type": "stock",
+   "netGain5y": -0.3123,
+   "growth": 0.4762
+  },
+  {
+   "symbol": "PLTR",
+   "isin": "US69608A1088",
+   "name": "Palantir Technologies",
+   "type": "stock",
+   "netGain5y": -0.5199,
+   "growth": 0.4761
+  },
+  {
+   "symbol": "STLAM.MI",
+   "isin": "NL00150001Q9",
+   "name": "Stellantis",
+   "type": "stock",
+   "netGain5y": -0.0075,
+   "growth": 0.4212
+  },
+  {
+   "symbol": "ORCL",
+   "isin": "US68389X1054",
+   "name": "Oracle",
+   "type": "stock",
+   "netGain5y": -0.2435,
+   "growth": 0.4036
+  },
+  {
+   "symbol": "BESI.AS",
+   "isin": "NL0012866412",
+   "name": "BE Semiconductor Industries",
+   "type": "stock",
+   "netGain5y": -0.1071,
+   "growth": 0.4028
+  },
+  {
+   "symbol": "AMAT",
+   "isin": "US0382221051",
+   "name": "Applied Materials",
+   "type": "stock",
+   "netGain5y": -0.2184,
+   "growth": 0.3998
+  },
+  {
+   "symbol": "RHM.DE",
+   "isin": "DE0007030009",
+   "name": "Rheinmetall",
+   "type": "stock",
+   "netGain5y": -0.0822,
+   "growth": 0.375
+  },
+  {
+   "symbol": "MELI",
+   "isin": "US58733R1023",
+   "name": "MercadoLibre",
+   "type": "stock",
+   "netGain5y": -0.1005,
+   "growth": 0.3728
+  },
+  {
+   "symbol": "ARM",
+   "isin": "US0420682058",
+   "name": "Arm Holdings (ADR)",
+   "type": "stock",
+   "netGain5y": -0.6691,
+   "growth": 0.3699
+  },
+  {
+   "symbol": "VRT",
+   "isin": "US92537N1081",
+   "name": "Vertiv Holdings",
+   "type": "stock",
+   "netGain5y": -0.3384,
+   "growth": 0.3351
+  },
+  {
+   "symbol": "AXON",
+   "isin": "US05464C1018",
+   "name": "Axon Enterprise",
+   "type": "stock",
+   "netGain5y": -0.4306,
+   "growth": 0.3343
+  },
+  {
+   "symbol": "RIVN",
+   "isin": "US76954A1034",
+   "name": "Rivian Automotive",
+   "type": "stock",
+   "netGain5y": -0.5053,
+   "growth": 0.3324
+  },
+  {
+   "symbol": "HOOD",
+   "isin": "US7707001027",
+   "name": "Robinhood Markets",
+   "type": "stock",
+   "netGain5y": -0.5325,
+   "growth": 0.3288
+  },
+  {
+   "symbol": "SOFI",
+   "isin": "US83406F1021",
+   "name": "SoFi Technologies",
+   "type": "stock",
+   "netGain5y": -0.3718,
+   "growth": 0.3246
+  },
+  {
+   "symbol": "U",
+   "isin": "US91332U1016",
+   "name": "Unity Software",
+   "type": "stock",
+   "netGain5y": -0.5852,
+   "growth": 0.3239
+  },
+  {
+   "symbol": "SNOW",
+   "isin": "US8334451098",
+   "name": "Snowflake",
+   "type": "stock",
+   "netGain5y": -0.5115,
+   "growth": 0.3216
+  },
+  {
+   "symbol": "SWN.DE",
+   "isin": "US8447411088",
+   "name": "Southwest Airlines Co.",
+   "type": "stock",
+   "outlookSymbol": "LUV",
+   "netGain5y": -0.0619,
+   "growth": 0.3117
+  },
+  {
+   "symbol": "S",
+   "isin": "US81730H1095",
+   "name": "SentinelOne",
+   "type": "stock",
+   "netGain5y": -0.4927,
+   "growth": 0.3109
+  },
+  {
+   "symbol": "NET",
+   "isin": "US18915M1071",
+   "name": "Cloudflare",
+   "type": "stock",
+   "netGain5y": -0.5446,
+   "growth": 0.308
+  },
+  {
+   "symbol": "MRNA",
+   "isin": "US60770K1079",
+   "name": "Moderna",
+   "type": "stock",
+   "netGain5y": -0.855,
+   "growth": 0.2918
+  },
+  {
+   "symbol": "UBER",
+   "isin": "US90353T1007",
+   "name": "Uber Technologies",
+   "type": "stock",
+   "netGain5y": -0.0602,
+   "growth": 0.2911
+  },
+  {
+   "symbol": "FPMB.DE",
+   "isin": "US35671D8570",
+   "name": "Freeport-McMoRan Inc.",
+   "type": "stock",
+   "outlookSymbol": "FCX",
+   "netGain5y": -0.0139,
+   "growth": 0.2863
+  },
+  {
+   "symbol": "ANET",
+   "isin": null,
+   "name": "Arista Networks",
+   "type": "stock",
+   "netGain5y": -0.2114,
+   "growth": 0.2795
+  },
+  {
+   "symbol": "SE",
+   "isin": "US81141R1005",
+   "name": "Sea Limited (ADR)",
+   "type": "stock",
+   "netGain5y": -0.4212,
+   "growth": 0.2779
+  },
+  {
+   "symbol": "AFRM",
+   "isin": "US00827B1061",
+   "name": "Affirm Holdings",
+   "type": "stock",
+   "netGain5y": -0.5802,
+   "growth": 0.2744
+  },
+  {
+   "symbol": "TIT.MI",
+   "isin": "IT0003497168",
+   "name": "Telecom Italia",
+   "type": "stock",
+   "netGain5y": -0.0316,
+   "growth": 0.2737
+  },
+  {
+   "symbol": "PANW",
+   "isin": "US6974351057",
+   "name": "Palo Alto Networks",
+   "type": "stock",
+   "netGain5y": -0.2875,
+   "growth": 0.2737
+  },
+  {
+   "symbol": "ON",
+   "isin": "US6821891057",
+   "name": "ON Semiconductor",
+   "type": "stock",
+   "netGain5y": -0.3589,
+   "growth": 0.2733
+  },
+  {
+   "symbol": "SHOP",
+   "isin": "CA82509L1076",
+   "name": "Shopify",
+   "type": "stock",
+   "netGain5y": -0.4104,
+   "growth": 0.2724
+  },
+  {
+   "symbol": "NU",
+   "isin": "KYG6683N1034",
+   "name": "Nu Holdings",
+   "type": "stock",
+   "netGain5y": -0.3042,
+   "growth": 0.268
+  },
+  {
+   "symbol": "GLW.DE",
+   "isin": "US2193501051",
+   "name": "Corning Incorporated",
+   "type": "stock",
+   "outlookSymbol": "GLW",
+   "netGain5y": -0.1064,
+   "growth": 0.268
+  },
+  {
+   "symbol": "INTC",
+   "isin": "US4581401001",
+   "name": "Intel",
+   "type": "stock",
+   "netGain5y": -0.4014,
+   "growth": 0.2663
+  },
+  {
+   "symbol": "HDD.DE",
+   "isin": "DE0007314007",
+   "name": "Heidelberger Druckmaschinen Aktiengesellschaft",
+   "type": "stock",
+   "netGain5y": -0.1119,
+   "growth": 0.2658
+  },
+  {
+   "symbol": "APP",
+   "isin": "US03831W1080",
+   "name": "AppLovin",
+   "type": "stock",
+   "netGain5y": -0.594,
+   "growth": 0.2655
+  },
+  {
+   "symbol": "ENR.DE",
+   "isin": "DE000ENER6Y0",
+   "name": "Siemens Energy",
+   "type": "stock",
+   "netGain5y": 0.0361,
+   "growth": 0.2654
+  },
+  {
+   "symbol": "FSLR",
+   "isin": "US3364331070",
+   "name": "First Solar",
+   "type": "stock",
+   "netGain5y": -0.3516,
+   "growth": 0.2611
+  },
+  {
+   "symbol": "BABA",
+   "isin": "US01609W1027",
+   "name": "Alibaba Group (ADR)",
+   "type": "stock",
+   "netGain5y": -0.1054,
+   "growth": 0.2611
+  },
+  {
+   "symbol": "LLY",
+   "isin": "US5324571083",
+   "name": "Eli Lilly",
+   "type": "stock",
+   "netGain5y": -0.0131,
+   "growth": 0.2584
+  },
+  {
+   "symbol": "CRWD",
+   "isin": "US22788C1053",
+   "name": "CrowdStrike",
+   "type": "stock",
+   "netGain5y": -0.4095,
+   "growth": 0.2551
+  },
+  {
+   "symbol": "HAG.DE",
+   "isin": "DE000HAG0005",
+   "name": "Hensoldt",
+   "type": "stock",
+   "netGain5y": -0.3106,
+   "growth": 0.2405
+  },
+  {
+   "symbol": "LRCX",
+   "isin": "US5128073062",
+   "name": "Lam Research",
+   "type": "stock",
+   "netGain5y": -0.301,
+   "growth": 0.2319
+  },
+  {
+   "symbol": "SGL.DE",
+   "isin": "DE0007235301",
+   "name": "SGL Carbon SE",
+   "type": "stock",
+   "netGain5y": -0.184,
+   "growth": 0.2304
+  },
+  {
+   "symbol": "NEM.DE",
+   "isin": "DE0006452907",
+   "name": "Nemetschek SE",
+   "type": "stock",
+   "netGain5y": 0.0351,
+   "growth": 0.2288
+  },
+  {
+   "symbol": "TOST",
+   "isin": "US8887871080",
+   "name": "Toast",
+   "type": "stock",
+   "netGain5y": -0.3439,
+   "growth": 0.2205
+  },
+  {
+   "symbol": "GBF.DE",
+   "isin": "DE0005909006",
+   "name": "Bilfinger SE",
+   "type": "stock",
+   "netGain5y": -0.1192,
+   "growth": 0.2173
+  },
+  {
+   "symbol": "ADYEN.AS",
+   "isin": "NL0012969182",
+   "name": "Adyen",
+   "type": "stock",
+   "netGain5y": -0.0847,
+   "growth": 0.217
+  },
+  {
+   "symbol": "TXN",
+   "isin": "US8825081040",
+   "name": "Texas Instruments",
+   "type": "stock",
+   "netGain5y": -0.012,
+   "growth": 0.2167
+  },
+  {
+   "symbol": "KLAC",
+   "isin": "US4824801009",
+   "name": "KLA Corporation",
+   "type": "stock",
+   "netGain5y": -0.2603,
+   "growth": 0.2144
+  },
+  {
+   "symbol": "SPOT",
+   "isin": "LU1778762911",
+   "name": "Spotify Technology",
+   "type": "stock",
+   "netGain5y": -0.1582,
+   "growth": 0.2125
+  },
+  {
+   "symbol": "NOW",
+   "isin": "US81762P1021",
+   "name": "ServiceNow",
+   "type": "stock",
+   "netGain5y": -0.2536,
+   "growth": 0.2097
+  },
+  {
+   "symbol": "2HP.DE",
+   "isin": "US42824C1099",
+   "name": "Hewlett Packard Enterprise Company",
+   "type": "stock",
+   "outlookSymbol": "HPE",
+   "netGain5y": -0.2009,
+   "growth": 0.2037
+  },
+  {
+   "symbol": "DDOG",
+   "isin": "US23804L1035",
+   "name": "Datadog",
+   "type": "stock",
+   "netGain5y": -0.4905,
+   "growth": 0.2037
+  },
+  {
+   "symbol": "HUBS",
+   "isin": "US4435731009",
+   "name": "HubSpot",
+   "type": "stock",
+   "netGain5y": -0.48,
+   "growth": 0.2031
+  },
+  {
+   "symbol": "XYZ",
+   "isin": "US8522341036",
+   "name": "Block",
+   "type": "stock",
+   "netGain5y": -0.2431,
+   "growth": 0.1997
+  },
+  {
+   "symbol": "MDB",
+   "isin": "US60937P1066",
+   "name": "MongoDB",
+   "type": "stock",
+   "netGain5y": -0.5732,
+   "growth": 0.1978
+  },
+  {
+   "symbol": "ARGX.BR",
+   "isin": "NL0010832176",
+   "name": "argenx",
+   "type": "stock",
+   "netGain5y": -0.1403,
+   "growth": 0.1957
+  },
+  {
+   "symbol": "3E2.DE",
+   "isin": "US29786A1060",
+   "name": "Etsy, Inc.",
+   "type": "stock",
+   "outlookSymbol": "ETSY",
+   "netGain5y": -0.2284,
+   "growth": 0.1927
+  },
+  {
+   "symbol": "META",
+   "isin": "US30303M1027",
+   "name": "Meta Platforms",
+   "type": "stock",
+   "netGain5y": -0.0753,
+   "growth": 0.1868
+  },
+  {
+   "symbol": "SNPS",
+   "isin": "US8716071076",
+   "name": "Synopsys",
+   "type": "stock",
+   "netGain5y": -0.1191,
+   "growth": 0.1866
+  },
+  {
+   "symbol": "TSLA",
+   "isin": "US88160R1014",
+   "name": "Tesla",
+   "type": "stock",
+   "netGain5y": -0.2923,
+   "growth": 0.1849
+  },
+  {
+   "symbol": "1KT.DE",
+   "isin": "US49338L1035",
+   "name": "Keysight Technologies, Inc.",
+   "type": "stock",
+   "outlookSymbol": "KEYS",
+   "netGain5y": -0.0125,
+   "growth": 0.1842
+  },
+  {
+   "symbol": "SMCI",
+   "isin": "US86800U3023",
+   "name": "Super Micro Computer",
+   "type": "stock",
+   "netGain5y": -0.7487,
+   "growth": 0.1799
+  },
+  {
+   "symbol": "WISE.L",
+   "isin": null,
+   "name": "Wise",
+   "type": "stock",
+   "netGain5y": -0.1215,
+   "growth": 0.1762
   }
  ]
 }

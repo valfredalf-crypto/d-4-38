@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import { listInstruments } from '../lib/store.js';
 import { historyEur } from '../lib/market.js';
-import { backtestOne, rowLoss, summarize } from '../public/js/backtest.js';
+import { backtestOne, rowLoss, rowLossReturns, rowLossRisk, summarize } from '../public/js/backtest.js';
 import { BENCHMARK_SYMBOL } from '../public/js/analyze.js';
 import { BASE_OUTLOOK } from '../public/js/outlook.js';
 import { DEFAULT_OPTIONS, hashString } from '../public/js/montecarlo.js';
@@ -27,8 +27,13 @@ const GRID = {
   priorUncertainty: [2, 3.5, 5, 7.5, 10],
   minStockBeta: [0.3, 0.5, 0.7],
   ewmaWeight: [0, 0.2, 0.4, 0.6],
-  volScale: [0.9, 1.0, 1.1, 1.2, 1.3],
+  volScale: [0.9, 1.0, 1.1, 1.2, 1.3, 1.4],
 };
+// Ogni parametro si tara sull'errore che gli compete: la volatilità sulle perdite massime reali,
+// i parametri del rendimento atteso sui rendimenti reali (così migliorare i rendimenti non può
+// "costare" una sottostima del rischio).
+const RISK_PARAMS = ['ewmaWeight', 'volScale'];
+const LOSS = { risk: rowLossRisk, returns: rowLossReturns };
 
 const { targetDrift, targetVol, seed, ...mcDefaults } = DEFAULT_OPTIONS;
 const baseSettings = (outlook) => ({ mc: { ...mcDefaults, cryptoSpreadPct: 0 }, outlook: { ...BASE_OUTLOOK, ...outlook } });
@@ -58,7 +63,7 @@ const train = sample.filter((it) => !isValidation(it));
 const valid = sample.filter(isValidation);
 log(`Strumenti con almeno 7 anni di storico: ${pool.length}; campione ${sample.length} (taratura ${train.length}, verifica ${valid.length})`);
 
-function evaluate(items, outlook) {
+function evaluate(items, outlook, lossFn = rowLoss) {
   const settings = baseSettings(outlook);
   const rows = [];
   for (const it of items) {
@@ -67,30 +72,38 @@ function evaluate(items, outlook) {
       if (r) rows.push(r);
     }
   }
-  const loss = rows.reduce((a, r) => a + rowLoss(r), 0) / (rows.length || 1);
+  const loss = rows.reduce((a, r) => a + lossFn(r), 0) / (rows.length || 1);
   return { loss, rows };
 }
 
-// --- ricerca
+// --- ricerca: a turno i parametri del rischio (errore sulle perdite) e quelli del rendimento (errore sui rendimenti)
 const t0 = Date.now();
 let best = Object.fromEntries(Object.keys(GRID).map((k) => [k, BASE_OUTLOOK[k]]));
-let bestLoss = evaluate(train, best).loss;
-const startLoss = bestLoss;
+const startLoss = evaluate(train, best).loss;
 log(`Errore iniziale (taratura): ${startLoss.toFixed(4)}`);
-for (let pass = 1; pass <= 2; pass++) {
-  for (const [key, values] of Object.entries(GRID)) {
-    for (const v of values) {
-      if (v === best[key]) continue;
-      const cand = { ...best, [key]: v };
-      const { loss } = evaluate(train, cand);
-      if (loss < bestLoss - 1e-6) {
-        bestLoss = loss;
-        best = cand;
-        log(`  passata ${pass}: ${key} = ${v} → ${loss.toFixed(4)}`);
+for (const [stage, keys] of [
+  ['risk', RISK_PARAMS],
+  ['returns', Object.keys(GRID).filter((k) => !RISK_PARAMS.includes(k))],
+  ['risk', RISK_PARAMS],
+]) {
+  const lossFn = LOSS[stage];
+  let stageLoss = evaluate(train, best, lossFn).loss;
+  for (let pass = 1; pass <= 2; pass++) {
+    for (const key of keys) {
+      for (const v of GRID[key]) {
+        if (v === best[key]) continue;
+        const cand = { ...best, [key]: v };
+        const { loss } = evaluate(train, cand, lossFn);
+        if (loss < stageLoss - 1e-6) {
+          stageLoss = loss;
+          best = cand;
+          log(`  ${stage === 'risk' ? 'rischio' : 'rendimento'}: ${key} = ${v} → ${loss.toFixed(4)}`);
+        }
       }
     }
   }
 }
+const bestLoss = evaluate(train, best).loss;
 log(`Ricerca completata in ${((Date.now() - t0) / 60000).toFixed(1)} min`);
 
 // --- verifica su strumenti mai usati nella taratura

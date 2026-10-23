@@ -185,8 +185,10 @@ export function rowLossReturns(r) {
   return Math.min(ret / 5, 2);
 }
 
+// Rischio: errore sullo scenario sfavorevole (95° percentile della perdita massima), cioè proprio la
+// "Perdita massima" mostrata dall'app, più un peso minore sulla perdita tipica (mediana).
 export function rowLossRisk(r) {
-  return Math.min((pinball(r.real.mdd, r.pred.mddMedian, 0.5) + pinball(r.real.mdd, r.pred.mddP95, 0.95)) / 2, 2);
+  return Math.min(0.75 * pinball(r.real.mdd, r.pred.mddP95, 0.95) + 0.25 * pinball(r.real.mdd, r.pred.mddMedian, 0.5), 2);
 }
 
 export function rowLoss(r) {

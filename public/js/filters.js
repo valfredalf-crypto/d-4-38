@@ -8,6 +8,9 @@ export const INDICATORS = [
   { key: 'probLoss', label: 'Probabilità di perdita', pct: true },
   { key: 'expected', label: 'Rendimento atteso annuo', pct: true },
   { key: 'growth', label: 'Crescita attesa (analisti)', pct: true },
+  { key: 'perfW', label: 'Rend. netto ultima settimana', pct: true },
+  { key: 'perfM', label: 'Rend. netto ultimo mese', pct: true },
+  { key: 'perfYtd', label: 'Rend. netto da inizio anno (YTD)', pct: true },
   { key: 'change', label: 'Variazione oggi', pct: true },
   { key: 'price', label: 'Prezzo (€)', pct: false },
 ];

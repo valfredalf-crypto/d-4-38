@@ -60,3 +60,16 @@ test('conversione in EUR con cambio storico e pence', () => {
   const out = convertSeries([10, 20, 30], [100, 100, 125], 1, [5, 25], [1.0, 1.25]);
   assert.deepEqual(out, [100, 100, 100]);
 });
+
+test('rendimenti recenti: settimana, mese, da inizio anno', async () => {
+  const { performanceFrom } = await import('../lib/market.js');
+  const day = 86400;
+  const now = Date.UTC(2026, 9, 23, 12) / 1000; // 23 ott 2026
+  const ts = [Date.UTC(2025, 11, 31, 9) / 1000, Date.UTC(2026, 0, 2, 9) / 1000, Date.UTC(2026, 8, 23, 9) / 1000, now - 7 * day - 3600, now - 2 * day];
+  const cl = [100, 101, 120, 150, 160];
+  const p = performanceFrom({ timestamps: ts, closesEur: cl }, 165, now * 1000);
+  assert.equal(p.ytd, 0.65); // da 100 (31 dic) a 165
+  assert.equal(p.m, 0.375); // da 120 (23 set) a 165
+  assert.equal(p.w, 0.1); // da 150 (7 giorni fa) a 165
+  assert.equal(performanceFrom({ timestamps: [now - day], closesEur: [10] }, 11, now * 1000).ytd, null); // nessuna chiusura dell'anno scorso
+});

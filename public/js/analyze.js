@@ -46,7 +46,7 @@ export function tableResult(r) {
 
 export function tableQuote(q) {
   if (!q) return null;
-  return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency };
+  return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency, ...(q.perf ? { perf: q.perf } : {}) };
 }
 
 export function analyze({ instrument, history, benchmark, fundamentals }, settings) {

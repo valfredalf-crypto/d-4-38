@@ -1,6 +1,15 @@
 import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
+import { netReturn, DEFAULT_OPTIONS } from './montecarlo.js';
+
+// Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
+function netPerf(gross, inst) {
+  if (gross == null || !Number.isFinite(gross)) return null;
+  const o = { ...DEFAULT_OPTIONS, ...state.settings.mc };
+  if (inst.type === 'crypto') o.spreadPct = state.settings.mc.cryptoSpreadPct ?? o.spreadPct;
+  return netReturn(gross, o);
+}
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -439,6 +448,9 @@ function rowValues(i) {
     ratio: sim ? (sim.ratio ?? (sim.netGain > 0 ? null : Infinity)) : null,
     probLoss: sim?.probLoss ?? null,
     growth: i.growth ?? null,
+    perfW: netPerf(q?.perf?.w, i),
+    perfM: netPerf(q?.perf?.m, i),
+    perfYtd: netPerf(q?.perf?.ytd, i),
     error: r?.error || null,
   };
 }
@@ -600,6 +612,11 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
+      ${(() => {
+        const rv = rowValues(inst);
+        if (rv.perfW == null && rv.perfM == null && rv.perfYtd == null) return '';
+        return `<div class="kpi"><div class="k">Rendimento netto passato</div><div class="perf-list"><span>1 settimana <b class="${cls(rv.perfW)}">${pct(rv.perfW, true)}</b></span><span>1 mese <b class="${cls(rv.perfM)}">${pct(rv.perfM, true)}</b></span><span>YTD (da inizio anno) <b class="${cls(rv.perfYtd)}">${pct(rv.perfYtd, true)}</b></span></div><div class="h">fino al prezzo attuale, netto costi e tasse</div></div>`;
+      })()}
     </div>
     <div class="grid2">
       <div class="card">
@@ -837,9 +854,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Prob. perdita'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.expected), num(r.maxLoss), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.expected), num(r.maxLoss), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');

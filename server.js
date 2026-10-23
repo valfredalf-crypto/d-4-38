@@ -3,7 +3,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { listInstruments, addInstruments, removeInstrument, universe } from './lib/store.js';
-import { historyEur, quote, outlook } from './lib/market.js';
+import { historyEur, quote, outlook, recentEur, performanceFrom } from './lib/market.js';
 import { search, pickListing } from './lib/yahoo.js';
 import { parseInstrumentCsv } from './lib/importer.js';
 
@@ -85,7 +85,11 @@ const routes = {
   },
   'GET /api/quotes': async (req, url) => {
     const symbols = (url.searchParams.get('symbols') || '').split(',').filter(Boolean).slice(0, 200);
-    const list = await mapLimit(symbols, 8, (s) => quote(s));
+    const list = await mapLimit(symbols, 8, async (s) => {
+      const q = await quote(s);
+      const recent = await recentEur(s).catch(() => null);
+      return { ...q, perf: performanceFrom(recent, q.priceEur) };
+    });
     return Object.fromEntries(symbols.map((s, k) => [s, list[k]]));
   },
   'POST /api/import': async (req) => importCsv(await readBody(req)),

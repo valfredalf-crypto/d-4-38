@@ -141,6 +141,8 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .kpi { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
 .kpi .k { color: var(--muted); font-size: 12px; }
 .kpi .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.perf-list { display: grid; gap: 2px; margin: 4px 0; font-size: 13px; }
+.perf-list span { display: flex; white-space: nowrap; justify-content: space-between; gap: 8px; }
 .kpi .h { color: var(--muted); font-size: 12px; }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }

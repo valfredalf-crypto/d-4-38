@@ -32,6 +32,10 @@
       <button data-type="crypto" class="tab">Crypto <span class="count" data-count="crypto"></span></button>
       <button data-type="growth" class="tab" title="Azioni con la crescita attesa più alta secondo il consenso degli analisti">🚀 Crescita <span class="count" data-count="growth"></span></button>
     </div>
+    <div class="mobile-view" role="tablist" aria-label="Colonne visibili">
+      <button data-mview="forecast" class="tab active">Previsioni</button>
+      <button data-mview="perf" class="tab">Andamento</button>
+    </div>
     <input id="filter" type="search" placeholder="Filtra per nome, ticker o ISIN…" autocomplete="off">
     <label class="check"><input type="checkbox" id="only-computed"> Solo calcolati</label>
     <label class="check" id="auto-label"><input type="checkbox" id="auto-quotes" checked> Quotazioni e previsioni live (60 s)</label>
@@ -60,7 +64,10 @@
             <th data-sort="name">Strumento</th>
             <th data-sort="type">Tipo</th>
             <th data-sort="price" class="num">Prezzo €</th>
-            <th data-sort="change" class="num">Var. oggi</th>
+            <th data-sort="change" class="num"><span class="l">Var. oggi</span><span class="s">Oggi</span></th>
+            <th data-sort="varM" class="num" title="Variazione del prezzo in EUR nell'ultimo mese"><span class="l">Var. 1 mese</span><span class="s">1 mese</span></th>
+            <th data-sort="varM3" class="num" title="Variazione del prezzo in EUR negli ultimi 3 mesi"><span class="l">Var. 3 mesi</span><span class="s">3 mesi</span></th>
+            <th data-sort="varY" class="num" title="Variazione del prezzo in EUR nell'ultimo anno"><span class="l">Var. 1 anno</span><span class="s">1 anno</span></th>
             <th data-sort="expected" class="num" title="Rendimento annuo atteso dal modello prospettico">Atteso / anno</th>
             <th data-sort="maxLoss" class="num" title="Perdita massima simulata in 5 anni (metrica configurabile)"><span class="l">Perdita max 5a</span><span class="s">Perdita max</span></th>
             <th data-sort="netGain" class="num" title="Guadagno netto a 5 anni nello scenario mediano (metà degli scenari fa meglio, metà peggio), dopo costi e tasse"><span class="l">Guadagno mediano 5a</span><span class="s">Mediana 5a</span></th>

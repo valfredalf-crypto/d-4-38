@@ -448,6 +448,9 @@ function rowValues(i) {
     ratio: sim ? (sim.ratio ?? (sim.netGain > 0 ? null : Infinity)) : null,
     probLoss: sim?.probLoss ?? null,
     growth: i.growth ?? null,
+    varM: q?.perf?.m ?? null,
+    varM3: q?.perf?.m3 ?? null,
+    varY: q?.perf?.y ?? null,
     perfW: netPerf(q?.perf?.w, i),
     perfM: netPerf(q?.perf?.m, i),
     perfYtd: netPerf(q?.perf?.ytd, i),
@@ -502,6 +505,9 @@ function render() {
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
         <td class="num">${eur(r.price)}</td>
         <td class="num ${cls(r.change)}">${pct(r.change, true, 2)}</td>
+        <td class="num ${cls(r.varM)}">${pct(r.varM, true)}</td>
+        <td class="num ${cls(r.varM3)}">${pct(r.varM3, true)}</td>
+        <td class="num ${cls(r.varY)}">${pct(r.varY, true)}</td>
         <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
         <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
@@ -854,9 +860,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.expected), num(r.maxLoss), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.maxLoss), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -873,9 +879,25 @@ async function loadInstruments() {
 }
 
 function bind() {
-  $$('.tab').forEach((t) =>
+  // Telefono: scelta tra colonne di previsione e colonne di andamento
+  const setMview = (v) => {
+    document.body.classList.toggle('mview-perf', v === 'perf');
+    $$('[data-mview]').forEach((b) => b.classList.toggle('active', b.dataset.mview === v));
+    try {
+      localStorage.setItem('trmc.mview', v);
+    } catch {
+      /* solo comodità */
+    }
+  };
+  $$('[data-mview]').forEach((b) => b.addEventListener('click', () => setMview(b.dataset.mview)));
+  try {
+    setMview(localStorage.getItem('trmc.mview') || 'forecast');
+  } catch {
+    setMview('forecast');
+  }
+  $$('.tab[data-type]').forEach((t) =>
     t.addEventListener('click', () => {
-      $$('.tab').forEach((x) => x.classList.toggle('active', x === t));
+      $$('.tab[data-type]').forEach((x) => x.classList.toggle('active', x === t));
       state.view.type = t.dataset.type;
       state.view.limit = PAGE;
       // Nella scheda Crescita si ordina per crescita attesa; altrove torna la classifica per rapporto.
@@ -904,7 +926,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'expected', 'change', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'expected', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1001,7 +1023,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="11" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="14" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

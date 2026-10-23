@@ -71,5 +71,7 @@ test('rendimenti recenti: settimana, mese, da inizio anno', async () => {
   assert.equal(p.ytd, 0.65); // da 100 (31 dic) a 165
   assert.equal(p.m, 0.375); // da 120 (23 set) a 165
   assert.equal(p.w, 0.1); // da 150 (7 giorni fa) a 165
+  assert.equal(p.m3, 0.6337); // da 101 (2 gen, ultima chiusura prima del 23 lug) a 165
+  assert.equal(p.y, null); // lo storico non arriva a un anno fa
   assert.equal(performanceFrom({ timestamps: [now - day], closesEur: [10] }, 11, now * 1000).ytd, null); // nessuna chiusura dell'anno scorso
 });

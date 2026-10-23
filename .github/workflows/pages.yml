@@ -7,7 +7,7 @@ on:
     # Ogni 2 ore: storici e analisti. Quotazioni e previsioni frequenti arrivano da live.yml
     - cron: '23 */2 * * *'
   workflow_run:
-    workflows: ['Aggiorna universo strumenti', 'Aggiungi o rimuovi ISIN']
+    workflows: ['Aggiorna universo strumenti', 'Aggiungi o rimuovi ISIN', 'Importa ISIN']
     types: [completed]
   workflow_dispatch:
 
@@ -35,7 +35,10 @@ jobs:
         with:
           path: data/cache
           key: market-cache-${{ github.run_id }}
-          restore-keys: market-cache-
+          restore-keys: |
+            market-cache-
+            live-cache-
+            import-cache-
       - run: npm test
       - run: node scripts/build-static.js
       - uses: actions/upload-pages-artifact@v3

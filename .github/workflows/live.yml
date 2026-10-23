@@ -32,6 +32,8 @@ jobs:
           restore-keys: |
             live-cache-
             market-cache-
+            import-cache-
+            universe-cache-
       - id: loop
         run: node scripts/live-loop.js
       - name: Rilancio

@@ -205,7 +205,7 @@ async function checkNewData() {
 async function checkLiveData() {
   const m = state.meta;
   if (!m?.repo) return;
-  const res = await fetch(`https://raw.githubusercontent.com/${m.repo}/${m.liveBranch || 'live-data'}/live.json`, { cache: 'no-store' });
+  const res = await fetch(`https://raw.githubusercontent.com/${m.repo}/${m.liveBranch || 'live-data'}/live.json`, { cache: 'no-cache' });
   if (!res.ok) return;
   const live = await res.json();
   if (!live.generatedAt || live.generatedAt <= (state.liveVersion || state.dataVersion || '')) return;
@@ -359,6 +359,7 @@ function rowValues(i) {
     expected: r?.forward?.expected ?? null,
     maxLoss: sim?.maxLoss ?? null,
     netGain: sim?.netGain ?? null,
+    netMean: sim?.netMean ?? null,
     // Infinity non sopravvive al JSON (diventa null): con guadagno ≤ 0 il rapporto è ∞
     ratio: sim ? (sim.ratio ?? (sim.netGain > 0 ? null : Infinity)) : null,
     probLoss: sim?.probLoss ?? null,
@@ -417,6 +418,7 @@ function render() {
         <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
         <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
+        <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}</td>
         <td class="num">${ratioCell}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
       </tr>`;
@@ -514,7 +516,8 @@ function renderDetail(inst, r, d) {
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
-      <div class="kpi"><div class="k">Guadagno netto ${s.mc.years}a</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
+      <div class="kpi"><div class="k">${s.mc.gainMetric === 'mean' ? 'Guadagno medio' : 'Guadagno mediano'} ${s.mc.years}a (classifica)</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
+      <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
     </div>
@@ -754,9 +757,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno netto 5a', 'Rapporto', 'Prob. perdita'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Prob. perdita'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.expected), num(r.maxLoss), num(r.netGain), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.expected), num(r.maxLoss), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -804,7 +807,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'expected', 'change', 'price'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'expected', 'change', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -900,7 +903,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="10" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="11" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

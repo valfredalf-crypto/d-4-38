@@ -40,6 +40,7 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
+th .s { display: none; }
 body {
   margin: 0;
   background: var(--bg);
@@ -165,11 +166,15 @@ table.mini .num { white-space: nowrap; }
   #table th:nth-child(4), #table td:nth-child(4),
   #table th:nth-child(5), #table td:nth-child(5),
   #table th:nth-child(6), #table td:nth-child(6),
-  #table th:nth-child(10), #table td:nth-child(10) { display: none; }
-  th, td { padding: 8px 5px; }
+  #table th:nth-child(11), #table td:nth-child(11) { display: none; }
+  th, td { padding: 8px 3px; }
+  #table td { font-size: 12.5px; }
+  th .l { display: none; }
+  th .s { display: inline; }
+  #table td:first-child, #table th:first-child { padding-left: 6px; }
   th { white-space: normal; font-size: 11px; line-height: 1.25; }
   td .name { max-width: 120px; font-size: 13px; }
-  td .ids { display: block; font-size: 10px; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
-  td .name { max-width: 110px; }
+  td .ids { display: block; font-size: 10px; max-width: 92px; overflow: hidden; text-overflow: ellipsis; }
+  td .name { max-width: 92px; }
   .ratio-bar { display: none; }
 }

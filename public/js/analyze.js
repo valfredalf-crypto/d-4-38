@@ -32,6 +32,23 @@ export function compactResult(r) {
   return { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined } };
 }
 
+// Solo i numeri della tabella (per pubblicare migliaia di strumenti ogni pochi minuti):
+// il dettaglio di uno strumento viene comunque ricalcolato nel browser quando lo si apre.
+const r4 = (x) => (Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : x === Infinity ? null : x ?? null);
+export function tableResult(r) {
+  if (r.error) return { error: r.error };
+  const s = r.sim;
+  return {
+    forward: { expected: r4(r.forward?.expected) },
+    sim: { maxLoss: r4(s.maxLoss), netGain: r4(s.netGain), netMedian: r4(s.netMedian), netMean: r4(s.netMean), ratio: r4(s.ratio), probLoss: r4(s.probLoss) },
+  };
+}
+
+export function tableQuote(q) {
+  if (!q) return null;
+  return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency };
+}
+
 export function analyze({ instrument, history, benchmark, fundamentals }, settings) {
   const o = { ...DEFAULT_OPTIONS, ...settings.mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;

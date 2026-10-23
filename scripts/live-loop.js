@@ -28,8 +28,21 @@ function publish(json) {
   git(['push', '--force', '--quiet', 'origin', `${commit}:refs/heads/${BRANCH}`]);
 }
 
+// Liste strumenti aggiornate (import, ISIN aggiunti, selezione settimanale) senza riavviare il job.
+function refreshLists() {
+  const ref = process.env.GITHUB_REF_NAME;
+  if (DRY || !ref) return;
+  try {
+    git(['fetch', '--quiet', '--depth=1', 'origin', ref]);
+    git(['checkout', 'FETCH_HEAD', '--', 'data/universe.json', 'data/extra-instruments.json', 'data/imported-instruments.json']);
+  } catch (e) {
+    console.error(`Liste non aggiornate: ${e.message.split('\n')[0]}`);
+  }
+}
+
 async function once() {
   const t0 = Date.now();
+  refreshLists();
   const snap = await computeSnapshot();
   const json = JSON.stringify({ generatedAt: snap.generatedAt, key: snap.key, quotes: snap.quotes, results: snap.results });
   fs.writeFileSync(process.env.LIVE_FILE || 'live.json', json);

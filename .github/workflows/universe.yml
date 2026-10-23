@@ -40,4 +40,5 @@ jobs:
           git add data/universe.json
           git diff --cached --quiet && echo "Nessuna modifica" && exit 0
           git commit -m "Aggiorna universo: migliori previsioni a 5 anni"
+          git pull --rebase --quiet origin "$GITHUB_REF_NAME"
           git push

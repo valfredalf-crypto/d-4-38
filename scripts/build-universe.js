@@ -113,10 +113,16 @@ const best = stockRows.sort((a, b) => b.netGain - a.netGain).slice(0, SHORTLIST)
 const always = stockRows.filter((r) => r.inst.growthCandidate || r.inst.source !== 'xetra');
 const stocks = [...new Set([...best, ...always])];
 let withAnalysts = 0;
+const outlookErrors = [];
 const complete = (f) => f?.targetMean > 0 && growthScore(f, { minCap: 0 }) != null;
-await pool(stocks, 4, async (row) => {
+// Dopo migliaia di richieste di storici Yahoo tende a limitare le richieste dei dati analisti:
+// una pausa e meno richieste in parallelo evitano i blocchi (HTTP 429).
+log('Pausa di 60 s prima dei dati analisti…');
+await new Promise((r) => setTimeout(r, Number(process.env.ANALYST_PAUSE_MS ?? 60000)));
+await pool(stocks, 2, async (row) => {
   const inst = row.inst;
-  let f = await outlook(inst.symbol).catch(() => null);
+  let f = await outlook(inst.symbol).catch((e) => ({ error: e.message }));
+  if (f?.error) outlookErrors.push(`${inst.symbol}: ${f.error}`);
   // Le quotazioni Xetra di titoli USA spesso non hanno target e stime di crescita:
   // si usa la quotazione principale (stesso ISIN).
   if (!complete(f) && inst.isin && /^(US|CA)/.test(inst.isin)) {
@@ -135,6 +141,7 @@ await pool(stocks, 4, async (row) => {
   if (r.sim.ok) row.netGain = r.sim.netGain;
 });
 log(`Azioni con consenso analisti: ${withAnalysts}/${stocks.length}`);
+if (outlookErrors.length) log(`  errori dati analisti: ${outlookErrors.length} (es. ${outlookErrors.slice(0, 3).join(' | ')})`);
 
 // --- 4. Selezione: le migliori PER_GROUP per gruppo (le azioni solo tra quelle con analisi completa)
 //        + le GROWTH_N azioni con la crescita attesa più alta secondo il consenso degli analisti

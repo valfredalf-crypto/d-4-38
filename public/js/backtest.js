@@ -174,13 +174,16 @@ function pinball(y, q, tau) {
   return d >= 0 ? tau * d : (tau - 1) * d;
 }
 
+// Errore su rendimenti logaritmici (ln(1+r)) e con un tetto per strumento: un singolo caso estremo
+// (o un dato errato) non può dominare la taratura.
+const lg = (x) => Math.log(Math.max(1 + x, 0.01));
 export function rowLoss(r) {
   const p = r.pred;
-  const y = r.real.net;
+  const y = lg(r.real.net);
   const ret =
-    pinball(y, p.netP5, 0.05) + pinball(y, p.netP25, 0.25) + pinball(y, p.netMedian, 0.5) + pinball(y, p.netP75, 0.75) + pinball(y, p.netP95, 0.95);
+    pinball(y, lg(p.netP5), 0.05) + pinball(y, lg(p.netP25), 0.25) + pinball(y, lg(p.netMedian), 0.5) + pinball(y, lg(p.netP75), 0.75) + pinball(y, lg(p.netP95), 0.95);
   const mdd = pinball(r.real.mdd, p.mddMedian, 0.5) + pinball(r.real.mdd, p.mddP95, 0.95);
-  return ret / 5 + mdd / 2;
+  return Math.min(ret / 5 + mdd / 2, 2);
 }
 
 /** Dati da pubblicare: riepiloghi + punti per i grafici (previsto vs reale), in forma compatta. */

@@ -11,6 +11,7 @@ import { backtestOne, rowLoss, summarize } from '../public/js/backtest.js';
 import { BENCHMARK_SYMBOL } from '../public/js/analyze.js';
 import { BASE_OUTLOOK } from '../public/js/outlook.js';
 import { DEFAULT_OPTIONS, hashString } from '../public/js/montecarlo.js';
+import { hasImplausibleJumps } from '../lib/universe.js';
 
 const SAMPLE = Number(process.env.CALIB_SAMPLE || 1500); // strumenti campionati (per tipo, in proporzione)
 const SIMS = Number(process.env.CALIB_SIMS || 400);
@@ -42,7 +43,10 @@ await Promise.all(
     while (i < all.length) {
       const inst = all[i++];
       const history = await historyEur(inst.symbol).catch(() => null);
-      if (history && history.closesEur.length >= 52 * 7 + 1) pool.push({ instrument: inst, history, benchmark });
+      if (!history || history.closesEur.length < 52 * 7 + 1) continue;
+      // Dati anomali (salti ×3 o ÷3 in una settimana per azioni/ETF): esclusi, falserebbero la taratura.
+      if (inst.type !== 'crypto' && hasImplausibleJumps(history.closesEur)) continue;
+      pool.push({ instrument: inst, history, benchmark });
     }
   }),
 );
@@ -93,7 +97,12 @@ log(`Ricerca completata in ${((Date.now() - t0) / 60000).toFixed(1)} min`);
 const before = evaluate(valid, Object.fromEntries(Object.keys(GRID).map((k) => [k, BASE_OUTLOOK[k]])));
 const after = evaluate(valid, best);
 const improvement = 1 - after.loss / before.loss;
-const adopt = after.loss < before.loss;
+// Adozione solo se migliora l'errore complessivo E la stima del rischio non peggiora
+// (perdite oltre lo scenario sfavorevole non più lontane dal 5% ideale di prima, con 1 punto di tolleranza).
+const riskGap = (rows) => Math.abs((summarize(rows)?.risk.mddAboveP95 ?? 0) - 0.05);
+const riskOk = riskGap(after.rows) <= riskGap(before.rows) + 0.01;
+const adopt = after.loss < before.loss && riskOk;
+if (!riskOk) log('Stima del rischio peggiorata sugli strumenti di verifica: parametri non adottati.');
 log(`Verifica: errore ${before.loss.toFixed(4)} → ${after.loss.toFixed(4)} (${(improvement * 100).toFixed(1)}%) → ${adopt ? 'ADOTTATO' : 'scartato'}`);
 
 const pick = (s) => ({ risk: s.risk, returns: s.returns });

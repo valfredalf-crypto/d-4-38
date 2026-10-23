@@ -68,6 +68,9 @@ function staticPath(path) {
     '/api/outlook': `data/outlook/${fileKey(sym)}.json`,
   };
   if (!map[u.pathname]) throw new Error('Funzione non disponibile nella versione online');
+  // meta.json mai dalla cache (GitHub Pages la tiene 10 minuti): dice quale versione dei dati caricare;
+  // gli altri file usano la versione come chiave, quindi si rinnovano solo quando cambiano.
+  if (u.pathname === '/api/meta') return `${map[u.pathname]}?t=${Date.now()}`;
   return `${map[u.pathname]}?v=${encodeURIComponent(state.dataVersion || '')}`;
 }
 

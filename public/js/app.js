@@ -339,7 +339,7 @@ function filtered() {
   const { type, q, onlyComputed } = state.view;
   const needle = q.trim().toLowerCase();
   return state.instruments.filter((i) => {
-    if (type !== 'all' && i.type !== type) return false;
+    if (type === 'growth' ? i.growth == null : type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
     if (!needle) return true;
     return `${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle);
@@ -359,8 +359,10 @@ function rowValues(i) {
     expected: r?.forward?.expected ?? null,
     maxLoss: sim?.maxLoss ?? null,
     netGain: sim?.netGain ?? null,
-    ratio: sim ? sim.ratio : null,
+    // Infinity non sopravvive al JSON (diventa null): con guadagno ≤ 0 il rapporto è ∞
+    ratio: sim ? (sim.ratio ?? (sim.netGain > 0 ? null : Infinity)) : null,
     probLoss: sim?.probLoss ?? null,
+    growth: i.growth ?? null,
     error: r?.error || null,
   };
 }
@@ -408,7 +410,7 @@ function render() {
       }
       return `<tr data-symbol="${esc(i.symbol)}">
         <td class="num muted">${rank ?? ''}</td>
-        <td><span class="name" title="${esc(i.name)}">${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${esc(i.name)}</span><span class="ids">${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td><span class="name" title="${esc(i.name)}">${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${esc(i.name)}</span><span class="ids">${i.growth != null ? `<span class="growth-tag" title="Crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · ` : ''}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
         <td class="num">${eur(r.price)}</td>
         <td class="num ${cls(r.change)}">${pct(r.change, true, 2)}</td>
@@ -425,8 +427,8 @@ function render() {
   moreBtn.hidden = rows.length <= state.view.limit;
   moreBtn.textContent = `Mostra altri (${rows.length - visible.length} rimanenti)`;
 
-  for (const t of ['all', 'stock', 'etf', 'crypto']) {
-    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => t === 'all' || i.type === t).length;
+  for (const t of ['all', 'stock', 'etf', 'crypto', 'growth']) {
+    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => (t === 'growth' ? i.growth != null : t === 'all' || i.type === t)).length;
   }
   $$('#table th').forEach((th) => {
     const on = th.dataset.sort === state.view.sort.key;
@@ -536,6 +538,9 @@ function renderDetail(inst, r, d) {
             ${f?.mode === 'forward' ? compRow('Equilibrio', 'equilibrium', inst.type === 'crypto' ? `risk-free ${s.outlook.riskFree}% + premio crypto ${s.outlook.cryptoPremium}%` : `risk-free ${s.outlook.riskFree}% + β ${nf2.format(f.beta)} × ${s.outlook.equityPremium}%`) : ''}
             ${f?.mode === 'forward' ? compRow('Analisti', 'analysts', fu.analysts ? `${fu.analysts} analisti, target ${nf2.format(fu.targetMean)} ${esc(fu.currency || '')} (${pct(f.analystUpside, true)}), ${esc(fu.recommendation || '')}` : 'nessuna copertura') : ''}
             <tr><th>Rendimento atteso</th><th class="num">${pct(f?.expected, true)}</th><th></th><th></th></tr>
+            ${fu.revenueGrowthNext != null || fu.epsGrowthNext != null ? `<tr><td>Crescita ricavi anno prossimo</td><td class="num">${pct(fu.revenueGrowthNext, true)}</td><td></td><td class="muted">consenso analisti</td></tr>
+            <tr><td>Crescita utili anno prossimo</td><td class="num">${pct(fu.epsGrowthNext, true)}</td><td></td><td class="muted">consenso analisti</td></tr>` : ''}
+            ${fu.growthLongTerm != null ? `<tr><td>Crescita utili a lungo termine</td><td class="num">${pct(fu.growthLongTerm, true)}</td><td></td><td class="muted">annua, 5 anni</td></tr>` : ''}
           </tbody>
         </table>
       </div>
@@ -773,6 +778,9 @@ function bind() {
       $$('.tab').forEach((x) => x.classList.toggle('active', x === t));
       state.view.type = t.dataset.type;
       state.view.limit = PAGE;
+      // Nella scheda Crescita si ordina per crescita attesa; altrove torna la classifica per rapporto.
+      if (t.dataset.type === 'growth') state.view.sort = { key: 'growth', dir: -1 };
+      else if (state.view.sort.key === 'growth') state.view.sort = { key: 'ratio', dir: 1 };
       render();
       refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
     }),

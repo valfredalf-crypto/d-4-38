@@ -9,10 +9,12 @@ import { seed } from '../lib/store.js';
 import { historyEur, outlook } from '../lib/market.js';
 import { search, pickListing } from '../lib/yahoo.js';
 import { analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS } from '../public/js/analyze.js';
-import { isLeveraged, mergeUnique, selectTop, isEuroListing, hasImplausibleJumps } from '../lib/universe.js';
+import { isLeveraged, mergeUnique, selectTop, isEuroListing, hasImplausibleJumps, growthScore } from '../lib/universe.js';
 
 const PER_GROUP = Number(process.env.PER_GROUP || 300);
 const SHORTLIST = PER_GROUP * 2; // azioni per cui si scarica anche il consenso analisti
+const GROWTH_N = Number(process.env.GROWTH_N || 100); // azioni aggiunte per crescita attesa
+const GROWTH_MIN = Number(process.env.GROWTH_MIN || 0.15); // crescita attesa minima (15%)
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || Infinity); // per prove rapide
 const OUT = process.env.UNIVERSE || 'data/universe.json';
 const log = (...a) => console.log(...a);
@@ -70,8 +72,18 @@ try {
   }
 }
 
+// Titoli noti ad alta crescita: si verifica che l'ISIN corrisponda davvero al simbolo (ricerca Yahoo).
+const growthList = JSON.parse(fs.readFileSync('data/growth-candidates.json', 'utf8')).instruments.map((i) => ({ ...i, growthCandidate: true }));
+await pool(growthList, 4, async (g) => {
+  const hits = await search(g.isin).catch(() => null);
+  if (hits && !hits.some((h) => h.symbol === g.symbol)) {
+    log(`  ? ${g.symbol}: l'ISIN ${g.isin} non risulta associato al simbolo (${hits.map((h) => h.symbol).slice(0, 4).join(', ') || 'nessun risultato'}): ISIN rimosso`);
+    g.isin = null;
+  }
+});
+
 const crypto = seedList.filter((i) => i.type === 'crypto');
-const candidates = mergeUnique(seedList.filter((i) => i.type !== 'crypto'), xetra)
+const candidates = mergeUnique(seedList.filter((i) => i.type !== 'crypto'), growthList, xetra)
   .filter((i) => i.type === 'stock' || i.type === 'etf')
   .slice(0, MAX_CANDIDATES);
 log(`Candidati: ${candidates.filter((i) => i.type === 'stock').length} azioni, ${candidates.filter((i) => i.type === 'etf').length} ETF, ${crypto.length} crypto`);
@@ -94,47 +106,64 @@ await pool([...candidates, ...crypto], 4, async (c) => {
 log(`Esclusi dopo verifica: ${excluded.leveraged} a leva/short (nome completo), ${excluded.badData} con dati storici anomali`);
 log(`Previsioni valide (storico ≥ ${DEFAULT_SETTINGS.mc.minYears} anni): ${rows.length}`);
 
-// --- 3. Azioni più promettenti: si aggiunge il consenso degli analisti e si ricalcola
-const stocks = rows.filter((r) => r.inst.type === 'stock').sort((a, b) => b.netGain - a.netGain).slice(0, SHORTLIST);
+// --- 3. Azioni più promettenti (e tutti i titoli della lista iniziale e di quella crescita):
+//        si aggiunge il consenso degli analisti e si ricalcola
+const stockRows = rows.filter((r) => r.inst.type === 'stock');
+const best = stockRows.sort((a, b) => b.netGain - a.netGain).slice(0, SHORTLIST);
+const always = stockRows.filter((r) => r.inst.growthCandidate || r.inst.source !== 'xetra');
+const stocks = [...new Set([...best, ...always])];
 let withAnalysts = 0;
+const complete = (f) => f?.targetMean > 0 && growthScore(f, { minCap: 0 }) != null;
 await pool(stocks, 4, async (row) => {
   const inst = row.inst;
   let f = await outlook(inst.symbol).catch(() => null);
-  // Le quotazioni Xetra di titoli USA spesso non hanno i target: si usa la quotazione principale (stesso ISIN).
-  if (!(f?.targetMean > 0) && inst.isin && /^(US|CA)/.test(inst.isin)) {
+  // Le quotazioni Xetra di titoli USA spesso non hanno target e stime di crescita:
+  // si usa la quotazione principale (stesso ISIN).
+  if (!complete(f) && inst.isin && /^(US|CA)/.test(inst.isin)) {
     const primary = (await search(inst.isin).catch(() => [])).find((h) => h.type === 'stock' && !h.symbol.includes('.'));
-    if (primary) {
+    if (primary && primary.symbol !== inst.symbol) {
       const f2 = await outlook(primary.symbol).catch(() => null);
-      if (f2?.targetMean > 0) {
+      if (complete(f2) || (f2?.targetMean > 0 && !(f?.targetMean > 0))) {
         f = f2;
         inst.outlookSymbol = primary.symbol;
       }
     }
   }
   if (f?.targetMean > 0) withAnalysts++;
+  row.growth = growthScore(f);
   const r = analyze({ instrument: inst, history: histories.get(inst.symbol), benchmark, fundamentals: f }, DEFAULT_SETTINGS);
   if (r.sim.ok) row.netGain = r.sim.netGain;
 });
 log(`Azioni con consenso analisti: ${withAnalysts}/${stocks.length}`);
 
 // --- 4. Selezione: le migliori PER_GROUP per gruppo (le azioni solo tra quelle con analisi completa)
+//        + le GROWTH_N azioni con la crescita attesa più alta secondo il consenso degli analisti
 const shortlisted = new Set(stocks.map((r) => r.inst.symbol));
 const eligible = rows.filter((r) => r.inst.type !== 'stock' || shortlisted.has(r.inst.symbol));
 const selected = selectTop(eligible, PER_GROUP);
-const instruments = selected.map(({ inst, netGain }) => ({
+const growthPicks = stocks
+  .filter((r) => r.growth != null && r.growth >= GROWTH_MIN)
+  .sort((a, b) => b.growth - a.growth)
+  .slice(0, GROWTH_N);
+log(`Crescita: ${stocks.filter((r) => r.growth != null).length} azioni con stime di crescita, ${growthPicks.length} selezionate (≥ ${GROWTH_MIN * 100}%)`);
+log(`  prime 15: ${growthPicks.slice(0, 15).map((r) => `${r.inst.symbol} ${(r.growth * 100).toFixed(0)}%`).join(', ')}`);
+const growthSet = new Set(growthPicks.map((r) => r.inst.symbol));
+const final = [...selected, ...growthPicks.filter((r) => !selected.includes(r))];
+const instruments = final.map(({ inst, netGain, growth }) => ({
   symbol: inst.symbol,
   isin: inst.isin || null,
   name: inst.name,
   type: inst.type,
   ...(inst.outlookSymbol ? { outlookSymbol: inst.outlookSymbol } : {}),
   netGain5y: +netGain.toFixed(4),
+  ...(growthSet.has(inst.symbol) ? { growth: +growth.toFixed(4) } : {}),
 }));
 const count = (t) => instruments.filter((i) => i.type === t).length;
-log(`Selezionati: ${count('stock')} azioni, ${count('etf')} ETF, ${count('crypto')} crypto`);
+log(`Selezionati: ${count('stock')} azioni (di cui ${growthPicks.length} per crescita, ${growthPicks.filter((r) => !selected.includes(r)).length} nuove), ${count('etf')} ETF, ${count('crypto')} crypto`);
 
 const meta = {
   ...base.meta,
-  description: `Le ${PER_GROUP} azioni e i ${PER_GROUP} ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra ${candidates.length} candidati negoziabili su Xetra/Trade Republic, più tutte le crypto. Esclusi prodotti a leva e short.`,
+  description: `Le ${PER_GROUP} azioni e i ${PER_GROUP} ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra ${candidates.length} candidati negoziabili su Xetra/Trade Republic, più le ${growthPicks.length} azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.`,
   universeGeneratedAt: new Date().toISOString(),
   xetraUrl,
   candidates: candidates.length,

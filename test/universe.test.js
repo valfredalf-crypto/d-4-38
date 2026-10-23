@@ -57,3 +57,12 @@ test('fallback solo su borse in euro e scarto dei dati anomali', () => {
   assert.ok(isLeveraged('Amundi MSCI USA Daily (2x) Leveraged UCITS ETF Acc'));
   assert.ok(isLeveraged('LS Short Volatility Long Tech ETP'));
 });
+
+test('punteggio di crescita dal consenso analisti', async () => {
+  const { growthScore } = await import('../lib/universe.js');
+  assert.equal(growthScore({ analysts: 2, revenueGrowthNext: 0.5 }), null);
+  assert.equal(growthScore({ analysts: 10, marketCap: 5e8, revenueGrowthNext: 0.5 }), null);
+  assert.equal(growthScore({ analysts: 10, marketCap: 5e9 }), null);
+  assert.ok(Math.abs(growthScore({ analysts: 10, marketCap: 5e9, revenueGrowthNext: 0.3, epsGrowthNext: 3 }) - 0.65) < 1e-12);
+  assert.ok(Math.abs(growthScore({ analysts: 10, revenueGrowthNext: 0.2 }) - 0.2) < 1e-12);
+});

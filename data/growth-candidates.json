@@ -1,0 +1,398 @@
+{
+ "meta": {
+  "description": "Titoli noti ad alta crescita da valutare in aggiunta ai candidati Xetra. Non vengono inclusi automaticamente: entrano nella selezione Crescita solo se il consenso degli analisti prevede una crescita alta. ISIN con cifra di controllo valida; la corrispondenza simbolo/ISIN è verificata su Yahoo a ogni aggiornamento dell universo.",
+  "createdAt": "2026-10-23"
+ },
+ "instruments": [
+  {
+   "symbol": "MRVL",
+   "isin": "US5738741041",
+   "name": "Marvell Technology",
+   "type": "stock"
+  },
+  {
+   "symbol": "ANET",
+   "isin": "US0404131064",
+   "name": "Arista Networks",
+   "type": "stock"
+  },
+  {
+   "symbol": "SMCI",
+   "isin": "US86800U3023",
+   "name": "Super Micro Computer",
+   "type": "stock"
+  },
+  {
+   "symbol": "DDOG",
+   "isin": "US23804L1035",
+   "name": "Datadog",
+   "type": "stock"
+  },
+  {
+   "symbol": "NET",
+   "isin": "US18915M1071",
+   "name": "Cloudflare",
+   "type": "stock"
+  },
+  {
+   "symbol": "ZS",
+   "isin": "US98980G1022",
+   "name": "Zscaler",
+   "type": "stock"
+  },
+  {
+   "symbol": "MDB",
+   "isin": "US60937P1066",
+   "name": "MongoDB",
+   "type": "stock"
+  },
+  {
+   "symbol": "TEAM",
+   "isin": "US0494681010",
+   "name": "Atlassian",
+   "type": "stock"
+  },
+  {
+   "symbol": "WDAY",
+   "isin": "US98138H1014",
+   "name": "Workday",
+   "type": "stock"
+  },
+  {
+   "symbol": "FTNT",
+   "isin": "US34959E1091",
+   "name": "Fortinet",
+   "type": "stock"
+  },
+  {
+   "symbol": "OKTA",
+   "isin": "US6792951054",
+   "name": "Okta",
+   "type": "stock"
+  },
+  {
+   "symbol": "S",
+   "isin": "US81730H1095",
+   "name": "SentinelOne",
+   "type": "stock"
+  },
+  {
+   "symbol": "HUBS",
+   "isin": "US4435731009",
+   "name": "HubSpot",
+   "type": "stock"
+  },
+  {
+   "symbol": "TTD",
+   "isin": "US88339J1051",
+   "name": "The Trade Desk",
+   "type": "stock"
+  },
+  {
+   "symbol": "APP",
+   "isin": "US03831W1080",
+   "name": "AppLovin",
+   "type": "stock"
+  },
+  {
+   "symbol": "RBLX",
+   "isin": "US7710491033",
+   "name": "Roblox",
+   "type": "stock"
+  },
+  {
+   "symbol": "U",
+   "isin": "US91332U1016",
+   "name": "Unity Software",
+   "type": "stock"
+  },
+  {
+   "symbol": "PATH",
+   "isin": "US90364P1057",
+   "name": "UiPath",
+   "type": "stock"
+  },
+  {
+   "symbol": "SOFI",
+   "isin": "US83406F1021",
+   "name": "SoFi Technologies",
+   "type": "stock"
+  },
+  {
+   "symbol": "AFRM",
+   "isin": "US00827B1061",
+   "name": "Affirm Holdings",
+   "type": "stock"
+  },
+  {
+   "symbol": "NU",
+   "isin": "KYG6683N1034",
+   "name": "Nu Holdings",
+   "type": "stock"
+  },
+  {
+   "symbol": "MELI",
+   "isin": "US58733R1023",
+   "name": "MercadoLibre",
+   "type": "stock"
+  },
+  {
+   "symbol": "SE",
+   "isin": "US81141R1005",
+   "name": "Sea Limited (ADR)",
+   "type": "stock"
+  },
+  {
+   "symbol": "DUOL",
+   "isin": "US26603R1068",
+   "name": "Duolingo",
+   "type": "stock"
+  },
+  {
+   "symbol": "CELH",
+   "isin": "US15118V2079",
+   "name": "Celsius Holdings",
+   "type": "stock"
+  },
+  {
+   "symbol": "AXON",
+   "isin": "US05464C1018",
+   "name": "Axon Enterprise",
+   "type": "stock"
+  },
+  {
+   "symbol": "ENPH",
+   "isin": "US29355A1079",
+   "name": "Enphase Energy",
+   "type": "stock"
+  },
+  {
+   "symbol": "FSLR",
+   "isin": "US3364331070",
+   "name": "First Solar",
+   "type": "stock"
+  },
+  {
+   "symbol": "VRT",
+   "isin": "US92537N1081",
+   "name": "Vertiv Holdings",
+   "type": "stock"
+  },
+  {
+   "symbol": "CEG",
+   "isin": "US21037T1097",
+   "name": "Constellation Energy",
+   "type": "stock"
+  },
+  {
+   "symbol": "VST",
+   "isin": "US92840M1027",
+   "name": "Vistra",
+   "type": "stock"
+  },
+  {
+   "symbol": "VRTX",
+   "isin": "US92532F1003",
+   "name": "Vertex Pharmaceuticals",
+   "type": "stock"
+  },
+  {
+   "symbol": "REGN",
+   "isin": "US75886F1075",
+   "name": "Regeneron Pharmaceuticals",
+   "type": "stock"
+  },
+  {
+   "symbol": "DXCM",
+   "isin": "US2521311074",
+   "name": "DexCom",
+   "type": "stock"
+  },
+  {
+   "symbol": "INTU",
+   "isin": "US4612021034",
+   "name": "Intuit",
+   "type": "stock"
+  },
+  {
+   "symbol": "ADSK",
+   "isin": "US0527691069",
+   "name": "Autodesk",
+   "type": "stock"
+  },
+  {
+   "symbol": "CDNS",
+   "isin": "US1273871087",
+   "name": "Cadence Design Systems",
+   "type": "stock"
+  },
+  {
+   "symbol": "SNPS",
+   "isin": "US8716071076",
+   "name": "Synopsys",
+   "type": "stock"
+  },
+  {
+   "symbol": "KLAC",
+   "isin": "US4824801009",
+   "name": "KLA Corporation",
+   "type": "stock"
+  },
+  {
+   "symbol": "LRCX",
+   "isin": "US5128073062",
+   "name": "Lam Research",
+   "type": "stock"
+  },
+  {
+   "symbol": "IONQ",
+   "isin": "US46222L1089",
+   "name": "IonQ",
+   "type": "stock"
+  },
+  {
+   "symbol": "RKLB",
+   "isin": "US7731221062",
+   "name": "Rocket Lab",
+   "type": "stock"
+  },
+  {
+   "symbol": "ASTS",
+   "isin": "US00217D1000",
+   "name": "AST SpaceMobile",
+   "type": "stock"
+  },
+  {
+   "symbol": "TOST",
+   "isin": "US8887871080",
+   "name": "Toast",
+   "type": "stock"
+  },
+  {
+   "symbol": "DASH",
+   "isin": "US25809K1051",
+   "name": "DoorDash",
+   "type": "stock"
+  },
+  {
+   "symbol": "ELF",
+   "isin": "US26856L1035",
+   "name": "e.l.f. Beauty",
+   "type": "stock"
+  },
+  {
+   "symbol": "ON",
+   "isin": "US6821891057",
+   "name": "ON Semiconductor",
+   "type": "stock"
+  },
+  {
+   "symbol": "NXPI",
+   "isin": "NL0009538784",
+   "name": "NXP Semiconductors",
+   "type": "stock"
+  },
+  {
+   "symbol": "CRSP",
+   "isin": "CH0334081137",
+   "name": "CRISPR Therapeutics",
+   "type": "stock"
+  },
+  {
+   "symbol": "MRNA",
+   "isin": "US60770K1079",
+   "name": "Moderna",
+   "type": "stock"
+  },
+  {
+   "symbol": "NBIS",
+   "isin": "NL0009805522",
+   "name": "Nebius Group",
+   "type": "stock"
+  },
+  {
+   "symbol": "HIMS",
+   "isin": "US4330001060",
+   "name": "Hims & Hers Health",
+   "type": "stock"
+  },
+  {
+   "symbol": "BESI.AS",
+   "isin": "NL0012866412",
+   "name": "BE Semiconductor Industries",
+   "type": "stock"
+  },
+  {
+   "symbol": "ASM.AS",
+   "isin": "NL0000334118",
+   "name": "ASM International",
+   "type": "stock"
+  },
+  {
+   "symbol": "SOI.PA",
+   "isin": "FR0013227113",
+   "name": "Soitec",
+   "type": "stock"
+  },
+  {
+   "symbol": "DSY.PA",
+   "isin": "FR0014003TT8",
+   "name": "Dassault Systèmes",
+   "type": "stock"
+  },
+  {
+   "symbol": "EL.PA",
+   "isin": "FR0000121667",
+   "name": "EssilorLuxottica",
+   "type": "stock"
+  },
+  {
+   "symbol": "HO.PA",
+   "isin": "FR0000121329",
+   "name": "Thales",
+   "type": "stock"
+  },
+  {
+   "symbol": "MTX.DE",
+   "isin": "DE000A0D9PT0",
+   "name": "MTU Aero Engines",
+   "type": "stock"
+  },
+  {
+   "symbol": "HAG.DE",
+   "isin": "DE000HAG0005",
+   "name": "Hensoldt",
+   "type": "stock"
+  },
+  {
+   "symbol": "SRT3.DE",
+   "isin": "DE0007165631",
+   "name": "Sartorius (Vz)",
+   "type": "stock"
+  },
+  {
+   "symbol": "KOG.OL",
+   "isin": "NO0003043309",
+   "name": "Kongsberg Gruppen",
+   "type": "stock"
+  },
+  {
+   "symbol": "ARGX.BR",
+   "isin": "NL0010832176",
+   "name": "argenx",
+   "type": "stock"
+  },
+  {
+   "symbol": "LONN.SW",
+   "isin": "CH0013841017",
+   "name": "Lonza Group",
+   "type": "stock"
+  },
+  {
+   "symbol": "WISE.L",
+   "isin": "GB00BL9YR756",
+   "name": "Wise",
+   "type": "stock"
+  }
+ ]
+}

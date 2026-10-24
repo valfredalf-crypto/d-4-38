@@ -4,8 +4,6 @@ export const INDICATORS = [
   { key: 'ratio', label: 'Rapporto perdita/guadagno', pct: false },
   { key: 'balanced', label: 'Guadagno bilanciato crescita/rischio 5a', pct: true },
   { key: 'p25OverLoss', label: 'Guadagno probabile / perdita max × 100', pct: false },
-  { key: 'p25LossGrowth', label: '(Guad. probabile / perdita max + crescita) × 100', pct: false },
-  { key: 'p25AvgLossGrowth', label: '(Guad. probabile / media perdita max e DD mediano + crescita) × 100', pct: false },
   { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
   { key: 'ratioFinal', label: 'Rapporto perdita finale/guadagno', pct: false },
   { key: 'finalLoss', label: 'Perdita finale 5a (caso sfavorevole)', pct: true },

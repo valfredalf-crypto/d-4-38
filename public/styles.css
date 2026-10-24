@@ -229,15 +229,14 @@ table.mini .num { white-space: nowrap; }
   /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (5–8) */
   body.mview-perf #table th:nth-child(n+5):nth-child(-n+8), body.mview-perf #table td:nth-child(n+5):nth-child(-n+8) { display: table-cell; }
   body.mview-perf #table th:nth-child(n+11), body.mview-perf #table td:nth-child(n+11) { display: none; }
-  /* Vista "Rischio": perdita max (11), drawdown mediano (12), rapporto DD mediano (22), P(perdita) (23) */
+  /* Vista "Rischio": perdita max (11), drawdown mediano (12), rapporto DD mediano (20), P(perdita) (21) */
   body.mview-risk #table th:nth-child(n+11):nth-child(-n+12), body.mview-risk #table td:nth-child(n+11):nth-child(-n+12),
-  body.mview-risk #table th:nth-child(n+22):nth-child(-n+23), body.mview-risk #table td:nth-child(n+22):nth-child(-n+23) { display: table-cell; }
+  body.mview-risk #table th:nth-child(n+20):nth-child(-n+21), body.mview-risk #table td:nth-child(n+20):nth-child(-n+21) { display: table-cell; }
   body.mview-risk #table th:nth-child(n+13):nth-child(-n+18), body.mview-risk #table td:nth-child(n+13):nth-child(-n+18) { display: none; }
-  /* Vista "Probabilità": guadagno probabile 75% (15), prob./perdita (19), prob./media perdite + crescita (21), P(≥+25%) (24) */
+  /* Vista "Probabilità": guadagno probabile 75% (15), guad. probabile/perdita (19), P(perdita) (21), P(≥+25%) (22) */
   body.mview-prob #table th:nth-child(15), body.mview-prob #table td:nth-child(15),
   body.mview-prob #table th:nth-child(19), body.mview-prob #table td:nth-child(19),
-  body.mview-prob #table th:nth-child(21), body.mview-prob #table td:nth-child(21),
-  body.mview-prob #table th:nth-child(24), body.mview-prob #table td:nth-child(24) { display: table-cell; }
+  body.mview-prob #table th:nth-child(n+21), body.mview-prob #table td:nth-child(n+21) { display: table-cell; }
   body.mview-prob #table th:nth-child(13), body.mview-prob #table td:nth-child(13),
   body.mview-prob #table th:nth-child(n+16):nth-child(-n+18), body.mview-prob #table td:nth-child(n+16):nth-child(-n+18) { display: none; }
   th, td { padding: 8px 3px; }

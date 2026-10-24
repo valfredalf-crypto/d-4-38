@@ -27,7 +27,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -374,12 +374,15 @@ async function refreshQuotes(symbols) {
 
 // ---------- vista
 function filtered() {
-  const { type, q, onlyComputed } = state.view;
+  const { type, q, onlyComputed, allEtf } = state.view;
   const needle = q.trim().toLowerCase();
   const active = activeFilters(state.view.filters);
   return state.instruments.filter((i) => {
     if (type === 'growth' ? i.growth == null : type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
+    // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
+    // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta
+    if (!allEtf && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
     if (needle && !`${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle)) return false;
     return !active.length || passes(rowValues(i), active);
   });
@@ -485,6 +488,7 @@ const eurAmt = (x, sign = true) => {
   const v = x * (state.settings.mc.amount || 10000);
   return `<span class="eur">${sign && v > 0 ? '+' : ''}${Math.round(v).toLocaleString('it-IT')} €</span>`;
 };
+const hasHoldingsEstimate = (i) => state.results[i.symbol]?.forward?.growthSource === 'holdings';
 function rowValues(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
@@ -657,7 +661,7 @@ function render() {
   moreBtn.textContent = `Mostra altri (${rows.length - visible.length} rimanenti)`;
 
   for (const t of ['all', 'stock', 'etf', 'crypto', 'growth']) {
-    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => (t === 'growth' ? i.growth != null : t === 'all' || i.type === t)).length;
+    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => (t === 'growth' ? i.growth != null : t === 'all' || i.type === t) && (state.view.allEtf || i.type !== 'etf' || hasHoldingsEstimate(i))).length;
   }
   $$('#table th').forEach((th) => {
     const on = th.dataset.sort === state.view.sort.key;
@@ -1294,6 +1298,19 @@ function bind() {
     state.view.onlyComputed = e.target.checked;
     render();
   });
+  const ae = $('#all-etf');
+  if (ae) {
+    ae.checked = state.view.allEtf;
+    ae.addEventListener('change', (e) => {
+      state.view.allEtf = e.target.checked;
+      try {
+        localStorage.setItem('trmc.allEtf', e.target.checked ? '1' : '0');
+      } catch {
+        /* niente */
+      }
+      render();
+    });
+  }
   $$('#table th').forEach((th) =>
     th.addEventListener('click', () => {
       const key = th.dataset.sort;

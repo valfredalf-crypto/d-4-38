@@ -104,7 +104,8 @@ export function forwardParams(p, settings = {}) {
     sigmaLong = Math.sqrt(rr.reduce((a, x) => a + (x - m) ** 2, 0) / (rr.length - 1)) * Math.sqrt(WEEKS_PER_YEAR);
   }
   const histLog = muW * WEEKS_PER_YEAR;
-  const histArith = Math.exp(histLog + sigmaReal ** 2 / 2) - 1;
+  // Media aritmetica dallo storico; con volatilità estreme il termine σ²/2 esploderebbe: limitato.
+  const histArith = Math.min(1, Math.max(-0.5, Math.exp(histLog + Math.min(sigmaReal, 0.8) ** 2 / 2) - 1));
 
   if (s.mode === 'historical') {
     return { mode: 'historical', drift: histLog, vol: sigmaLong, expected: histArith, components: { history: histArith }, weights: { history: 1 } };
@@ -159,7 +160,8 @@ export function forwardParams(p, settings = {}) {
     ['analysts', analysts, s.weightAnalysts],
   ].filter(([, v, w]) => v != null && Number.isFinite(v) && w > 0);
   const wSum = parts.reduce((a, [, , w]) => a + w, 0) || 1;
-  const expected = parts.reduce((a, [, v, w]) => a + (v * w) / wSum, 0);
+  // Limiti di realismo per il rendimento annuo atteso
+  const expected = Math.min(0.5, Math.max(-0.3, parts.reduce((a, [, v, w]) => a + (v * w) / wSum, 0)));
   // Rendimento logaritmico coerente con media aritmetica `expected` e volatilità `vol`.
   const drift = Math.log(1 + Math.max(expected, -0.95)) - vol ** 2 / 2;
 

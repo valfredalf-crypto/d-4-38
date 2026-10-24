@@ -7,7 +7,7 @@ import { downloadXetraCsv } from '../lib/xetra.js';
 import { parseInstrumentCsv } from '../lib/importer.js';
 import { historyEur } from '../lib/market.js';
 import { search } from '../lib/yahoo.js';
-import { isEuroListing } from '../lib/universe.js';
+import { isEuroListing, hasImplausibleJumps } from '../lib/universe.js';
 import { isValidIsin } from '../public/js/isin.js';
 
 const REQUESTS = process.env.IMPORT_REQUESTS || 'data/import-requests.json';
@@ -19,6 +19,23 @@ const log = (...a) => console.log(...a);
 const requests = JSON.parse(fs.readFileSync(REQUESTS, 'utf8')).instruments.filter((r) => isValidIsin(r.isin));
 const previous = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : [];
 const done = new Map(previous.map((i) => [i.isin, i]));
+// Ricontrollo della qualità dei dati già collegati: le quotazioni con salti impossibili si ricollegano
+// cercando un'altra borsa (es. quella principale del paese d'origine).
+let recheck = 0;
+await Promise.all(
+  Array.from({ length: 4 }, async (_, w) => {
+    for (let k = w; k < previous.length; k += 4) {
+      const it = previous[k];
+      if (it.type === 'crypto') continue;
+      const h = await historyEur(it.symbol).catch(() => null);
+      if (h && hasImplausibleJumps(h.closesEur.slice(-521))) {
+        done.delete(it.isin);
+        recheck++;
+      }
+    }
+  }),
+);
+if (recheck) console.log(`Da ricollegare per dati anomali: ${recheck}`);
 const todo = requests.filter((r) => !done.has(r.isin));
 log(`Richieste: ${requests.length}, già risolte: ${requests.length - todo.length}, da risolvere: ${todo.length}`);
 
@@ -42,6 +59,8 @@ await Promise.all(
       const tried = new Set();
       const attempts = [];
       if (xetra.has(req.isin)) attempts.push([xetra.get(req.isin), 'xetra']);
+      const old = previous.find((p) => p.isin === req.isin);
+      if (old) tried.add(old.symbol); // quotazione già scartata per dati anomali
       let resolved = null;
       for (const [symbol, source] of attempts) resolved ||= await tryListing(req, symbol, source, tried);
       // Azioni USA/Canada non su Xetra: quotazione principale (liquida e con i dati degli analisti)
@@ -54,7 +73,7 @@ await Promise.all(
       if (!resolved) {
         const hits = (await search(req.isin).catch(() => [])).filter((h) => h.type === req.type || (req.type === 'etf' && h.type === 'etf'));
         const ordered = [...hits.filter((h) => isEuroListing(h.symbol)), ...hits.filter((h) => !isEuroListing(h.symbol))];
-        for (const h of ordered.slice(0, 4)) resolved ||= await tryListing(req, h.symbol, 'search', tried);
+        for (const h of ordered.slice(0, 6)) resolved ||= await tryListing(req, h.symbol, 'search', tried);
       }
       if (resolved) {
         done.set(req.isin, resolved);
@@ -71,6 +90,7 @@ async function tryListing(req, symbol, via, tried) {
   try {
     const h = await historyEur(symbol);
     if (h.closesEur.length < MIN_WEEKS) return null;
+    if (req.type !== 'crypto' && hasImplausibleJumps(h.closesEur.slice(-521))) return null; // dati errati
     // Data dell'ultima quotazione: scarta i simboli fermi da più di 30 giorni (delistati o illiquidi)
     if (Date.now() / 1000 - h.timestamps.at(-1) > 30 * 86400) return null;
     return {

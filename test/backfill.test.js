@@ -60,3 +60,13 @@ test('crypto giovane: storico ricostruito con Bitcoin', () => {
   const self = analyze({ instrument: { symbol: 'BTC-EUR', type: 'crypto' }, history: coin, benchmark: null, cryptoBenchmark: btc }, DEFAULT_SETTINGS);
   assert.equal(self.sim.backfilledYears, 0); // Bitcoin non si ricostruisce con se stesso
 });
+
+test('dati con salti impossibili: niente previsioni inventate', () => {
+  const m = market();
+  const bad = { ...m, closesEur: m.closesEur.map((v, i) => (i === 300 ? v * 40 : v)) };
+  const r = analyze({ instrument: { symbol: 'BAD.F', type: 'stock' }, history: bad, benchmark: null }, DEFAULT_SETTINGS);
+  assert.equal(r.sim.ok, false);
+  assert.match(r.sim.reason, /non affidabili/);
+  const ok = analyze({ instrument: { symbol: 'OK', type: 'stock' }, history: m, benchmark: null }, DEFAULT_SETTINGS);
+  assert.ok(ok.sim.ok && ok.forward.expected <= 0.5 && ok.forward.expected >= -0.3);
+});

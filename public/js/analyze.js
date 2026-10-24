@@ -59,6 +59,16 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   if (realYears < o.minYears) {
     return { forward: null, sim: { ok: false, reason: `Storico insufficiente (${realYears.toFixed(1)} anni, minimo ${o.minYears})`, historyYears: realYears } };
   }
+  // Controllo qualità: per azioni ed ETF un movimento ×3 o ÷3 in una settimana indica dati errati
+  // (tipico di quotazioni secondarie poco scambiate): meglio "n.d." che previsioni inventate.
+  if (instrument.type !== 'crypto') {
+    const lb = prices.slice(-(Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1));
+    for (let i = 1; i < lb.length; i++) {
+      if (lb[i - 1] > 0 && lb[i] > 0 && Math.abs(Math.log(lb[i] / lb[i - 1])) > Math.log(3)) {
+        return { forward: null, sim: { ok: false, reason: 'Dati di prezzo non affidabili (salti anomali nello storico)', historyYears: realYears } };
+      }
+    }
+  }
   const bench = instrument.symbol === BENCHMARK_SYMBOL ? null : benchmark;
   // Storico breve: rischio stimato su uno storico ricostruito con un riferimento
   // (MSCI World per azioni ed ETF, Bitcoin per le crypto).

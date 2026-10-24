@@ -1,17 +1,20 @@
-// Diagnostica dell'accesso a Yahoo Finance (eseguita da .github/workflows/diag.yml).
-const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
-const fc = await fetch('https://fc.yahoo.com', { headers: { 'User-Agent': UA }, redirect: 'manual' });
-const cookie = (fc.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]).join('; ');
-const crumb = (await (await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', { headers: { 'User-Agent': UA, Cookie: cookie } })).text()).trim();
-const q = async (path) => {
-  const r = await fetch(`https://query2.finance.yahoo.com${path}&crumb=${encodeURIComponent(crumb)}`, { headers: { 'User-Agent': UA, Cookie: cookie } });
-  return r.ok ? r.json() : { status: r.status };
-};
-// Holdings degli ETF (anche UCITS quotati su Xetra)
-for (const sym of ['EUNL.DE', 'VWCE.DE', 'SXR8.DE', 'QDVE.DE', 'XU61.DE', 'SELD.DE', 'IWDA.AS', 'SPY']) {
-  const j = await q(`/v10/finance/quoteSummary/${sym}?modules=topHoldings,fundProfile,summaryDetail`);
-  const th = j?.quoteSummary?.result?.[0]?.topHoldings;
-  const eq = th?.equityHoldings || {};
-  const h = (th?.holdings || []).map((x) => `${x.symbol}:${x.holdingPercent?.raw?.toFixed(3)}`).join(' ');
-  console.log(`${sym}: holdings=${(th?.holdings || []).length} [${h}] PE=${eq.priceToEarnings?.raw ?? '-'} stock%=${th?.stockPosition?.raw ?? '-'} bond%=${th?.bondPosition?.raw ?? '-'} status=${j.status ?? 'ok'}`);
+// Diagnostica di singoli strumenti (eseguita da .github/workflows/diag.yml): dati grezzi e stima.
+import { historyEur, outlook } from '../lib/market.js';
+import { analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS } from '../public/js/analyze.js';
+
+const symbols = (process.env.SYMBOLS || 'QFG.BR').split(',');
+const benchmark = await historyEur(BENCHMARK_SYMBOL);
+for (const symbol of symbols) {
+  const history = await historyEur(symbol);
+  const f = await outlook(symbol).catch((e) => ({ error: e.message }));
+  const p = history.closesEur;
+  const y = (n) => p.at(-1) / p[Math.max(0, p.length - 1 - 52 * n)] - 1;
+  const flat = p.slice(-104).filter((x, i, a) => i && x === a[i - 1]).length;
+  console.log(`\n=== ${symbol}: ${p.length} settimane, prezzo ${p.at(-1).toFixed(2)}, 1a ${(y(1) * 100).toFixed(0)}%, 3a ${(y(3) * 100).toFixed(0)}%, 5a ${(y(5) * 100).toFixed(0)}%, 10a ${(y(10) * 100).toFixed(0)}%, settimane ferme (2a) ${flat}/104`);
+  console.log('prezzi annuali:', Array.from({ length: 11 }, (_, k) => p[Math.max(0, p.length - 1 - 52 * (10 - k))]?.toFixed(2)).join(' '));
+  console.log('fondamentali:', JSON.stringify(f));
+  const r = analyze({ instrument: { symbol, type: 'stock' }, history, benchmark, fundamentals: f, market: 0.0764, marketGrowth: 0.0667 }, DEFAULT_SETTINGS);
+  const fw = r.forward;
+  console.log('stima:', JSON.stringify({ expected: fw?.expected, vol: r.sim?.annualVol, histVol: r.sim?.histVol, beta: fw?.beta, betaRaw: fw?.betaRaw, components: fw?.components, weights: fw?.weights, fundamentals: fw?.fundamentalsDetail, credibility: fw?.credibility, historyRaw: fw?.historyRaw }));
+  console.log('sim:', JSON.stringify({ netMedian: r.sim?.netMedian, netMean: r.sim?.netMean, maxLoss: r.sim?.maxLoss, mddMedian: r.sim?.mddMedian, probLoss: r.sim?.probLoss }));
 }

@@ -15,6 +15,11 @@ export const BASE_OUTLOOK = {
   weightHistory: 0.3,
   weightEquilibrium: 0.4,
   weightAnalysts: 0.3,
+  weightFundamentals: 0.3, // crescita attesa degli utili e valutazione (modello Grinold-Kroner)
+  growthHaircut: 0.6,     // quota creduta della crescita attesa dagli analisti oltre quella di lungo periodo
+  longRunGrowth: 4.0,     // % annuo: crescita nominale di lungo periodo verso cui convergono gli utili
+  fairPE: 18,             // P/E di lungo periodo del mercato azionario
+  peReversion: 0.5,       // quota della distanza dal P/E di lungo periodo che si chiude in 5 anni
   analystHaircut: 0.5,    // quota del rialzo implicito nei target che viene creduta
   priorUncertainty: 5.0,  // % annuo: incertezza sul rendimento di equilibrio (governa la credibilità dello storico)
   minAnalysts: 3,
@@ -154,10 +159,14 @@ export function forwardParams(p, settings = {}) {
     analysts = (year1 + (p.years - 1) * equilibrium) / p.years;
   }
 
+  // --- Fondamentali (Grinold-Kroner): dividendo + crescita degli utili + variazione della valutazione
+  const fundamentalsEst = fundamentalsReturn(f, s, p.years);
+
   const parts = [
     ['history', historyShrunk, s.weightHistory],
     ['equilibrium', equilibrium, s.weightEquilibrium],
     ['analysts', analysts, s.weightAnalysts],
+    ['fundamentals', fundamentalsEst?.expected ?? null, s.weightFundamentals],
   ].filter(([, v, w]) => v != null && Number.isFinite(v) && w > 0);
   const wSum = parts.reduce((a, [, , w]) => a + w, 0) || 1;
   // Limiti di realismo per il rendimento annuo atteso
@@ -180,7 +189,33 @@ export function forwardParams(p, settings = {}) {
     historyRaw: histArith,
     historyYears: years,
     backfilledYears: p.riskPrices && p.riskPrices.length > p.prices.length ? (Math.min(p.riskPrices.length, lookback) - p.prices.slice(-lookback).length) / WEEKS_PER_YEAR : 0,
-    components: { history: historyShrunk, equilibrium, analysts },
+    components: { history: historyShrunk, equilibrium, analysts, fundamentals: fundamentalsEst?.expected ?? null },
+    fundamentalsDetail: fundamentalsEst,
     weights: Object.fromEntries(parts.map(([k, , w]) => [k, w / wSum])),
   };
+}
+
+/**
+ * Rendimento atteso dai fondamentali (Grinold-Kroner), annuo sull'orizzonte:
+ *   dividendo + crescita media degli utili + variazione annua del P/E.
+ * - crescita: consenso analisti a 5 anni (o, in mancanza, anno prossimo), creduta solo in parte
+ *   (`growthHaircut`) e che rallenta linearmente fino alla crescita di lungo periodo;
+ * - valutazione: il P/E atteso chiude una parte (`peReversion`) della distanza dal P/E di lungo periodo.
+ * null se mancano P/E atteso, stime di crescita o copertura sufficiente degli analisti.
+ */
+export function fundamentalsReturn(f, settings = {}, years = 5) {
+  const s = { ...DEFAULT_OUTLOOK, ...settings };
+  if (!f || !(f.forwardPE > 0) || (f.analysts || 0) < s.minAnalysts) return null;
+  let g0 = Number.isFinite(f.growthLongTerm) ? f.growthLongTerm : Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
+  if (g0 == null) return null;
+  const gL = s.longRunGrowth / 100;
+  g0 = Math.max(-0.1, Math.min(0.4, g0)); // stime estreme (utili che ripartono da zero) limitate
+  const gStart = gL + s.growthHaircut * (g0 - gL);
+  const growth = (gStart + gL) / 2; // media di un rallentamento lineare da gStart a gL
+  const pe = Math.max(5, Math.min(80, f.forwardPE));
+  const peTarget = pe + s.peReversion * (s.fairPE - pe);
+  const valuation = (peTarget / pe) ** (1 / years) - 1;
+  const dividend = Math.max(0, Math.min(0.1, f.dividendYield || 0));
+  const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
+  return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0 };
 }

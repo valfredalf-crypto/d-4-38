@@ -458,6 +458,7 @@ function rowValues(i) {
     price: q?.priceEur ?? null,
     change: q?.changePct ?? null,
     expected: r?.forward?.expected ?? null,
+    expected5: r?.forward?.expected != null ? (1 + r.forward.expected) ** 5 - 1 : null,
     maxLoss: sim?.maxLoss ?? null,
     mddMedian: sim?.mddMedian ?? null,
     // Perdita tipica (drawdown mediano) / guadagno netto: ∞ se il guadagno è ≤ 0
@@ -691,6 +692,7 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
+      ${f?.expected != null ? `<div class="kpi"><div class="k">Rendimento atteso</div><div class="v ${cls(f.expected)}">${pct(f.expected, true)}/anno</div><div class="h">come in tabella ("Atteso / anno") · su ${s.mc.years} anni ${pct((1 + f.expected) ** s.mc.years - 1, true)} lordo (prima di costi e tasse)</div></div>` : ''}
       <div class="kpi"><div class="k">Crescita utili attesa</div><div class="v ${cls(f?.expectedGrowth)}">${f?.expectedGrowth != null ? pct(f.expectedGrowth, true) + '/anno' : 'n.d.'}</div><div class="h">${f?.expectedGrowth == null ? (inst.type === 'crypto' ? 'le crypto non hanno utili' : 'strumento non azionario o dati insufficienti') : f.growthSource === 'market' ? 'crescita del mercato × β ' + nf2.format(f.beta) : f.growthSource === 'holdings' ? `dalle partecipazioni del fondo (stime analisti sul ${pct(f.fundamentalsDetail.coverage, false, 0)} del portafoglio)` : 'consenso analisti, prudenziale, prossimi 5 anni'}</div></div>
       <div class="kpi"><div class="k">${s.mc.gainMetric === 'mean' ? 'Guadagno medio' : 'Guadagno mediano'} ${s.mc.years}a (classifica)</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
       <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>

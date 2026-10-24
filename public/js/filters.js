@@ -21,6 +21,7 @@ export const INDICATORS = [
   { key: 'prob25', label: 'Probabilità netto ≥ +25%', pct: true },
   { key: 'prob50', label: 'Probabilità netto ≥ +50%', pct: true },
   { key: 'expected', label: 'Rendimento atteso annuo', pct: true },
+  { key: 'expected5', label: 'Rendimento atteso a 5 anni (lordo)', pct: true },
   { key: 'growthExp', label: 'Crescita utili attesa (annua)', pct: true },
   { key: 'growth', label: 'Crescita prossimo anno (selezione 🚀)', pct: true },
   { key: 'perfW', label: 'Rend. netto ultima settimana', pct: true },

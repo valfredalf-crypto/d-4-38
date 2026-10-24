@@ -1,14 +1,18 @@
 // Backtest del modello: ci si mette a una data passata (T0 = 5 anni fa), si prevede usando solo i
 // dati disponibili fino a T0 e si confronta con quanto è successo davvero da T0 a oggi.
 // Funzioni pure: usate dalla pubblicazione del sito e dal server locale; il browser mostra il risultato.
-import { simulate, netReturn, historicalMaxDrawdown, logReturns, WEEKS_PER_YEAR, DEFAULT_OPTIONS } from './montecarlo.js';
-import { forwardParams } from './outlook.js';
+import { netReturn, historicalMaxDrawdown, logReturns, WEEKS_PER_YEAR, DEFAULT_OPTIONS } from './montecarlo.js';
+import { analyze } from './analyze.js';
 
 const r4 = (x) => (Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : x === Infinity ? 1e9 : null);
 
-/** Prevede (fino a T0) e misura (da T0 a oggi) per un singolo strumento; null se lo storico è troppo corto. */
-export function backtestOne({ instrument, history, benchmark }, settings, mode, { originWeeksAgo = null, sims = 1000 } = {}) {
-  const o = { ...DEFAULT_OPTIONS, ...settings.mc, sims };
+/**
+ * Prevede (fino a T0) e misura (da T0 a oggi) per un singolo strumento; null se lo storico è troppo corto.
+ * `preYears`: se indicato, finge che prima di T0 esistessero solo quegli anni di dati (test degli storici brevi).
+ */
+export function backtestOne({ instrument, history, benchmark }, settings, mode, { originWeeksAgo = null, sims = 1000, preYears = null } = {}) {
+  const mc = { ...DEFAULT_OPTIONS, ...settings.mc, sims };
+  const o = { ...mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
   const ts = history.timestamps;
   const prices = history.closesEur;
@@ -17,7 +21,8 @@ export function backtestOne({ instrument, history, benchmark }, settings, mode, 
   const i0 = prices.length - 1 - (originWeeksAgo ?? horizon);
   if (i0 < Math.round(o.minYears * WEEKS_PER_YEAR) || i0 + horizon > prices.length - 1) return null;
   const t0 = ts[i0];
-  const pre = prices.slice(0, i0 + 1);
+  const iStart = preYears ? Math.max(0, i0 - Math.round(preYears * WEEKS_PER_YEAR)) : 0;
+  const preHistory = { timestamps: ts.slice(iStart, i0 + 1), closesEur: prices.slice(iStart, i0 + 1) };
   const post = prices.slice(i0, i0 + horizon + 1);
   // Benchmark troncato a T0: nessuna informazione successiva entra nella previsione.
   let bench = null;
@@ -26,13 +31,9 @@ export function backtestOne({ instrument, history, benchmark }, settings, mode, 
     const end = k === -1 ? benchmark.timestamps.length : k;
     bench = { timestamps: benchmark.timestamps.slice(0, end), closesEur: benchmark.closesEur.slice(0, end) };
   }
-  const fwd = forwardParams(
-    { type: instrument.type, timestamps: ts.slice(0, i0 + 1), prices: pre, benchmark: bench, fundamentals: null, years: o.years, lookbackYears: o.lookbackYears },
-    { ...settings.outlook, mode },
-  );
-  if (!fwd) return null;
-  const sim = simulate(pre, { ...o, targetDrift: fwd.drift, targetVol: fwd.vol, seed: 12345 });
-  if (!sim.ok) return null;
+  // Stessa analisi dell'app (storico ricostruito con l'indice incluso), senza analisti (non disponibili storicamente).
+  const { forward: fwd, sim } = analyze({ instrument, history: preHistory, benchmark: bench, fundamentals: null }, { mc: { ...mc, seed: 12345 }, outlook: { ...settings.outlook, mode } });
+  if (!fwd || !sim.ok) return null;
   const gross = post.at(-1) / post[0] - 1;
   const rets = logReturns(post);
   const mean = rets.reduce((a, x) => a + x, 0) / rets.length;
@@ -41,6 +42,7 @@ export function backtestOne({ instrument, history, benchmark }, settings, mode, 
     symbol: instrument.symbol,
     type: instrument.type,
     t0,
+    short: !!preYears,
     pred: {
       netMedian: r4(sim.netMedian),
       netMean: r4(sim.netMean),
@@ -53,6 +55,7 @@ export function backtestOne({ instrument, history, benchmark }, settings, mode, 
       probLoss: r4(sim.probLoss),
       ratio: r4(sim.ratio),
       vol: r4(sim.annualVol),
+      expected: r4(fwd.expected),
     },
     real: { net: r4(netReturn(gross, o)), mdd: r4(historicalMaxDrawdown(post)), vol: r4(vol) },
   };
@@ -159,7 +162,21 @@ export function runBacktest(items, settings) {
         /* strumento saltato */
       }
     }
-    out.modes[mode] = { summary: summarize(rows), byType: Object.fromEntries(['stock', 'etf', 'crypto'].map((t) => [t, summarize(rows.filter((r) => r.type === t))])) };
+    // Stessi strumenti fingendo di avere solo 3 anni di dati prima di T0 (es. ETF nati da poco)
+    const short = [];
+    for (const it of items) {
+      try {
+        const r = backtestOne(it, settings, mode, { preYears: 3 });
+        if (r) short.push(r);
+      } catch {
+        /* strumento saltato */
+      }
+    }
+    out.modes[mode] = {
+      summary: summarize(rows),
+      shortHistory: summarize(short),
+      byType: Object.fromEntries(['stock', 'etf', 'crypto'].map((t) => [t, summarize(rows.filter((r) => r.type === t))])),
+    };
     if (mode === 'forward') out.rows = rows;
   }
   const t0s = out.rows.map((r) => r.t0).sort((a, b) => a - b);

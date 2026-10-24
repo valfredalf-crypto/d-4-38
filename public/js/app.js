@@ -660,7 +660,8 @@ function renderDetail(inst, r, d) {
           ${f?.mode === 'forward' ? `<tr><td>Volatilità recente (EWMA)</td><td class="num">${pct(f.sigmaEwma)}</td></tr>
           <tr><td>Volatilità implicita opzioni</td><td class="num">${f.sigmaImpl ? pct(f.sigmaImpl) + ` <span class="muted">(${fu.impliedVolDays} gg)</span>` : '<span class="muted">n.d.</span>'}</td></tr>
           <tr><td>Beta vs MSCI World (EUR)</td><td class="num">${f.betaRaw != null ? nf2.format(f.betaRaw) : 'n.d.'} <span class="muted">(aggiustato ${nf2.format(f.beta)})</span></td></tr>` : ''}
-          <tr><td>Max drawdown storico (periodo usato)</td><td class="num neg">−${pct(sim.historicalMdd)}</td></tr>
+          <tr><td>Max drawdown storico (${nf2.format(sim.historyYears)} anni reali)</td><td class="num neg">−${pct(sim.historicalMdd)}</td></tr>
+          ${sim.backfilledYears > 0.1 ? `<tr><td colspan="2" class="muted">Storico breve: per il rischio i ${nf2.format(sim.backfilledYears)} anni mancanti sono ricostruiti con l'MSCI World (β ${nf2.format(f?.betaRaw ?? 1)}), così le simulazioni includono anche crisi passate. Il rendimento atteso usa solo i dati reali.</td></tr>` : ''}
           <tr><td>Max drawdown simulato: mediano / 95°</td><td class="num neg">−${pct(sim.mddMedian)} / −${pct(sim.mddP95)}</td></tr>
           ${fu.dividendYield ? `<tr><td>Rendimento da dividendi</td><td class="num">${pct(fu.dividendYield)}</td></tr>` : ''}
         </tbody></table>
@@ -721,7 +722,7 @@ function renderBacktest(bt) {
   const TYPE_NAMES = { stock: 'Azioni', etf: 'ETF/ETC', crypto: 'Crypto' };
   const cal = bt.calibration;
   const calInUse = bt.calibrationInUse?.meta;
-  const PARAM_NAMES = { weightHistory: 'Peso dello storico', equityPremium: 'Premio rischio azionario (%)', priorUncertainty: "Incertezza sull'equilibrio (%)", minStockBeta: 'Beta minimo azioni', ewmaWeight: 'Peso volatilità recente', volScale: 'Scala della volatilità' };
+  const PARAM_NAMES = { regimeUncertainty: 'Incertezza di regime (%)', weightHistory: 'Peso dello storico', equityPremium: 'Premio rischio azionario (%)', priorUncertainty: "Incertezza sull'equilibrio (%)", minStockBeta: 'Beta minimo azioni', ewmaWeight: 'Peso volatilità recente', volScale: 'Scala della volatilità' };
 
   $('#bt-body').innerHTML = `
     <div class="verdicts">
@@ -765,6 +766,24 @@ function renderBacktest(bt) {
     <div class="scroll"><table>
       <thead><tr><th>Prevista</th><th class="num">Strumenti</th><th class="num">Media prevista</th><th class="num">Finiti in perdita</th></tr></thead>
       <tbody>${f.probLoss.map((b) => `<tr><td>${p0(b.from)}–${p0(b.to)}</td><td class="num">${b.n}</td><td class="num">${p0(b.predicted)}</td><td class="num"><b>${p0(b.realized)}</b></td></tr>`).join('')}</tbody></table></div>
+
+    ${
+      bt.modes.forward.shortHistory
+        ? (() => {
+            const sh = bt.modes.forward.shortHistory;
+            return `<h3>Storici brevi: stessi strumenti con solo 3 anni di dati</h3>
+      <p class="muted">Verifica per ETF e titoli nati da poco: il rendimento dei pochi anni disponibili non deve essere proiettato tale e quale, e il rischio non deve essere sottostimato.</p>
+      <div class="scroll"><table>
+        <thead><tr><th></th><th class="num">Ideale</th><th class="num">Storico breve</th><th class="num">Storico completo</th></tr></thead>
+        <tbody>
+          <tr><td>Perdita max reale oltre lo scenario sfavorevole</td><td class="num">≈ 5%</td><td class="num"><b>${p0(sh.risk.mddAboveP95)}</b></td><td class="num">${p0(f.risk.mddAboveP95)}</td></tr>
+          <tr><td>Risultato reale dentro la forchetta 5–95%</td><td class="num">≈ 90%</td><td class="num"><b>${p0(sh.returns.inside90)}</b></td><td class="num">${p0(f.returns.inside90)}</td></tr>
+          <tr><td>Sopra la mediana prevista</td><td class="num">≈ 50%</td><td class="num"><b>${p0(sh.returns.aboveMedian)}</b></td><td class="num">${p0(f.returns.aboveMedian)}</td></tr>
+          <tr><td>Guadagno mediano previsto → reale</td><td></td><td class="num"><b>${pct(sh.returns.predNetMedian, true)} → ${pct(sh.returns.realNetMedian, true)}</b></td><td class="num">${pct(f.returns.predNetMedian, true)} → ${pct(f.returns.realNetMedian, true)}</td></tr>
+        </tbody></table></div>`;
+          })()
+        : ''
+    }
 
     <h3>Per tipo di strumento (modello prospettico)</h3>
     <div class="scroll"><table>

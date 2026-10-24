@@ -84,7 +84,8 @@ test('shrinkage: lo storico di uno strumento molto volatile pesa poco', () => {
   const wild = mk(0.8, 0.8);
   const fc = forwardParams({ type: 'etf', timestamps: calm.ts, prices: calm.p, years: 5, lookbackYears: 10 }, B);
   const fw = forwardParams({ type: 'crypto', timestamps: wild.ts, prices: wild.p, years: 5, lookbackYears: 10 }, B);
-  assert.ok(fc.credibility > 0.4 && fc.credibility < 0.6, String(fc.credibility));
+  // 10 anni, volatilità 15%: σ²/T + regime² = 0,00225 + 0,0016 → credibilità ≈ 0,39 (incertezza equilibrio 5%)
+  assert.ok(fc.credibility > 0.3 && fc.credibility < 0.5, String(fc.credibility));
   assert.ok(fw.credibility < 0.06, String(fw.credibility));
   assert.ok(fw.components.history < fw.historyRaw);
   const eq = fw.components.equilibrium;
@@ -101,4 +102,23 @@ test('beta: media con quello di Yahoo e minimo 0,5 per le azioni', () => {
   assert.ok(etf.beta < 0.5); // per ETF (es. obbligazionari, oro) nessun minimo
   const withYahoo = forwardParams({ ...base, type: 'stock', fundamentals: { beta: 1.2 } }, B);
   assert.ok(Math.abs(withYahoo.betaRaw - (estimateBeta(flat.ts, flat.p, b.ts, b.p, 5).raw + 1.2) / 2) < 1e-12);
+});
+
+test('storico breve: credibilità ridotta (un solo regime di mercato non si proietta)', () => {
+  const mk = (weeks, drift) => {
+    const ts = [];
+    const p = [100];
+    for (let i = 0; i < weeks; i++) {
+      ts.push(1_500_000_000 + i * WEEK);
+      if (i) p.push(p[i - 1] * Math.exp(drift / 52 + (i % 2 ? 1 : -1) * 0.1 / Math.sqrt(52)));
+    }
+    return { ts, p };
+  };
+  const long = mk(521, 0.15);
+  const short = mk(157, 0.15); // 3 anni con +15% annuo
+  const fl = forwardParams({ type: 'etf', timestamps: long.ts, prices: long.p, years: 5, lookbackYears: 10 }, B);
+  const fs = forwardParams({ type: 'etf', timestamps: short.ts, prices: short.p, years: 5, lookbackYears: 10 }, B);
+  assert.ok(fs.credibility < fl.credibility * 0.7, `${fs.credibility} vs ${fl.credibility}`);
+  assert.ok(fs.credibility < 0.3, String(fs.credibility));
+  assert.ok(Math.abs(fs.historyYears - 3) < 0.05);
 });

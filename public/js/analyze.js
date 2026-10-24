@@ -1,6 +1,7 @@
 // Analisi completa di uno strumento: parametri prospettici + simulazione Monte Carlo.
-import { simulate, DEFAULT_OPTIONS } from './montecarlo.js';
+import { simulate, DEFAULT_OPTIONS, historicalMaxDrawdown, WEEKS_PER_YEAR } from './montecarlo.js';
 import { forwardParams, DEFAULT_OUTLOOK } from './outlook.js';
+import { backfillWithProxy } from './backfill.js';
 
 export const BENCHMARK_SYMBOL = 'EUNL.DE'; // iShares Core MSCI World (EUR) per il calcolo del beta
 
@@ -53,18 +54,33 @@ export function analyze({ instrument, history, benchmark, fundamentals }, settin
   const o = { ...DEFAULT_OPTIONS, ...settings.mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
   const prices = history.closesEur;
+  const realYears = (prices.length - 1) / WEEKS_PER_YEAR;
+  if (realYears < o.minYears) {
+    return { forward: null, sim: { ok: false, reason: `Storico insufficiente (${realYears.toFixed(1)} anni, minimo ${o.minYears})`, historyYears: realYears } };
+  }
+  const bench = instrument.symbol === BENCHMARK_SYMBOL ? null : benchmark;
+  // Storico breve: rischio stimato su uno storico ricostruito con l'MSCI World (solo azioni ed ETF).
+  const filled = instrument.type !== 'crypto' && bench ? backfillWithProxy(history, bench, { lookbackYears: o.lookbackYears, seedKey: instrument.symbol }) : null;
   const fwd = forwardParams(
     {
       type: instrument.type,
       timestamps: history.timestamps,
       prices,
-      benchmark: instrument.symbol === BENCHMARK_SYMBOL ? null : benchmark,
+      riskPrices: filled?.closesEur,
+      benchmark: bench,
       fundamentals,
       years: o.years,
       lookbackYears: o.lookbackYears,
     },
     settings.outlook,
   );
-  const sim = simulate(prices, { ...o, targetDrift: fwd?.drift ?? null, targetVol: fwd?.vol ?? null });
+  const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd?.drift ?? null, targetVol: fwd?.vol ?? null });
+  if (sim.ok) {
+    // Indicatori "storici" mostrati: solo sui dati reali
+    const lookback = Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1;
+    sim.historicalMdd = historicalMaxDrawdown(prices.slice(-lookback));
+    sim.historyYears = Math.min(realYears, o.lookbackYears);
+    sim.backfilledYears = filled ? filled.backfilledWeeks / WEEKS_PER_YEAR : 0;
+  }
   return { forward: fwd, sim };
 }

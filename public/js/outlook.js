@@ -22,6 +22,8 @@ export const BASE_OUTLOOK = {
   betaYears: 5,
   minStockBeta: 0.5,      // beta minimo per le singole azioni (dopo l'aggiustamento di Blume)
   ewmaWeight: 0.4,        // peso della volatilità recente (EWMA) rispetto a quella di lungo periodo
+  regimeUncertainty: 4.0, // % annuo: quanto cambia il rendimento medio da un regime di mercato all'altro
+  fullHistoryYears: 5,    // sotto questi anni di dati reali la credibilità dello storico si riduce in proporzione
   volScale: 1.0,          // correzione complessiva della volatilità (tarata sulle perdite massime reali)
 };
 
@@ -92,9 +94,17 @@ export function forwardParams(p, settings = {}) {
   const n = rets.length;
   const muW = rets.reduce((a, x) => a + x, 0) / n;
   const sdW = Math.sqrt(rets.reduce((a, x) => a + (x - muW) ** 2, 0) / (n - 1));
-  const sigmaLong = sdW * Math.sqrt(WEEKS_PER_YEAR);
+  const sigmaReal = sdW * Math.sqrt(WEEKS_PER_YEAR);
+  // Volatilità di lungo periodo: sullo storico ricostruito con l'indice (se lo storico reale è breve),
+  // così include anche crisi precedenti alla nascita dello strumento.
+  let sigmaLong = sigmaReal;
+  if (p.riskPrices && p.riskPrices.length > p.prices.length) {
+    const rr = logReturns(p.riskPrices.slice(-lookback));
+    const m = rr.reduce((a, x) => a + x, 0) / rr.length;
+    sigmaLong = Math.sqrt(rr.reduce((a, x) => a + (x - m) ** 2, 0) / (rr.length - 1)) * Math.sqrt(WEEKS_PER_YEAR);
+  }
   const histLog = muW * WEEKS_PER_YEAR;
-  const histArith = Math.exp(histLog + sigmaLong ** 2 / 2) - 1;
+  const histArith = Math.exp(histLog + sigmaReal ** 2 / 2) - 1;
 
   if (s.mode === 'historical') {
     return { mode: 'historical', drift: histLog, vol: sigmaLong, expected: histArith, components: { history: histArith }, weights: { history: 1 } };
@@ -123,12 +133,15 @@ export function forwardParams(p, settings = {}) {
   const equilibrium = p.type === 'crypto' ? rf + s.cryptoPremium / 100 : rf + Math.max(beta, 0) * (s.equityPremium / 100);
 
   // --- Storico "credibile": shrinkage bayesiano (modello normale-normale) verso l'equilibrio.
-  // La media storica ha errore standard σ/√T: con molta volatilità e pochi anni è quasi rumore,
-  // quindi pesa poco (es. 10 anni: indice globale ~50%, azione volatile ~20%, crypto ~5%).
+  // L'incertezza sulla media storica ha due parti: il rumore statistico σ²/T e l'incertezza di
+  // "regime" (la media di un periodo cambia da un ciclo di mercato all'altro anche con tanti dati).
+  // Inoltre con meno di `fullHistoryYears` anni lo storico copre un solo regime (es. solo il
+  // post-Covid) e la credibilità si riduce in proporzione: non si proietta un periodo eccezionale.
   const years = n / WEEKS_PER_YEAR;
-  const precHist = years / (sigmaLong ** 2 || 1e-9);
+  const histVar = sigmaLong ** 2 / Math.max(years, 1e-9) + (s.regimeUncertainty / 100) ** 2;
+  const precHist = 1 / histVar;
   const precPrior = 1 / (s.priorUncertainty / 100) ** 2;
-  const credibility = precHist / (precHist + precPrior);
+  const credibility = (precHist / (precHist + precPrior)) * Math.min(1, years / s.fullHistoryYears);
   const historyShrunk = equilibrium + credibility * (histArith - equilibrium);
 
   // --- Consenso analisti (solo primo anno, poi equilibrio)
@@ -163,6 +176,8 @@ export function forwardParams(p, settings = {}) {
     analystUpside,
     credibility,
     historyRaw: histArith,
+    historyYears: years,
+    backfilledYears: p.riskPrices && p.riskPrices.length > p.prices.length ? (Math.min(p.riskPrices.length, lookback) - p.prices.slice(-lookback).length) / WEEKS_PER_YEAR : 0,
     components: { history: historyShrunk, equilibrium, analysts },
     weights: Object.fromEntries(parts.map(([k, , w]) => [k, w / wSum])),
   };

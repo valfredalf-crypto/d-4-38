@@ -24,7 +24,8 @@ const log = (...a) => console.log(...a);
 const GRID = {
   weightHistory: [0.1, 0.2, 0.3, 0.45], // peso dello storico rispetto all'equilibrio (analisti esclusi)
   equityPremium: [3, 4, 5, 6],
-  priorUncertainty: [2, 3.5, 5, 7.5, 10],
+  priorUncertainty: [2, 3.5, 5], // oltre il 5% lo storico recente pesa troppo (proiezione di regimi eccezionali)
+  regimeUncertainty: [2, 4, 6],
   minStockBeta: [0.3, 0.5, 0.7],
   ewmaWeight: [0, 0.2, 0.4, 0.6],
   volScale: [0.9, 1.0, 1.1, 1.2, 1.3, 1.4],
@@ -71,6 +72,9 @@ function evaluate(items, outlook, lossFn = rowLoss) {
       const r = backtestOne(it, settings, 'forward', { originWeeksAgo: w, sims: SIMS });
       if (r) rows.push(r);
     }
+    // Anche come se lo strumento avesse solo 3 anni di dati: la taratura deve funzionare per gli storici brevi.
+    const short = backtestOne(it, settings, 'forward', { originWeeksAgo: ORIGINS[0], sims: SIMS, preYears: 3 });
+    if (short) rows.push(short);
   }
   const loss = rows.reduce((a, r) => a + lossFn(r), 0) / (rows.length || 1);
   return { loss, rows };

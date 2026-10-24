@@ -181,3 +181,17 @@ test('beta limitato da volatilità: uno strumento quasi fermo senza beta stimabi
   assert.ok(f.beta < 0.05, String(f.beta));
   assert.ok(f.expected < 0.03, String(f.expected));
 });
+
+test('crescita utili attesa: propria, del mercato × beta, n.d. per non azionari', async () => {
+  const b = series(400, 1);
+  const etf = series(400, 2, 1.0, b.rets);
+  const eq = forwardParams({ type: 'etf', timestamps: etf.ts, prices: etf.p, benchmark: { timestamps: b.ts, closesEur: b.p }, market: 0.076, marketGrowth: 0.08, years: 5, lookbackYears: 10 }, B);
+  assert.equal(eq.growthSource, 'market');
+  assert.ok(Math.abs(eq.expectedGrowth - 0.08 * eq.beta) < 1e-12);
+  const bond = series(400, 7); // indipendente dal mercato → beta ≈ 0
+  const bf = forwardParams({ type: 'etf', timestamps: bond.ts, prices: bond.p, benchmark: { timestamps: b.ts, closesEur: b.p }, market: 0.076, marketGrowth: 0.08, years: 5, lookbackYears: 10 }, B);
+  assert.equal(bf.expectedGrowth, null);
+  const own = forwardParams({ type: 'stock', timestamps: etf.ts, prices: etf.p, fundamentals: { forwardPE: 25, growthLongTerm: 0.2, analysts: 10 }, years: 5, lookbackYears: 10 }, B);
+  assert.equal(own.growthSource, 'own');
+  assert.ok(own.expectedGrowth > 0.04 && own.expectedGrowth < 0.2);
+});

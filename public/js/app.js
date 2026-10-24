@@ -174,7 +174,7 @@ async function analyzeOne(inst) {
     state.cryptoBenchmark = await api(`/api/history?symbol=${encodeURIComponent(CRYPTO_BENCHMARK_SYMBOL)}`).catch(() => null);
   }
   const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
-  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, market: state.market?.expected, settings: state.settings });
+  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, market: state.market?.expected, marketGrowth: state.market?.growth, settings: state.settings });
   state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
@@ -458,6 +458,7 @@ function rowValues(i) {
     ratio: sim ? (sim.ratio ?? (sim.netGain > 0 ? null : Infinity)) : null,
     probLoss: sim?.probLoss ?? null,
     growth: i.growth ?? null,
+    growthExp: r && !r.error ? r.forward?.growth ?? r.forward?.expectedGrowth ?? null : null,
     varM: q?.perf?.m ?? null,
     varM3: q?.perf?.m3 ?? null,
     varY: q?.perf?.y ?? null,
@@ -511,7 +512,12 @@ function render() {
       }
       return `<tr data-symbol="${esc(i.symbol)}">
         <td class="num muted">${rank ?? ''}</td>
-        <td><span class="name" title="${esc(i.name)}">${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${esc(i.name)}</span><span class="ids">${i.growth != null ? `<span class="growth-tag" title="Crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · ` : ''}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td><span class="name" title="${esc(i.name)}">${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${esc(i.name)}</span><span class="ids">${(() => {
+          const g = state.results[i.symbol]?.forward;
+          const ge = g ? g.growth ?? g.expectedGrowth : null;
+          if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
+          return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
+        })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
         <td class="num">${eur(r.price)}</td>
         <td class="num ${cls(r.change)}">${pct(r.change, true, 2)}</td>
@@ -519,6 +525,7 @@ function render() {
         <td class="num ${cls(r.varM3)}">${pct(r.varM3, true)}</td>
         <td class="num ${cls(r.varY)}">${pct(r.varY, true)}</td>
         <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
+        <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
         <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) : '–'}</td>
         <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
@@ -627,6 +634,7 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
+      <div class="kpi"><div class="k">Crescita utili attesa</div><div class="v ${cls(f?.expectedGrowth)}">${f?.expectedGrowth != null ? pct(f.expectedGrowth, true) + '/anno' : 'n.d.'}</div><div class="h">${f?.expectedGrowth == null ? (inst.type === 'crypto' ? 'le crypto non hanno utili' : 'strumento non azionario o dati insufficienti') : f.growthSource === 'market' ? 'crescita del mercato × β ' + nf2.format(f.beta) : 'consenso analisti, prudenziale, prossimi 5 anni'}</div></div>
       <div class="kpi"><div class="k">${s.mc.gainMetric === 'mean' ? 'Guadagno medio' : 'Guadagno mediano'} ${s.mc.years}a (classifica)</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
       <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
@@ -1045,9 +1053,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Crescita utili attesa', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.growthExp), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -1112,7 +1120,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'expected', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1211,7 +1219,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="16" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="17" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

@@ -180,7 +180,15 @@ export function forwardParams(p, settings = {}) {
   // del mercato azionario, in proporzione al beta (un monetario o obbligazionario con β≈0 riceve il
   // tasso privo di rischio). Le crypto non hanno utili: nessuna componente di crescita.
   if (!fundamentalsEst && p.type !== 'crypto' && Number.isFinite(p.market)) {
-    fundamentalsEst = { expected: rf + Math.max(beta, 0) * (p.market - rf), source: 'market', market: p.market, beta };
+    fundamentalsEst = {
+      expected: rf + Math.max(beta, 0) * (p.market - rf),
+      source: 'market',
+      market: p.market,
+      beta,
+      // crescita degli utili "sottostante": solo per strumenti di tipo azionario (beta ≥ 0,3);
+      // obbligazionari, monetari e oro non hanno utili da far crescere
+      growth: Number.isFinite(p.marketGrowth) && beta >= 0.3 ? p.marketGrowth * beta : null,
+    };
   }
 
   const parts = [
@@ -212,6 +220,8 @@ export function forwardParams(p, settings = {}) {
     backfilledYears: p.riskPrices && p.riskPrices.length > p.prices.length ? (Math.min(p.riskPrices.length, lookback) - p.prices.slice(-lookback).length) / WEEKS_PER_YEAR : 0,
     components: { history: historyShrunk, equilibrium, analysts, fundamentals: fundamentalsEst?.expected ?? null },
     fundamentalsDetail: fundamentalsEst,
+    expectedGrowth: fundamentalsEst?.growth ?? null, // crescita annua degli utili attesa nei 5 anni
+    growthSource: fundamentalsEst ? fundamentalsEst.source || 'own' : null,
     weights: Object.fromEntries(parts.map(([k, , w]) => [k, w / wSum])),
   };
 }
@@ -248,14 +258,16 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
 export function marketFundamentals(list, settings = {}) {
   let w = 0;
   let sum = 0;
+  let sumG = 0;
   let n = 0;
   for (const f of list) {
     if (!(f?.marketCap > 0)) continue;
     const g = fundamentalsReturn(f, settings, 5);
     if (!g) continue;
     sum += f.marketCap * g.expected;
+    sumG += f.marketCap * g.growth;
     w += f.marketCap;
     n++;
   }
-  return n >= 20 && w > 0 ? { expected: sum / w, n } : null;
+  return n >= 20 && w > 0 ? { expected: sum / w, growth: sumG / w, n } : null;
 }

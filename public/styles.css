@@ -119,6 +119,9 @@ main { padding: 0 20px 20px; }
   #table th, #table td { padding: 8px 9px; }
 }
 .scroll-btns { display: none; }
+.active-filters { margin: 0 0 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: 13px; line-height: 2; }
+.active-filters .chip { display: inline-block; padding: 0 4px 0 10px; border-radius: 12px; background: var(--line); white-space: nowrap; }
+.active-filters .chip button { border: 0; background: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 0 4px; }
 @media (min-width: 641px) {
   .scroll-btns { display: flex; gap: 10px; align-items: center; margin: 0 0 6px; }
   #hscroll { flex: 1; height: 22px; accent-color: var(--chart-line); cursor: ew-resize; }

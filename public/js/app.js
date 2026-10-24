@@ -33,12 +33,15 @@ const state = {
 };
 
 // ---------- persistenza locale (solo comodità: tutto funziona anche senza)
+// I filtri NON vengono ripristinati alla riapertura: filtri dimenticati riducevano la lista senza che
+// fosse evidente. Ogni visita parte con tutti gli strumenti.
 function loadFilters() {
   try {
-    return JSON.parse(localStorage.getItem('trmc.filters')) || {};
+    localStorage.removeItem('trmc.filters');
   } catch {
-    return {};
+    /* niente */
   }
+  return {};
 }
 function store(key, value) {
   try {
@@ -101,6 +104,7 @@ async function api(path, opts) {
 
 // ---------- formattazione
 const nf2 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const nf1 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const nf4 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
 function pct(x, sign = false, digits = 1) {
   if (x == null || !Number.isFinite(x)) return '–';
@@ -383,11 +387,7 @@ function filtered() {
 
 // ---------- pannello filtri sugli indicatori
 function saveFilters() {
-  try {
-    localStorage.setItem('trmc.filters', JSON.stringify(state.view.filters));
-  } catch {
-    /* solo comodità */
-  }
+  /* non salvati: vedi loadFilters */
 }
 
 function updateFiltersUi() {
@@ -401,6 +401,21 @@ function updateFiltersUi() {
     el.classList.toggle('on', String(v).trim() !== '');
   }
   const total = filtered().length;
+  const bar = $('#active-filters');
+  if (bar) {
+    const act = activeFilters(state.view.filters);
+    bar.hidden = !act.length;
+    const fmt = (ind, x) => (x == null ? '' : ind.pct ? nf1.format(x * 100) + '%' : nf2.format(x));
+    bar.innerHTML = act.length
+      ? `<b>Filtri attivi:</b> ${act
+          .map((a) => {
+            const ind = INDICATORS.find((x) => x.key === a.key);
+            const txt = a.min != null && a.max != null ? `${fmt(ind, a.min)} – ${fmt(ind, a.max)}` : a.min != null ? `≥ ${fmt(ind, a.min)}` : `≤ ${fmt(ind, a.max)}`;
+            return `<span class="chip">${esc(ind.label)} ${txt} <button type="button" data-unfilter="${a.key}" title="Togli questo filtro">✕</button></span>`;
+          })
+          .join(' ')} · <b>${total.toLocaleString('it-IT')}</b> strumenti su ${state.instruments.length.toLocaleString('it-IT')} <button type="button" class="ghost small" data-unfilter="*">Togli tutti i filtri</button>`
+      : '';
+  }
   $('#filters-summary').textContent = n ? `${n} filtr${n === 1 ? 'o' : 'i'} attiv${n === 1 ? 'o' : 'i'} · ${total.toLocaleString('it-IT')} strumenti corrispondono` : 'Nessun filtro attivo';
 }
 
@@ -415,7 +430,11 @@ function buildFiltersPanel() {
   presets.addEventListener('click', (e) => {
     const b = e.target.closest('[data-preset]');
     if (!b) return;
-    for (const [key, val] of Object.entries(PRESETS[Number(b.dataset.preset)].filters)) state.view.filters[key] = { ...val };
+    // Un filtro rapido sostituisce quelli attivi (prima si sommavano, riducendo la lista senza volerlo);
+    // un secondo clic sullo stesso lo toglie
+    const preset = PRESETS[Number(b.dataset.preset)].filters;
+    const same = JSON.stringify(activeFilters(state.view.filters)) === JSON.stringify(activeFilters(preset));
+    state.view.filters = same ? {} : Object.fromEntries(Object.entries(preset).map(([k, v]) => [k, { ...v }]));
     applyFilters();
   });
   let t;
@@ -426,6 +445,13 @@ function buildFiltersPanel() {
     f[el.dataset.bound] = el.value;
     clearTimeout(t);
     t = setTimeout(applyFilters, 250);
+  });
+  $('#active-filters')?.addEventListener('click', (e) => {
+    const k = e.target.closest('[data-unfilter]')?.dataset.unfilter;
+    if (!k) return;
+    if (k === '*') state.view.filters = {};
+    else delete state.view.filters[k];
+    applyFilters();
   });
   $('#btn-filters-reset').addEventListener('click', () => {
     state.view.filters = {};

@@ -48,6 +48,7 @@ export const PRESETS = [
   { label: 'P(perdita) < 25%', filters: { probLoss: { max: 25 } } },
   { label: 'Guadagno probabile > 0', filters: { netP25: { min: 0 } } },
   { label: 'P(≥ +25%) > 60%', filters: { prob25: { min: 60 } } },
+  { label: 'P(≥ +50%) > 30%', filters: { prob50: { min: 30 } } },
 ];
 
 export function parseNum(v) {

@@ -233,10 +233,9 @@ table.mini .num { white-space: nowrap; }
   body.mview-risk #table th:nth-child(n+11):nth-child(-n+12), body.mview-risk #table td:nth-child(n+11):nth-child(-n+12),
   body.mview-risk #table th:nth-child(n+23):nth-child(-n+24), body.mview-risk #table td:nth-child(n+23):nth-child(-n+24) { display: table-cell; }
   body.mview-risk #table th:nth-child(n+13):nth-child(-n+18), body.mview-risk #table td:nth-child(n+13):nth-child(-n+18) { display: none; }
-  /* Vista "Probabilità": mediana (13), guadagno probabile 75% (15), (prob.+crescita)/perdita max (21), P(≥+25%) (25) */
+  /* Vista "Probabilità": mediana (13), guadagno probabile 75% (15), P(≥+25%) (25), P(≥+50%) (26) */
   body.mview-prob #table th:nth-child(15), body.mview-prob #table td:nth-child(15),
-  body.mview-prob #table th:nth-child(21), body.mview-prob #table td:nth-child(21),
-  body.mview-prob #table th:nth-child(25), body.mview-prob #table td:nth-child(25) { display: table-cell; }
+  body.mview-prob #table th:nth-child(n+25), body.mview-prob #table td:nth-child(n+25) { display: table-cell; }
   body.mview-prob #table th:nth-child(11), body.mview-prob #table td:nth-child(11),
   body.mview-prob #table th:nth-child(n+16):nth-child(-n+18), body.mview-prob #table td:nth-child(n+16):nth-child(-n+18) { display: none; }
   th, td { padding: 8px 3px; }

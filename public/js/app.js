@@ -491,6 +491,9 @@ const growthOf = (r) => (r && !r.error ? r.forward?.growth ?? r.forward?.expecte
  */
 const DD_TOLERANCE = 0.4;
 const CONC_TOLERANCE = 0.3;
+const W_LOSS = 0.5;
+const W_DD = 0.25;
+const W_ASYM = 0;
 const SECTOR_RE = /technolog|\btech\b|semicond|health|pharma|biotech|financial|\bbank|energy|oil|gas|gold|miner|metal|real estate|property|reit|utilit|consumer|industrial|material|robotic|automation|\bai\b|intelligen|clean|solar|water|cyber|cloud|digital|blockchain|crypto|gaming|esports|defen|aerospace|infrastruct|travel|luxury|auto|batter|lithium|uranium|nuclear|space|genomic|cannabis|dividend|select|momentum|value|quality|small cap|mid cap|low volatil|min(imum)? vol/i;
 const COUNTRY_RE = /nasdaq|dax|\bmib\b|cac|ibex|ftse 100|ftse 250|aex|smi\b|nikkei|topix|hang seng|csi|kospi|s&p 500|msci (usa|japan|china|india|brazil|korea|taiwan|germany|italy|france|spain|uk|switzerland|canada|australia)|euro stoxx 50|stoxx 50/i;
 function concentrationOf(inst, r) {
@@ -506,12 +509,14 @@ function overallOf(sim, r, inst) {
   const years = state.settings.mc.years || 5;
   const base = state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1);
   if (base == null || sim.finalLoss == null || sim.netMedian == null) return { overall: null, penAsym: null, penTrap: null, penDD: null, penLoss: null, penConc: null, fiscalCost: null };
-  const penAsym = 0.5 * Math.max(0, sim.finalLoss - Math.max(sim.netMedian, 0));
+  // Pesi tarati sul backtest (data/rank-calibration.json): perdita attesa ×0,5, calo oltre il 40% ×0,25,
+  // asimmetria ×0 (non migliora la previsione: resta solo nella scheda di verifica).
+  const penAsym = W_ASYM * Math.max(0, sim.finalLoss - Math.max(sim.netMedian, 0));
   const g = growthOf(r) ?? 0;
   const y = sim.divYield || 0;
   const penTrap = 0.5 * years * Math.max(0, y - Math.max(g, 0) - 0.03);
-  const penDD = 0.25 * Math.max(0, (sim.maxLoss || 0) - DD_TOLERANCE);
-  const penLoss = sim.expLoss ?? 0;
+  const penDD = W_DD * Math.max(0, (sim.maxLoss || 0) - DD_TOLERANCE);
+  const penLoss = W_LOSS * (sim.expLoss ?? 0);
   const conc = inst ? concentrationOf(inst, r) : CONC_TOLERANCE;
   const penConc = 0.15 * Math.max(0, conc - CONC_TOLERANCE);
   return { overall: base - penAsym - penTrap - penDD - penLoss - penConc, penAsym, penTrap, penDD, penLoss, penConc, conc, fiscalCost: (sim.distDrag || 0) * years };
@@ -868,10 +873,10 @@ function renderDetail(inst, r, d) {
           const base = sim.ce?.['0.5'] ?? sim.ce1;
           return `<table class="mini"><tbody>
             <tr><td>Guadagno netto efficiente (fisco incluso${o.fiscalCost > 0 ? `, di cui imposta anticipata sui dividendi ${e(-o.fiscalCost)}` : ''})</td><td class="num ${cls(base)}">${e(base)}</td></tr>
-            <tr><td>− Penalità asimmetria del rischio (½ dell'eccesso della perdita sfavorevole sul guadagno tipico)</td><td class="num ${o.penAsym > 0 ? 'neg' : ''}">${o.penAsym > 0 ? e(-o.penAsym) : '0 €'}</td></tr>
+            <tr><td>− Penalità asimmetria del rischio (peso 0 dopo la taratura: non migliora la previsione)</td><td class="num">0 €</td></tr>
             <tr><td>− Penalità value trap (dividendo non sostenuto dalla crescita)</td><td class="num ${o.penTrap > 0 ? 'neg' : ''}">${o.penTrap > 0 ? e(-o.penTrap) : '0 €'}</td></tr>
             <tr><td>− Penalità calo temporaneo (¼ della perdita massima oltre il 40%: −${pct(sim.maxLoss)})</td><td class="num ${o.penDD > 0 ? 'neg' : ''}">${o.penDD > 0 ? e(-o.penDD) : '0 €'}</td></tr>
-            <tr><td>− Penalità rischio di perdita (perdita attesa: media delle perdite su tutti gli scenari, P(perdita) ${pct(sim.probLoss, false, 0)})</td><td class="num ${o.penLoss > 0 ? 'neg' : ''}">${o.penLoss > 0 ? e(-o.penLoss) : '0 €'}</td></tr>
+            <tr><td>− Penalità rischio di perdita (½ della perdita attesa: media delle perdite su tutti gli scenari, P(perdita) ${pct(sim.probLoss, false, 0)}; peso tarato sul backtest)</td><td class="num ${o.penLoss > 0 ? 'neg' : ''}">${o.penLoss > 0 ? e(-o.penLoss) : '0 €'}</td></tr>
             <tr><td>− Penalità concentrazione (15% del peso delle prime 10 partecipazioni oltre il 30%: ${pct(o.conc, false, 0)}${inst.type !== 'etf' ? ', strumento singolo' : r.forward?.fundOfFunds ? ', fondo di fondi: diversificato' : r.forward?.top10 == null ? ', stimato dal tipo di fondo' : ''})</td><td class="num ${o.penConc > 0 ? 'neg' : ''}">${o.penConc > 0 ? e(-o.penConc) : '0 €'}</td></tr>
             <tr><th>= Guadagno netto complessivo ${s.mc.years}a</th><th class="num ${cls(o.overall)}">${e(o.overall)}</th></tr>
           </tbody></table>`;

@@ -47,7 +47,7 @@ export function tableResult(r) {
       growthSource: r.forward?.growthSource ?? null,
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
       ...(r.forward?.fundamentalsDetail?.evidence != null ? { evidence: r4(r.forward.fundamentalsDetail.evidence) } : {}),
-      ...(r.forward?.top10 != null ? { top10: r4(r.forward.top10) } : {}),
+      ...(r.forward?.top10 != null ? { top10: r4(r.forward.top10), ...(r.forward.fundOfFunds ? { fundOfFunds: true } : {}) } : {}),
     },
     sim: {
       maxLoss: r4(s.maxLoss),
@@ -90,6 +90,11 @@ export function leverageOf(name = '') {
  * decisivo è il rendimento da dividendo riportato da Yahoo (gli ETF ad accumulazione non ne hanno);
  * in mancanza si guarda il nome.
  */
+/** Partecipazione che è essa stessa un fondo/ETF (fondi di fondi come i Vanguard LifeStrategy). */
+export function isFundHolding(h) {
+  return /\b(etf|ucits|fund|fonds|index|trust|sicav|oeic|portfolio)\b/i.test(h?.name || '') || /^(VWRP|VAGP|VEVE|VFEM|VGOV|VUKE|VUSA|VERX|VJPN|VAPX)\b/i.test(h?.symbol || '');
+}
+
 export function distributesDividends(inst, fundamentals = null) {
   if (inst.type === 'stock') return true;
   if (inst.type !== 'etf') return false;

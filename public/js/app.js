@@ -872,7 +872,7 @@ function renderDetail(inst, r, d) {
             <tr><td>− Penalità value trap (dividendo non sostenuto dalla crescita)</td><td class="num ${o.penTrap > 0 ? 'neg' : ''}">${o.penTrap > 0 ? e(-o.penTrap) : '0 €'}</td></tr>
             <tr><td>− Penalità calo temporaneo (¼ della perdita massima oltre il 40%: −${pct(sim.maxLoss)})</td><td class="num ${o.penDD > 0 ? 'neg' : ''}">${o.penDD > 0 ? e(-o.penDD) : '0 €'}</td></tr>
             <tr><td>− Penalità rischio di perdita (perdita attesa: media delle perdite su tutti gli scenari, P(perdita) ${pct(sim.probLoss, false, 0)})</td><td class="num ${o.penLoss > 0 ? 'neg' : ''}">${o.penLoss > 0 ? e(-o.penLoss) : '0 €'}</td></tr>
-            <tr><td>− Penalità concentrazione (15% del peso delle prime 10 partecipazioni oltre il 30%: ${pct(o.conc, false, 0)}${inst.type !== 'etf' ? ', strumento singolo' : r.forward?.top10 == null ? ', stimato dal tipo di fondo' : ''})</td><td class="num ${o.penConc > 0 ? 'neg' : ''}">${o.penConc > 0 ? e(-o.penConc) : '0 €'}</td></tr>
+            <tr><td>− Penalità concentrazione (15% del peso delle prime 10 partecipazioni oltre il 30%: ${pct(o.conc, false, 0)}${inst.type !== 'etf' ? ', strumento singolo' : r.forward?.fundOfFunds ? ', fondo di fondi: diversificato' : r.forward?.top10 == null ? ', stimato dal tipo di fondo' : ''})</td><td class="num ${o.penConc > 0 ? 'neg' : ''}">${o.penConc > 0 ? e(-o.penConc) : '0 €'}</td></tr>
             <tr><th>= Guadagno netto complessivo ${s.mc.years}a</th><th class="num ${cls(o.overall)}">${e(o.overall)}</th></tr>
           </tbody></table>`;
         })()}

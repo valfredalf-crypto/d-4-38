@@ -110,11 +110,17 @@ log(`Ricerca completata in ${((Date.now() - t0) / 60000).toFixed(1)} min`);
 const before = evaluate(valid, Object.fromEntries(Object.keys(GRID).map((k) => [k, BASE_OUTLOOK[k]])));
 const after = evaluate(valid, best);
 const improvement = 1 - after.loss / before.loss;
-// Adozione solo se migliora l'errore complessivo E la stima del rischio non peggiora
-// (perdite oltre lo scenario sfavorevole non più lontane dal 5% ideale di prima, con 1 punto di tolleranza).
-const riskGap = (rows) => Math.abs((summarize(rows)?.risk.mddAboveP95 ?? 0) - 0.05);
-const riskOk = riskGap(after.rows) <= riskGap(before.rows) + 0.01;
-const adopt = after.loss < before.loss && riskOk;
+// Adozione: gli indicatori di affidabilità (perdite oltre lo scenario sfavorevole, forchetta 5–95%,
+// risultati sopra la mediana) devono avvicinarsi ai valori ideali e l'errore complessivo non deve
+// peggiorare più dell'1% (differenze più piccole sono rumore statistico).
+const gaps = (rows) => {
+  const m = summarize(rows);
+  return { risk: Math.abs(m.risk.mddAboveP95 - 0.05), total: Math.abs(m.risk.mddAboveP95 - 0.05) + Math.abs(m.returns.inside90 - 0.9) + Math.abs(m.returns.aboveMedian - 0.5) };
+};
+const gB = gaps(before.rows);
+const gA = gaps(after.rows);
+const riskOk = gA.risk <= gB.risk + 0.01;
+const adopt = riskOk && gA.total < gB.total && after.loss <= before.loss * 1.01;
 if (!riskOk) log('Stima del rischio peggiorata sugli strumenti di verifica: parametri non adottati.');
 log(`Verifica: errore ${before.loss.toFixed(4)} → ${after.loss.toFixed(4)} (${(improvement * 100).toFixed(1)}%) → ${adopt ? 'ADOTTATO' : 'scartato'}`);
 

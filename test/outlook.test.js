@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { forwardParams, estimateBeta, ewmaVol } from '../public/js/outlook.js';
+import { forwardParams, estimateBeta, ewmaVol, BASE_OUTLOOK } from '../public/js/outlook.js';
+// I test usano i parametri predefiniti, indipendenti dalla taratura settimanale.
+const B = { ...BASE_OUTLOOK };
 import { mulberry32 } from '../public/js/montecarlo.js';
 
 const WEEK = 7 * 86400;
@@ -39,31 +41,31 @@ test('modello prospettico: pesi, analisti e coerenza log/aritmetico', () => {
   const b = series(520, 1);
   const a = series(520, 2, 1.0, b.rets);
   const base = { type: 'stock', timestamps: a.ts, prices: a.p, benchmark: { timestamps: b.ts, closesEur: b.p }, years: 5, lookbackYears: 10 };
-  const noAnalysts = forwardParams(base, {});
+  const noAnalysts = forwardParams(base, B);
   assert.equal(noAnalysts.components.analysts, null);
   assert.ok(Math.abs(noAnalysts.weights.history + noAnalysts.weights.equilibrium - 1) < 1e-12);
   assert.ok(Math.abs(Math.log(1 + noAnalysts.expected) - noAnalysts.vol ** 2 / 2 - noAnalysts.drift) < 1e-12);
 
-  const bullish = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 130, analysts: 20, dividendYield: 0.02 } }, {});
-  const bearish = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 80, analysts: 20 } }, {});
+  const bullish = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 130, analysts: 20, dividendYield: 0.02 } }, B);
+  const bearish = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 80, analysts: 20 } }, B);
   assert.ok(bullish.expected > bearish.expected);
   // year1 = 30%×0.5 + 2% = 17%, poi equilibrio per 4 anni
   const eq = bullish.components.equilibrium;
   assert.ok(Math.abs(bullish.components.analysts - (0.17 + 4 * eq) / 5) < 1e-12);
   // pochi analisti → ignorati
-  const few = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 200, analysts: 1 } }, {});
+  const few = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 200, analysts: 1 } }, B);
   assert.equal(few.components.analysts, null);
 });
 
 test('crypto: equilibrio = risk-free + premio crypto', () => {
   const a = series(300, 5);
-  const f = forwardParams({ type: 'crypto', timestamps: a.ts, prices: a.p, years: 5, lookbackYears: 10 }, { riskFree: 2, cryptoPremium: 3 });
+  const f = forwardParams({ type: 'crypto', timestamps: a.ts, prices: a.p, years: 5, lookbackYears: 10 }, { ...B, riskFree: 2, cryptoPremium: 3 });
   assert.ok(Math.abs(f.components.equilibrium - 0.05) < 1e-12);
 });
 
 test('modalità solo storico', () => {
   const a = series(300, 5);
-  const f = forwardParams({ type: 'etf', timestamps: a.ts, prices: a.p, years: 5, lookbackYears: 10 }, { mode: 'historical' });
+  const f = forwardParams({ type: 'etf', timestamps: a.ts, prices: a.p, years: 5, lookbackYears: 10 }, { ...B, mode: 'historical' });
   assert.equal(f.mode, 'historical');
   assert.deepEqual(Object.keys(f.components), ['history']);
 });
@@ -80,8 +82,8 @@ test('shrinkage: lo storico di uno strumento molto volatile pesa poco', () => {
   };
   const calm = mk(0.15, 0.08);
   const wild = mk(0.8, 0.8);
-  const fc = forwardParams({ type: 'etf', timestamps: calm.ts, prices: calm.p, years: 5, lookbackYears: 10 }, {});
-  const fw = forwardParams({ type: 'crypto', timestamps: wild.ts, prices: wild.p, years: 5, lookbackYears: 10 }, {});
+  const fc = forwardParams({ type: 'etf', timestamps: calm.ts, prices: calm.p, years: 5, lookbackYears: 10 }, B);
+  const fw = forwardParams({ type: 'crypto', timestamps: wild.ts, prices: wild.p, years: 5, lookbackYears: 10 }, B);
   assert.ok(fc.credibility > 0.4 && fc.credibility < 0.6, String(fc.credibility));
   assert.ok(fw.credibility < 0.06, String(fw.credibility));
   assert.ok(fw.components.history < fw.historyRaw);
@@ -93,10 +95,10 @@ test('beta: media con quello di Yahoo e minimo 0,5 per le azioni', () => {
   const b = series(400, 1);
   const flat = series(400, 9); // indipendente dal benchmark → beta ≈ 0
   const base = { timestamps: flat.ts, prices: flat.p, benchmark: { timestamps: b.ts, closesEur: b.p }, years: 5, lookbackYears: 10 };
-  const stock = forwardParams({ ...base, type: 'stock' }, {});
+  const stock = forwardParams({ ...base, type: 'stock' }, B);
   assert.ok(Math.abs(stock.beta - 0.5) < 1e-12, String(stock.beta));
-  const etf = forwardParams({ ...base, type: 'etf' }, {});
+  const etf = forwardParams({ ...base, type: 'etf' }, B);
   assert.ok(etf.beta < 0.5); // per ETF (es. obbligazionari, oro) nessun minimo
-  const withYahoo = forwardParams({ ...base, type: 'stock', fundamentals: { beta: 1.2 } }, {});
+  const withYahoo = forwardParams({ ...base, type: 'stock', fundamentals: { beta: 1.2 } }, B);
   assert.ok(Math.abs(withYahoo.betaRaw - (estimateBeta(flat.ts, flat.p, b.ts, b.p, 5).raw + 1.2) / 2) < 1e-12);
 });

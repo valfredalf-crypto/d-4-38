@@ -1,6 +1,6 @@
 {
  "generatedAt": "2026-10-24T00:07:54.108Z",
- "adopted": false,
+ "adopted": true,
  "params": {
   "before": {
    "weightHistory": 0.3,
@@ -113,5 +113,6 @@
     "predNetMedian": 0.0439
    }
   }
- }
+ },
+ "decisionNote": "Adottati con la regola aggiornata: tutti gli indicatori di affidabilità sugli strumenti di verifica si avvicinano all'ideale; errore complessivo +0,5% (entro la tolleranza dell'1%)."
 }

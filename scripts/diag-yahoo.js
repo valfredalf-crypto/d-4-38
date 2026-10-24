@@ -10,7 +10,7 @@ if (process.env.SYMBOLS) {
   const { marketFundamentals } = await import('../public/js/outlook.js');
   const bench = await historyEur(BENCHMARK_SYMBOL);
   for (const sym of process.env.SYMBOLS.split(',')) {
-    const inst = I[sym] || { symbol: sym, type: 'stock', name: sym };
+    const inst = listInstruments().find((x) => x.symbol === sym) || { symbol: sym, type: 'stock', name: sym };
     const f = await outlook(sym).catch((e) => ({ error: e.message }));
     console.log('\n###', sym, inst.type, inst.name, '\nfondamentali:', JSON.stringify(f));
     let lt = null;

@@ -614,6 +614,7 @@ function render() {
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
         <td class="num ${cls(r.plausible)}"><b class="big">${r.plausible == null ? '–' : `${r.plausible > 0 ? '+' : ''}${Math.round(r.plausible * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.plausible == null ? '' : `<span class="eur">${pct(r.plausible, true)} su ${(state.settings.mc.amount || 10000).toLocaleString('it-IT')} €</span>`}</td>
+        <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
@@ -628,7 +629,6 @@ function render() {
         <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) + eurAmt(-r.mddMedian) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}${eurAmt(r.netGain)}</td>
         <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}${eurAmt(r.netMean)}</td>
-        <td class="num ${cls(r.netP25)}">${pct(r.netP25, true)}${eurAmt(r.netP25)}</td>
         <td class="num">${ratioCell}</td>
         <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : r.ratioFinal === 0 ? '<span class="pos" title="Nessuna perdita a fine 5 anni nemmeno nel caso sfavorevole (5% peggiore): tipico di monetari e obbligazionari a breve, che però guadagnano poco">0 ✓</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
         <td class="num ${cls(r.balanced)}"><b>${pct(r.balanced, true)}</b>${eurAmt(r.balanced)}</td>

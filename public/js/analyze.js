@@ -51,7 +51,7 @@ export function tableQuote(q) {
   return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency, ...(q.perf ? { perf: q.perf } : {}) };
 }
 
-export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals }, settings) {
+export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals, market }, settings) {
   const o = { ...DEFAULT_OPTIONS, ...settings.mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
   const prices = history.closesEur;
@@ -90,6 +90,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
       timestamps: history.timestamps,
       prices,
       riskPrices: filled?.closesEur,
+      market: Number.isFinite(market) ? market : null,
       benchmark: bench,
       fundamentals,
       years: o.years,

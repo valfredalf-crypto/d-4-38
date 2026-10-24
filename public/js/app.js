@@ -174,7 +174,7 @@ async function analyzeOne(inst) {
     state.cryptoBenchmark = await api(`/api/history?symbol=${encodeURIComponent(CRYPTO_BENCHMARK_SYMBOL)}`).catch(() => null);
   }
   const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
-  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, settings: state.settings });
+  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, market: state.market?.expected, settings: state.settings });
   state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
@@ -233,6 +233,7 @@ async function checkLiveData() {
   const live = await res.json();
   if (!live.generatedAt || live.generatedAt <= (state.liveVersion || state.dataVersion || '')) return;
   state.liveVersion = live.generatedAt;
+  if (live.market) state.market = live.market;
   const known = new Set(state.instruments.map((i) => i.symbol));
   for (const [k, q] of Object.entries(live.quotes || {})) if (known.has(k) && q) state.quotes[k] = q;
   if (live.key === settingsKey()) {
@@ -649,7 +650,7 @@ function renderDetail(inst, r, d) {
             ${compRow('Storico', 'history', f?.mode === 'forward' ? `${sim.historyYears.toFixed(1)} anni, grezzo ${pct(f.historyRaw, true)}, credibilità ${pct(f.credibility, false, 0)}` : `${sim.historyYears.toFixed(1)} anni di dati`)}
             ${f?.mode === 'forward' ? compRow('Equilibrio', 'equilibrium', inst.type === 'crypto' ? `risk-free ${s.outlook.riskFree}% + premio crypto ${s.outlook.cryptoPremium}%` : `risk-free ${s.outlook.riskFree}% + β ${nf2.format(f.beta)} × ${s.outlook.equityPremium}%`) : ''}
             ${f?.mode === 'forward' ? compRow('Analisti', 'analysts', fu.analysts ? `${fu.analysts} analisti, target ${nf2.format(fu.targetMean)} ${esc(fu.currency || '')} (${pct(f.analystUpside, true)}), ${esc(fu.recommendation || '')}` : 'nessuna copertura') : ''}
-            ${f?.mode === 'forward' ? compRow('Crescita e valutazione', 'fundamentals', f.fundamentalsDetail ? `utili +${pct(f.fundamentalsDetail.growth, false)}/anno (stima analisti ${pct(f.fundamentalsDetail.growthInput, true)}, in rallentamento), P/E ${nf2.format(f.fundamentalsDetail.pe)} → ${nf2.format(f.fundamentalsDetail.peTarget)} (${pct(f.fundamentalsDetail.valuation, true)}/anno), dividendo ${pct(f.fundamentalsDetail.dividend)}` : 'dati insufficienti (P/E o stime di crescita)') : ''}
+            ${f?.mode === 'forward' ? compRow('Crescita e valutazione', 'fundamentals', f.fundamentalsDetail?.source === 'market' ? `prospettive di crescita e valutazione del mercato azionario (${pct(f.fundamentalsDetail.market, true)}/anno) × β ${nf2.format(f.fundamentalsDetail.beta)}` : f.fundamentalsDetail ? `utili +${pct(f.fundamentalsDetail.growth, false)}/anno (stima analisti ${pct(f.fundamentalsDetail.growthInput, true)}, in rallentamento), P/E ${nf2.format(f.fundamentalsDetail.pe)} → ${nf2.format(f.fundamentalsDetail.peTarget)} (${pct(f.fundamentalsDetail.valuation, true)}/anno), dividendo ${pct(f.fundamentalsDetail.dividend)}` : (inst.type === 'crypto' ? 'non applicabile: le crypto non hanno utili né dividendi' : 'dati insufficienti')) : ''}
             <tr><th>Rendimento atteso</th><th class="num">${pct(f?.expected, true)}</th><th></th><th></th></tr>
             ${fu.revenueGrowthNext != null || fu.epsGrowthNext != null ? `<tr><td>Crescita ricavi anno prossimo</td><td class="num">${pct(fu.revenueGrowthNext, true)}</td><td></td><td class="muted">consenso analisti</td></tr>
             <tr><td>Crescita utili anno prossimo</td><td class="num">${pct(fu.epsGrowthNext, true)}</td><td></td><td class="muted">consenso analisti</td></tr>` : ''}
@@ -1182,6 +1183,7 @@ async function main() {
   try {
     const meta = await api('/api/meta');
     state.meta = meta;
+    state.market = meta.market || null;
     if (STATIC) {
       state.dataVersion = meta.generatedAt;
       $('#btn-quotes').hidden = true;

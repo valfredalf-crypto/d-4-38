@@ -39,7 +39,7 @@ for (const f of fs.readdirSync(path.join(OUT, 'js'))) {
 }
 
 const histories = [];
-const { instruments, quotes, results, ok, key, generatedAt } = await computeSnapshot({
+const { instruments, quotes, results, ok, key, generatedAt, market } = await computeSnapshot({
   onData(inst, history, fundamentals) {
     histories.push({ instrument: inst, history });
     write(`data/history/${fileKey(inst.symbol)}.json`, history);
@@ -47,7 +47,7 @@ const { instruments, quotes, results, ok, key, generatedAt } = await computeSnap
   },
 });
 
-write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, liveBranch: process.env.LIVE_BRANCH || 'live-data', static: true, mock: process.env.MOCK === '1', generatedAt });
+write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, liveBranch: process.env.LIVE_BRANCH || 'live-data', market, static: true, mock: process.env.MOCK === '1', generatedAt });
 write('data/instruments.json', instruments);
 write('data/quotes.json', quotes);
 write('data/results.json', { key, results });

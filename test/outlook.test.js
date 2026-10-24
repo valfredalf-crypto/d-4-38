@@ -137,3 +137,17 @@ test('crescita e valutazione (Grinold-Kroner)', async () => {
   assert.equal(fundamentalsReturn({ forwardPE: 20, analysts: 10 }, B), null);
   assert.equal(fundamentalsReturn({ forwardPE: 20, growthLongTerm: 0.1, analysts: 1 }, B), null);
 });
+
+test('prospettive di crescita per tutti: ETF e azioni senza stime usano il mercato × beta', async () => {
+  const { marketFundamentals } = await import('../public/js/outlook.js');
+  const list = Array.from({ length: 30 }, (_, k) => ({ forwardPE: 18, growthLongTerm: 0.08, dividendYield: 0.02, analysts: 10, marketCap: 1e9 * (k + 1) }));
+  const m = marketFundamentals(list, B);
+  assert.ok(m && m.n === 30 && m.expected > 0.05 && m.expected < 0.1, JSON.stringify(m));
+  const b = series(400, 1);
+  const etf = series(400, 2, 1.0, b.rets);
+  const f = forwardParams({ type: 'etf', timestamps: etf.ts, prices: etf.p, benchmark: { timestamps: b.ts, closesEur: b.p }, market: m.expected, years: 5, lookbackYears: 10 }, B);
+  assert.equal(f.fundamentalsDetail.source, 'market');
+  assert.ok(Math.abs(f.components.fundamentals - (0.02 + f.beta * (m.expected - 0.02))) < 1e-12);
+  const crypto = forwardParams({ type: 'crypto', timestamps: etf.ts, prices: etf.p, market: m.expected, years: 5, lookbackYears: 10 }, B);
+  assert.equal(crypto.components.fundamentals, null);
+});

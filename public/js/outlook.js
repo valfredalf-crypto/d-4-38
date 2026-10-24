@@ -160,7 +160,13 @@ export function forwardParams(p, settings = {}) {
   }
 
   // --- Fondamentali (Grinold-Kroner): dividendo + crescita degli utili + variazione della valutazione
-  const fundamentalsEst = fundamentalsReturn(f, s, p.years);
+  let fundamentalsEst = fundamentalsReturn(f, s, p.years);
+  // Senza stime proprie (ETF, azioni non coperte dagli analisti): prospettive di crescita e valutazione
+  // del mercato azionario, in proporzione al beta (un monetario o obbligazionario con β≈0 riceve il
+  // tasso privo di rischio). Le crypto non hanno utili: nessuna componente di crescita.
+  if (!fundamentalsEst && p.type !== 'crypto' && Number.isFinite(p.market)) {
+    fundamentalsEst = { expected: rf + Math.max(beta, 0) * (p.market - rf), source: 'market', market: p.market, beta };
+  }
 
   const parts = [
     ['history', historyShrunk, s.weightHistory],
@@ -218,4 +224,23 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
   const dividend = Math.max(0, Math.min(0.1, f.dividendYield || 0));
   const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
   return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0 };
+}
+
+/**
+ * Prospettive del mercato azionario (Grinold-Kroner aggregato): media dei rendimenti attesi da
+ * crescita e valutazione delle azioni con stime, pesata per capitalizzazione come un indice.
+ */
+export function marketFundamentals(list, settings = {}) {
+  let w = 0;
+  let sum = 0;
+  let n = 0;
+  for (const f of list) {
+    if (!(f?.marketCap > 0)) continue;
+    const g = fundamentalsReturn(f, settings, 5);
+    if (!g) continue;
+    sum += f.marketCap * g.expected;
+    w += f.marketCap;
+    n++;
+  }
+  return n >= 20 && w > 0 ? { expected: sum / w, n } : null;
 }

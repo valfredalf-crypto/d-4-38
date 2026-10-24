@@ -154,7 +154,11 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   const distYield = distributesDividends(instrument, fundamentals) ? cleanDividend(fundamentals?.dividendYield) : 0;
   const distDrag = distYield > 0 && fwd ? (o.taxRate / 100) * distYield * Math.max(fwd.expected, 0) * ((o.years - 1) / 2) : 0;
   // Concentrazione: peso delle prime 10 partecipazioni (dalla composizione del fondo); per la diversificazione
-  if (fwd && holdings?.holdings?.length) fwd.top10 = Math.min(1, holdings.holdings.reduce((a, h) => a + (h.weight || 0), 0));
+  if (fwd && holdings?.holdings?.length) {
+    const funds = holdings.holdings.filter((h) => isFundHolding(h)).length;
+    fwd.fundOfFunds = funds * 2 >= holdings.holdings.length; // le partecipazioni sono a loro volta fondi: diversificato
+    fwd.top10 = fwd.fundOfFunds ? 0.3 : Math.min(1, holdings.holdings.reduce((a, h) => a + (h.weight || 0), 0));
+  }
   const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag : null, targetVol: fwd?.vol ?? null });
   if (sim.ok) {
     sim.distYield = distYield;

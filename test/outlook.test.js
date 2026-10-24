@@ -257,3 +257,9 @@ test('dividendi distribuiti: riconoscimento e costo del differimento fiscale', a
   assert.ok(dist.sim.distDrag > 0 && dist.sim.distDrag < 0.01, String(dist.sim.distDrag));
   assert.ok(dist.sim.netMedian < acc.sim.netMedian);
 });
+
+test('fondi di fondi: le partecipazioni-ETF non contano come concentrazione', async () => {
+  const { isFundHolding } = await import('../public/js/analyze.js');
+  assert.equal(isFundHolding({ symbol: 'VWRP.L', name: 'Vanguard FTSE All-World UCITS ETF' }), true);
+  assert.equal(isFundHolding({ symbol: 'NVDA', name: 'NVIDIA Corp' }), false);
+});

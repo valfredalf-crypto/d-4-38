@@ -7,11 +7,16 @@ export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
 /** Avversione alla perdita (Kahneman-Tversky): una perdita pesa 2,25 volte un guadagno della stessa entità. */
 export const LOSS_AVERSION = 2.25;
 /**
- * Tetto ai guadagni dei singoli scenari nel guadagno bilanciato (+200% = triplicare in 5 anni): oltre,
- * le code della simulazione non sono affidabili e titoli-lotteria (90% di probabilità di perdere quasi
- * tutto) risulterebbero i migliori grazie a pochi scenari da +5000%.
+ * Peso dei guadagni nel guadagno bilanciato: pieno fino al 75° percentile degli scenari (zona vicina a
+ * mediana e media), poi decrescente: dell'eccedenza conta solo ln(1 + eccedenza). Gli scenari estremi
+ * sono i meno attendibili e senza questo titoli-lotteria (90% di probabilità di perdere quasi tutto)
+ * risulterebbero i migliori grazie a pochi scenari da +5000%.
  */
-export const GAIN_CAP = 2;
+export function credibleGain(x, p75) {
+  if (x <= 0) return 0;
+  const t = Math.max(p75, 0);
+  return x <= t ? x : t + Math.log1p(x - t);
+}
 
 // PRNG deterministico (mulberry32) per risultati riproducibili.
 export function mulberry32(seed) {
@@ -215,8 +220,11 @@ export function simulate(prices, options = {}) {
       return gain > 0 ? loss / gain : Infinity;
     })(),
     // Valore atteso con avversione alla perdita su tutti gli scenari: media dei guadagni (inclusi quelli
-    // alti dovuti alla crescita, fino al tetto GAIN_CAP) meno 2,25 × media delle perdite
-    expGain: nets.reduce((a, x) => a + Math.min(Math.max(x, 0), GAIN_CAP), 0) / nets.length,
+    // alti dovuti alla crescita, con peso decrescente oltre il 75° percentile) meno 2,25 × media delle perdite
+    expGain: (() => {
+      const p75 = percentile(nets, 0.75);
+      return nets.reduce((a, x) => a + credibleGain(x, p75), 0) / nets.length;
+    })(),
     expLoss: nets.reduce((a, x) => a + Math.max(-x, 0), 0) / nets.length,
     mddMedian: percentile(sortedMdd, 0.5),
     mddP95: percentile(sortedMdd, 0.95),

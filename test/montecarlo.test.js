@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { simulate, netReturn, historicalMaxDrawdown, mulberry32, DEFAULT_OPTIONS, score } from '../public/js/montecarlo.js';
+import { simulate, netReturn, historicalMaxDrawdown, mulberry32, DEFAULT_OPTIONS, score, credibleGain } from '../public/js/montecarlo.js';
 
 function gbmSeries(n, muAnnual, volAnnual, seed = 1) {
   const r = mulberry32(seed);
@@ -95,6 +95,7 @@ test('balanced: guadagni attesi − 2,25 × perdite attese, coerente con la medi
   for (let i = 0; i < 520; i++) prices.push((p *= Math.exp(0.002 + 0.08 * (rnd() - 0.5))));
   const s = simulate(prices, { sims: 600, seed: 3 });
   assert.ok(s.expGain - s.expLoss <= s.netMean + 1e-9, 'con il tetto ai guadagni non supera la media');
-  assert.ok(s.expGain <= 2 + 1e-9);
+  assert.equal(credibleGain(0.3, 0.5), 0.3);
+  assert.ok(Math.abs(credibleGain(50, 0.5) - (0.5 + Math.log1p(49.5))) < 1e-12);
   assert.ok(Math.abs(s.balanced - (s.expGain - 2.25 * s.expLoss)) < 1e-9);
 });

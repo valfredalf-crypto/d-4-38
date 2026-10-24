@@ -20,6 +20,7 @@ export const BASE_OUTLOOK = {
   longRunGrowth: 4.0,     // % annuo: crescita nominale di lungo periodo verso cui convergono gli utili
   fairPE: 18,             // P/E di lungo periodo del mercato azionario
   peReversion: 0.5,       // quota della distanza dal P/E di lungo periodo che si chiude in 5 anni
+  maxValuation: 0.04,     // limite annuo (±) del contributo della rivalutazione/svalutazione del P/E
   analystHaircut: 0.5,    // quota del rialzo implicito nei target che viene creduta
   priorUncertainty: 5.0,  // % annuo: incertezza sul rendimento di equilibrio (governa la credibilità dello storico)
   minAnalysts: 3,
@@ -240,15 +241,24 @@ export function forwardParams(p, settings = {}) {
 export function fundamentalsReturn(f, settings = {}, years = 5) {
   const s = { ...DEFAULT_OUTLOOK, ...settings };
   if (!f || !(f.forwardPE > 0) || (f.analysts || 0) < s.minAnalysts) return null;
-  let g0 = Number.isFinite(f.growthLongTerm) ? f.growthLongTerm : Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
-  if (g0 == null) return null;
   const gL = s.longRunGrowth / 100;
-  g0 = Math.max(-0.1, Math.min(0.4, g0)); // stime estreme (utili che ripartono da zero) limitate
+  let g0;
+  if (Number.isFinite(f.growthLongTerm)) {
+    g0 = Math.max(-0.1, Math.min(0.4, f.growthLongTerm)); // stima a 5 anni: stime estreme limitate
+  } else {
+    // Solo stima del prossimo anno: spesso è un rimbalzo dopo un anno negativo, che non si ripete per
+    // 5 anni. Si limita a +25% e se ne crede metà oltre la crescita di lungo periodo.
+    const g1 = Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
+    if (g1 == null) return null;
+    g0 = gL + 0.5 * (Math.max(-0.1, Math.min(0.25, g1)) - gL);
+  }
   const gStart = gL + s.growthHaircut * (g0 - gL);
   const growth = (gStart + gL) / 2; // media di un rallentamento lineare da gStart a gL
   const pe = Math.max(5, Math.min(80, f.forwardPE));
   const peTarget = pe + s.peReversion * (s.fairPE - pe);
-  const valuation = (peTarget / pe) ** (1 / years) - 1;
+  // Un P/E molto basso (o alto) spesso riflette problemi (o qualità) strutturali: il ritorno verso il
+  // P/E di lungo periodo è limitato a ±maxValuation l'anno
+  const valuation = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
   const dividend = Math.max(0, Math.min(0.1, f.dividendYield || 0));
   const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
   return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0 };
@@ -290,7 +300,8 @@ export function holdingsFundamentals(h, settings = {}, market = null, marketGrow
     const pe = Math.max(5, Math.min(80, h.pe));
     const peTarget = pe + s.peReversion * (s.fairPE - pe);
     const div = Math.max(0, Math.min(0.1, h.dividendYield || 0));
-    restE = (1 + gM) * ((peTarget / pe) ** (1 / years)) - 1 + div;
+    const val = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
+    restE = (1 + gM) * (1 + val) - 1 + div;
   }
   const expected = sumE + rest * restE + (1 - stock) * rf;
   const growth = (sumG + rest * gM) / stock;

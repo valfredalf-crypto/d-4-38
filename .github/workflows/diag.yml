@@ -2,6 +2,11 @@ name: Diagnostica Yahoo
 
 on:
   workflow_dispatch:
+    inputs:
+      symbols:
+        description: 'Simboli da ispezionare (vuoto = scansione classifiche)'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -21,3 +26,5 @@ jobs:
         with:
           node-version: 22
       - run: node scripts/diag-yahoo.js
+        env:
+          SYMBOLS: ${{ inputs.symbols }}

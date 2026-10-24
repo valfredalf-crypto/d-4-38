@@ -3,6 +3,11 @@
 import { historyEur, outlook } from '../lib/market.js';
 import { listInstruments } from '../lib/store.js';
 
+if (process.env.SYMBOLS) {
+  // Dump delle stime grezze di singoli titoli (SYMBOLS=GOOGL,AMZN)
+  for (const sym of process.env.SYMBOLS.split(',')) console.log(sym, JSON.stringify(await outlook(sym).catch((e) => ({ error: e.message }))));
+  process.exit(0);
+}
 const live = await (await fetch(`https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY}/live-data/live.json?t=${Date.now()}`)).json();
 const R = live.results;
 const I = Object.fromEntries(listInstruments().map((i) => [i.symbol, i]));

@@ -2,6 +2,7 @@
 // (es. 40 = 40%); la perdita massima si indica come numero positivo (40 = perdita fino al 40%).
 export const INDICATORS = [
   { key: 'ratio', label: 'Rapporto perdita/guadagno', pct: false },
+  { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
   { key: 'ratioFinal', label: 'Rapporto perdita finale/guadagno', pct: false },
   { key: 'finalLoss', label: 'Perdita finale 5a (caso sfavorevole)', pct: true },
   { key: 'ratioMedian', label: 'Rapporto drawdown mediano/guadagno', pct: false },
@@ -30,6 +31,7 @@ export const INDICATORS = [
 export const PRESETS = [
   { label: 'Rapporto < 1', filters: { ratio: { max: 1 } } },
   { label: 'Rapporto < 2', filters: { ratio: { max: 2 } } },
+  { label: 'Guadagno corretto rischio > 10%', filters: { riskAdj: { min: 10 } } },
   { label: 'Rapporto perdita finale < 1', filters: { ratioFinal: { max: 1 } } },
   { label: 'Rapporto DD mediano < 1', filters: { ratioMedian: { max: 1 } } },
   { label: 'Guadagno mediano > 0', filters: { netGain: { min: 0 } } },

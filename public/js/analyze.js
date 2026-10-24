@@ -68,6 +68,7 @@ export function tableResult(r) {
       ce: s.ce ? Object.fromEntries(Object.entries(s.ce).map(([k, v]) => [k, r4(v)])) : null,
       es5: r4(s.es5),
       nr5: r4(s.nr5),
+      nr5LossWeight: r4(s.nr5LossWeight),
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
       ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
@@ -187,6 +188,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     fwd.fundOfFunds = funds * 2 >= holdings.holdings.length; // le partecipazioni sono a loro volta fondi: diversificato
     fwd.top10 = fwd.fundOfFunds ? 0.3 : Math.min(1, holdings.holdings.reduce((a, h) => a + (h.weight || 0), 0));
   }
+  // NR5: la perdita media nel 5% peggiore pesa ½ per ETF e crypto, ⅓ per le azioni singole
+  o.nr5LossWeight = instrument.type === 'stock' ? 1 / 3 : 0.5;
   // Imposta di bollo italiana: 0,20% annuo sul controvalore, prelevata lungo il percorso (deriva)
   const stampDuty = (o.stampDutyPct ?? 0.2) / 100;
   const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag - stampDuty : null, targetVol: fwd?.vol ?? null });

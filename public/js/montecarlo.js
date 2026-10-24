@@ -264,7 +264,9 @@ export function simulate(prices, options = {}) {
   // NR5 = guadagno netto medio − ½ × perdita media nel 5% peggiore. La media usa i guadagni "credibili"
   // (oltre il 75° percentile pesano sempre meno): altrimenti titoli-lotteria con l'89% di probabilità di
   // perdere tutto finiscono primi grazie a pochi scenari da +5000%, mentre la perdita è limitata al 100%.
-  stats.nr5 = stats.expGain - stats.expLoss - 0.5 * stats.es5;
+  // Coefficiente della penalità: ½ per ETF e crypto, ⅓ per le azioni singole (o.nr5LossWeight)
+  stats.nr5LossWeight = o.nr5LossWeight ?? 0.5;
+  stats.nr5 = stats.expGain - stats.expLoss - stats.nr5LossWeight * stats.es5;
   return { ...stats, ...score(stats, o) };
 }
 

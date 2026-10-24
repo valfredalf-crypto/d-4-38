@@ -1,6 +1,6 @@
 // Analisi completa di uno strumento: parametri prospettici + simulazione Monte Carlo.
 import { simulate, DEFAULT_OPTIONS, historicalMaxDrawdown, WEEKS_PER_YEAR } from './montecarlo.js';
-import { forwardParams, DEFAULT_OUTLOOK } from './outlook.js';
+import { cleanDividend, forwardParams, DEFAULT_OUTLOOK } from './outlook.js';
 import { backfillWithProxy } from './backfill.js';
 
 export const BENCHMARK_SYMBOL = 'EUNL.DE'; // iShares Core MSCI World (EUR) per il calcolo del beta
@@ -65,6 +65,7 @@ export function tableResult(r) {
       ce1: r4(s.ce1),
       ce3: r4(s.ce3),
       ce: s.ce ? Object.fromEntries(Object.entries(s.ce).map(([k, v]) => [k, r4(v)])) : null,
+      ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };
@@ -80,6 +81,13 @@ export function leverageOf(name = '') {
   const m = /(\d)\s*[xX]\b|\b[xX]\s*(\d)\b/.exec(name);
   if (m) return Number(m[1] || m[2]) || 1;
   return /leverag|lev\.|a leva/i.test(name) ? 2 : 1;
+}
+
+/** Strumento che paga i dividendi all'investitore: azioni, ed ETF a distribuzione (dal nome). */
+export function distributesDividends(inst) {
+  if (inst.type === 'stock') return true;
+  if (inst.type !== 'etf') return false;
+  return /\b(dist|dis|distr|distributing|inc|income|1d|2d|3d|4d)\b|\(d\)|\bd\b\s*$|-d\b|\bdis\)|\bdist\)/i.test(inst.name || '');
 }
 
 export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals, holdings, market, marketGrowth }, settings) {
@@ -132,8 +140,16 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     },
     settings.outlook,
   );
-  const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd?.drift ?? null, targetVol: fwd?.vol ?? null });
+  // Dividendi distribuiti (ETF a distribuzione, azioni): in Italia tassati al 26% all'incasso, non a fine
+  // periodo. Rispetto a un accumulo l'unica differenza, reinvestendo il netto, è l'anticipo dell'imposta:
+  // il capitale che compone è minore. Costo del differimento ≈ tassa × dividendo × rendimento × (anni−1)/2
+  // all'anno, sottratto alla deriva della simulazione (la tassa finale resta sul guadagno complessivo).
+  const distYield = distributesDividends(instrument) ? cleanDividend(fundamentals?.dividendYield) : 0;
+  const distDrag = distYield > 0 && fwd ? (o.taxRate / 100) * distYield * Math.max(fwd.expected, 0) * ((o.years - 1) / 2) : 0;
+  const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag : null, targetVol: fwd?.vol ?? null });
   if (sim.ok) {
+    sim.distYield = distYield;
+    sim.distDrag = distDrag;
     // Indicatori "storici" mostrati: solo sui dati reali
     const lookback = Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1;
     sim.historicalMdd = historicalMaxDrawdown(prices.slice(-lookback));

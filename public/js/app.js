@@ -823,6 +823,7 @@ function renderDetail(inst, r, d) {
           ${sim.backfilledYears > 0.1 ? `<tr><td colspan="2" class="muted">Storico breve: per il rischio i ${nf2.format(sim.backfilledYears)} anni mancanti sono ricostruiti con ${sim.backfillProxy || "l'indice di riferimento"}, così le simulazioni includono anche crisi passate. Il rendimento atteso usa solo i dati reali.</td></tr>` : ''}
           <tr><td>Max drawdown simulato: mediano / 95°</td><td class="num neg">−${pct(sim.mddMedian)} / −${pct(sim.mddP95)}</td></tr>
           ${fu.dividendYield ? `<tr><td>Rendimento da dividendi</td><td class="num">${pct(fu.dividendYield)}</td></tr>` : ''}
+          ${sim.distYield > 0 ? `<tr><td colspan="2" class="muted">Dividendi distribuiti (${pct(sim.distYield)}/anno): tassati al 26% all'incasso e reinvestiti al netto. Rispetto a un ETF ad accumulazione l'imposta anticipata costa circa ${pct(sim.distDrag)}/anno di capitalizzazione (≈ ${eur(amt * sim.distDrag * s.mc.years)} su ${s.mc.years} anni), già tolto dalla simulazione.</td></tr>` : ''}
         </tbody></table>
       </div>
       <div class="card" style="grid-column: 1 / -1">

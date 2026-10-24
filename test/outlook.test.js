@@ -224,3 +224,17 @@ test('stime inaffidabili scartate: micro-cap, dividendo straordinario, balzo uti
   const g = fundamentalsReturn({ ...base, marketCap: 5e9 });
   assert.ok(g.growthInput <= 0.1 + 1e-12, 'senza ricavi la crescita a 1 anno è limitata al 10%');
 });
+
+test('prodotti a leva: rendimento atteso limitato a L × mercato − finanziamento − decadimento', async () => {
+  const { leverageOf } = await import('../public/js/analyze.js');
+  assert.equal(leverageOf('MSCI USA Daily (2x) Leveraged EUR (Acc)'), 2);
+  assert.equal(leverageOf('S&P 500 3X Daily Leveraged'), 3);
+  assert.equal(leverageOf('Lyxor Leveraged DAX'), 2);
+  assert.equal(leverageOf('iShares Core MSCI World'), 1);
+  assert.equal(leverageOf('Xtrackers II EUR Overnight'), 1);
+  const b = series(520, 1);
+  const a = series(520, 2, 2.0, b.rets);
+  const lev = forwardParams({ type: 'etf', timestamps: a.ts, prices: a.p, benchmark: { timestamps: b.ts, closesEur: b.p }, market: 0.08, marketGrowth: 0.07, leverage: 2, years: 5, lookbackYears: 10 }, B);
+  assert.ok(lev.leverageCap != null && lev.expected <= lev.leverageCap + 1e-12);
+  assert.ok(lev.leverageCap < 0.16 - 0.02 && lev.leverageCap > 0.08, String(lev.leverageCap));
+});

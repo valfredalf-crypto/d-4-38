@@ -92,6 +92,7 @@ export function ewmaVol(rets, lambda) {
  * @param {object} [p.benchmark]  { timestamps, closesEur }
  * @param {object} [p.fundamentals]  output di /api/outlook
  * @param {object} [p.holdings]      solo ETF: partecipazioni con le relative stime (vedi holdingsFundamentals)
+ * @param {number} [p.leverage]      fattore di leva dei prodotti a leva giornaliera (2, 3); assente o 1 altrimenti
  * @param {number} p.years  orizzonte
  * @param {number} p.lookbackYears
  */
@@ -204,7 +205,15 @@ export function forwardParams(p, settings = {}) {
   ].filter(([, v, w]) => v != null && Number.isFinite(v) && w > 0);
   const wSum = parts.reduce((a, [, , w]) => a + w, 0) || 1;
   // Limiti di realismo per il rendimento annuo atteso
-  const expected = Math.min(0.5, Math.max(-0.3, parts.reduce((a, [, v, w]) => a + (v * w) / wSum, 0)));
+  let expected = Math.min(0.5, Math.max(-0.3, parts.reduce((a, [, v, w]) => a + (v * w) / wSum, 0)));
+  // Prodotti a leva giornaliera (2x, 3x): il rendimento atteso non può superare L × mercato meno il costo
+  // di finanziamento della leva e il decadimento da ribilanciamento giornaliero ((L²−L)/2 × σ²_mercato)
+  let leverageCap = null;
+  if (p.leverage > 1 && Number.isFinite(p.market)) {
+    const L = p.leverage;
+    leverageCap = L * p.market - (L - 1) * rf - ((L * L - L) / 2) * sigmaM ** 2 - 0.006;
+    expected = Math.min(expected, leverageCap);
+  }
   // Rendimento logaritmico coerente con media aritmetica `expected` e volatilità `vol`.
   const drift = Math.log(1 + Math.max(expected, -0.95)) - vol ** 2 / 2;
 
@@ -225,6 +234,7 @@ export function forwardParams(p, settings = {}) {
     backfilledYears: p.riskPrices && p.riskPrices.length > p.prices.length ? (Math.min(p.riskPrices.length, lookback) - p.prices.slice(-lookback).length) / WEEKS_PER_YEAR : 0,
     components: { history: historyShrunk, equilibrium, analysts, fundamentals: fundamentalsEst?.expected ?? null },
     fundamentalsDetail: fundamentalsEst,
+    leverageCap,
     expectedGrowth: fundamentalsEst?.growth ?? null, // crescita annua degli utili attesa nei 5 anni
     growthSource: fundamentalsEst ? fundamentalsEst.source || 'own' : null,
     weights: Object.fromEntries(parts.map(([k, , w]) => [k, w / wSum])),

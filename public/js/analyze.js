@@ -74,6 +74,13 @@ export function tableQuote(q) {
   return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency, ...(q.perf ? { perf: q.perf } : {}) };
 }
 
+/** Fattore di leva dedotto dal nome ("2x", "3X", "Leveraged" → 2 se non indicato); 1 per i prodotti normali. */
+export function leverageOf(name = '') {
+  const m = /(\d)\s*[xX]\b|\b[xX]\s*(\d)\b/.exec(name);
+  if (m) return Number(m[1] || m[2]) || 1;
+  return /leverag|lev\.|a leva/i.test(name) ? 2 : 1;
+}
+
 export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals, holdings, market, marketGrowth }, settings) {
   const o = { ...DEFAULT_OPTIONS, ...settings.mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
@@ -110,6 +117,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   const fwd = forwardParams(
     {
       type: instrument.type,
+      leverage: leverageOf(instrument.name),
       timestamps: history.timestamps,
       prices,
       riskPrices: filled?.closesEur,

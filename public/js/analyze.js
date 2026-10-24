@@ -69,6 +69,16 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
       }
     }
   }
+  // Prezzo fermo (delistato, sospeso o quasi mai scambiato): volatilità e perdite risulterebbero
+  // falsamente basse. Oltre il 30% di settimane senza variazioni negli ultimi 2 anni → n.d.
+  if (instrument.type !== 'crypto') {
+    const recent = prices.slice(-105);
+    let flat = 0;
+    for (let i = 1; i < recent.length; i++) if (recent[i] === recent[i - 1]) flat++;
+    if (recent.length > 20 && flat / (recent.length - 1) > 0.3) {
+      return { forward: null, sim: { ok: false, reason: 'Prezzo fermo o poco scambiato: previsioni non affidabili', historyYears: realYears } };
+    }
+  }
   const bench = instrument.symbol === BENCHMARK_SYMBOL ? null : benchmark;
   // Storico breve: rischio stimato su uno storico ricostruito con un riferimento
   // (MSCI World per azioni ed ETF, Bitcoin per le crypto).

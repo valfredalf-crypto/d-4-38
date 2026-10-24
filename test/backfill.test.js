@@ -70,3 +70,24 @@ test('dati con salti impossibili: niente previsioni inventate', () => {
   const ok = analyze({ instrument: { symbol: 'OK', type: 'stock' }, history: m, benchmark: null }, DEFAULT_SETTINGS);
   assert.ok(ok.sim.ok && ok.forward.expected <= 0.5 && ok.forward.expected >= -0.3);
 });
+
+test('prezzo fermo (delistato o poco scambiato): niente previsioni', () => {
+  const m = market();
+  const frozen = { ...m, closesEur: m.closesEur.map((v, i) => (i > 450 ? m.closesEur[450] : v)) };
+  const r = analyze({ instrument: { symbol: 'GIL.DE', type: 'stock' }, history: frozen, benchmark: null }, DEFAULT_SETTINGS);
+  assert.equal(r.sim.ok, false);
+  assert.match(r.sim.reason, /fermo/);
+});
+
+test('strumento a basso rischio (tipo monetario): rapporto ben sotto 1', () => {
+  const ts = [];
+  const p = [100];
+  const r = mulberry32(5);
+  for (let i = 0; i < 521; i++) {
+    ts.push(1_500_000_000 + i * WEEK);
+    if (i) p.push(p[i - 1] * Math.exp(0.025 / 52 + (r() - 0.5) * 0.0015));
+  }
+  const res = analyze({ instrument: { symbol: 'XEON.DE', type: 'etf' }, history: { timestamps: ts, closesEur: p }, benchmark: null }, DEFAULT_SETTINGS);
+  assert.ok(res.sim.ok);
+  assert.ok(res.sim.ratio < 0.5, `rapporto ${res.sim.ratio} (perdita ${res.sim.maxLoss}, guadagno ${res.sim.netGain})`);
+});

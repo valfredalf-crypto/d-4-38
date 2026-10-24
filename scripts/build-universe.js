@@ -15,6 +15,7 @@ const PER_GROUP = Number(process.env.PER_GROUP || 300);
 const SHORTLIST = PER_GROUP * 2; // azioni per cui si scarica anche il consenso analisti
 const GROWTH_N = Number(process.env.GROWTH_N || 100); // azioni aggiunte per crescita attesa
 const GROWTH_MIN = Number(process.env.GROWTH_MIN || 0.15); // crescita attesa minima (15%)
+const RATIO_N = Number(process.env.RATIO_N || 150); // per gruppo: migliori per rapporto perdita/guadagno
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || Infinity); // per prove rapide
 const OUT = process.env.UNIVERSE || 'data/universe.json';
 const log = (...a) => console.log(...a);
@@ -101,7 +102,7 @@ await pool([...candidates, ...crypto], 4, async (c) => {
   const r = analyze({ instrument: inst, history, benchmark, fundamentals: null }, DEFAULT_SETTINGS);
   if (!r.sim.ok) return;
   histories.set(inst.symbol, history);
-  rows.push({ inst, netGain: r.sim.netGain });
+  rows.push({ inst, netGain: r.sim.netGain, ratio: r.sim.ratio });
 });
 log(`Esclusi dopo verifica: ${excluded.leveraged} a leva/short (nome completo), ${excluded.badData} con dati storici anomali`);
 log(`Previsioni valide (storico ≥ ${DEFAULT_SETTINGS.mc.minYears} anni): ${rows.length}`);
@@ -138,7 +139,10 @@ await pool(stocks, 2, async (row) => {
   if (f?.targetMean > 0) withAnalysts++;
   row.growth = growthScore(f);
   const r = analyze({ instrument: inst, history: histories.get(inst.symbol), benchmark, fundamentals: f }, DEFAULT_SETTINGS);
-  if (r.sim.ok) row.netGain = r.sim.netGain;
+  if (r.sim.ok) {
+    row.netGain = r.sim.netGain;
+    row.ratio = r.sim.ratio;
+  }
 });
 log(`Azioni con consenso analisti: ${withAnalysts}/${stocks.length}`);
 if (outlookErrors.length) log(`  errori dati analisti: ${outlookErrors.length} (es. ${outlookErrors.slice(0, 3).join(' | ')})`);
@@ -155,7 +159,27 @@ const growthPicks = stocks
 log(`Crescita: ${stocks.filter((r) => r.growth != null).length} azioni con stime di crescita, ${growthPicks.length} selezionate (≥ ${GROWTH_MIN * 100}%)`);
 log(`  prime 15: ${growthPicks.slice(0, 15).map((r) => `${r.inst.symbol} ${(r.growth * 100).toFixed(0)}%`).join(', ')}`);
 const growthSet = new Set(growthPicks.map((r) => r.inst.symbol));
-const final = [...selected, ...growthPicks.filter((r) => !selected.includes(r))];
+// Migliori per rapporto perdita/guadagno (gli strumenti più equilibrati: monetari, obbligazionari,
+// difensivi), che la selezione per guadagno massimo tenderebbe a escludere.
+const ratioPicks = [];
+for (const type of ['stock', 'etf']) {
+  ratioPicks.push(
+    ...eligible
+      .filter((r) => r.inst.type === type && Number.isFinite(r.ratio) && r.ratio > 0)
+      .sort((a, b) => a.ratio - b.ratio)
+      .slice(0, RATIO_N),
+  );
+}
+log(`Migliori per rapporto: ${ratioPicks.length} (rapporti ${ratioPicks.map((r) => r.ratio).sort((a, b) => a - b)[0]?.toFixed(2)}–${ratioPicks.map((r) => r.ratio).sort((a, b) => b - a)[0]?.toFixed(2)})`);
+// La lista iniziale verificata resta sempre (con i suoi ETF monetari, obbligazionari e oro).
+const seedRows = rows.filter((r) => seedList.some((x) => x.symbol === r.inst.symbol));
+const final = [];
+const seen = new Set();
+for (const r of [...selected, ...growthPicks, ...ratioPicks, ...seedRows]) {
+  if (seen.has(r.inst.symbol)) continue;
+  seen.add(r.inst.symbol);
+  final.push(r);
+}
 const instruments = final.map(({ inst, netGain, growth }) => ({
   symbol: inst.symbol,
   isin: inst.isin || null,
@@ -170,7 +194,7 @@ log(`Selezionati: ${count('stock')} azioni (di cui ${growthPicks.length} per cre
 
 const meta = {
   ...base.meta,
-  description: `Le ${PER_GROUP} azioni e i ${PER_GROUP} ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra ${candidates.length} candidati negoziabili su Xetra/Trade Republic, più le ${growthPicks.length} azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.`,
+  description: `Le ${PER_GROUP} azioni e i ${PER_GROUP} ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra ${candidates.length} candidati negoziabili su Xetra/Trade Republic, più i ${RATIO_N} con il miglior rapporto perdita/guadagno per gruppo, la lista iniziale verificata, le ${growthPicks.length} azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.`,
   universeGeneratedAt: new Date().toISOString(),
   xetraUrl,
   candidates: candidates.length,

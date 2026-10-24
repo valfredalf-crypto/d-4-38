@@ -168,3 +168,16 @@ test('limite di Sharpe: un monetario non può "rendere" il 10% annuo', () => {
   assert.ok(f.components.history < 0.04, String(f.components.history));
   assert.ok(f.expected < 0.04, String(f.expected));
 });
+
+test('beta limitato da volatilità: uno strumento quasi fermo senza beta stimabile non ha beta 1', () => {
+  const ts = [];
+  const p = [100];
+  for (let i = 0; i < 80; i++) {
+    ts.push(1_500_000_000 + i * WEEK);
+    if (i) p.push(p[i - 1] * Math.exp(0.03 / 52 + (i % 2 ? 1 : -1) * 0.0007));
+  }
+  // nessun benchmark → beta non stimabile; prima si assumeva 1
+  const f = forwardParams({ type: 'etf', timestamps: ts, prices: p, years: 5, lookbackYears: 10 }, B);
+  assert.ok(f.beta < 0.05, String(f.beta));
+  assert.ok(f.expected < 0.03, String(f.expected));
+});

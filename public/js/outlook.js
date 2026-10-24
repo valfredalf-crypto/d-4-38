@@ -134,7 +134,16 @@ export function forwardParams(p, settings = {}) {
   // un beta vicino a zero (o negativo) di un'azienda quotata è quasi sempre un artefatto di un periodo
   // in cui il titolo si è mosso per motivi propri, non una vera assenza di rischio di mercato.
   const rawBetas = [betaEst?.raw, f.beta].filter((b) => b != null && Number.isFinite(b));
-  const betaRaw = rawBetas.length ? rawBetas.reduce((a, b) => a + b, 0) / rawBetas.length : 1;
+  // Limite matematico: β = ρ·σ/σ_mercato ≤ σ/σ_mercato. Uno strumento quasi fermo (monetario,
+  // obbligazionario breve) non può avere beta alto, anche quando il beta non si riesce a stimare.
+  let sigmaM = 0.15;
+  if (p.benchmark?.closesEur?.length > 60) {
+    const rb = logReturns(p.benchmark.closesEur.slice(-lookback));
+    const mb = rb.reduce((a, x) => a + x, 0) / rb.length;
+    sigmaM = Math.sqrt(rb.reduce((a, x) => a + (x - mb) ** 2, 0) / (rb.length - 1)) * Math.sqrt(WEEKS_PER_YEAR) || 0.15;
+  }
+  const betaBound = Math.max(sigmaLong, sigmaReal) / sigmaM;
+  const betaRaw = Math.min(rawBetas.length ? rawBetas.reduce((a, b) => a + b, 0) / rawBetas.length : 1, betaBound);
   // Aggiustamento di Blume (verso 1) solo per le singole azioni: per un ETF il beta stimato su un
   // portafoglio diversificato è stabile, e un monetario o obbligazionario ha davvero beta ≈ 0.
   let beta = p.type === 'stock' ? Math.max(0.67 * betaRaw + 0.33, s.minStockBeta) : Math.max(betaRaw, 0);

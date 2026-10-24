@@ -1131,6 +1131,12 @@ function bind() {
     }
   };
   $$('[data-mview]').forEach((b) => b.addEventListener('click', () => setMview(b.dataset.mview)));
+  // Barra di scorrimento orizzontale sempre visibile (i browser con barre "a scomparsa" la nascondono)
+  const wrap = $('.table-wrap');
+  const hs = $('#hscroll');
+  const maxLeft = () => Math.max(1, wrap.scrollWidth - wrap.clientWidth);
+  hs?.addEventListener('input', () => (wrap.scrollLeft = (hs.value / 1000) * maxLeft()));
+  wrap?.addEventListener('scroll', () => hs && (hs.value = Math.round((wrap.scrollLeft / maxLeft()) * 1000)), { passive: true });
   $$('[data-scroll]').forEach((b) =>
     b.addEventListener('click', () => {
       const w = $('.table-wrap');

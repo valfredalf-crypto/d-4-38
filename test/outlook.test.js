@@ -89,7 +89,9 @@ test('shrinkage: lo storico di uno strumento molto volatile pesa poco', () => {
   assert.ok(fw.credibility < 0.06, String(fw.credibility));
   assert.ok(fw.components.history < fw.historyRaw);
   const eq = fw.components.equilibrium;
-  assert.ok(Math.abs(fw.components.history - (eq + fw.credibility * (fw.historyRaw - eq))) < 1e-12);
+  // storico creduto in proporzione alla credibilità (con il limite di Sharpe sul valore grezzo)
+  assert.ok(fw.components.history <= eq + fw.credibility * (fw.historyRaw - eq) + 1e-12);
+  assert.ok(fw.components.history >= Math.min(eq, fw.historyRaw) - 1e-12);
 });
 
 test('beta: media con quello di Yahoo e minimo 0,5 per le azioni', () => {
@@ -99,7 +101,7 @@ test('beta: media con quello di Yahoo e minimo 0,5 per le azioni', () => {
   const stock = forwardParams({ ...base, type: 'stock' }, B);
   assert.ok(Math.abs(stock.beta - 0.5) < 1e-12, String(stock.beta));
   const etf = forwardParams({ ...base, type: 'etf' }, B);
-  assert.ok(etf.beta < 0.5); // per ETF (es. obbligazionari, oro) nessun minimo
+  assert.ok(etf.beta < 0.2); // ETF: niente Blume né minimo (obbligazionari, monetari, oro hanno davvero beta basso)
   const withYahoo = forwardParams({ ...base, type: 'stock', fundamentals: { beta: 1.2 } }, B);
   assert.ok(Math.abs(withYahoo.betaRaw - (estimateBeta(flat.ts, flat.p, b.ts, b.p, 5).raw + 1.2) / 2) < 1e-12);
 });
@@ -159,7 +161,10 @@ test('limite di Sharpe: un monetario non può "rendere" il 10% annuo', () => {
     ts.push(1_500_000_000 + i * WEEK);
     if (i) p.push(p[i - 1] * Math.exp(0.1 / 52 + (i % 2 ? 1 : -1) * 0.002)); // +10%/anno con volatilità ~1,4%
   }
-  const f = forwardParams({ type: 'etf', timestamps: ts, prices: p, years: 5, lookbackYears: 10 }, B);
+  const bench = series(521, 1); // indice indipendente → beta ≈ 0, equilibrio ≈ tasso privo di rischio
+  const f = forwardParams({ type: 'etf', timestamps: ts, prices: p, benchmark: { timestamps: bench.ts, closesEur: bench.p }, years: 5, lookbackYears: 10 }, B);
   assert.ok(f.historyRaw > 0.09);
+  assert.ok(f.beta < 0.1, String(f.beta));
   assert.ok(f.components.history < 0.04, String(f.components.history));
+  assert.ok(f.expected < 0.04, String(f.expected));
 });

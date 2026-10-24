@@ -135,8 +135,9 @@ export function forwardParams(p, settings = {}) {
   // in cui il titolo si è mosso per motivi propri, non una vera assenza di rischio di mercato.
   const rawBetas = [betaEst?.raw, f.beta].filter((b) => b != null && Number.isFinite(b));
   const betaRaw = rawBetas.length ? rawBetas.reduce((a, b) => a + b, 0) / rawBetas.length : 1;
-  let beta = 0.67 * betaRaw + 0.33;
-  if (p.type === 'stock') beta = Math.max(beta, s.minStockBeta);
+  // Aggiustamento di Blume (verso 1) solo per le singole azioni: per un ETF il beta stimato su un
+  // portafoglio diversificato è stabile, e un monetario o obbligazionario ha davvero beta ≈ 0.
+  let beta = p.type === 'stock' ? Math.max(0.67 * betaRaw + 0.33, s.minStockBeta) : Math.max(betaRaw, 0);
   const equilibrium = p.type === 'crypto' ? rf + s.cryptoPremium / 100 : rf + Math.max(beta, 0) * (s.equityPremium / 100);
 
   // --- Storico "credibile": shrinkage bayesiano (modello normale-normale) verso l'equilibrio.

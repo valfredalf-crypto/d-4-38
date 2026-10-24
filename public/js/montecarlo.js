@@ -4,6 +4,18 @@
 export const WEEKS_PER_YEAR = 52;
 /** Soglie di rendimento netto per le probabilità (0 = non perdere, 0.25 = almeno +25%, …). */
 export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
+/**
+ * Avversione al rischio per l'equivalente certo (utilità CRRA, γ = 3: investitore moderatamente prudente).
+ * L'equivalente certo è il guadagno sicuro che vale quanto la distribuzione incerta dei risultati:
+ * penalizza volatilità e code negative in modo coerente con la teoria dell'utilità attesa.
+ */
+export const RISK_AVERSION = 3;
+export function certaintyEquivalent(nets, gamma = RISK_AVERSION) {
+  let sum = 0;
+  for (const r of nets) sum += Math.max(1 + r, 0.02) ** (1 - gamma); // ricchezza finale per 1 € investito (floor: perdita quasi totale)
+  return (sum / nets.length) ** (1 / (1 - gamma)) - 1;
+}
+
 /** Avversione alla perdita (Kahneman-Tversky): una perdita pesa 2,25 volte un guadagno della stessa entità. */
 export const LOSS_AVERSION = 2.25;
 /**
@@ -82,7 +94,7 @@ export const DEFAULT_OPTIONS = {
   blockWeeks: 4,      // lunghezza blocchi nel bootstrap: preserva parte dell'autocorrelazione
   lookbackYears: 10,  // quanti anni di storico usare per stimare la distribuzione
   minYears: 2,        // storico minimo richiesto
-  amount: 1000,       // capitale investito (€)
+  amount: 10000,      // capitale investito (€)
   orderCost: 1,       // costo per ordine Trade Republic (€) — applicato in acquisto e vendita
   spreadPct: 0,       // spread/markup stimato (%) applicato una volta in acquisto
   taxRate: 26,        // tassazione plusvalenze (%) — 26% in Italia
@@ -210,6 +222,8 @@ export function simulate(prices, options = {}) {
     netP95: percentile(nets, 0.95),
     netMean: meanNet,
     probLoss: nets.filter((x) => x < 0).length / nets.length,
+    // Guadagno netto plausibile: equivalente certo di tutti gli scenari netti (costi e tasse inclusi)
+    plausible: certaintyEquivalent(nets),
     // Probabilità di ottenere almeno ciascun rendimento netto di PROB_THRESHOLDS (stesso ordine)
     probAtLeast: PROB_THRESHOLDS.map((t) => nets.filter((x) => x >= t).length / nets.length),
     // Perdita definitiva a fine orizzonte nello scenario sfavorevole (5% peggiore) ÷ guadagno tipico (mediano)

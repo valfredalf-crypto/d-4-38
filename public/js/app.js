@@ -27,7 +27,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'ratio', dir: 1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'plausible', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -473,11 +473,25 @@ function applyFilters() {
   refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
 }
 
+const growthOf = (r) => (r && !r.error ? r.forward?.growth ?? r.forward?.expectedGrowth ?? null : null);
+// Crescita attesa cumulata sull'orizzonte (la crescita è annua, i guadagni sono a 5 anni: vanno sommati nella stessa unità)
+const growth5 = (r) => {
+  const g = growthOf(r);
+  return g == null ? 0 : (1 + g) ** (state.settings.mc.years || 5) - 1;
+};
+// Importo in euro sul capitale investito (impostazioni), per affiancare le percentuali in tabella
+const eurAmt = (x, sign = true) => {
+  if (x == null || !Number.isFinite(x)) return '';
+  const v = x * (state.settings.mc.amount || 10000);
+  return `<span class="eur">${sign && v > 0 ? '+' : ''}${Math.round(v).toLocaleString('it-IT')} €</span>`;
+};
 function rowValues(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
   const sim = r && !r.error ? r.sim : null;
   const v = {
+    // Guadagno netto plausibile a 5 anni (equivalente certo): la classifica predefinita
+    plausible: sim?.plausible ?? null,
     inst: i,
     name: i.name.toLowerCase(),
     type: i.type,
@@ -503,25 +517,25 @@ function rowValues(i) {
     // annua attesa degli utili, 0 se non disponibile): più basso è meglio; ∞ se il denominatore è ≤ 0
     riskGain: (() => {
       if (!sim || sim.mddMedian == null || sim.maxLoss == null || sim.netMedian == null || sim.netMean == null) return null;
-      const den = (sim.netMedian + sim.netMean) / 2 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
+      const den = (sim.netMedian + sim.netMean) / 2 + growth5(r);
       return den > 0 ? (sim.mddMedian + sim.maxLoss) / 2 / den : Infinity;
     })(),
     // Stesso indicatore con al numeratore solo la perdita max a 5 anni
     maxLossGain: (() => {
       if (!sim || sim.maxLoss == null || sim.netMedian == null || sim.netMean == null) return null;
-      const den = (sim.netMedian + sim.netMean) / 2 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
+      const den = (sim.netMedian + sim.netMean) / 2 + growth5(r);
       return den > 0 ? sim.maxLoss / den : Infinity;
     })(),
     // (Guadagno probabile 75% + crescita annua attesa, 0 se non disponibile) ÷ perdita max: più alto è meglio
     p25GrowthLoss: (() => {
       if (!sim || sim.maxLoss == null || sim.netP25 == null) return null;
-      const num = sim.netP25 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
+      const num = sim.netP25 + growth5(r);
       return sim.maxLoss > 0 ? num / sim.maxLoss : num > 0 ? Infinity : 0;
     })(),
     // (Guadagno probabile 75% + crescita annua attesa, 0 se non disponibile) ÷ drawdown mediano: più alto è meglio
     p25GrowthDD: (() => {
       if (!sim || sim.mddMedian == null || sim.netP25 == null) return null;
-      const num = sim.netP25 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
+      const num = sim.netP25 + growth5(r);
       return sim.mddMedian > 0 ? num / sim.mddMedian : num > 0 ? Infinity : 0;
     })(),
     riskAdj: sim && sim.finalLoss != null && sim.netMedian != null ? sim.netMedian - sim.finalLoss : null,
@@ -549,7 +563,7 @@ function rowValues(i) {
 
 function sortRows(rows) {
   const { key, dir } = state.view.sort;
-  const k = key === 'rank' ? 'ratio' : key;
+  const k = key === 'rank' ? 'plausible' : key;
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -565,8 +579,8 @@ function sortRows(rows) {
 }
 
 function rankMap(rows) {
-  // La posizione in classifica è sempre per rapporto crescente, indipendentemente dall'ordinamento scelto.
-  const ranked = rows.filter((r) => r.ratio != null && Number.isFinite(r.ratio)).sort((a, b) => a.ratio - b.ratio);
+  // La posizione in classifica è sempre per guadagno plausibile decrescente, indipendentemente dall'ordinamento scelto.
+  const ranked = rows.filter((r) => r.plausible != null && Number.isFinite(r.plausible)).sort((a, b) => b.plausible - a.plausible);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
 
@@ -597,6 +611,7 @@ function render() {
           if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td class="num ${cls(r.plausible)}"><b class="big">${r.plausible == null ? '–' : `${r.plausible > 0 ? '+' : ''}${Math.round(r.plausible * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.plausible == null ? '' : `<span class="eur">${pct(r.plausible, true)} su ${(state.settings.mc.amount || 10000).toLocaleString('it-IT')} €</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
@@ -607,14 +622,14 @@ function render() {
         <td class="num ${cls(r.varY)}">${pct(r.varY, true)}</td>
         <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
         <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
-        <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) : '–'}</td>
-        <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) : '–'}</td>
-        <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
-        <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}</td>
-        <td class="num ${cls(r.netP25)}">${pct(r.netP25, true)}</td>
+        <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) + eurAmt(-r.maxLoss) : '–'}</td>
+        <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) + eurAmt(-r.mddMedian) : '–'}</td>
+        <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}${eurAmt(r.netGain)}</td>
+        <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}${eurAmt(r.netMean)}</td>
+        <td class="num ${cls(r.netP25)}">${pct(r.netP25, true)}${eurAmt(r.netP25)}</td>
         <td class="num">${ratioCell}</td>
         <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : r.ratioFinal === 0 ? '<span class="pos" title="Nessuna perdita a fine 5 anni nemmeno nel caso sfavorevole (5% peggiore): tipico di monetari e obbligazionari a breve, che però guadagnano poco">0 ✓</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
-        <td class="num ${cls(r.balanced)}"><b>${pct(r.balanced, true)}</b></td>
+        <td class="num ${cls(r.balanced)}"><b>${pct(r.balanced, true)}</b>${eurAmt(r.balanced)}</td>
         <td class="num">${r.riskGain == null ? '–' : r.riskGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.riskGain < 1 ? 'pos' : ''}">${nf2.format(r.riskGain)}</span>`}</td>
         <td class="num">${r.maxLossGain == null ? '–' : r.maxLossGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.maxLossGain < 1 ? 'pos' : ''}">${nf2.format(r.maxLossGain)}</span>`}</td>
         <td class="num">${r.p25GrowthLoss == null ? '–' : r.p25GrowthLoss === Infinity || r.p25GrowthLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthLoss >= 1 ? 'pos' : r.p25GrowthLoss < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthLoss)}</span>`}</td>
@@ -722,6 +737,7 @@ function renderDetail(inst, r, d) {
   $('#d-body').innerHTML = `
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
+      ${sim.plausible != null ? `<div class="kpi kpi-main"><div class="k">Guadagno netto plausibile ${s.mc.years}a</div><div class="v ${cls(sim.plausible)}">${sim.plausible > 0 ? '+' : ''}${Math.round(sim.plausible * amt).toLocaleString('it-IT')} €</div><div class="h">${pct(sim.plausible, true)} su ${eur(amt)} → ${eur(amt * (1 + sim.plausible))} in tasca · equivalente certo di tutti gli scenari netti (volatilità, rischio di perdita e prospettive di crescita inclusi), avversione al rischio moderata</div></div>` : ''}
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
       ${f?.expected != null ? `<div class="kpi"><div class="k">Rendimento atteso</div><div class="v ${cls(f.expected)}">${pct(f.expected, true)}/anno</div><div class="h">come in tabella ("Atteso / anno") · su ${s.mc.years} anni ${pct((1 + f.expected) ** s.mc.years - 1, true)} lordo (prima di costi e tasse)</div></div>` : ''}
@@ -733,13 +749,13 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Rapporto perdita finale/guadagno</div><div class="v">${Number.isFinite(sim.ratioFinal) ? nf2.format(sim.ratioFinal) : '∞'}</div><div class="h">perdita a fine ${s.mc.years} anni nel 5% peggiore (${sim.finalLoss > 0 ? '−' + pct(sim.finalLoss) + ', ' + eur(amt * (1 - sim.finalLoss)) : 'nessuna perdita'}) ÷ guadagno mediano</div></div>
       ${sim.balanced != null ? `<div class="kpi"><div class="k">Guadagno bilanciato crescita/rischio ${s.mc.years}a</div><div class="v ${cls(sim.balanced)}">${pct(sim.balanced, true)}</div><div class="h">guadagni attesi ${pct(sim.expGain, true)} − 2,25 × perdite attese ${pct(sim.expLoss)} (su tutti gli scenari)</div></div>` : ''}
       ${(() => {
-        const g = f?.expectedGrowth ?? 0;
+        const g = f?.expectedGrowth != null ? (1 + f.expectedGrowth) ** s.mc.years - 1 : 0; // cumulata sui 5 anni
         const den = (sim.netMedian + sim.netMean) / 2 + g;
         const numP = sim.netP25 + g;
-        return `<div class="kpi"><div class="k">(Guadagno probabile + crescita) / perdita max</div><div class="v ${cls(numP)}">${sim.maxLoss > 0 ? nf2.format(numP / sim.maxLoss) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa ${pct(g, true)}) ÷ perdita max ${pct(sim.maxLoss)} · più alto = migliore</div></div>
-      <div class="kpi"><div class="k">(Guadagno probabile + crescita) / drawdown mediano</div><div class="v ${cls(numP)}">${sim.mddMedian > 0 ? nf2.format(numP / sim.mddMedian) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa ${pct(g, true)}) ÷ drawdown mediano ${pct(sim.mddMedian)} · più alto = migliore</div></div>
-      <div class="kpi"><div class="k">Perdita max / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format(sim.maxLoss / den) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>
-      <div class="kpi"><div class="k">Perdite medie / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / 2 / den) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>`;
+        return `<div class="kpi"><div class="k">(Guadagno probabile + crescita) / perdita max</div><div class="v ${cls(numP)}">${sim.maxLoss > 0 ? nf2.format(numP / sim.maxLoss) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa a 5 anni ${pct(g, true)}) ÷ perdita max ${pct(sim.maxLoss)} · più alto = migliore</div></div>
+      <div class="kpi"><div class="k">(Guadagno probabile + crescita) / drawdown mediano</div><div class="v ${cls(numP)}">${sim.mddMedian > 0 ? nf2.format(numP / sim.mddMedian) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa a 5 anni ${pct(g, true)}) ÷ drawdown mediano ${pct(sim.mddMedian)} · più alto = migliore</div></div>
+      <div class="kpi"><div class="k">Perdita max / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format(sim.maxLoss / den) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa a 5 anni ${pct(g, true)}) · più basso = migliore</div></div>
+      <div class="kpi"><div class="k">Perdite medie / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / 2 / den) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa a 5 anni ${pct(g, true)}) · più basso = migliore</div></div>`;
       })()}
       <div class="kpi"><div class="k">Guadagno corretto per il rischio ${s.mc.years}a</div><div class="v ${cls(sim.netMedian - sim.finalLoss)}">${pct(sim.netMedian - sim.finalLoss, true)}</div><div class="h">guadagno tipico ${pct(sim.netMedian, true)} − perdita finale sfavorevole ${pct(sim.finalLoss)}</div></div>
       <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
@@ -1253,7 +1269,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25GrowthLoss', 'p25GrowthDD', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'p25GrowthLoss', 'p25GrowthDD', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1353,7 +1369,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="28" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="29" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

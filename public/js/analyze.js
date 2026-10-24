@@ -61,6 +61,7 @@ export function tableResult(r) {
       balanced: r4(s.balanced),
       ratioFinal: r4(s.ratioFinal),
       probLoss: r4(s.probLoss),
+      plausible: r4(s.plausible),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };

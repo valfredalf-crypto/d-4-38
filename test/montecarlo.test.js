@@ -99,3 +99,15 @@ test('balanced: guadagni attesi − 2,25 × perdite attese, coerente con la medi
   assert.ok(Math.abs(credibleGain(50, 0.5) - (0.5 + Math.log1p(49.5))) < 1e-12);
   assert.ok(Math.abs(s.balanced - (s.expGain - 2.25 * s.expLoss)) < 1e-9);
 });
+
+test('equivalente certo: tra il minimo e la media, più basso con più volatilità', async () => {
+  const { certaintyEquivalent } = await import('../public/js/montecarlo.js');
+  const calm = [0.05, 0.06, 0.07, 0.08];
+  const wild = [-0.5, 0.0, 0.3, 0.46]; // stessa media (6,5%), molto più dispersa
+  const ceCalm = certaintyEquivalent(calm);
+  const ceWild = certaintyEquivalent(wild);
+  assert.ok(ceCalm > 0.05 && ceCalm < 0.065);
+  assert.ok(ceWild < ceCalm, 'più rischio → equivalente certo più basso');
+  assert.ok(ceWild > -0.5);
+  assert.ok(Math.abs(certaintyEquivalent([0.1, 0.1, 0.1]) - 0.1) < 1e-12, 'risultato certo → equivalente certo uguale');
+});

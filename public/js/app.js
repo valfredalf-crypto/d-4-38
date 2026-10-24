@@ -468,9 +468,9 @@ function rowValues(i) {
     finalLoss: sim?.finalLoss ?? null,
     // Guadagno tipico (mediano) meno la perdita definitiva nel caso sfavorevole: quanto guadagni, già "pagato" il rischio
     balanced: sim?.balanced ?? null,
-    // Media delle perdite (drawdown mediano e perdita max) ÷ (guadagno mediano + guadagno probabile 75%):
-    // più basso è meglio; ∞ se la somma dei guadagni è ≤ 0
-    riskGain: sim && sim.mddMedian != null && sim.maxLoss != null && sim.netMedian != null && sim.netP25 != null ? (sim.netMedian + sim.netP25 > 0 ? (sim.mddMedian + sim.maxLoss) / 2 / (sim.netMedian + sim.netP25) : Infinity) : null,
+    // Media delle perdite (drawdown mediano e perdita max) ÷ media dei guadagni (mediano e medio):
+    // più basso è meglio; ∞ se la media dei guadagni è ≤ 0
+    riskGain: sim && sim.mddMedian != null && sim.maxLoss != null && sim.netMedian != null && sim.netMean != null ? (sim.netMedian + sim.netMean > 0 ? (sim.mddMedian + sim.maxLoss) / (sim.netMedian + sim.netMean) : Infinity) : null,
     riskAdj: sim && sim.finalLoss != null && sim.netMedian != null ? sim.netMedian - sim.finalLoss : null,
     // ratioFinal null con guadagno mediano ≤ 0 (Infinity non sopravvive al JSON) → ∞
     ratioFinal: sim && sim.finalLoss != null ? (sim.ratioFinal ?? (sim.netMedian > 0 ? null : Infinity)) : null,
@@ -671,7 +671,7 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
       <div class="kpi"><div class="k">Rapporto perdita finale/guadagno</div><div class="v">${Number.isFinite(sim.ratioFinal) ? nf2.format(sim.ratioFinal) : '∞'}</div><div class="h">perdita a fine ${s.mc.years} anni nel 5% peggiore (${sim.finalLoss > 0 ? '−' + pct(sim.finalLoss) + ', ' + eur(amt * (1 - sim.finalLoss)) : 'nessuna perdita'}) ÷ guadagno mediano</div></div>
       ${sim.balanced != null ? `<div class="kpi"><div class="k">Guadagno bilanciato crescita/rischio ${s.mc.years}a</div><div class="v ${cls(sim.balanced)}">${pct(sim.balanced, true)}</div><div class="h">guadagni attesi ${pct(sim.expGain, true)} − 2,25 × perdite attese ${pct(sim.expLoss)} (su tutti gli scenari)</div></div>` : ''}
-      <div class="kpi"><div class="k">Rapporto perdite medie / guadagni</div><div class="v">${sim.netMedian + sim.netP25 > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / 2 / (sim.netMedian + sim.netP25)) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ (guadagno mediano ${pct(sim.netMedian, true)} + guadagno probabile ${pct(sim.netP25, true)}) · più basso = migliore</div></div>
+      <div class="kpi"><div class="k">Perdite medie / guadagni medi</div><div class="v">${sim.netMedian + sim.netMean > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / (sim.netMedian + sim.netMean)) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ media(guadagno mediano ${pct(sim.netMedian, true)}, guadagno medio ${pct(sim.netMean, true)}) · più basso = migliore</div></div>
       <div class="kpi"><div class="k">Guadagno corretto per il rischio ${s.mc.years}a</div><div class="v ${cls(sim.netMedian - sim.finalLoss)}">${pct(sim.netMedian - sim.finalLoss, true)}</div><div class="h">guadagno tipico ${pct(sim.netMedian, true)} − perdita finale sfavorevole ${pct(sim.finalLoss)}</div></div>
       <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>

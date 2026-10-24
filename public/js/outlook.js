@@ -12,7 +12,7 @@ export const BASE_OUTLOOK = {
   riskFree: 2.0,          // % annuo, tasso privo di rischio in EUR
   equityPremium: 5.0,     // % annuo, premio per il rischio azionario globale
   cryptoPremium: 0.0,     // % annuo, premio aggiuntivo per le crypto (nessun fondamentale: prudenza)
-  weightHistory: 0.3,
+  weightHistory: 0.15,    // lo storico pesa poco: contano le prospettive aggiornate (equilibrio, analisti, crescita)
   weightEquilibrium: 0.4,
   weightAnalysts: 0.3,
   weightFundamentals: 0.3, // crescita attesa degli utili e valutazione (modello Grinold-Kroner)

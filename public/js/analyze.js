@@ -47,6 +47,7 @@ export function tableResult(r) {
       growthSource: r.forward?.growthSource ?? null,
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
       ...(r.forward?.fundamentalsDetail?.evidence != null ? { evidence: r4(r.forward.fundamentalsDetail.evidence) } : {}),
+      ...(r.forward?.top10 != null ? { top10: r4(r.forward.top10) } : {}),
     },
     sim: {
       maxLoss: r4(s.maxLoss),
@@ -152,6 +153,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   // all'anno, sottratto alla deriva della simulazione (la tassa finale resta sul guadagno complessivo).
   const distYield = distributesDividends(instrument, fundamentals) ? cleanDividend(fundamentals?.dividendYield) : 0;
   const distDrag = distYield > 0 && fwd ? (o.taxRate / 100) * distYield * Math.max(fwd.expected, 0) * ((o.years - 1) / 2) : 0;
+  // Concentrazione: peso delle prime 10 partecipazioni (dalla composizione del fondo); per la diversificazione
+  if (fwd && holdings?.holdings?.length) fwd.top10 = Math.min(1, holdings.holdings.reduce((a, h) => a + (h.weight || 0), 0));
   const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag : null, targetVol: fwd?.vol ?? null });
   if (sim.ok) {
     sim.distYield = distYield;

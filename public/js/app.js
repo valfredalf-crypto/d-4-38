@@ -482,20 +482,39 @@ const growthOf = (r) => (r && !r.error ? r.forward?.growth ?? r.forward?.expecte
  *  - penalita' "value trap": dividendo oltre la crescita attesa + 3 punti, per meta' degli anni
  *    (zero quando il dividendo e' sostenuto dalla crescita degli utili)
  *  - penalita' di calo temporaneo: un quarto di quanto la perdita massima (95° percentile) supera il 40%,
- *    soglia oltre la quale molti investitori vendono in perdita (zero sotto il 40%).
+ *    soglia oltre la quale molti investitori vendono in perdita (zero sotto il 40%)
+ *  - penalita' di rischio di perdita: la perdita attesa (media delle perdite su tutti gli scenari), cosi' che
+ *    le perdite contino il doppio dei guadagni (avversione alla perdita)
+ *  - penalita' di concentrazione: 15% di quanto le prime 10 partecipazioni pesano oltre il 30% del fondo
+ *    (un'azione singola o una crypto = 100%; settoriali/tematici senza dati di composizione = 55%,
+ *    singolo paese = 45%, globali/ampi = 30%).
  */
 const DD_TOLERANCE = 0.4;
-function overallOf(sim, r) {
-  if (!sim) return { overall: null, penAsym: null, penTrap: null, penDD: null, fiscalCost: null };
+const CONC_TOLERANCE = 0.3;
+const SECTOR_RE = /technolog|\btech\b|semicond|health|pharma|biotech|financial|\bbank|energy|oil|gas|gold|miner|metal|real estate|property|reit|utilit|consumer|industrial|material|robotic|automation|\bai\b|intelligen|clean|solar|water|cyber|cloud|digital|blockchain|crypto|gaming|esports|defen|aerospace|infrastruct|travel|luxury|auto|batter|lithium|uranium|nuclear|space|genomic|cannabis|dividend|select|momentum|value|quality|small cap|mid cap|low volatil|min(imum)? vol/i;
+const COUNTRY_RE = /nasdaq|dax|\bmib\b|cac|ibex|ftse 100|ftse 250|aex|smi\b|nikkei|topix|hang seng|csi|kospi|s&p 500|msci (usa|japan|china|india|brazil|korea|taiwan|germany|italy|france|spain|uk|switzerland|canada|australia)|euro stoxx 50|stoxx 50/i;
+function concentrationOf(inst, r) {
+  if (inst.type !== 'etf') return 1;
+  if (r?.forward?.top10 != null) return r.forward.top10;
+  const n = inst.name || '';
+  if (SECTOR_RE.test(n)) return 0.55;
+  if (COUNTRY_RE.test(n)) return 0.45;
+  return CONC_TOLERANCE;
+}
+function overallOf(sim, r, inst) {
+  if (!sim) return { overall: null, penAsym: null, penTrap: null, penDD: null, penLoss: null, penConc: null, fiscalCost: null };
   const years = state.settings.mc.years || 5;
   const base = state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1);
-  if (base == null || sim.finalLoss == null || sim.netMedian == null) return { overall: null, penAsym: null, penTrap: null, penDD: null, fiscalCost: null };
+  if (base == null || sim.finalLoss == null || sim.netMedian == null) return { overall: null, penAsym: null, penTrap: null, penDD: null, penLoss: null, penConc: null, fiscalCost: null };
   const penAsym = 0.5 * Math.max(0, sim.finalLoss - Math.max(sim.netMedian, 0));
   const g = growthOf(r) ?? 0;
   const y = sim.divYield || 0;
   const penTrap = 0.5 * years * Math.max(0, y - Math.max(g, 0) - 0.03);
   const penDD = 0.25 * Math.max(0, (sim.maxLoss || 0) - DD_TOLERANCE);
-  return { overall: base - penAsym - penTrap - penDD, penAsym, penTrap, penDD, fiscalCost: (sim.distDrag || 0) * years };
+  const penLoss = sim.expLoss ?? 0;
+  const conc = inst ? concentrationOf(inst, r) : CONC_TOLERANCE;
+  const penConc = 0.15 * Math.max(0, conc - CONC_TOLERANCE);
+  return { overall: base - penAsym - penTrap - penDD - penLoss - penConc, penAsym, penTrap, penDD, penLoss, penConc, conc, fiscalCost: (sim.distDrag || 0) * years };
 }
 // Crescita attesa cumulata sull'orizzonte (la crescita è annua, i guadagni sono a 5 anni: vanno sommati nella stessa unità)
 const growth5 = (r) => {
@@ -516,7 +535,7 @@ function rowValues(i) {
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
     plausible: sim ? (state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1)) ?? null : null,
     // Indicatore complessivo con le penalita' esplicite dei "3 fattori" (vedi overallOf)
-    ...overallOf(sim, r),
+    ...overallOf(sim, r, i),
     growthEvidence: r && !r.error ? r.forward?.evidence ?? null : null,
     inst: i,
     name: i.name.toLowerCase(),
@@ -638,7 +657,7 @@ function render() {
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
-        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)}${r.penAsym + r.penTrap + r.penDD > 0.0005 ? ` · penalità ${pct(r.penAsym + r.penTrap + r.penDD)}` : ' · nessuna penalità'}</span>`}</td>
+        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)}${r.penAsym + r.penTrap + r.penDD + r.penLoss + r.penConc > 0.0005 ? ` · penalità ${pct(r.penAsym + r.penTrap + r.penDD + r.penLoss + r.penConc)}` : ' · nessuna penalità'}</span>`}</td>
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
@@ -843,7 +862,7 @@ function renderDetail(inst, r, d) {
           })()}
         </tbody></table>
         ${(() => {
-          const o = overallOf(sim, r);
+          const o = overallOf(sim, r, inst);
           if (o.overall == null) return '';
           const e = (x) => `${x > 0 ? '+' : ''}${Math.round(x * amt).toLocaleString('it-IT')} €`;
           const base = sim.ce?.['0.5'] ?? sim.ce1;
@@ -852,6 +871,8 @@ function renderDetail(inst, r, d) {
             <tr><td>− Penalità asimmetria del rischio (½ dell'eccesso della perdita sfavorevole sul guadagno tipico)</td><td class="num ${o.penAsym > 0 ? 'neg' : ''}">${o.penAsym > 0 ? e(-o.penAsym) : '0 €'}</td></tr>
             <tr><td>− Penalità value trap (dividendo non sostenuto dalla crescita)</td><td class="num ${o.penTrap > 0 ? 'neg' : ''}">${o.penTrap > 0 ? e(-o.penTrap) : '0 €'}</td></tr>
             <tr><td>− Penalità calo temporaneo (¼ della perdita massima oltre il 40%: −${pct(sim.maxLoss)})</td><td class="num ${o.penDD > 0 ? 'neg' : ''}">${o.penDD > 0 ? e(-o.penDD) : '0 €'}</td></tr>
+            <tr><td>− Penalità rischio di perdita (perdita attesa: media delle perdite su tutti gli scenari, P(perdita) ${pct(sim.probLoss, false, 0)})</td><td class="num ${o.penLoss > 0 ? 'neg' : ''}">${o.penLoss > 0 ? e(-o.penLoss) : '0 €'}</td></tr>
+            <tr><td>− Penalità concentrazione (15% del peso delle prime 10 partecipazioni oltre il 30%: ${pct(o.conc, false, 0)}${inst.type !== 'etf' ? ', strumento singolo' : r.forward?.top10 == null ? ', stimato dal tipo di fondo' : ''})</td><td class="num ${o.penConc > 0 ? 'neg' : ''}">${o.penConc > 0 ? e(-o.penConc) : '0 €'}</td></tr>
             <tr><th>= Guadagno netto complessivo ${s.mc.years}a</th><th class="num ${cls(o.overall)}">${e(o.overall)}</th></tr>
           </tbody></table>`;
         })()}

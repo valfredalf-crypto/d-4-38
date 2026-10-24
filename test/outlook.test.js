@@ -254,7 +254,7 @@ test('dividendi distribuiti: riconoscimento e costo del differimento fiscale', a
   const bench = { timestamps: b.ts, closesEur: b.p };
   const acc = analyze({ instrument: { symbol: 'X', type: 'etf', name: 'Test Acc' }, history: hist, benchmark: bench, fundamentals: { dividendYield: 0 }, market: 0.08, marketGrowth: 0.07 }, DEFAULT_SETTINGS);
   const dist = analyze({ instrument: { symbol: 'X', type: 'etf', name: 'Test Dist' }, history: hist, benchmark: bench, fundamentals: { dividendYield: 0.05 }, market: 0.08, marketGrowth: 0.07 }, DEFAULT_SETTINGS);
-  assert.ok(dist.sim.distDrag > 0 && dist.sim.distDrag < 0.01, String(dist.sim.distDrag));
+  assert.ok(Math.abs(dist.sim.distDrag - 0.05) < 1e-9 && dist.sim.distYield === 0.05, String(dist.sim.distDrag));
   assert.ok(dist.sim.netMedian < acc.sim.netMedian);
 });
 

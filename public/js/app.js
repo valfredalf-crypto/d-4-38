@@ -495,6 +495,8 @@ function rowValues(i) {
     // Netto Reale 5A (NR5): la classifica predefinita
     overall: sim?.nr5 ?? null,
     es5: sim?.es5 ?? null,
+    sharpe: sim?.sharpe ?? null,
+    sortino: sim?.sortino ?? null,
     growthEvidence: r && !r.error ? r.forward?.evidence ?? null : null,
     inst: i,
     name: i.name.toLowerCase(),
@@ -635,14 +637,12 @@ function render() {
         <td class="num">${ratioCell}</td>
         <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : r.ratioFinal === 0 ? '<span class="pos" title="Nessuna perdita a fine 5 anni nemmeno nel caso sfavorevole (5% peggiore): tipico di monetari e obbligazionari a breve, che però guadagnano poco">0 ✓</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
         <td class="num ${cls(r.balanced)}"><b>${pct(r.balanced, true)}</b>${eurAmt(r.balanced)}</td>
-        <td class="num">${r.riskGain == null ? '–' : r.riskGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.riskGain < 1 ? 'pos' : ''}">${nf2.format(r.riskGain)}</span>`}</td>
-        <td class="num">${r.maxLossGain == null ? '–' : r.maxLossGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.maxLossGain < 1 ? 'pos' : ''}">${nf2.format(r.maxLossGain)}</span>`}</td>
-        <td class="num">${r.p25GrowthLoss == null ? '–' : r.p25GrowthLoss === Infinity || r.p25GrowthLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthLoss >= 1 ? 'pos' : r.p25GrowthLoss < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthLoss)}</span>`}</td>
-        <td class="num">${r.p25GrowthDD == null ? '–' : r.p25GrowthDD === Infinity || r.p25GrowthDD > 99 ? '<span class="pos" title="Drawdown quasi nullo (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthDD >= 1 ? 'pos' : r.p25GrowthDD < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthDD)}</span>`}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>
         <td class="num">${pct(r.prob50, false, 0)}</td>
+        <td class="num ${cls(r.sharpe)}">${r.sharpe == null ? '–' : nf2.format(r.sharpe)}</td>
+        <td class="num ${cls(r.sortino)}">${r.sortino == null ? '–' : nf2.format(r.sortino)}</td>
       </tr>`;
     })
     .join('');
@@ -754,15 +754,7 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
       <div class="kpi"><div class="k">Rapporto perdita finale/guadagno</div><div class="v">${Number.isFinite(sim.ratioFinal) ? nf2.format(sim.ratioFinal) : '∞'}</div><div class="h">perdita a fine ${s.mc.years} anni nel 5% peggiore (${sim.finalLoss > 0 ? '−' + pct(sim.finalLoss) + ', ' + eur(amt * (1 - sim.finalLoss)) : 'nessuna perdita'}) ÷ guadagno mediano</div></div>
       ${sim.balanced != null ? `<div class="kpi"><div class="k">Guadagno bilanciato crescita/rischio ${s.mc.years}a</div><div class="v ${cls(sim.balanced)}">${pct(sim.balanced, true)}</div><div class="h">guadagni attesi ${pct(sim.expGain, true)} − 2,25 × perdite attese ${pct(sim.expLoss)} (su tutti gli scenari)</div></div>` : ''}
-      ${(() => {
-        const g = f?.expectedGrowth != null ? (1 + f.expectedGrowth) ** s.mc.years - 1 : 0; // cumulata sui 5 anni
-        const den = (sim.netMedian + sim.netMean) / 2 + g;
-        const numP = sim.netP25 + g;
-        return `<div class="kpi"><div class="k">(Guadagno probabile + crescita) / perdita max</div><div class="v ${cls(numP)}">${sim.maxLoss > 0 ? nf2.format(numP / sim.maxLoss) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa a 5 anni ${pct(g, true)}) ÷ perdita max ${pct(sim.maxLoss)} · più alto = migliore</div></div>
-      <div class="kpi"><div class="k">(Guadagno probabile + crescita) / drawdown mediano</div><div class="v ${cls(numP)}">${sim.mddMedian > 0 ? nf2.format(numP / sim.mddMedian) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa a 5 anni ${pct(g, true)}) ÷ drawdown mediano ${pct(sim.mddMedian)} · più alto = migliore</div></div>
-      <div class="kpi"><div class="k">Perdita max / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format(sim.maxLoss / den) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa a 5 anni ${pct(g, true)}) · più basso = migliore</div></div>
-      <div class="kpi"><div class="k">Perdite medie / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / 2 / den) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa a 5 anni ${pct(g, true)}) · più basso = migliore</div></div>`;
-      })()}
+      <div class="kpi"><div class="k">Indice di Sharpe / Sortino</div><div class="v">${sim.sharpe != null ? nf2.format(sim.sharpe) : '–'} / ${sim.sortino != null ? nf2.format(sim.sortino) : '–'}</div><div class="h">(rendimento atteso − tasso privo di rischio) ÷ volatilità, ÷ deviazione negativa</div></div>
       <div class="kpi"><div class="k">Guadagno corretto per il rischio ${s.mc.years}a</div><div class="v ${cls(sim.netMedian - sim.finalLoss)}">${pct(sim.netMedian - sim.finalLoss, true)}</div><div class="h">guadagno tipico ${pct(sim.netMedian, true)} − perdita finale sfavorevole ${pct(sim.finalLoss)}</div></div>
       <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
@@ -807,7 +799,7 @@ function renderDetail(inst, r, d) {
             const rows = [];
             // 1) Fisco italiano
             const dist = sim.distYield > 0;
-            rows.push(`<tr><td>${ok(!dist || sim.distDrag < 0.004)}</td><td>Fisco (${sim.taxRate != null && sim.taxRate !== 26 ? `aliquota effettiva ${nf1.format(sim.taxRate)}%: quota di titoli di Stato al 12,5%` : '26% sui guadagni'}${dist ? ', dividendi tassati all\'incasso' : ''})</td><td class="muted">${inst.type === 'crypto' ? 'tassa del 26% sulle plusvalenze applicata a fine periodo' : dist ? `strumento a distribuzione (${pct(sim.distYield)}/anno): imposta anticipata, costo ≈ ${eur(amt * sim.distDrag * s.mc.years)} su ${s.mc.years} anni, già sottratto` : 'accumulazione: tassa del 26% solo alla vendita, nessun aggravio'}</td></tr>`);
+            rows.push(`<tr><td>${ok(!dist || sim.distDrag < 0.004)}</td><td>Fisco (${sim.taxRate != null && sim.taxRate !== 26 ? `aliquota effettiva ${nf1.format(sim.taxRate)}%: quota di titoli di Stato al 12,5%` : '26% sui guadagni'}${dist ? ', dividendi tassati all\'incasso' : ''})</td><td class="muted">${inst.type === 'crypto' ? 'tassa del 26% sulle plusvalenze applicata a fine periodo' : dist ? `strumento a distribuzione (${pct(sim.distYield)}/anno): dividendi tassati al 26% a ogni stacco e non reinvestiti, già nel netto di ogni scenario` : 'accumulazione: tassa del 26% solo alla vendita, nessun aggravio'}</td></tr>`);
             // 2) Asimmetria del rischio
             const asym = Number.isFinite(sim.ratioFinal) ? sim.ratioFinal : Infinity;
             rows.push(`<tr><td>${ok(asym < 1)}</td><td>Asimmetria del rischio</td><td class="muted">perdita a fine ${s.mc.years} anni nel 5% peggiore −${pct(sim.finalLoss)} contro guadagno tipico ${pct(sim.netMedian, true)} (rapporto ${Number.isFinite(asym) ? nf2.format(asym) : '∞'}); calo temporaneo massimo −${pct(sim.maxLoss)}, da sopportare senza vendere</td></tr>`);
@@ -824,7 +816,7 @@ function renderDetail(inst, r, d) {
         ${sim.nr5 != null ? (() => {
           const e = (x) => `${x > 0 ? '+' : ''}${Math.round(x * amt).toLocaleString('it-IT')} €`;
           return `<table class="mini"><tbody>
-            <tr><td>Guadagno netto medio su ${s.mc.sims.toLocaleString('it-IT')} scenari (netto vero: ${sim.distYield > 0 ? `26% sui dividendi a ogni stacco, ` : ''}${sim.taxRate != null && sim.taxRate !== 26 ? `${nf1.format(sim.taxRate)}% effettivo alla vendita con 12,5% sulla quota di titoli di Stato` : '26% sulla plusvalenza alla vendita'}, nessun credito se in perdita, bollo 0,20%/anno, commissioni e spread)</td><td class="num ${cls(sim.netMean)}">${e(sim.netMean)}</td></tr>
+            <tr><td>Guadagno netto medio su ${s.mc.sims.toLocaleString('it-IT')} scenari (netto vero: ${sim.distYield > 0 ? `26% sui dividendi a ogni stacco e non reinvestiti, ` : ''}${sim.taxRate != null && sim.taxRate !== 26 ? `${nf1.format(sim.taxRate)}% effettivo alla vendita con 12,5% sulla quota di titoli di Stato` : '26% sulla plusvalenza alla vendita'}, nessun credito se in perdita, bollo 0,20%/anno, commissioni e spread)</td><td class="num ${cls(sim.netMean)}">${e(sim.netMean)}</td></tr>
             <tr><td>− attenuazione dei guadagni estremi (oltre il 75° percentile pesano sempre meno: evita i titoli-lotteria)</td><td class="num ${sim.netMean - (sim.expGain - sim.expLoss) > 0.0005 ? 'neg' : ''}">${sim.netMean - (sim.expGain - sim.expLoss) > 0.0005 ? e(-(sim.netMean - (sim.expGain - sim.expLoss))) : '0 €'}</td></tr>
             <tr><td>− ${inst.type === 'stock' ? '⅓ (azione singola)' : '½'} × perdita media nel 5% peggiore degli scenari (−${pct(sim.es5)})</td><td class="num neg">${e(-(sim.nr5LossWeight ?? 0.5) * sim.es5)}</td></tr>
             <tr><th>= Netto Reale 5A (NR5)</th><th class="num ${cls(sim.nr5)}">${e(sim.nr5)}</th></tr>
@@ -859,7 +851,7 @@ function renderDetail(inst, r, d) {
           ${sim.backfilledYears > 0.1 ? `<tr><td colspan="2" class="muted">Storico breve: per il rischio i ${nf2.format(sim.backfilledYears)} anni mancanti sono ricostruiti con ${sim.backfillProxy || "l'indice di riferimento"}, così le simulazioni includono anche crisi passate. Il rendimento atteso usa solo i dati reali.</td></tr>` : ''}
           <tr><td>Max drawdown simulato: mediano / 95°</td><td class="num neg">−${pct(sim.mddMedian)} / −${pct(sim.mddP95)}</td></tr>
           ${fu.dividendYield ? `<tr><td>Rendimento da dividendi</td><td class="num">${pct(fu.dividendYield)}</td></tr>` : ''}
-          ${sim.distYield > 0 ? `<tr><td colspan="2" class="muted">Dividendi distribuiti (${pct(sim.distYield)}/anno): tassati al 26% all'incasso e reinvestiti al netto. Rispetto a un ETF ad accumulazione l'imposta anticipata costa circa ${pct(sim.distDrag)}/anno di capitalizzazione (≈ ${eur(amt * sim.distDrag * s.mc.years)} su ${s.mc.years} anni), già tolto dalla simulazione.</td></tr>` : ''}
+          ${sim.distYield > 0 ? `<tr><td colspan="2" class="muted">Dividendi distribuiti (${pct(sim.distYield)}/anno): tassati al 26% a ogni stacco e NON reinvestiti (Trade Republic non lo fa in automatico): si accumulano in contanti e non compongono. È il motivo per cui, a parità di indice, l'accumulazione rende di più; già incluso nel netto di ogni scenario.</td></tr>` : ''}
         </tbody></table>
       </div>
       <div class="card" style="grid-column: 1 / -1">
@@ -1309,7 +1301,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'p25GrowthLoss', 'p25GrowthDD', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1409,7 +1401,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="30" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="28" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

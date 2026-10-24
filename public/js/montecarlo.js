@@ -159,12 +159,19 @@ export function simulate(prices, options = {}) {
   const fan = Array.from({ length: nCheck }, () => new Float64Array(o.sims));
   const block = Math.max(1, Math.min(o.blockWeeks, n));
 
+  // Dividendi incassati e NON reinvestiti (o.cashYield annuo lordo, tassati subito al cashTax %):
+  // escono dal percorso del prezzo e si accumulano in contanti sul controvalore di ogni settimana
+  const cashYieldNet = (o.cashYield || 0) * (1 - (o.cashTax ?? o.taxRate) / 100);
+  const cash = new Float64Array(o.sims);
+  let downSq = 0; // per la deviazione negativa (Sortino)
+  let nRet = 0;
   for (let s = 0; s < o.sims; s++) {
     let v = 0;
     let peak = 0;
     let mdd = 0;
     let pos = 0;
     let left = 0;
+    let cashAcc = 0;
     for (let t = 1; t <= steps; t++) {
       let r;
       if (o.method === 'gbm') {
@@ -179,6 +186,9 @@ export function simulate(prices, options = {}) {
         left--;
       }
       v += r;
+      if (r < 0) downSq += r * r;
+      nRet++;
+      cashAcc += Math.exp(v);
       if (v > peak) peak = v;
       else {
         const dd = 1 - Math.exp(v - peak);
@@ -188,11 +198,13 @@ export function simulate(prices, options = {}) {
     }
     finals[s] = Math.exp(v) - 1;
     mdds[s] = mdd;
+    cash[s] = (cashYieldNet * cashAcc) / WEEKS_PER_YEAR;
   }
 
   const sortedFinals = Array.from(finals).sort((a, b) => a - b);
   const sortedMdd = Array.from(mdds).sort((a, b) => a - b);
-  const nets = sortedFinals.map((r) => netReturn(r, o)); // monotona → resta ordinata
+  // Netto per scenario: tasse sulla plusvalenza del prezzo (nessun credito se in perdita) + dividendi netti incassati
+  const nets = Array.from(finals, (r, i) => netReturn(r, o) + cash[i]).sort((a, b) => a - b);
   const meanNet = nets.reduce((s, x) => s + x, 0) / nets.length;
 
   const fanBands = fan.map((col, i) => {
@@ -216,6 +228,18 @@ export function simulate(prices, options = {}) {
     ok: true,
     historyYears,
     annualDrift: mu * WEEKS_PER_YEAR,
+    // Indici standard: Sharpe = (rendimento atteso − tasso privo di rischio) / volatilità;
+    // Sortino = idem / deviazione negativa (solo le settimane in perdita)
+    sharpe: (() => {
+      const exp = Math.exp((mu + sigma ** 2 / 2) * WEEKS_PER_YEAR) - 1 + (o.cashYield || 0);
+      return (exp - (o.riskFree ?? 2) / 100) / Math.max(sigma * Math.sqrt(WEEKS_PER_YEAR), 1e-6);
+    })(),
+    sortino: (() => {
+      const exp = Math.exp((mu + sigma ** 2 / 2) * WEEKS_PER_YEAR) - 1 + (o.cashYield || 0);
+      const dd = Math.sqrt(downSq / Math.max(nRet, 1)) * Math.sqrt(WEEKS_PER_YEAR);
+      return (exp - (o.riskFree ?? 2) / 100) / Math.max(dd, 1e-6);
+    })(),
+    downsideDev: Math.sqrt(downSq / Math.max(nRet, 1)) * Math.sqrt(WEEKS_PER_YEAR),
     annualVol: sigma * Math.sqrt(WEEKS_PER_YEAR),
     histDrift: histMu * WEEKS_PER_YEAR,
     histVol: histSigma * Math.sqrt(WEEKS_PER_YEAR),

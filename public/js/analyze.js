@@ -69,6 +69,8 @@ export function tableResult(r) {
       es5: r4(s.es5),
       nr5: r4(s.nr5),
       nr5LossWeight: r4(s.nr5LossWeight),
+      sharpe: r4(s.sharpe),
+      sortino: r4(s.sortino),
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
       ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
@@ -180,8 +182,13 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   // all'anno, sottratto alla deriva della simulazione (la tassa finale resta sul guadagno complessivo).
   // Aliquota italiana effettiva (12,5% sulla quota di titoli di Stato) usata per tasse finali e dividendi
   o.taxRate = effectiveTaxRate(instrument, holdings, o.taxRate);
+  // Dividendi distribuiti: tassati al 26% a ogni stacco e NON reinvestiti (Trade Republic non reinveste
+  // automaticamente): escono dal percorso del prezzo e si accumulano in contanti al netto dell'imposta.
   const distYield = distributesDividends(instrument, fundamentals) ? cleanDividend(fundamentals?.dividendYield) : 0;
-  const distDrag = distYield > 0 && fwd ? (o.taxRate / 100) * distYield * Math.max(fwd.expected, 0) * ((o.years - 1) / 2) : 0;
+  const distDrag = distYield; // il rendimento da dividendo non compone più nel prezzo
+  o.cashYield = distYield;
+  o.cashTax = o.taxRate;
+  o.riskFree = settings.outlook?.riskFree ?? 2;
   // Concentrazione: peso delle prime 10 partecipazioni (dalla composizione del fondo); per la diversificazione
   if (fwd && holdings?.holdings?.length) {
     const funds = holdings.holdings.filter((h) => isFundHolding(h)).length;

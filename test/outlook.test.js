@@ -241,7 +241,9 @@ test('prodotti a leva: rendimento atteso limitato a L × mercato − finanziamen
 
 test('dividendi distribuiti: riconoscimento e costo del differimento fiscale', async () => {
   const { distributesDividends, analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
-  assert.equal(distributesDividends({ type: 'etf', name: 'iShares STOXX Global Select Dividend 100 UCITS ETF (DE)' }), false, 'senza indicazione: accumulo non noto → nessun aggravio');
+  assert.equal(distributesDividends({ type: 'etf', name: 'iShares STOXX Global Select Dividend 100 UCITS ETF (DE)' }), false, 'senza dati né indicazione nel nome: nessun aggravio');
+  assert.equal(distributesDividends({ type: 'etf', name: 'iShares STOXX Global Select Dividend 100 UCITS ETF (DE)' }, { dividendYield: 0.039 }), true, 'Yahoo riporta un dividendo: distribuisce');
+  assert.equal(distributesDividends({ type: 'etf', name: 'iShares Core MSCI World (Acc)' }, { dividendYield: 0 }), false);
   assert.equal(distributesDividends({ type: 'etf', name: 'Amundi Core S&P 500 Swap UCITS ETF USD Dist' }), true);
   assert.equal(distributesDividends({ type: 'etf', name: 'Xtrackers FTSE MIB UCITS ETF 1D' }), true);
   assert.equal(distributesDividends({ type: 'etf', name: 'Vanguard LifeStrategy 80% Equity UCITS ETF (EUR) Accumulating' }), false);
@@ -250,7 +252,7 @@ test('dividendi distribuiti: riconoscimento e costo del differimento fiscale', a
   const a = series(520, 2, 1.0, b.rets);
   const hist = { timestamps: a.ts, closesEur: a.p };
   const bench = { timestamps: b.ts, closesEur: b.p };
-  const acc = analyze({ instrument: { symbol: 'X', type: 'etf', name: 'Test Acc' }, history: hist, benchmark: bench, fundamentals: { dividendYield: 0.05 }, market: 0.08, marketGrowth: 0.07 }, DEFAULT_SETTINGS);
+  const acc = analyze({ instrument: { symbol: 'X', type: 'etf', name: 'Test Acc' }, history: hist, benchmark: bench, fundamentals: { dividendYield: 0 }, market: 0.08, marketGrowth: 0.07 }, DEFAULT_SETTINGS);
   const dist = analyze({ instrument: { symbol: 'X', type: 'etf', name: 'Test Dist' }, history: hist, benchmark: bench, fundamentals: { dividendYield: 0.05 }, market: 0.08, marketGrowth: 0.07 }, DEFAULT_SETTINGS);
   assert.ok(dist.sim.distDrag > 0 && dist.sim.distDrag < 0.01, String(dist.sim.distDrag));
   assert.ok(dist.sim.netMedian < acc.sim.netMedian);

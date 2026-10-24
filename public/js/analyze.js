@@ -83,10 +83,15 @@ export function leverageOf(name = '') {
   return /leverag|lev\.|a leva/i.test(name) ? 2 : 1;
 }
 
-/** Strumento che paga i dividendi all'investitore: azioni, ed ETF a distribuzione (dal nome). */
-export function distributesDividends(inst) {
+/**
+ * Strumento che paga i dividendi all'investitore: azioni, ed ETF a distribuzione. Per gli ETF il dato
+ * decisivo è il rendimento da dividendo riportato da Yahoo (gli ETF ad accumulazione non ne hanno);
+ * in mancanza si guarda il nome.
+ */
+export function distributesDividends(inst, fundamentals = null) {
   if (inst.type === 'stock') return true;
   if (inst.type !== 'etf') return false;
+  if (fundamentals && Number.isFinite(fundamentals.dividendYield)) return fundamentals.dividendYield > 0.002;
   return /\b(dist|dis|distr|distributing|inc|income|1d|2d|3d|4d)\b|\(d\)|\bd\b\s*$|-d\b|\bdis\)|\bdist\)/i.test(inst.name || '');
 }
 
@@ -144,7 +149,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   // periodo. Rispetto a un accumulo l'unica differenza, reinvestendo il netto, è l'anticipo dell'imposta:
   // il capitale che compone è minore. Costo del differimento ≈ tassa × dividendo × rendimento × (anni−1)/2
   // all'anno, sottratto alla deriva della simulazione (la tassa finale resta sul guadagno complessivo).
-  const distYield = distributesDividends(instrument) ? cleanDividend(fundamentals?.dividendYield) : 0;
+  const distYield = distributesDividends(instrument, fundamentals) ? cleanDividend(fundamentals?.dividendYield) : 0;
   const distDrag = distYield > 0 && fwd ? (o.taxRate / 100) * distYield * Math.max(fwd.expected, 0) * ((o.years - 1) / 2) : 0;
   const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag : null, targetVol: fwd?.vol ?? null });
   if (sim.ok) {

@@ -796,6 +796,30 @@ function renderDetail(inst, r, d) {
         <p class="muted small-note">Prime partecipazioni con stime degli analisti (crescita prudenziale, in rallentamento verso il lungo periodo). Copertura ${pct(f.fundamentalsDetail.coverage, false, 0)} del fondo; il resto segue crescita del mercato e P/E del fondo.</p>
       </div>` : ''}
       <div class="card">
+        <h3>Verifica dei tre fattori: fisco, asimmetria del rischio, qualità della crescita</h3>
+        <table class="mini"><tbody>
+          ${(() => {
+            const ok = (b) => (b ? '<span class="pos">✓</span>' : '<span class="neg">⚠</span>');
+            const rows = [];
+            // 1) Fisco italiano
+            const dist = sim.distYield > 0;
+            rows.push(`<tr><td>${ok(!dist || sim.distDrag < 0.004)}</td><td>Fisco (26% sui guadagni${dist ? ', dividendi tassati all\'incasso' : ''})</td><td class="muted">${inst.type === 'crypto' ? 'tassa del 26% sulle plusvalenze applicata a fine periodo' : dist ? `strumento a distribuzione (${pct(sim.distYield)}/anno): imposta anticipata, costo ≈ ${eur(amt * sim.distDrag * s.mc.years)} su ${s.mc.years} anni, già sottratto` : 'accumulazione: tassa del 26% solo alla vendita, nessun aggravio'}</td></tr>`);
+            // 2) Asimmetria del rischio
+            const asym = Number.isFinite(sim.ratioFinal) ? sim.ratioFinal : Infinity;
+            rows.push(`<tr><td>${ok(asym < 1)}</td><td>Asimmetria del rischio</td><td class="muted">perdita a fine ${s.mc.years} anni nel 5% peggiore −${pct(sim.finalLoss)} contro guadagno tipico ${pct(sim.netMedian, true)} (rapporto ${Number.isFinite(asym) ? nf2.format(asym) : '∞'}); calo temporaneo massimo −${pct(sim.maxLoss)}, da sopportare senza vendere</td></tr>`);
+            // 3) Qualità della crescita (value trap)
+            const y = fu.dividendYield || 0;
+            const g = f?.expectedGrowth ?? null;
+            const trap = y > 0.06 && (g == null || g < 0.03);
+            const px = d?.history?.closesEur || [];
+            const r5 = px.length > 260 ? px.at(-1) / px[px.length - 1 - 260] - 1 : null;
+            rows.push(`<tr><td>${ok(!trap && (g == null || g >= 0.02))}</td><td>Qualità della crescita</td><td class="muted">crescita utili attesa ${g != null ? pct(g, true) + '/anno' : 'n.d.'}${f?.fundamentalsDetail?.evidence != null ? ` (confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)})` : ''}${f?.growthSource === 'holdings' ? ', dalle partecipazioni del fondo' : ''}; dividendo ${pct(y)}${trap ? ' — dividendo alto senza crescita: possibile value trap' : ''}; rendimento reale ultimi 5 anni ${r5 != null ? pct(r5, true) : 'n.d. (storico più corto)'}</td></tr>`);
+            return rows.join('');
+          })()}
+        </tbody></table>
+        <p class="muted small-note">Tutti e tre i fattori entrano già nel "Guadagno netto efficiente 5a" (la classifica): il fisco nella simulazione, l'asimmetria nell'equivalente certo, la crescita nel rendimento atteso.</p>
+      </div>
+      <div class="card">
         <h3>Stima prospettica del rendimento annuo</h3>
         <table class="mini">
           <thead><tr><th>Componente</th><th class="num">Atteso</th><th class="num">Peso</th><th>Fonte</th></tr></thead>

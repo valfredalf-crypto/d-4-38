@@ -261,7 +261,10 @@ export function simulate(prices, options = {}) {
     histogram: { lo, width, counts: histogram },
   };
   stats.balanced = stats.expGain - LOSS_AVERSION * stats.expLoss;
-  stats.nr5 = stats.netMean - 0.5 * stats.es5;
+  // NR5 = guadagno netto medio − ½ × perdita media nel 5% peggiore. La media usa i guadagni "credibili"
+  // (oltre il 75° percentile pesano sempre meno): altrimenti titoli-lotteria con l'89% di probabilità di
+  // perdere tutto finiscono primi grazie a pochi scenari da +5000%, mentre la perdita è limitata al 100%.
+  stats.nr5 = stats.expGain - stats.expLoss - 0.5 * stats.es5;
   return { ...stats, ...score(stats, o) };
 }
 

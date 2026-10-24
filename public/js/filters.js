@@ -3,6 +3,7 @@
 export const INDICATORS = [
   { key: 'ratio', label: 'Rapporto perdita/guadagno', pct: false },
   { key: 'balanced', label: 'Guadagno bilanciato crescita/rischio 5a', pct: true },
+  { key: 'balancedOverLoss', label: 'Rapporto guadagno bilanciato / perdita max', pct: false },
   { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
   { key: 'riskGain', label: 'Perdite medie / (guadagni medi + crescita attesa)', pct: false },
   { key: 'maxLossGain', label: 'Perdita max / (guadagni medi + crescita attesa)', pct: false },
@@ -38,6 +39,7 @@ export const PRESETS = [
   { label: 'Rapporto < 1', filters: { ratio: { max: 1 } } },
   { label: 'Rapporto < 2', filters: { ratio: { max: 2 } } },
   { label: 'Guadagno bilanciato > 15%', filters: { balanced: { min: 15 } } },
+  { label: 'Guad. bilanciato / perdita max > 0,5', filters: { balancedOverLoss: { min: 0.5 } } },
   { label: 'Guadagno corretto rischio > 10%', filters: { riskAdj: { min: 10 } } },
   { label: 'Perdite medie / (guadagni + crescita) < 1', filters: { riskGain: { max: 1 } } },
   { label: 'Perdita max / (guadagni + crescita) < 1', filters: { maxLossGain: { max: 1 } } },

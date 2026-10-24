@@ -469,6 +469,8 @@ function rowValues(i) {
     finalLoss: sim?.finalLoss ?? null,
     // Guadagno tipico (mediano) meno la perdita definitiva nel caso sfavorevole: quanto guadagni, già "pagato" il rischio
     balanced: sim?.balanced ?? null,
+    // Guadagno bilanciato ÷ perdita max 5a (filtro): più alto è meglio
+    balancedOverLoss: sim && sim.balanced != null && sim.maxLoss != null ? (sim.maxLoss > 0 ? sim.balanced / sim.maxLoss : sim.balanced > 0 ? Infinity : 0) : null,
     // Media delle perdite (drawdown mediano e perdita max) ÷ (media dei guadagni mediano e medio + crescita
     // annua attesa degli utili, 0 se non disponibile): più basso è meglio; ∞ se il denominatore è ≤ 0
     riskGain: (() => {

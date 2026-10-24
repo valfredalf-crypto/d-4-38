@@ -6,7 +6,7 @@ export const INDICATORS = [
   { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
   { key: 'riskGain', label: 'Perdite medie / (guadagni medi + crescita attesa)', pct: false },
   { key: 'maxLossGain', label: 'Perdita max / (guadagni medi + crescita attesa)', pct: false },
-  { key: 'meanOverP25GL', label: 'Guadagno medio / [(guad. probabile + crescita) / perdita max]', pct: true },
+  { key: 'meanTimesP25GL', label: 'Guadagno medio × [(guad. probabile + crescita) / perdita max]', pct: true },
   { key: 'p25GrowthLoss', label: '(Guadagno probabile 75% + crescita) / perdita max', pct: false },
   { key: 'ratioFinal', label: 'Rapporto perdita finale/guadagno', pct: false },
   { key: 'finalLoss', label: 'Perdita finale 5a (caso sfavorevole)', pct: true },

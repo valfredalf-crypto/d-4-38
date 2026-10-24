@@ -229,13 +229,13 @@ table.mini .num { white-space: nowrap; }
   /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (5–8) */
   body.mview-perf #table th:nth-child(n+5):nth-child(-n+8), body.mview-perf #table td:nth-child(n+5):nth-child(-n+8) { display: table-cell; }
   body.mview-perf #table th:nth-child(n+11), body.mview-perf #table td:nth-child(n+11) { display: none; }
-  /* Vista "Rischio": perdita max (11), drawdown mediano (12), rapporto DD mediano (23), P(perdita) (24) */
+  /* Vista "Rischio": perdita max (11), drawdown mediano (12), rapporto DD mediano (25), P(perdita) (26) */
   body.mview-risk #table th:nth-child(n+11):nth-child(-n+12), body.mview-risk #table td:nth-child(n+11):nth-child(-n+12),
-  body.mview-risk #table th:nth-child(n+23):nth-child(-n+24), body.mview-risk #table td:nth-child(n+23):nth-child(-n+24) { display: table-cell; }
+  body.mview-risk #table th:nth-child(n+25):nth-child(-n+26), body.mview-risk #table td:nth-child(n+25):nth-child(-n+26) { display: table-cell; }
   body.mview-risk #table th:nth-child(n+13):nth-child(-n+18), body.mview-risk #table td:nth-child(n+13):nth-child(-n+18) { display: none; }
-  /* Vista "Probabilità": mediana (13), guadagno probabile 75% (15), P(≥+25%) (25), P(≥+50%) (26) */
+  /* Vista "Probabilità": mediana (13), guadagno probabile 75% (15), P(≥+25%) (27), P(≥+50%) (28) */
   body.mview-prob #table th:nth-child(15), body.mview-prob #table td:nth-child(15),
-  body.mview-prob #table th:nth-child(n+25), body.mview-prob #table td:nth-child(n+25) { display: table-cell; }
+  body.mview-prob #table th:nth-child(n+27), body.mview-prob #table td:nth-child(n+27) { display: table-cell; }
   body.mview-prob #table th:nth-child(11), body.mview-prob #table td:nth-child(11),
   body.mview-prob #table th:nth-child(n+16):nth-child(-n+18), body.mview-prob #table td:nth-child(n+16):nth-child(-n+18) { display: none; }
   th, td { padding: 8px 3px; }

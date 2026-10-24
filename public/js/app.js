@@ -591,6 +591,8 @@ function render() {
         <td class="num">${r.maxLossGain == null ? '–' : r.maxLossGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.maxLossGain < 1 ? 'pos' : ''}">${nf2.format(r.maxLossGain)}</span>`}</td>
         <td class="num">${r.p25GrowthLoss == null ? '–' : r.p25GrowthLoss === Infinity || r.p25GrowthLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthLoss >= 1 ? 'pos' : r.p25GrowthLoss < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthLoss)}</span>`}</td>
         <td class="num">${r.p25GrowthDD == null ? '–' : r.p25GrowthDD === Infinity || r.p25GrowthDD > 99 ? '<span class="pos" title="Drawdown quasi nullo (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthDD >= 1 ? 'pos' : r.p25GrowthDD < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthDD)}</span>`}</td>
+        <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
+        <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>
@@ -1225,7 +1227,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25GrowthLoss', 'p25GrowthDD', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25GrowthLoss', 'p25GrowthDD', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1325,7 +1327,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="26" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="28" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

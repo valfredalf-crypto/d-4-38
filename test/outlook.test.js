@@ -273,3 +273,11 @@ test('aliquota italiana effettiva: 12,5% sui titoli di Stato, 26% altrove', asyn
   const mixed = effectiveTaxRate({ type: 'etf', name: 'Vanguard LifeStrategy 80% Equity' }, { bondPosition: 0.2 });
   assert.ok(mixed < 26 && mixed > 24, String(mixed)); // 20% obbligazioni × 60% governativi → 12% al 12,5%
 });
+
+test('utili attesi negativi con ricavi in crescita: si usano i ricavi (artefatto Yahoo)', async () => {
+  const { fundamentalsReturn } = await import('../public/js/outlook.js');
+  const googl = fundamentalsReturn({ forwardPE: 20.8, analysts: 54, epsGrowthNext: -0.266, revenueGrowthNext: 0.253, revenueGrowthTtm: 0.242, dividendYield: 0.0027, marketCap: 3.9e12 }, B, 5);
+  assert.ok(googl.growthInput >= 0.2, String(googl.growthInput));
+  const realDecline = fundamentalsReturn({ forwardPE: 20.8, analysts: 54, epsGrowthNext: -0.266, revenueGrowthNext: -0.05, dividendYield: 0, marketCap: 3.9e12 }, B, 5);
+  assert.ok(realDecline.growthInput < 0, 'ricavi in calo: il calo degli utili è vero');
+});

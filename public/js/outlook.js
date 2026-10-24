@@ -277,6 +277,9 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
     // un anno negativo (non si ripete per 5 anni); una crescita trainata dai ricavi è più duratura.
     let g1 = Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
     if (g1 == null) return null;
+    // Utili attesi in calo con ricavi chiaramente in crescita (es. Alphabet −27% con ricavi +25%): il dato
+    // sugli utili di Yahoo è un artefatto di periodo, non una previsione; si usa la crescita dei ricavi.
+    if (Number.isFinite(f.epsGrowthNext) && f.epsGrowthNext < 0 && Number.isFinite(f.revenueGrowthNext) && f.revenueGrowthNext > 0.05) g1 = f.revenueGrowthNext;
     // Senza stime dei ricavi (es. società di investimento, dove gli "utili" sono variazioni di valore)
     // il balzo degli utili non è verificabile: massimo +10%.
     if (Number.isFinite(f.revenueGrowthNext)) g1 = Math.min(g1, f.revenueGrowthNext + 0.1);

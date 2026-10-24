@@ -488,7 +488,8 @@ function sortRows(rows) {
     if (na !== nb) return na ? 1 : -1; // valori mancanti sempre in fondo
     if (na) return a.name.localeCompare(b.name);
     if (typeof va === 'string') return va.localeCompare(vb) * dir;
-    if (va === vb) return 0;
+    // A parità (es. rapporto 0 = nessuna perdita nemmeno nel caso sfavorevole) prima chi guadagna di più
+    if (va === vb) return (b.netGain ?? -Infinity) - (a.netGain ?? -Infinity);
     return (va < vb ? -1 : 1) * dir;
   });
 }
@@ -540,7 +541,7 @@ function render() {
         <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}</td>
         <td class="num ${cls(r.netP25)}">${pct(r.netP25, true)}</td>
         <td class="num">${ratioCell}</td>
-        <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
+        <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : r.ratioFinal === 0 ? '<span class="pos" title="Nessuna perdita a fine 5 anni nemmeno nel caso sfavorevole (5% peggiore): tipico di monetari e obbligazionari a breve, che però guadagnano poco">0 ✓</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>

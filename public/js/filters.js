@@ -7,7 +7,11 @@ export const INDICATORS = [
   { key: 'netMean', label: 'Guadagno medio 5a', pct: true },
   { key: 'maxLoss', label: 'Perdita massima 5a', pct: true },
   { key: 'mddMedian', label: 'Drawdown mediano 5a', pct: true },
+  { key: 'netP25', label: 'Guadagno probabile 5a (75% degli scenari)', pct: true },
   { key: 'probLoss', label: 'Probabilità di perdita', pct: true },
+  { key: 'prob10', label: 'Probabilità netto ≥ +10%', pct: true },
+  { key: 'prob25', label: 'Probabilità netto ≥ +25%', pct: true },
+  { key: 'prob50', label: 'Probabilità netto ≥ +50%', pct: true },
   { key: 'expected', label: 'Rendimento atteso annuo', pct: true },
   { key: 'growthExp', label: 'Crescita utili attesa (annua)', pct: true },
   { key: 'growth', label: 'Crescita prossimo anno (selezione 🚀)', pct: true },
@@ -28,6 +32,8 @@ export const PRESETS = [
   { label: 'Guadagno mediano > 0', filters: { netGain: { min: 0 } } },
   { label: 'Perdita max < 50%', filters: { maxLoss: { max: 50 } } },
   { label: 'P(perdita) < 25%', filters: { probLoss: { max: 25 } } },
+  { label: 'Guadagno probabile > 0', filters: { netP25: { min: 0 } } },
+  { label: 'P(≥ +25%) > 60%', filters: { prob25: { min: 60 } } },
 ];
 
 export function parseNum(v) {

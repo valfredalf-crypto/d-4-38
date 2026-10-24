@@ -2,6 +2,8 @@
 // Lavora su chiusure settimanali in EUR: ogni passo della simulazione è una settimana.
 
 export const WEEKS_PER_YEAR = 52;
+/** Soglie di rendimento netto per le probabilità (0 = non perdere, 0.25 = almeno +25%, …). */
+export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
 
 // PRNG deterministico (mulberry32) per risultati riproducibili.
 export function mulberry32(seed) {
@@ -195,6 +197,8 @@ export function simulate(prices, options = {}) {
     netP95: percentile(nets, 0.95),
     netMean: meanNet,
     probLoss: nets.filter((x) => x < 0).length / nets.length,
+    // Probabilità di ottenere almeno ciascun rendimento netto di PROB_THRESHOLDS (stesso ordine)
+    probAtLeast: PROB_THRESHOLDS.map((t) => nets.filter((x) => x >= t).length / nets.length),
     mddMedian: percentile(sortedMdd, 0.5),
     mddP95: percentile(sortedMdd, 0.95),
     fan: fanBands,

@@ -66,3 +66,14 @@ test('rapporto con guadagno negativo = Infinity', () => {
   assert.equal(s.ratio, Infinity);
   assert.ok(Math.abs(score({ mddP95: 0.3, netMedian: 0.6 }, {}).ratio - 0.5) < 1e-12);
 });
+
+test('probAtLeast: probabilità decrescenti con la soglia e coerenti con probLoss', () => {
+  const prices = [];
+  let p = 100;
+  const rnd = mulberry32(7);
+  for (let i = 0; i < 520; i++) prices.push((p *= Math.exp(0.002 + 0.03 * (rnd() - 0.5))));
+  const s = simulate(prices, { sims: 500, seed: 1 });
+  const v = s.probAtLeast;
+  for (let i = 1; i < v.length; i++) assert.ok(v[i] <= v[i - 1]);
+  assert.ok(Math.abs(s.probAtLeast[0] - (1 - s.probLoss)) < 1e-9);
+});

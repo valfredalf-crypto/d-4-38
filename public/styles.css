@@ -140,6 +140,12 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 #d-body, .add-body { padding: 16px 20px 22px; }
 
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.prob-bars { display: grid; gap: 6px; margin: 6px 0 8px; }
+.prob-row { display: grid; grid-template-columns: 9.5em 1fr 3em; align-items: center; gap: 8px; font-size: 13px; }
+.prob-row .bar { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
+.prob-row .bar i { display: block; height: 100%; background: var(--chart-line); border-radius: 5px; }
+.prob-row .bar i.neg-bar { background: var(--neg, #d33); }
+.prob-row b { text-align: right; font-variant-numeric: tabular-nums; }
 .kpi { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
 .kpi .k { color: var(--muted); font-size: 12px; }
 .kpi .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
@@ -198,18 +204,25 @@ table.mini .num { white-space: nowrap; }
   .frow input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
   td .name { max-width: 140px; }
   /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */
-  /* Telefono, vista "Previsioni": perdita max, mediana, media, rapporto */
+  /* Telefono, vista "Previsioni": perdita max (11), mediana (13), media (14), rapporto (16) */
   #table th:nth-child(n+3):nth-child(-n+10), #table td:nth-child(n+3):nth-child(-n+10),
   #table th:nth-child(12), #table td:nth-child(12),
-  #table th:nth-child(n+16), #table td:nth-child(n+16) { display: none; }
-  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno */
+  #table th:nth-child(15), #table td:nth-child(15),
+  #table th:nth-child(n+17), #table td:nth-child(n+17) { display: none; }
   .mobile-view { display: flex; }
+  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (5–8) */
   body.mview-perf #table th:nth-child(n+5):nth-child(-n+8), body.mview-perf #table td:nth-child(n+5):nth-child(-n+8) { display: table-cell; }
-  body.mview-perf #table th:nth-child(n+11):nth-child(-n+16), body.mview-perf #table td:nth-child(n+11):nth-child(-n+16) { display: none; }
-  /* Vista "Rischio": perdita max, drawdown mediano, rapporto DD mediano, probabilità di perdita */
+  body.mview-perf #table th:nth-child(n+11), body.mview-perf #table td:nth-child(n+11) { display: none; }
+  /* Vista "Rischio": perdita max (11), drawdown mediano (12), rapporto DD mediano (17), P(perdita) (18) */
   body.mview-risk #table th:nth-child(12), body.mview-risk #table td:nth-child(12),
-  body.mview-risk #table th:nth-child(n+16), body.mview-risk #table td:nth-child(n+16) { display: table-cell; }
-  body.mview-risk #table th:nth-child(n+13):nth-child(-n+15), body.mview-risk #table td:nth-child(n+13):nth-child(-n+15) { display: none; }
+  body.mview-risk #table th:nth-child(n+17):nth-child(-n+18), body.mview-risk #table td:nth-child(n+17):nth-child(-n+18) { display: table-cell; }
+  body.mview-risk #table th:nth-child(n+13):nth-child(-n+16), body.mview-risk #table td:nth-child(n+13):nth-child(-n+16) { display: none; }
+  /* Vista "Probabilità": mediana (13), guadagno probabile 75% (15), P(perdita) (18), P(≥+25%) (19) */
+  body.mview-prob #table th:nth-child(15), body.mview-prob #table td:nth-child(15),
+  body.mview-prob #table th:nth-child(n+18), body.mview-prob #table td:nth-child(n+18) { display: table-cell; }
+  body.mview-prob #table th:nth-child(11), body.mview-prob #table td:nth-child(11),
+  body.mview-prob #table th:nth-child(14), body.mview-prob #table td:nth-child(14),
+  body.mview-prob #table th:nth-child(16), body.mview-prob #table td:nth-child(16) { display: none; }
   th, td { padding: 8px 3px; }
   #table td { font-size: 12.5px; }
   th .l { display: none; }

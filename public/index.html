@@ -36,6 +36,7 @@
     <div class="mobile-view" role="tablist" aria-label="Colonne visibili">
       <button data-mview="forecast" class="tab active">Previsioni</button>
       <button data-mview="risk" class="tab">Rischio</button>
+      <button data-mview="prob" class="tab">Probabilità</button>
       <button data-mview="perf" class="tab">Andamento</button>
     </div>
     <input id="filter" type="search" placeholder="Filtra per nome, ticker o ISIN…" autocomplete="off">
@@ -76,9 +77,11 @@
             <th data-sort="mddMedian" class="num" title="Drawdown mediano a 5 anni: perdita massima dal picco al minimo nello scenario tipico (metà degli scenari fa meglio, metà peggio)"><span class="l">Drawdown mediano 5a</span><span class="s">Drawdown med.</span></th>
             <th data-sort="netGain" class="num" title="Guadagno netto a 5 anni nello scenario mediano (metà degli scenari fa meglio, metà peggio), dopo costi e tasse"><span class="l">Guadagno mediano 5a</span><span class="s">Mediana 5a</span></th>
             <th data-sort="netMean" class="num" title="Guadagno netto medio a 5 anni su tutti gli scenari simulati, dopo costi e tasse"><span class="l">Guadagno medio 5a</span><span class="s">Media 5a</span></th>
+            <th data-sort="netP25" class="num" title="Guadagno netto probabile a 5 anni: rendimento netto ottenuto o superato nel 75% degli scenari simulati (crescita attesa e rischio di perdita già inclusi), dopo costi e tasse"><span class="l">Guadagno probabile (75%)</span><span class="s">Prob. 75%</span></th>
             <th data-sort="ratio" class="num" title="Perdita massima / guadagno netto: più basso è meglio"><span class="l">Rapporto</span><span class="s">Rapp.</span></th>
             <th data-sort="ratioMedian" class="num" title="Drawdown mediano / guadagno netto: perdita tipica rispetto al guadagno tipico, più basso è meglio"><span class="l">Rapporto DD mediano</span><span class="s">Rapp. DD med.</span></th>
             <th data-sort="probLoss" class="num" title="Probabilità di chiudere i 5 anni in perdita">P(perdita)</th>
+            <th data-sort="prob25" class="num" title="Probabilità di ottenere almeno +25% netto in 5 anni (dopo costi e tasse)"><span class="l">P(netto ≥ +25%)</span><span class="s">P(≥+25%)</span></th>
           </tr>
         </thead>
         <tbody></tbody>

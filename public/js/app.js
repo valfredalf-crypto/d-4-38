@@ -1,7 +1,7 @@
 import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
-import { netReturn, DEFAULT_OPTIONS } from './montecarlo.js';
+import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -174,7 +174,7 @@ async function analyzeOne(inst) {
     state.cryptoBenchmark = await api(`/api/history?symbol=${encodeURIComponent(CRYPTO_BENCHMARK_SYMBOL)}`).catch(() => null);
   }
   const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
-  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, market: state.market?.expected, marketGrowth: state.market?.growth, settings: state.settings });
+  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, holdings: d.fundamentals?.lookThrough, market: state.market?.expected, marketGrowth: state.market?.growth, settings: state.settings });
   state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
@@ -454,6 +454,11 @@ function rowValues(i) {
     ratioMedian: sim && sim.mddMedian != null && sim.netGain != null ? (sim.netGain > 0 ? sim.mddMedian / sim.netGain : Infinity) : null,
     netGain: sim?.netGain ?? null,
     netMean: sim?.netMean ?? null,
+    netP25: sim?.netP25 ?? null,
+    // probAtLeast è allineato a PROB_THRESHOLDS: [0, +10%, +25%, +50%, +100%]
+    prob10: sim?.probAtLeast?.[1] ?? null,
+    prob25: sim?.probAtLeast?.[2] ?? null,
+    prob50: sim?.probAtLeast?.[3] ?? null,
     // Infinity non sopravvive al JSON (diventa null): con guadagno ≤ 0 il rapporto è ∞
     ratio: sim ? (sim.ratio ?? (sim.netGain > 0 ? null : Infinity)) : null,
     probLoss: sim?.probLoss ?? null,
@@ -530,9 +535,11 @@ function render() {
         <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
         <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}</td>
+        <td class="num ${cls(r.netP25)}">${pct(r.netP25, true)}</td>
         <td class="num">${ratioCell}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
+        <td class="num">${pct(r.prob25, false, 0)}</td>
       </tr>`;
     })
     .join('');
@@ -634,9 +641,10 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
-      <div class="kpi"><div class="k">Crescita utili attesa</div><div class="v ${cls(f?.expectedGrowth)}">${f?.expectedGrowth != null ? pct(f.expectedGrowth, true) + '/anno' : 'n.d.'}</div><div class="h">${f?.expectedGrowth == null ? (inst.type === 'crypto' ? 'le crypto non hanno utili' : 'strumento non azionario o dati insufficienti') : f.growthSource === 'market' ? 'crescita del mercato × β ' + nf2.format(f.beta) : 'consenso analisti, prudenziale, prossimi 5 anni'}</div></div>
+      <div class="kpi"><div class="k">Crescita utili attesa</div><div class="v ${cls(f?.expectedGrowth)}">${f?.expectedGrowth != null ? pct(f.expectedGrowth, true) + '/anno' : 'n.d.'}</div><div class="h">${f?.expectedGrowth == null ? (inst.type === 'crypto' ? 'le crypto non hanno utili' : 'strumento non azionario o dati insufficienti') : f.growthSource === 'market' ? 'crescita del mercato × β ' + nf2.format(f.beta) : f.growthSource === 'holdings' ? `dalle partecipazioni del fondo (stime analisti sul ${pct(f.fundamentalsDetail.coverage, false, 0)} del portafoglio)` : 'consenso analisti, prudenziale, prossimi 5 anni'}</div></div>
       <div class="kpi"><div class="k">${s.mc.gainMetric === 'mean' ? 'Guadagno medio' : 'Guadagno mediano'} ${s.mc.years}a (classifica)</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
       <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
+      <div class="kpi"><div class="k">Guadagno netto probabile ${s.mc.years}a</div><div class="v ${cls(sim.netP25)}">${pct(sim.netP25, true)}</div><div class="h">ottenuto o superato nel 75% degli scenari · ${eur(amt * (1 + sim.netP25))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
       <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
@@ -657,6 +665,22 @@ function renderDetail(inst, r, d) {
         <canvas id="c-hist"></canvas>
         <div class="legend"><span>5%: ${pct(sim.netP5, true)}</span><span>25%: ${pct(sim.netP25, true)}</span><span>mediana: ${pct(sim.netMedian, true)}</span><span>75%: ${pct(sim.netP75, true)}</span><span>95%: ${pct(sim.netP95, true)}</span></div>
       </div>
+      ${sim.probAtLeast ? `<div class="card">
+        <h3>Probabilità di rendimento netto a ${s.mc.years} anni</h3>
+        <div class="prob-bars">
+          <div class="prob-row"><span>in perdita</span><div class="bar"><i class="neg-bar" style="width:${(sim.probLoss * 100).toFixed(1)}%"></i></div><b>${pct(sim.probLoss, false, 0)}</b></div>
+          ${PROB_THRESHOLDS.map((t, k) => `<div class="prob-row"><span>${t === 0 ? 'almeno pari (≥ 0%)' : 'almeno ' + pct(t, true, 0)}</span><div class="bar"><i style="width:${(sim.probAtLeast[k] * 100).toFixed(1)}%"></i></div><b>${pct(sim.probAtLeast[k], false, 0)}</b></div>`).join('')}
+        </div>
+        <p class="muted small-note">Netto di costi e tasse, su ${s.mc.sims.toLocaleString('it-IT')} scenari: il rendimento atteso include le prospettive di crescita${inst.type === 'etf' && f?.growthSource === 'holdings' ? ' delle partecipazioni' : ''}, il ventaglio include il rischio di perdita stimato (volatilità e drawdown).</p>
+      </div>` : ''}
+      ${f?.fundamentalsDetail?.source === 'holdings' && f.fundamentalsDetail.top?.length ? `<div class="card">
+        <h3>Prospettive delle partecipazioni</h3>
+        <table class="mini">
+          <thead><tr><th>Titolo</th><th class="num">Peso</th><th class="num">Crescita utili</th><th class="num">Atteso / anno</th></tr></thead>
+          <tbody>${f.fundamentalsDetail.top.map((h) => `<tr><td>${esc(h.symbol)}</td><td class="num">${pct(h.weight, false, 1)}</td><td class="num ${cls(h.growth)}">${pct(h.growth, true)}</td><td class="num ${cls(h.expected)}">${pct(h.expected, true)}</td></tr>`).join('')}</tbody>
+        </table>
+        <p class="muted small-note">Prime partecipazioni con stime degli analisti (crescita prudenziale, in rallentamento verso il lungo periodo). Copertura ${pct(f.fundamentalsDetail.coverage, false, 0)} del fondo; il resto segue crescita del mercato e P/E del fondo.</p>
+      </div>` : ''}
       <div class="card">
         <h3>Stima prospettica del rendimento annuo</h3>
         <table class="mini">
@@ -665,7 +689,7 @@ function renderDetail(inst, r, d) {
             ${compRow('Storico', 'history', f?.mode === 'forward' ? `${sim.historyYears.toFixed(1)} anni, grezzo ${pct(f.historyRaw, true)}, credibilità ${pct(f.credibility, false, 0)}` : `${sim.historyYears.toFixed(1)} anni di dati`)}
             ${f?.mode === 'forward' ? compRow('Equilibrio', 'equilibrium', inst.type === 'crypto' ? `risk-free ${s.outlook.riskFree}% + premio crypto ${s.outlook.cryptoPremium}%` : `risk-free ${s.outlook.riskFree}% + β ${nf2.format(f.beta)} × ${s.outlook.equityPremium}%`) : ''}
             ${f?.mode === 'forward' ? compRow('Analisti', 'analysts', fu.analysts ? `${fu.analysts} analisti, target ${nf2.format(fu.targetMean)} ${esc(fu.currency || '')} (${pct(f.analystUpside, true)}), ${esc(fu.recommendation || '')}` : 'nessuna copertura') : ''}
-            ${f?.mode === 'forward' ? compRow('Crescita e valutazione', 'fundamentals', f.fundamentalsDetail?.source === 'market' ? `prospettive di crescita e valutazione del mercato azionario (${pct(f.fundamentalsDetail.market, true)}/anno) × β ${nf2.format(f.fundamentalsDetail.beta)}` : f.fundamentalsDetail ? `utili +${pct(f.fundamentalsDetail.growth, false)}/anno (stima analisti ${pct(f.fundamentalsDetail.growthInput, true)}, in rallentamento), P/E ${nf2.format(f.fundamentalsDetail.pe)} → ${nf2.format(f.fundamentalsDetail.peTarget)} (${pct(f.fundamentalsDetail.valuation, true)}/anno), dividendo ${pct(f.fundamentalsDetail.dividend)}` : (inst.type === 'crypto' ? 'non applicabile: le crypto non hanno utili né dividendi' : 'dati insufficienti')) : ''}
+            ${f?.mode === 'forward' ? compRow('Crescita e valutazione', 'fundamentals', f.fundamentalsDetail?.source === 'holdings' ? `partecipazioni del fondo: crescita utili ponderata +${pct(f.fundamentalsDetail.growth, false)}/anno (stime analisti sul ${pct(f.fundamentalsDetail.coverage, false, 0)} del portafoglio, il resto come il mercato)${f.fundamentalsDetail.pe ? `, P/E del fondo ${nf2.format(f.fundamentalsDetail.pe)}` : ''}` : f.fundamentalsDetail?.source === 'market' ? `prospettive di crescita e valutazione del mercato azionario (${pct(f.fundamentalsDetail.market, true)}/anno) × β ${nf2.format(f.fundamentalsDetail.beta)}` : f.fundamentalsDetail ? `utili +${pct(f.fundamentalsDetail.growth, false)}/anno (stima analisti ${pct(f.fundamentalsDetail.growthInput, true)}, in rallentamento), P/E ${nf2.format(f.fundamentalsDetail.pe)} → ${nf2.format(f.fundamentalsDetail.peTarget)} (${pct(f.fundamentalsDetail.valuation, true)}/anno), dividendo ${pct(f.fundamentalsDetail.dividend)}` : (inst.type === 'crypto' ? 'non applicabile: le crypto non hanno utili né dividendi' : 'dati insufficienti')) : ''}
             <tr><th>Rendimento atteso</th><th class="num">${pct(f?.expected, true)}</th><th></th><th></th></tr>
             ${fu.revenueGrowthNext != null || fu.epsGrowthNext != null ? `<tr><td>Crescita ricavi anno prossimo</td><td class="num">${pct(fu.revenueGrowthNext, true)}</td><td></td><td class="muted">consenso analisti</td></tr>
             <tr><td>Crescita utili anno prossimo</td><td class="num">${pct(fu.epsGrowthNext, true)}</td><td></td><td class="muted">consenso analisti</td></tr>` : ''}
@@ -1076,6 +1100,7 @@ function bind() {
   const setMview = (v) => {
     document.body.classList.toggle('mview-perf', v === 'perf');
     document.body.classList.toggle('mview-risk', v === 'risk');
+    document.body.classList.toggle('mview-prob', v === 'prob');
     $$('[data-mview]').forEach((b) => b.classList.toggle('active', b.dataset.mview === v));
     try {
       localStorage.setItem('trmc.mview', v);
@@ -1219,7 +1244,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="17" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="19" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

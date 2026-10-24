@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { forwardParams, estimateBeta, ewmaVol, BASE_OUTLOOK } from '../public/js/outlook.js';
+import { forwardParams, estimateBeta, ewmaVol, BASE_OUTLOOK, holdingsFundamentals } from '../public/js/outlook.js';
 // I test usano i parametri predefiniti, indipendenti dalla taratura settimanale.
 const B = { ...BASE_OUTLOOK };
 import { mulberry32 } from '../public/js/montecarlo.js';
@@ -194,4 +194,17 @@ test('crescita utili attesa: propria, del mercato × beta, n.d. per non azionari
   const own = forwardParams({ type: 'stock', timestamps: etf.ts, prices: etf.p, fundamentals: { forwardPE: 25, growthLongTerm: 0.2, analysts: 10 }, years: 5, lookbackYears: 10 }, B);
   assert.equal(own.growthSource, 'own');
   assert.ok(own.expectedGrowth > 0.04 && own.expectedGrowth < 0.2);
+});
+
+test('holdingsFundamentals: crescita dalle partecipazioni, resto dal mercato, null con copertura scarsa', () => {
+  const fast = { forwardPE: 30, analysts: 20, growthLongTerm: 0.25, dividendYield: 0 };
+  const slow = { forwardPE: 12, analysts: 20, growthLongTerm: 0.03, dividendYield: 0.03 };
+  const mk = (f, w) => ({ holdings: [{ symbol: 'A', weight: w, fundamentals: f }], stockPosition: 1, pe: 20, dividendYield: 0.015 });
+  const hi = holdingsFundamentals(mk(fast, 0.6), {}, 0.07, 0.06);
+  const lo = holdingsFundamentals(mk(slow, 0.6), {}, 0.07, 0.06);
+  assert.equal(hi.source, 'holdings');
+  assert.ok(hi.growth > lo.growth, 'partecipazioni in forte crescita → crescita attesa maggiore');
+  assert.ok(Math.abs(hi.coverage - 0.6) < 1e-9);
+  assert.equal(holdingsFundamentals(mk(fast, 0.05), {}, 0.07, 0.06), null);
+  assert.equal(holdingsFundamentals({ ...mk(fast, 0.6), stockPosition: 0.2 }, {}, 0.07, 0.06), null, 'fondo obbligazionario');
 });

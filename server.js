@@ -3,7 +3,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { listInstruments, addInstruments, removeInstrument, universe } from './lib/store.js';
-import { historyEur, quote, outlook, recentEur, performanceFrom } from './lib/market.js';
+import { historyEur, quote, outlook, holdings, recentEur, performanceFrom } from './lib/market.js';
 import { search, pickListing } from './lib/yahoo.js';
 import { parseInstrumentCsv } from './lib/importer.js';
 import { cached } from './lib/cache.js';
@@ -85,7 +85,13 @@ const routes = {
   'GET /api/outlook': async (req, url) => {
     const symbol = url.searchParams.get('symbol');
     const inst = listInstruments().find((i) => i.symbol === symbol);
-    return outlook(inst?.outlookSymbol || symbol);
+    const f = await outlook(inst?.outlookSymbol || symbol);
+    if (inst?.type !== 'etf') return f;
+    // ETF: stime degli analisti per ciascuna partecipazione (look-through)
+    const comp = await holdings(symbol).catch(() => null);
+    if (!comp?.holdings?.length) return f;
+    const list = await mapLimit(comp.holdings, 4, async (h) => ({ ...h, fundamentals: await outlook(h.symbol).catch(() => null) }));
+    return { ...f, lookThrough: { ...comp, holdings: list } };
   },
   'GET /api/quotes': async (req, url) => {
     const symbols = (url.searchParams.get('symbols') || '').split(',').filter(Boolean).slice(0, 200);

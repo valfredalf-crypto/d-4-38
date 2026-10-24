@@ -89,6 +89,7 @@ export function ewmaVol(rets, lambda) {
  * @param {number[]} p.timestamps, p.prices  storico settimanale in EUR
  * @param {object} [p.benchmark]  { timestamps, closesEur }
  * @param {object} [p.fundamentals]  output di /api/outlook
+ * @param {object} [p.holdings]      solo ETF: partecipazioni con le relative stime (vedi holdingsFundamentals)
  * @param {number} p.years  orizzonte
  * @param {number} p.lookbackYears
  */
@@ -179,6 +180,8 @@ export function forwardParams(p, settings = {}) {
   // Senza stime proprie (ETF, azioni non coperte dagli analisti): prospettive di crescita e valutazione
   // del mercato azionario, in proporzione al beta (un monetario o obbligazionario con β≈0 riceve il
   // tasso privo di rischio). Le crypto non hanno utili: nessuna componente di crescita.
+  // ETF: prospettive di crescita delle partecipazioni effettive (stime per titolo + P/E del fondo).
+  if (!fundamentalsEst && p.type === 'etf' && p.holdings) fundamentalsEst = holdingsFundamentals(p.holdings, s, p.market, p.marketGrowth, p.years);
   if (!fundamentalsEst && p.type !== 'crypto' && Number.isFinite(p.market)) {
     fundamentalsEst = {
       expected: rf + Math.max(beta, 0) * (p.market - rf),
@@ -249,6 +252,49 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
   const dividend = Math.max(0, Math.min(0.1, f.dividendYield || 0));
   const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
   return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0 };
+}
+
+/**
+ * Prospettive di un ETF a partire dalle sue partecipazioni (Grinold-Kroner "look-through"):
+ * - quota coperta: media pesata di crescita e rendimento atteso di ogni titolo con stime degli analisti;
+ * - resto della parte azionaria: crescita del mercato, valutazione dal P/E aggregato del fondo, dividendo del fondo;
+ * - parte non azionaria (obbligazioni, liquidità): tasso privo di rischio, nessuna crescita degli utili.
+ * `h` = { holdings: [{ symbol, weight, fundamentals }], stockPosition, pe, dividendYield }.
+ * Restituisce null se le stime coprono meno del 10% del fondo (si usano allora le prospettive di mercato).
+ */
+export function holdingsFundamentals(h, settings = {}, market = null, marketGrowth = null, years = 5) {
+  const s = { ...DEFAULT_OUTLOOK, ...settings };
+  if (!h?.holdings?.length) return null;
+  const rf = s.riskFree / 100;
+  const stock = Number.isFinite(h.stockPosition) ? Math.max(0, Math.min(1, h.stockPosition)) : 1;
+  if (stock < 0.5) return null; // fondo prevalentemente obbligazionario: le partecipazioni azionarie non lo descrivono
+  let wc = 0;
+  let sumE = 0;
+  let sumG = 0;
+  const used = [];
+  for (const x of h.holdings) {
+    const g = fundamentalsReturn(x.fundamentals, s, years);
+    if (!g || !(x.weight > 0)) continue;
+    wc += x.weight;
+    sumE += x.weight * g.expected;
+    sumG += x.weight * g.growth;
+    used.push({ symbol: x.symbol, weight: x.weight, growth: g.growth, expected: g.expected });
+  }
+  wc = Math.min(wc, stock);
+  if (wc < 0.1) return null;
+  // Parte azionaria non coperta: crescita di mercato + rivalutazione/svalutazione verso il P/E equo
+  const rest = stock - wc;
+  const gM = Number.isFinite(marketGrowth) ? marketGrowth : s.longRunGrowth / 100;
+  let restE = Number.isFinite(market) ? market : rf + 0.045;
+  if (h.pe > 0) {
+    const pe = Math.max(5, Math.min(80, h.pe));
+    const peTarget = pe + s.peReversion * (s.fairPE - pe);
+    const div = Math.max(0, Math.min(0.1, h.dividendYield || 0));
+    restE = (1 + gM) * ((peTarget / pe) ** (1 / years)) - 1 + div;
+  }
+  const expected = sumE + rest * restE + (1 - stock) * rf;
+  const growth = (sumG + rest * gM) / stock;
+  return { expected, growth, source: 'holdings', coverage: wc, stock, pe: h.pe ?? null, top: used.slice(0, 10) };
 }
 
 /**

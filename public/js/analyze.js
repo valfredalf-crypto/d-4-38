@@ -41,8 +41,23 @@ export function tableResult(r) {
   if (r.error) return { error: r.error };
   const s = r.sim;
   return {
-    forward: { expected: r4(r.forward?.expected), growth: r4(r.forward?.expectedGrowth), growthSource: r.forward?.growthSource ?? null },
-    sim: { maxLoss: r4(s.maxLoss), mddMedian: r4(s.mddMedian), netGain: r4(s.netGain), netMedian: r4(s.netMedian), netMean: r4(s.netMean), ratio: r4(s.ratio), probLoss: r4(s.probLoss) },
+    forward: {
+      expected: r4(r.forward?.expected),
+      growth: r4(r.forward?.expectedGrowth),
+      growthSource: r.forward?.growthSource ?? null,
+      ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
+    },
+    sim: {
+      maxLoss: r4(s.maxLoss),
+      mddMedian: r4(s.mddMedian),
+      netGain: r4(s.netGain),
+      netP25: r4(s.netP25),
+      netMedian: r4(s.netMedian),
+      netMean: r4(s.netMean),
+      ratio: r4(s.ratio),
+      probLoss: r4(s.probLoss),
+      probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
+    },
   };
 }
 
@@ -51,7 +66,7 @@ export function tableQuote(q) {
   return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency, ...(q.perf ? { perf: q.perf } : {}) };
 }
 
-export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals, market, marketGrowth }, settings) {
+export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals, holdings, market, marketGrowth }, settings) {
   const o = { ...DEFAULT_OPTIONS, ...settings.mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
   const prices = history.closesEur;
@@ -94,6 +109,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
       marketGrowth: Number.isFinite(marketGrowth) ? marketGrowth : null,
       benchmark: bench,
       fundamentals,
+      holdings: holdings || null,
       years: o.years,
       lookbackYears: o.lookbackYears,
     },

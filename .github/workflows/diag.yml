@@ -11,9 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cache
+          key: diag-cache-${{ github.run_id }}
+          restore-keys: |
+            live-cache-
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: node scripts/diag-yahoo.js
-        env:
-          SYMBOLS: QFG.BR,ISPA.DE,VWCE.DE

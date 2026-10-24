@@ -198,8 +198,18 @@ async function recomputeChanged() {
 }
 
 // Versione online: nuovi dati pubblicati dall'automazione (ogni ~15 minuti)
+// Versione dell'app in uso (dal ?v= aggiunto in pubblicazione): se ne esce una nuova, la pagina si
+// ricarica da sola invece di restare alla copia in cache del telefono.
+const APP_BUILD = new URL(import.meta.url).searchParams.get('v');
+function reloadIfNewBuild(meta) {
+  if (!APP_BUILD || !meta?.build || meta.build === APP_BUILD) return false;
+  if (new URLSearchParams(location.search).get('b') === meta.build) return false; // già ricaricata: niente cicli
+  location.replace(`${location.pathname}?b=${meta.build}${location.hash}`);
+  return true;
+}
 async function checkNewData() {
   const meta = await fetch(`data/meta.json?t=${Date.now()}`).then((r) => r.json());
+  if (reloadIfNewBuild(meta)) return;
   if (meta.generatedAt === state.dataVersion) return;
   state.dataVersion = meta.generatedAt;
   const [instruments, quotes, pre] = await Promise.all([api('/api/instruments'), api('/api/quotes'), api('/api/results').catch(() => null)]);
@@ -1234,7 +1244,8 @@ async function main() {
   bind();
   buildFiltersPanel();
   try {
-    const meta = await api('/api/meta');
+    const meta = STATIC ? await fetch(`data/meta.json?t=${Date.now()}`).then((r) => r.json()) : await api('/api/meta');
+    if (STATIC && reloadIfNewBuild(meta)) return;
     state.meta = meta;
     state.market = meta.market || null;
     if (STATIC) {

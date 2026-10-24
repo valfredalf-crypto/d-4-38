@@ -47,7 +47,7 @@ const { instruments, quotes, results, ok, key, generatedAt, market } = await com
   },
 });
 
-write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, liveBranch: process.env.LIVE_BRANCH || 'live-data', market, static: true, mock: process.env.MOCK === '1', generatedAt });
+write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, liveBranch: process.env.LIVE_BRANCH || 'live-data', market, static: true, build: BUILD, mock: process.env.MOCK === '1', generatedAt });
 write('data/instruments.json', instruments);
 write('data/quotes.json', quotes);
 write('data/results.json', { key, results });

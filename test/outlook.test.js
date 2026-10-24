@@ -129,7 +129,13 @@ test('crescita e valutazione (Grinold-Kroner)', async () => {
   const { fundamentalsReturn } = await import('../public/js/outlook.js');
   // Titolo caro con forte crescita (tipo Eli Lilly): P/E 35, crescita attesa 25%, dividendo 0,6%
   const lly = fundamentalsReturn({ forwardPE: 35, growthLongTerm: 0.25, dividendYield: 0.006, analysts: 20 }, B, 5);
-  assert.ok(Math.abs(lly.growth - (0.04 + 0.6 * 0.21 + 0.04) / 2) < 1e-12);
+  assert.ok(Math.abs(lly.growth - (0.04 + 0.6 * 0.21 + 0.04) / 2) < 1e-12, 'senza conferme: haircut pieno e rallentamento lineare');
+  // Stessa stima ma confermata da ricavi realizzati e attesi e utili attesi: si crede di più
+  const confirmed = fundamentalsReturn({ forwardPE: 35, growthLongTerm: 0.25, dividendYield: 0.006, analysts: 20, revenueGrowthTtm: 0.3, revenueGrowthNext: 0.2, epsGrowthNext: 0.3 }, B, 5);
+  assert.ok(confirmed.evidence === 1 && confirmed.growth > lly.growth * 1.3, `${confirmed.growth} vs ${lly.growth}`);
+  // Stima smentita dai ricavi (in calo): nessuna conferma
+  const denied = fundamentalsReturn({ forwardPE: 35, growthLongTerm: 0.25, dividendYield: 0.006, analysts: 20, revenueGrowthTtm: -0.05 }, B, 5);
+  assert.ok(denied.growth < confirmed.growth);
   assert.ok(lly.valuation < 0); // il P/E tende a scendere verso 18
   assert.ok(lly.expected > 0.03 && lly.expected < 0.08, String(lly.expected));
   // Titolo a sconto con crescita modesta: la valutazione aiuta

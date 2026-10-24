@@ -12,6 +12,10 @@ export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
 export const RISK_AVERSION = 3;
 export function certaintyEquivalent(nets, gamma = RISK_AVERSION) {
   let sum = 0;
+  if (gamma === 1) {
+    for (const r of nets) sum += Math.log(Math.max(1 + r, 0.02));
+    return Math.exp(sum / nets.length) - 1; // media geometrica dei risultati
+  }
   for (const r of nets) sum += Math.max(1 + r, 0.02) ** (1 - gamma); // ricchezza finale per 1 € investito (floor: perdita quasi totale)
   return (sum / nets.length) ** (1 / (1 - gamma)) - 1;
 }
@@ -223,7 +227,10 @@ export function simulate(prices, options = {}) {
     netMean: meanNet,
     probLoss: nets.filter((x) => x < 0).length / nets.length,
     // Guadagno netto plausibile: equivalente certo di tutti gli scenari netti (costi e tasse inclusi)
-    plausible: certaintyEquivalent(nets),
+    // ce1 = criterio di Kelly (utilità logaritmica: massimizza la crescita del capitale nel lungo periodo),
+    // ce3 = investitore prudente. La media (prudenza zero) è netMean.
+    ce1: certaintyEquivalent(nets, 1),
+    ce3: certaintyEquivalent(nets, 3),
     // Probabilità di ottenere almeno ciascun rendimento netto di PROB_THRESHOLDS (stesso ordine)
     probAtLeast: PROB_THRESHOLDS.map((t) => nets.filter((x) => x >= t).length / nets.length),
     // Perdita definitiva a fine orizzonte nello scenario sfavorevole (5% peggiore) ÷ guadagno tipico (mediano)

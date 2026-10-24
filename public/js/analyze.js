@@ -46,6 +46,7 @@ export function tableResult(r) {
       growth: r4(r.forward?.expectedGrowth),
       growthSource: r.forward?.growthSource ?? null,
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
+      ...(r.forward?.fundamentalsDetail?.evidence != null ? { evidence: r4(r.forward.fundamentalsDetail.evidence) } : {}),
     },
     sim: {
       maxLoss: r4(s.maxLoss),
@@ -61,7 +62,8 @@ export function tableResult(r) {
       balanced: r4(s.balanced),
       ratioFinal: r4(s.ratioFinal),
       probLoss: r4(s.probLoss),
-      plausible: r4(s.plausible),
+      ce1: r4(s.ce1),
+      ce3: r4(s.ce3),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };

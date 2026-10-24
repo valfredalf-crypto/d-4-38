@@ -59,6 +59,12 @@
   <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span><button id="btn-stop" class="ghost small">Interrompi</button></div>
 
   <main>
+    <div class="prudence-bar"><label for="prudence">Guadagno plausibile calcolato per un investitore</label>
+      <select id="prudence" title="Come pesare il rischio nel guadagno plausibile: la media conta ogni scenario alla pari (prospettive di crescita al massimo peso); Kelly massimizza la crescita del capitale nel lungo periodo (penalizza la volatilità quanto effettivamente costa); prudente pesa molto le perdite">
+        <option value="0">che accetta tutto il rischio (media degli scenari)</option>
+        <option value="1" selected>equilibrato (criterio di Kelly: massima crescita del capitale)</option>
+        <option value="3">prudente (le perdite pesano molto)</option>
+      </select></div>
     <div id="active-filters" class="active-filters" hidden></div>
     <div class="scroll-btns"><button type="button" class="ghost small" data-scroll="-1" title="Scorri la tabella a sinistra">◀ Colonne</button><input type="range" id="hscroll" min="0" max="1000" value="0" step="1" aria-label="Scorri le colonne della tabella" title="Trascina per scorrere le colonne"><button type="button" class="ghost small" data-scroll="1" title="Scorri la tabella a destra (altri indicatori)">Colonne ▶</button></div>
     <div class="table-wrap">

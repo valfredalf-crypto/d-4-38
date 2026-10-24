@@ -273,8 +273,15 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
     else g1 = Math.min(g1, 0.1);
     g0 = Math.max(-0.1, Math.min(0.25, g1));
   }
-  const gStart = gL + s.growthHaircut * (g0 - gL);
-  const growth = (gStart + gL) / 2; // media di un rallentamento lineare da gStart a gL
+  // Quanto credere alla crescita: dipende da quante evidenze indipendenti la confermano (0–1):
+  // ricavi realmente cresciuti nell'ultimo anno (dato di bilancio, non una stima), ricavi attesi per
+  // l'anno prossimo, utili attesi per l'anno prossimo, ampiezza della copertura analisti.
+  // Crescita confermata → si crede fino al 90% della stima e il rallentamento verso il lungo periodo è
+  // più lento; crescita solo "promessa" → haircut pieno e rallentamento lineare (come prima).
+  const ev = growthEvidence(f, g0);
+  const haircut = Math.min(0.9, s.growthHaircut + 0.3 * ev);
+  const gStart = gL + haircut * (g0 - gL);
+  const growth = gL + (gStart - gL) * (0.5 + 0.25 * ev); // 0.5 = rallentamento lineare fino a gL; fino a 0.75 se confermata
   const pe = Math.max(5, Math.min(80, f.forwardPE));
   const peTarget = pe + s.peReversion * (s.fairPE - pe);
   // Un P/E molto basso (o alto) spesso riflette problemi (o qualità) strutturali: il ritorno verso il
@@ -282,7 +289,20 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
   const valuation = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
   const dividend = cleanDividend(f.dividendYield);
   const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
-  return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0 };
+  return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0, evidence: ev };
+}
+
+/** Evidenze a sostegno della crescita attesa `g0` (0 = nessuna conferma, 1 = tutte le fonti concordano). */
+export function growthEvidence(f, g0) {
+  if (!(g0 > 0.06)) return 0; // crescita ordinaria: le conferme non cambiano nulla
+  const checks = [];
+  const half = g0 / 2;
+  if (Number.isFinite(f.revenueGrowthTtm)) checks.push(f.revenueGrowthTtm >= half ? 1 : f.revenueGrowthTtm > 0 ? 0.5 : 0); // ricavi realizzati
+  if (Number.isFinite(f.revenueGrowthNext)) checks.push(f.revenueGrowthNext >= half ? 1 : f.revenueGrowthNext > 0 ? 0.5 : 0);
+  if (Number.isFinite(f.epsGrowthNext)) checks.push(f.epsGrowthNext >= half ? 1 : f.epsGrowthNext > 0 ? 0.5 : 0);
+  if (!checks.length) return 0; // nessun dato che possa confermare: si resta prudenti
+  checks.push(Math.min(1, (f.analysts || 0) / 15)); // ampiezza della copertura
+  return checks.reduce((a, x) => a + x, 0) / checks.length;
 }
 
 /**

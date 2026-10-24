@@ -448,6 +448,7 @@ function applyFilters() {
   refreshQuotes(visibleSymbols().filter((s) => !state.quotes[s]));
 }
 
+const growthOf = (r) => (r && !r.error ? r.forward?.growth ?? r.forward?.expectedGrowth ?? null : null);
 function rowValues(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
@@ -471,6 +472,10 @@ function rowValues(i) {
     balanced: sim?.balanced ?? null,
     // Guadagno probabile (raggiunto nel 75% degli scenari) / perdita massima × 100: quanto guadagno
     // "quasi sicuro" per ogni 100 di perdita massima possibile (più alto è meglio)
+    // Varianti con le prospettive: + crescita annua attesa degli utili (0 se non disponibile: crypto,
+    // obbligazionari); la seconda divide per la media di perdita max e drawdown mediano
+    p25LossGrowth: sim && sim.netP25 != null && sim.maxLoss > 0 ? (sim.netP25 / sim.maxLoss + (growthOf(r) ?? 0)) * 100 : null,
+    p25AvgLossGrowth: sim && sim.netP25 != null && sim.maxLoss > 0 && sim.mddMedian != null ? (sim.netP25 / ((sim.maxLoss + sim.mddMedian) / 2) + (growthOf(r) ?? 0)) * 100 : null,
     p25OverLoss: sim && sim.netP25 != null && sim.maxLoss != null ? (sim.maxLoss > 0 ? (sim.netP25 / sim.maxLoss) * 100 : sim.netP25 > 0 ? Infinity : 0) : null,
     riskAdj: sim && sim.finalLoss != null && sim.netMedian != null ? sim.netMedian - sim.finalLoss : null,
     // ratioFinal null con guadagno mediano ≤ 0 (Infinity non sopravvive al JSON) → ∞
@@ -560,7 +565,9 @@ function render() {
         <td class="num">${ratioCell}</td>
         <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : r.ratioFinal === 0 ? '<span class="pos" title="Nessuna perdita a fine 5 anni nemmeno nel caso sfavorevole (5% peggiore): tipico di monetari e obbligazionari a breve, che però guadagnano poco">0 ✓</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
         <td class="num ${cls(r.balanced)}"><b>${pct(r.balanced, true)}</b></td>
-        <td class="num ${cls(r.p25OverLoss)}">${r.p25OverLoss == null ? '–' : r.p25OverLoss === Infinity || r.p25OverLoss > 999 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): il rapporto è altissimo, ma il guadagno è piccolo">&gt;999%</span>' : nf1.format(r.p25OverLoss) + '%'}</td>
+        <td class="num ${cls(r.p25OverLoss)}">${r.p25OverLoss == null ? '–' : r.p25OverLoss === Infinity || r.p25OverLoss > 999 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;999%</span>' : nf1.format(r.p25OverLoss) + '%'}</td>
+        <td class="num ${cls(r.p25LossGrowth)}">${r.p25LossGrowth == null ? '–' : r.p25LossGrowth === Infinity || r.p25LossGrowth > 999 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;999%</span>' : nf1.format(r.p25LossGrowth) + '%'}</td>
+        <td class="num ${cls(r.p25AvgLossGrowth)}">${r.p25AvgLossGrowth == null ? '–' : r.p25AvgLossGrowth === Infinity || r.p25AvgLossGrowth > 999 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;999%</span>' : nf1.format(r.p25AvgLossGrowth) + '%'}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>
@@ -673,6 +680,14 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Rapporto perdita finale/guadagno</div><div class="v">${Number.isFinite(sim.ratioFinal) ? nf2.format(sim.ratioFinal) : '∞'}</div><div class="h">perdita a fine ${s.mc.years} anni nel 5% peggiore (${sim.finalLoss > 0 ? '−' + pct(sim.finalLoss) + ', ' + eur(amt * (1 - sim.finalLoss)) : 'nessuna perdita'}) ÷ guadagno mediano</div></div>
       ${sim.balanced != null ? `<div class="kpi"><div class="k">Guadagno bilanciato crescita/rischio ${s.mc.years}a</div><div class="v ${cls(sim.balanced)}">${pct(sim.balanced, true)}</div><div class="h">guadagni attesi ${pct(sim.expGain, true)} − 2,25 × perdite attese ${pct(sim.expLoss)} (su tutti gli scenari)</div></div>` : ''}
       <div class="kpi"><div class="k">Guadagno probabile / perdita max</div><div class="v ${cls(sim.netP25)}">${sim.maxLoss > 0 ? nf1.format((sim.netP25 / sim.maxLoss) * 100) + '%' : '∞'}</div><div class="h">guadagno nel 75% degli scenari ${pct(sim.netP25, true)} ÷ perdita max ${pct(sim.maxLoss)} × 100</div></div>
+      ${(() => {
+        const g = f?.expectedGrowth ?? 0;
+        if (!(sim.maxLoss > 0)) return '';
+        const a = (sim.netP25 / sim.maxLoss + g) * 100;
+        const b = (sim.netP25 / ((sim.maxLoss + sim.mddMedian) / 2) + g) * 100;
+        return `<div class="kpi"><div class="k">Guad. probabile / perdita max + crescita</div><div class="v ${cls(a)}">${nf1.format(a)}%</div><div class="h">(${pct(sim.netP25, true)} ÷ ${pct(sim.maxLoss)} + crescita ${pct(g, true)}) × 100</div></div>
+      <div class="kpi"><div class="k">Guad. probabile / media perdite + crescita</div><div class="v ${cls(b)}">${nf1.format(b)}%</div><div class="h">(${pct(sim.netP25, true)} ÷ media(perdita max ${pct(sim.maxLoss)}, drawdown mediano ${pct(sim.mddMedian)}) + crescita ${pct(g, true)}) × 100</div></div>`;
+      })()}
       <div class="kpi"><div class="k">Guadagno corretto per il rischio ${s.mc.years}a</div><div class="v ${cls(sim.netMedian - sim.finalLoss)}">${pct(sim.netMedian - sim.finalLoss, true)}</div><div class="h">guadagno tipico ${pct(sim.netMedian, true)} − perdita finale sfavorevole ${pct(sim.finalLoss)}</div></div>
       <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
@@ -1185,7 +1200,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25OverLoss', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25OverLoss', 'p25LossGrowth', 'p25AvgLossGrowth', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1285,7 +1300,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="22" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="24" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

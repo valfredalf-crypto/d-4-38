@@ -27,7 +27,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'plausible', dir: -1 }, limit: PAGE, filters: loadFilters(), prudence: Number(localStorage.getItem('trmc.prudence') ?? 1) },
+  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'plausible', dir: -1 }, limit: PAGE, filters: loadFilters(), prudence: Number(localStorage.getItem('trmc.prudence2') ?? 0.5) },
   running: false,
   stop: false,
 };
@@ -491,7 +491,7 @@ function rowValues(i) {
   const sim = r && !r.error ? r.sim : null;
   const v = {
     // Guadagno netto plausibile a 5 anni secondo la prudenza scelta: la classifica predefinita
-    plausible: sim ? (state.view.prudence === 0 ? sim.netMean : state.view.prudence === 3 ? sim.ce3 : sim.ce1) ?? null : null,
+    plausible: sim ? (state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1)) ?? null : null,
     growthEvidence: r && !r.error ? r.forward?.evidence ?? null : null,
     inst: i,
     name: i.name.toLowerCase(),
@@ -738,7 +738,7 @@ function renderDetail(inst, r, d) {
   $('#d-body').innerHTML = `
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
-      ${sim.ce1 != null ? `<div class="kpi kpi-main"><div class="k">Guadagno netto plausibile ${s.mc.years}a su ${eur(amt)}</div><div class="v ${cls(sim.ce1)}">${sim.ce1 > 0 ? '+' : ''}${Math.round(sim.ce1 * amt).toLocaleString('it-IT')} €</div><div class="h">crescita del capitale attesa (criterio di Kelly, ${pct(sim.ce1, true)}) · se accetti tutto il rischio (media): <b>${sim.netMean > 0 ? '+' : ''}${Math.round(sim.netMean * amt).toLocaleString('it-IT')} €</b> · se sei prudente: <b>${sim.ce3 > 0 ? '+' : ''}${Math.round(sim.ce3 * amt).toLocaleString('it-IT')} €</b>${f?.fundamentalsDetail?.evidence != null ? ` · crescita confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)}` : ''}</div></div>` : ''}
+      ${sim.ce1 != null ? `<div class="kpi kpi-main"><div class="k">Guadagno netto plausibile ${s.mc.years}a su ${eur(amt)}</div><div class="v ${cls(sim.ce?.['0.5'] ?? sim.ce1)}">${(sim.ce?.['0.5'] ?? sim.ce1) > 0 ? '+' : ''}${Math.round((sim.ce?.['0.5'] ?? sim.ce1) * amt).toLocaleString('it-IT')} €</div><div class="h">equivalente certo tarato sul backtest (γ=0,5: ${sim.ce?.['0.5'] != null ? pct(sim.ce['0.5'], true) : '–'}) · Kelly: <b>${sim.ce1 > 0 ? '+' : ''}${Math.round(sim.ce1 * amt).toLocaleString('it-IT')} €</b> · se accetti tutto il rischio (media): <b>${sim.netMean > 0 ? '+' : ''}${Math.round(sim.netMean * amt).toLocaleString('it-IT')} €</b> · se sei prudente: <b>${sim.ce3 > 0 ? '+' : ''}${Math.round(sim.ce3 * amt).toLocaleString('it-IT')} €</b>${f?.fundamentalsDetail?.evidence != null ? ` · crescita confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)}` : ''}</div></div>` : ''}
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
       ${f?.expected != null ? `<div class="kpi"><div class="k">Rendimento atteso</div><div class="v ${cls(f.expected)}">${pct(f.expected, true)}/anno</div><div class="h">come in tabella ("Atteso / anno") · su ${s.mc.years} anni ${pct((1 + f.expected) ** s.mc.years - 1, true)} lordo (prima di costi e tasse)</div></div>` : ''}
@@ -1228,7 +1228,7 @@ function bind() {
     pr.addEventListener('change', () => {
       state.view.prudence = Number(pr.value);
       try {
-        localStorage.setItem('trmc.prudence', pr.value);
+        localStorage.setItem('trmc.prudence2', pr.value);
       } catch {
         /* niente */
       }

@@ -1,7 +1,7 @@
 // Filtri sugli indicatori (min/max). I valori percentuali si inseriscono in punti percentuali
 // (es. 40 = 40%); la perdita massima si indica come numero positivo (40 = perdita fino al 40%).
 export const INDICATORS = [
-  { key: 'plausible', label: 'Guadagno netto plausibile 5a (prudenza scelta)', pct: true },
+  { key: 'plausible', label: 'Guadagno netto efficiente 5a (prudenza scelta)', pct: true },
   { key: 'growthEvidence', label: 'Crescita confermata dalle evidenze (0–100%)', pct: true },
   { key: 'ratio', label: 'Rapporto perdita/guadagno', pct: false },
   { key: 'balanced', label: 'Guadagno bilanciato crescita/rischio 5a', pct: true },
@@ -39,7 +39,7 @@ export const INDICATORS = [
 ];
 
 export const PRESETS = [
-  { label: 'Guadagno plausibile > 10%', filters: { plausible: { min: 10 } } },
+  { label: 'Guadagno efficiente > 20%', filters: { plausible: { min: 20 } } },
   { label: 'Rapporto < 1', filters: { ratio: { max: 1 } } },
   { label: 'Rapporto < 2', filters: { ratio: { max: 2 } } },
   { label: 'Guadagno bilanciato > 15%', filters: { balanced: { min: 15 } } },

@@ -204,7 +204,7 @@ table.mini .num { white-space: nowrap; }
   .frow input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
   td .name { max-width: 140px; }
   /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */
-  /* Telefono, vista "Previsioni": mediana (13), rapporto (16), rapporto perdita finale (17), guadagno corretto rischio (18) */
+  /* Telefono, vista "Previsioni": mediana (13), rapporto (16), rapporto perdita finale (17), guadagno bilanciato (18) */
   #table th:nth-child(n+3):nth-child(-n+12), #table td:nth-child(n+3):nth-child(-n+12),
   #table th:nth-child(n+14):nth-child(-n+15), #table td:nth-child(n+14):nth-child(-n+15),
   #table th:nth-child(n+19), #table td:nth-child(n+19) { display: none; }

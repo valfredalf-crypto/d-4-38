@@ -4,6 +4,8 @@
 export const WEEKS_PER_YEAR = 52;
 /** Soglie di rendimento netto per le probabilità (0 = non perdere, 0.25 = almeno +25%, …). */
 export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
+/** Avversione alla perdita (Kahneman-Tversky): una perdita pesa 2,25 volte un guadagno della stessa entità. */
+export const LOSS_AVERSION = 2.25;
 
 // PRNG deterministico (mulberry32) per risultati riproducibili.
 export function mulberry32(seed) {
@@ -206,11 +208,16 @@ export function simulate(prices, options = {}) {
       const gain = percentile(nets, 0.5);
       return gain > 0 ? loss / gain : Infinity;
     })(),
+    // Valore atteso con avversione alla perdita su tutti gli scenari: media dei guadagni (inclusi quelli
+    // molto alti dovuti alla crescita) meno 2,25 × media delle perdite
+    expGain: nets.reduce((a, x) => a + Math.max(x, 0), 0) / nets.length,
+    expLoss: nets.reduce((a, x) => a + Math.max(-x, 0), 0) / nets.length,
     mddMedian: percentile(sortedMdd, 0.5),
     mddP95: percentile(sortedMdd, 0.95),
     fan: fanBands,
     histogram: { lo, width, counts: histogram },
   };
+  stats.balanced = stats.expGain - LOSS_AVERSION * stats.expLoss;
   return { ...stats, ...score(stats, o) };
 }
 

@@ -24,6 +24,7 @@ export const BASE_OUTLOOK = {
   analystHaircut: 0.5,    // quota del rialzo implicito nei target che viene creduta
   priorUncertainty: 5.0,  // % annuo: incertezza sul rendimento di equilibrio (governa la credibilità dello storico)
   minAnalysts: 3,
+  minMarketCap: 300e6,    // sotto questa capitalizzazione le stime degli analisti (poche, poco seguite) non si usano
   ewmaLambda: 0.97,       // decadimento settimanale per la volatilità recente
   betaYears: 5,
   minStockBeta: 0.5,      // beta minimo per le singole azioni (dopo l'aggiustamento di Blume)
@@ -170,9 +171,9 @@ export function forwardParams(p, settings = {}) {
   // --- Consenso analisti (solo primo anno, poi equilibrio)
   let analysts = null;
   let analystUpside = null;
-  if (f.targetMean > 0 && f.price > 0 && (f.analysts || 0) >= s.minAnalysts) {
+  if (f.targetMean > 0 && f.price > 0 && reliableCoverage(f, s)) {
     analystUpside = Math.max(-0.5, Math.min(0.5, f.targetMean / f.price - 1));
-    const year1 = analystUpside * s.analystHaircut + (f.dividendYield || 0);
+    const year1 = analystUpside * s.analystHaircut + cleanDividend(f.dividendYield);
     analysts = (year1 + (p.years - 1) * equilibrium) / p.years;
   }
 
@@ -238,9 +239,24 @@ export function forwardParams(p, settings = {}) {
  * - valutazione: il P/E atteso chiude una parte (`peReversion`) della distanza dal P/E di lungo periodo.
  * null se mancano P/E atteso, stime di crescita o copertura sufficiente degli analisti.
  */
+/** Copertura analisti attendibile: almeno `minAnalysts` analisti e società non micro (se la capitalizzazione è nota). */
+function reliableCoverage(f, s) {
+  if ((f.analysts || 0) < s.minAnalysts) return false;
+  return !(f.marketCap > 0 && f.marketCap < s.minMarketCap);
+}
+
+/**
+ * Rendimento da dividendo utilizzabile: oltre il 12% è quasi sempre un dividendo straordinario o un dato
+ * errato (non si ripete ogni anno) e viene ignorato; altrimenti limitato all'8%.
+ */
+export function cleanDividend(y) {
+  if (!Number.isFinite(y) || y <= 0 || y > 0.12) return 0;
+  return Math.min(0.08, y);
+}
+
 export function fundamentalsReturn(f, settings = {}, years = 5) {
   const s = { ...DEFAULT_OUTLOOK, ...settings };
-  if (!f || !(f.forwardPE > 0) || (f.analysts || 0) < s.minAnalysts) return null;
+  if (!f || !(f.forwardPE > 0) || !reliableCoverage(f, s)) return null;
   const gL = s.longRunGrowth / 100;
   let g0;
   if (Number.isFinite(f.growthLongTerm)) {
@@ -251,7 +267,10 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
     // un anno negativo (non si ripete per 5 anni); una crescita trainata dai ricavi è più duratura.
     let g1 = Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
     if (g1 == null) return null;
+    // Senza stime dei ricavi (es. società di investimento, dove gli "utili" sono variazioni di valore)
+    // il balzo degli utili non è verificabile: massimo +10%.
     if (Number.isFinite(f.revenueGrowthNext)) g1 = Math.min(g1, f.revenueGrowthNext + 0.1);
+    else g1 = Math.min(g1, 0.1);
     g0 = Math.max(-0.1, Math.min(0.25, g1));
   }
   const gStart = gL + s.growthHaircut * (g0 - gL);
@@ -261,7 +280,7 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
   // Un P/E molto basso (o alto) spesso riflette problemi (o qualità) strutturali: il ritorno verso il
   // P/E di lungo periodo è limitato a ±maxValuation l'anno
   const valuation = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
-  const dividend = Math.max(0, Math.min(0.1, f.dividendYield || 0));
+  const dividend = cleanDividend(f.dividendYield);
   const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
   return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0 };
 }
@@ -301,7 +320,7 @@ export function holdingsFundamentals(h, settings = {}, market = null, marketGrow
   if (h.pe > 0) {
     const pe = Math.max(5, Math.min(80, h.pe));
     const peTarget = pe + s.peReversion * (s.fairPE - pe);
-    const div = Math.max(0, Math.min(0.1, h.dividendYield || 0));
+    const div = cleanDividend(h.dividendYield);
     const val = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
     restE = (1 + gM) * (1 + val) - 1 + div;
   }

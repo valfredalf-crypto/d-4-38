@@ -208,3 +208,13 @@ test('holdingsFundamentals: crescita dalle partecipazioni, resto dal mercato, nu
   assert.equal(holdingsFundamentals(mk(fast, 0.05), {}, 0.07, 0.06), null);
   assert.equal(holdingsFundamentals({ ...mk(fast, 0.6), stockPosition: 0.2 }, {}, 0.07, 0.06), null, 'fondo obbligazionario');
 });
+
+test('stime inaffidabili scartate: micro-cap, dividendo straordinario, balzo utili senza ricavi', async () => {
+  const { fundamentalsReturn, cleanDividend } = await import('../public/js/outlook.js');
+  assert.equal(cleanDividend(0.38), 0);
+  assert.equal(cleanDividend(0.05), 0.05);
+  const base = { forwardPE: 14, analysts: 5, epsGrowthNext: 1.18, dividendYield: 0.03 };
+  assert.equal(fundamentalsReturn({ ...base, marketCap: 49e6 }), null, 'micro-cap: niente stime');
+  const g = fundamentalsReturn({ ...base, marketCap: 5e9 });
+  assert.ok(g.growthInput <= 0.1 + 1e-12, 'senza ricavi la crescita a 1 anno è limitata al 10%');
+});

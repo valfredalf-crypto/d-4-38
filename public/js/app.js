@@ -1131,6 +1131,12 @@ function bind() {
     }
   };
   $$('[data-mview]').forEach((b) => b.addEventListener('click', () => setMview(b.dataset.mview)));
+  $$('[data-scroll]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const w = $('.table-wrap');
+      w.scrollBy({ left: Number(b.dataset.scroll) * w.clientWidth * 0.7, behavior: 'smooth' });
+    }),
+  );
   try {
     setMview(localStorage.getItem('trmc.mview') || 'forecast');
   } catch {

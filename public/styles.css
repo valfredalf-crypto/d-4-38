@@ -106,6 +106,22 @@ code { font-family: var(--mono); }
 
 main { padding: 0 20px 20px; }
 .table-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow-x: auto; }
+/* Su PC la tabella (21 colonne) scorre dentro un riquadro alto quanto lo schermo: la barra di
+   scorrimento orizzontale resta sempre visibile in basso, intestazioni e nome restano fermi. */
+@media (min-width: 641px) {
+  .table-wrap { max-height: calc(100vh - 225px); min-height: 320px; overflow: auto; scrollbar-width: auto; scrollbar-color: var(--muted) var(--line); }
+  .table-wrap::-webkit-scrollbar { height: 14px; width: 12px; }
+  .table-wrap::-webkit-scrollbar-track { background: var(--line); border-radius: 7px; }
+  .table-wrap::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 7px; border: 3px solid var(--line); }
+  #table th:nth-child(2), #table td:nth-child(2) { position: sticky; left: 0; background: var(--panel); z-index: 1; box-shadow: 1px 0 0 var(--line); }
+  #table th:nth-child(2) { z-index: 3; }
+  #table th { z-index: 2; }
+  #table th, #table td { padding: 8px 9px; }
+}
+.scroll-btns { display: none; }
+@media (min-width: 641px) {
+  .scroll-btns { display: flex; gap: 6px; justify-content: flex-end; margin: 0 0 6px; }
+}
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
 th { position: sticky; top: 0; background: var(--panel); font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none; }

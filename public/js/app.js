@@ -449,6 +449,9 @@ function rowValues(i) {
     change: q?.changePct ?? null,
     expected: r?.forward?.expected ?? null,
     maxLoss: sim?.maxLoss ?? null,
+    mddMedian: sim?.mddMedian ?? null,
+    // Perdita tipica (drawdown mediano) / guadagno netto: ∞ se il guadagno è ≤ 0
+    ratioMedian: sim && sim.mddMedian != null && sim.netGain != null ? (sim.netGain > 0 ? sim.mddMedian / sim.netGain : Infinity) : null,
     netGain: sim?.netGain ?? null,
     netMean: sim?.netMean ?? null,
     // Infinity non sopravvive al JSON (diventa null): con guadagno ≤ 0 il rapporto è ∞
@@ -517,9 +520,11 @@ function render() {
         <td class="num ${cls(r.varY)}">${pct(r.varY, true)}</td>
         <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
         <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) : '–'}</td>
+        <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}</td>
         <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}</td>
         <td class="num">${ratioCell}</td>
+        <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
       </tr>`;
     })
@@ -621,9 +626,11 @@ function renderDetail(inst, r, d) {
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
+      <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
       <div class="kpi"><div class="k">${s.mc.gainMetric === 'mean' ? 'Guadagno medio' : 'Guadagno mediano'} ${s.mc.years}a (classifica)</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
       <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
+      <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
       ${(() => {
         const rv = rowValues(inst);
@@ -1038,9 +1045,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Perdita max 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.maxLoss), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -1060,6 +1067,7 @@ function bind() {
   // Telefono: scelta tra colonne di previsione e colonne di andamento
   const setMview = (v) => {
     document.body.classList.toggle('mview-perf', v === 'perf');
+    document.body.classList.toggle('mview-risk', v === 'risk');
     $$('[data-mview]').forEach((b) => b.classList.toggle('active', b.dataset.mview === v));
     try {
       localStorage.setItem('trmc.mview', v);
@@ -1203,7 +1211,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="14" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="16" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

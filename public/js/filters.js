@@ -2,9 +2,11 @@
 // (es. 40 = 40%); la perdita massima si indica come numero positivo (40 = perdita fino al 40%).
 export const INDICATORS = [
   { key: 'ratio', label: 'Rapporto perdita/guadagno', pct: false },
+  { key: 'ratioMedian', label: 'Rapporto drawdown mediano/guadagno', pct: false },
   { key: 'netGain', label: 'Guadagno mediano 5a', pct: true },
   { key: 'netMean', label: 'Guadagno medio 5a', pct: true },
   { key: 'maxLoss', label: 'Perdita massima 5a', pct: true },
+  { key: 'mddMedian', label: 'Drawdown mediano 5a', pct: true },
   { key: 'probLoss', label: 'Probabilità di perdita', pct: true },
   { key: 'expected', label: 'Rendimento atteso annuo', pct: true },
   { key: 'growth', label: 'Crescita attesa (analisti)', pct: true },
@@ -21,6 +23,7 @@ export const INDICATORS = [
 export const PRESETS = [
   { label: 'Rapporto < 1', filters: { ratio: { max: 1 } } },
   { label: 'Rapporto < 2', filters: { ratio: { max: 2 } } },
+  { label: 'Rapporto DD mediano < 1', filters: { ratioMedian: { max: 1 } } },
   { label: 'Guadagno mediano > 0', filters: { netGain: { min: 0 } } },
   { label: 'Perdita max < 50%', filters: { maxLoss: { max: 50 } } },
   { label: 'P(perdita) < 25%', filters: { probLoss: { max: 25 } } },

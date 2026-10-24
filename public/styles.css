@@ -197,18 +197,18 @@ table.mini .num { white-space: nowrap; }
   .frow input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
   td .name { max-width: 140px; }
   /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */
-  #table th:nth-child(3), #table td:nth-child(3),
-  #table th:nth-child(4), #table td:nth-child(4),
-  #table th:nth-child(5), #table td:nth-child(5),
-  #table th:nth-child(6), #table td:nth-child(6),
-  #table th:nth-child(7), #table td:nth-child(7),
-  #table th:nth-child(8), #table td:nth-child(8),
-  #table th:nth-child(9), #table td:nth-child(9),
-  #table th:nth-child(14), #table td:nth-child(14) { display: none; }
-  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno al posto delle previsioni */
+  /* Telefono, vista "Previsioni": perdita max, mediana, media, rapporto */
+  #table th:nth-child(n+3):nth-child(-n+9), #table td:nth-child(n+3):nth-child(-n+9),
+  #table th:nth-child(11), #table td:nth-child(11),
+  #table th:nth-child(n+15), #table td:nth-child(n+15) { display: none; }
+  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno */
   .mobile-view { display: flex; }
   body.mview-perf #table th:nth-child(n+5):nth-child(-n+8), body.mview-perf #table td:nth-child(n+5):nth-child(-n+8) { display: table-cell; }
-  body.mview-perf #table th:nth-child(n+10):nth-child(-n+13), body.mview-perf #table td:nth-child(n+10):nth-child(-n+13) { display: none; }
+  body.mview-perf #table th:nth-child(n+10):nth-child(-n+15), body.mview-perf #table td:nth-child(n+10):nth-child(-n+15) { display: none; }
+  /* Vista "Rischio": perdita max, drawdown mediano, rapporto DD mediano, probabilità di perdita */
+  body.mview-risk #table th:nth-child(11), body.mview-risk #table td:nth-child(11),
+  body.mview-risk #table th:nth-child(n+15), body.mview-risk #table td:nth-child(n+15) { display: table-cell; }
+  body.mview-risk #table th:nth-child(n+12):nth-child(-n+14), body.mview-risk #table td:nth-child(n+12):nth-child(-n+14) { display: none; }
   th, td { padding: 8px 3px; }
   #table td { font-size: 12.5px; }
   th .l { display: none; }

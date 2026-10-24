@@ -42,7 +42,7 @@ export function tableResult(r) {
   const s = r.sim;
   return {
     forward: { expected: r4(r.forward?.expected) },
-    sim: { maxLoss: r4(s.maxLoss), netGain: r4(s.netGain), netMedian: r4(s.netMedian), netMean: r4(s.netMean), ratio: r4(s.ratio), probLoss: r4(s.probLoss) },
+    sim: { maxLoss: r4(s.maxLoss), mddMedian: r4(s.mddMedian), netGain: r4(s.netGain), netMedian: r4(s.netMedian), netMean: r4(s.netMean), ratio: r4(s.ratio), probLoss: r4(s.probLoss) },
   };
 }
 

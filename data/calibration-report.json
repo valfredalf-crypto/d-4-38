@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-23T23:48:01.867Z",
+ "generatedAt": "2026-10-24T00:07:54.108Z",
  "adopted": false,
  "params": {
   "before": {
@@ -16,7 +16,7 @@
    "priorUncertainty": 10,
    "minStockBeta": 0.7,
    "ewmaWeight": 0,
-   "volScale": 1
+   "volScale": 1.1
   }
  },
  "grid": {
@@ -72,11 +72,11 @@
   "sims": 400
  },
  "loss": {
-  "trainBefore": 0.2969256631003335,
-  "trainAfter": 0.2868943494380115,
-  "validationBefore": 0.3152612359691512,
-  "validationAfter": 0.3044613734158481,
-  "improvement": 0.034256868022809694
+  "trainBefore": 0.28325239910210476,
+  "trainAfter": 0.2844725016176271,
+  "validationBefore": 0.30135663346739294,
+  "validationAfter": 0.30303088035301057,
+  "improvement": -0.005555699459321106
  },
  "validation": {
   "before": {
@@ -98,19 +98,19 @@
   },
   "after": {
    "risk": {
-    "mddAboveP95": 0.1205,
-    "mddAboveMedian": 0.4653,
-    "mddRankCorr": 0.5902,
+    "mddAboveP95": 0.0784,
+    "mddAboveMedian": 0.4034,
+    "mddRankCorr": 0.5915,
     "volRankCorr": 0.7838
    },
    "returns": {
-    "inside90": 0.8177,
-    "belowP5": 0.0554,
-    "aboveP95": 0.1268,
-    "aboveMedian": 0.6348,
-    "medianRankCorr": 0.0341,
+    "inside90": 0.8324,
+    "belowP5": 0.0433,
+    "aboveP95": 0.1243,
+    "aboveMedian": 0.6686,
+    "medianRankCorr": 0.0316,
     "realNetMedian": 0.3133,
-    "predNetMedian": 0.0902
+    "predNetMedian": 0.0439
    }
   }
  }

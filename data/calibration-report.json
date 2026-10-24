@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-24T07:38:02.701Z",
+ "generatedAt": "2026-10-24T08:04:37.799Z",
  "adopted": false,
  "params": {
   "before": {
@@ -71,51 +71,51 @@
   8
  ],
  "sample": {
-  "pool": 2891,
-  "train": 1056,
-  "validation": 444,
+  "pool": 3349,
+  "train": 1050,
+  "validation": 450,
   "sims": 400
  },
  "loss": {
-  "trainBefore": 0.28348285113477173,
-  "trainAfter": 0.290082944481607,
-  "validationBefore": 0.29951606987962953,
-  "validationAfter": 0.3075084538669079,
-  "improvement": -0.026684324452074915
+  "trainBefore": 0.29306588692520674,
+  "trainAfter": 0.30100785875160574,
+  "validationBefore": 0.30522168622325946,
+  "validationAfter": 0.31442995671513774,
+  "improvement": -0.030169122665624437
  },
  "validation": {
   "before": {
    "risk": {
-    "mddAboveP95": 0.0859,
-    "mddAboveMedian": 0.389,
-    "mddRankCorr": 0.5991,
-    "volRankCorr": 0.7857
+    "mddAboveP95": 0.0927,
+    "mddAboveMedian": 0.4005,
+    "mddRankCorr": 0.6383,
+    "volRankCorr": 0.8076
    },
    "returns": {
-    "inside90": 0.8112,
-    "belowP5": 0.0437,
-    "aboveP95": 0.1451,
-    "aboveMedian": 0.7004,
-    "medianRankCorr": 0.0694,
-    "realNetMedian": 0.2887,
-    "predNetMedian": -0.0048
+    "inside90": 0.8155,
+    "belowP5": 0.0534,
+    "aboveP95": 0.1311,
+    "aboveMedian": 0.6728,
+    "medianRankCorr": 0.1718,
+    "realNetMedian": 0.2316,
+    "predNetMedian": -0.0119
    }
   },
   "after": {
    "risk": {
-    "mddAboveP95": 0.0636,
-    "mddAboveMedian": 0.3438,
-    "mddRankCorr": 0.6017,
-    "volRankCorr": 0.7852
+    "mddAboveP95": 0.068,
+    "mddAboveMedian": 0.3563,
+    "mddRankCorr": 0.6415,
+    "volRankCorr": 0.8068
    },
    "returns": {
-    "inside90": 0.8371,
-    "belowP5": 0.0368,
-    "aboveP95": 0.1262,
-    "aboveMedian": 0.695,
-    "medianRankCorr": 0.0806,
-    "realNetMedian": 0.2887,
-    "predNetMedian": 0.0058
+    "inside90": 0.8364,
+    "belowP5": 0.0447,
+    "aboveP95": 0.1189,
+    "aboveMedian": 0.6743,
+    "medianRankCorr": 0.1841,
+    "realNetMedian": 0.2316,
+    "predNetMedian": -0.0018
    }
   }
  }

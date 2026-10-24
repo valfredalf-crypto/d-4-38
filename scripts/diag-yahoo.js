@@ -5,7 +5,33 @@ import { listInstruments } from '../lib/store.js';
 
 if (process.env.SYMBOLS) {
   // Dump delle stime grezze di singoli titoli (SYMBOLS=GOOGL,AMZN)
-  for (const sym of process.env.SYMBOLS.split(',')) console.log(sym, JSON.stringify(await outlook(sym).catch((e) => ({ error: e.message }))));
+  const { holdings } = await import('../lib/market.js');
+  const { analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
+  const { marketFundamentals } = await import('../public/js/outlook.js');
+  const bench = await historyEur(BENCHMARK_SYMBOL);
+  for (const sym of process.env.SYMBOLS.split(',')) {
+    const inst = I[sym] || { symbol: sym, type: 'stock', name: sym };
+    const f = await outlook(sym).catch((e) => ({ error: e.message }));
+    console.log('\n###', sym, inst.type, inst.name, '\nfondamentali:', JSON.stringify(f));
+    let lt = null;
+    if (inst.type === 'etf') {
+      const comp = await holdings(sym).catch(() => null);
+      if (comp?.holdings?.length) {
+        lt = { ...comp, holdings: [] };
+        for (const h of comp.holdings) {
+          const hf = await outlook(h.symbol).catch(() => null);
+          lt.holdings.push({ ...h, fundamentals: hf });
+          console.log('  holding', h.symbol, (h.name || '').slice(0, 28), 'peso', (h.weight * 100).toFixed(1) + '%', 'eps+1', hf?.epsGrowthNext, 'ric+1', hf?.revenueGrowthNext, 'ricTTM', hf?.revenueGrowthTtm, 'LT', hf?.growthLongTerm, 'PE', hf?.forwardPE?.toFixed(1), 'analisti', hf?.analysts);
+        }
+        console.log('  composizione: azioni', comp.stockPosition, 'obblig.', comp.bondPosition, 'P/E fondo', comp.pe, 'div', comp.dividendYield);
+      }
+    }
+    const hist = await historyEur(sym);
+    const r = analyze({ instrument: inst, history: hist, benchmark: bench, fundamentals: f, holdings: lt, market: 0.1, marketGrowth: 0.091 }, DEFAULT_SETTINGS);
+    const fw = r.forward, s = r.sim;
+    console.log('  stima:', JSON.stringify({ expected: fw?.expected, components: fw?.components, weights: fw?.weights, beta: fw?.beta, betaRaw: fw?.betaRaw, credibility: fw?.credibility, historyRaw: fw?.historyRaw, growth: fw?.expectedGrowth, fund: fw?.fundamentalsDetail, vol: s?.annualVol, histVol: s?.histVol, sigmaEwma: fw?.sigmaEwma }));
+    console.log('  sim:', JSON.stringify({ mean: s?.netMean, med: s?.netMedian, es5: s?.es5, nr5: s?.nr5, pl: s?.probLoss, maxL: s?.maxLoss, mddMed: s?.mddMedian, years: s?.historyYears, backfilled: s?.backfilledYears }));
+  }
   process.exit(0);
 }
 const live = await (await fetch(`https://raw.githubusercontent.com/${process.env.GITHUB_REPOSITORY}/live-data/live.json?t=${Date.now()}`)).json();

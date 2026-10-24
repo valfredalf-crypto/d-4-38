@@ -481,6 +481,12 @@ function rowValues(i) {
       const den = (sim.netMedian + sim.netMean) / 2 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
       return den > 0 ? sim.maxLoss / den : Infinity;
     })(),
+    // Perdita max ÷ (guadagno probabile 75% + crescita annua attesa, 0 se non disponibile)
+    maxLossP25: (() => {
+      if (!sim || sim.maxLoss == null || sim.netP25 == null) return null;
+      const den = sim.netP25 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
+      return den > 0 ? sim.maxLoss / den : Infinity;
+    })(),
     riskAdj: sim && sim.finalLoss != null && sim.netMedian != null ? sim.netMedian - sim.finalLoss : null,
     // ratioFinal null con guadagno mediano ≤ 0 (Infinity non sopravvive al JSON) → ∞
     ratioFinal: sim && sim.finalLoss != null ? (sim.ratioFinal ?? (sim.netMedian > 0 ? null : Infinity)) : null,
@@ -571,6 +577,7 @@ function render() {
         <td class="num ${cls(r.balanced)}"><b>${pct(r.balanced, true)}</b></td>
         <td class="num">${r.riskGain == null ? '–' : r.riskGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.riskGain < 1 ? 'pos' : ''}">${nf2.format(r.riskGain)}</span>`}</td>
         <td class="num">${r.maxLossGain == null ? '–' : r.maxLossGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.maxLossGain < 1 ? 'pos' : ''}">${nf2.format(r.maxLossGain)}</span>`}</td>
+        <td class="num">${r.maxLossP25 == null ? '–' : r.maxLossP25 === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.maxLossP25 < 1 ? 'pos' : ''}">${nf2.format(r.maxLossP25)}</span>`}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>
@@ -685,7 +692,9 @@ function renderDetail(inst, r, d) {
       ${(() => {
         const g = f?.expectedGrowth ?? 0;
         const den = (sim.netMedian + sim.netMean) / 2 + g;
-        return `<div class="kpi"><div class="k">Perdita max / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format(sim.maxLoss / den) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>
+        const denP = sim.netP25 + g;
+        return `<div class="kpi"><div class="k">Perdita max / (guadagno probabile + crescita)</div><div class="v">${denP > 0 ? nf2.format(sim.maxLoss / denP) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>
+      <div class="kpi"><div class="k">Perdita max / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format(sim.maxLoss / den) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>
       <div class="kpi"><div class="k">Perdite medie / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / 2 / den) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>`;
       })()}
       <div class="kpi"><div class="k">Guadagno corretto per il rischio ${s.mc.years}a</div><div class="v ${cls(sim.netMedian - sim.finalLoss)}">${pct(sim.netMedian - sim.finalLoss, true)}</div><div class="h">guadagno tipico ${pct(sim.netMedian, true)} − perdita finale sfavorevole ${pct(sim.finalLoss)}</div></div>
@@ -1300,7 +1309,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="23" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="24" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

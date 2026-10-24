@@ -199,6 +199,13 @@ export function simulate(prices, options = {}) {
     probLoss: nets.filter((x) => x < 0).length / nets.length,
     // Probabilità di ottenere almeno ciascun rendimento netto di PROB_THRESHOLDS (stesso ordine)
     probAtLeast: PROB_THRESHOLDS.map((t) => nets.filter((x) => x >= t).length / nets.length),
+    // Perdita definitiva a fine orizzonte nello scenario sfavorevole (5% peggiore) ÷ guadagno tipico (mediano)
+    finalLoss: Math.max(0, -percentile(nets, 0.05)),
+    ratioFinal: (() => {
+      const loss = Math.max(0, -percentile(nets, 0.05));
+      const gain = percentile(nets, 0.5);
+      return gain > 0 ? loss / gain : Infinity;
+    })(),
     mddMedian: percentile(sortedMdd, 0.5),
     mddP95: percentile(sortedMdd, 0.95),
     fan: fanBands,

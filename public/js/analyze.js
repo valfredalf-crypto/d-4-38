@@ -55,6 +55,8 @@ export function tableResult(r) {
       netMedian: r4(s.netMedian),
       netMean: r4(s.netMean),
       ratio: r4(s.ratio),
+      finalLoss: r4(s.finalLoss),
+      ratioFinal: r4(s.ratioFinal),
       probLoss: r4(s.probLoss),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },

@@ -455,6 +455,9 @@ function rowValues(i) {
     netGain: sim?.netGain ?? null,
     netMean: sim?.netMean ?? null,
     netP25: sim?.netP25 ?? null,
+    finalLoss: sim?.finalLoss ?? null,
+    // ratioFinal null con guadagno mediano ≤ 0 (Infinity non sopravvive al JSON) → ∞
+    ratioFinal: sim && sim.finalLoss != null ? (sim.ratioFinal ?? (sim.netMedian > 0 ? null : Infinity)) : null,
     // probAtLeast è allineato a PROB_THRESHOLDS: [0, +10%, +25%, +50%, +100%]
     prob10: sim?.probAtLeast?.[1] ?? null,
     prob25: sim?.probAtLeast?.[2] ?? null,
@@ -537,6 +540,7 @@ function render() {
         <td class="num ${cls(r.netMean)}">${pct(r.netMean, true)}</td>
         <td class="num ${cls(r.netP25)}">${pct(r.netP25, true)}</td>
         <td class="num">${ratioCell}</td>
+        <td class="num">${r.ratioFinal == null ? '–' : r.ratioFinal === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.ratioFinal < 1 ? 'pos' : ''}">${nf2.format(r.ratioFinal)}</span>`}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>
@@ -646,6 +650,7 @@ function renderDetail(inst, r, d) {
       <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
       <div class="kpi"><div class="k">Guadagno netto probabile ${s.mc.years}a</div><div class="v ${cls(sim.netP25)}">${pct(sim.netP25, true)}</div><div class="h">ottenuto o superato nel 75% degli scenari · ${eur(amt * (1 + sim.netP25))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
+      <div class="kpi"><div class="k">Rapporto perdita finale/guadagno</div><div class="v">${Number.isFinite(sim.ratioFinal) ? nf2.format(sim.ratioFinal) : '∞'}</div><div class="h">perdita a fine ${s.mc.years} anni nel 5% peggiore (${sim.finalLoss > 0 ? '−' + pct(sim.finalLoss) + ', ' + eur(amt * (1 - sim.finalLoss)) : 'nessuna perdita'}) ÷ guadagno mediano</div></div>
       <div class="kpi"><div class="k">Rapporto drawdown mediano/guadagno</div><div class="v">${sim.netGain > 0 ? nf2.format(sim.mddMedian / sim.netGain) : '∞'}</div><div class="h">perdita tipica / guadagno tipico, più basso = migliore</div></div>
       <div class="kpi"><div class="k">Probabilità di perdita</div><div class="v">${pct(sim.probLoss, false, 0)}</div><div class="h">a fine orizzonte, netto costi</div></div>
       ${(() => {
@@ -1244,7 +1249,7 @@ async function main() {
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
   } catch (e) {
-    $('#table tbody').innerHTML = `<tr><td colspan="19" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
+    $('#table tbody').innerHTML = `<tr><td colspan="20" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
 

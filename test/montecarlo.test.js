@@ -77,3 +77,13 @@ test('probAtLeast: probabilità decrescenti con la soglia e coerenti con probLos
   for (let i = 1; i < v.length; i++) assert.ok(v[i] <= v[i - 1]);
   assert.ok(Math.abs(s.probAtLeast[0] - (1 - s.probLoss)) < 1e-9);
 });
+
+test('ratioFinal: perdita finale nel 5% peggiore ÷ guadagno mediano', () => {
+  const prices = [];
+  let p = 100;
+  const rnd = mulberry32(3);
+  for (let i = 0; i < 520; i++) prices.push((p *= Math.exp(0.0015 + 0.06 * (rnd() - 0.5))));
+  const s = simulate(prices, { sims: 800, seed: 2 });
+  assert.ok(Math.abs(s.finalLoss - Math.max(0, -s.netP5)) < 1e-9);
+  if (s.netMedian > 0) assert.ok(Math.abs(s.ratioFinal - s.finalLoss / s.netMedian) < 1e-9);
+});

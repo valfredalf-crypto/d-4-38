@@ -185,9 +185,9 @@ export function forwardParams(p, settings = {}) {
       source: 'market',
       market: p.market,
       beta,
-      // crescita degli utili "sottostante": solo per strumenti di tipo azionario (beta ≥ 0,3);
+      // crescita degli utili "sottostante": solo per strumenti di tipo azionario (beta ≥ 0,45);
       // obbligazionari, monetari e oro non hanno utili da far crescere
-      growth: Number.isFinite(p.marketGrowth) && beta >= 0.3 ? p.marketGrowth * beta : null,
+      growth: Number.isFinite(p.marketGrowth) && beta >= 0.45 ? p.marketGrowth * beta : null,
     };
   }
 

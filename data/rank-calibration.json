@@ -1,984 +1,984 @@
 {
- "generatedAt": "2026-10-24T19:46:35.874Z",
- "rows": 3431,
+ "generatedAt": "2026-10-24T19:47:24.500Z",
+ "rows": 6123,
  "origins": [
   260,
   364
  ],
- "sims": 60,
+ "sims": 500,
  "results": {
   "tutti": [
    {
-    "name": "equivalente certo γ=2",
+    "name": "P(≥ +25%)",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.1799,
-     "topDecileReal": 0.4414,
-     "topDecileMedian": 0.3013,
-     "bottomDecileReal": 0.447,
-     "topDecileLossShare": 0.2417
+     "n": 4279,
+     "rankCorr": 0.2261,
+     "topDecileReal": 0.4643,
+     "topDecileMedian": 0.446,
+     "bottomDecileReal": 0.5397,
+     "topDecileLossShare": 0.0422
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.1283,
-     "topDecileReal": 0.397,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1521,
-     "topDecileLossShare": 0.2718
-    }
-   },
-   {
-    "name": "equivalente certo γ=1,5",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1788,
-     "topDecileReal": 0.4302,
-     "topDecileMedian": 0.2897,
-     "bottomDecileReal": 0.391,
-     "topDecileLossShare": 0.2583
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1271,
-     "topDecileReal": 0.3784,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1583,
-     "topDecileLossShare": 0.2816
-    }
-   },
-   {
-    "name": "guadagno probabile 75%",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1767,
-     "topDecileReal": 0.4125,
-     "topDecileMedian": 0.2897,
-     "bottomDecileReal": 0.5827,
-     "topDecileLossShare": 0.2708
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1345,
-     "topDecileReal": 0.4536,
-     "topDecileMedian": 0.2985,
-     "bottomDecileReal": 0.11,
-     "topDecileLossShare": 0.2233
-    }
-   },
-   {
-    "name": "prudente (γ=3)",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1759,
-     "topDecileReal": 0.4426,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.4119,
-     "topDecileLossShare": 0.2458
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1266,
-     "topDecileReal": 0.3804,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.1366,
-     "topDecileLossShare": 0.2718
-    }
-   },
-   {
-    "name": "Kelly (γ=1)",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1702,
-     "topDecileReal": 0.501,
-     "topDecileMedian": 0.3186,
-     "bottomDecileReal": 0.6228,
-     "topDecileLossShare": 0.25
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1218,
-     "topDecileReal": 0.3632,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1191,
-     "topDecileLossShare": 0.2913
-    }
-   },
-   {
-    "name": "guadagno bilanciato",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1597,
-     "topDecileReal": 0.4923,
-     "topDecileMedian": 0.3186,
-     "bottomDecileReal": 0.6288,
-     "topDecileLossShare": 0.2458
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1149,
-     "topDecileReal": 0.4372,
-     "topDecileMedian": 0.3063,
-     "bottomDecileReal": 0.1143,
-     "topDecileLossShare": 0.2816
-    }
-   },
-   {
-    "name": "mediana",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1514,
-     "topDecileReal": 0.5058,
-     "topDecileMedian": 0.3003,
-     "bottomDecileReal": 0.616,
-     "topDecileLossShare": 0.2458
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1133,
-     "topDecileReal": 0.2755,
-     "topDecileMedian": 0.154,
-     "bottomDecileReal": 0.1555,
-     "topDecileLossShare": 0.3786
-    }
-   },
-   {
-    "name": "media − perdita 5% peggiore",
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1487,
-     "topDecileReal": 0.452,
-     "topDecileMedian": 0.3003,
-     "bottomDecileReal": 0.5255,
-     "topDecileLossShare": 0.2667
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1007,
-     "topDecileReal": 0.3947,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.2218,
-     "topDecileLossShare": 0.301
+     "n": 1844,
+     "rankCorr": 0.2366,
+     "topDecileReal": 0.4843,
+     "topDecileMedian": 0.4451,
+     "bottomDecileReal": 1.001,
+     "topDecileLossShare": 0.0598
     }
    },
    {
     "name": "equivalente certo γ=0,5",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.1375,
-     "topDecileReal": 0.431,
-     "topDecileMedian": 0.2764,
-     "bottomDecileReal": 0.5492,
-     "topDecileLossShare": 0.2958
+     "n": 4279,
+     "rankCorr": 0.2111,
+     "topDecileReal": 0.4621,
+     "topDecileMedian": 0.446,
+     "bottomDecileReal": 0.6432,
+     "topDecileLossShare": 0.0445
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0912,
-     "topDecileReal": 0.3278,
-     "topDecileMedian": 0.2021,
-     "bottomDecileReal": 0.1521,
-     "topDecileLossShare": 0.3592
+     "n": 1844,
+     "rankCorr": 0.2352,
+     "topDecileReal": 0.4927,
+     "topDecileMedian": 0.4446,
+     "bottomDecileReal": 1.5012,
+     "topDecileLossShare": 0.0489
     }
    },
    {
-    "name": "rapporto perdita/guadagno (inverso)",
+    "name": "mediana",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.127,
-     "topDecileReal": 0.4875,
-     "topDecileMedian": 0.3003,
-     "bottomDecileReal": 0.3964,
-     "topDecileLossShare": 0.225
+     "n": 4279,
+     "rankCorr": 0.2088,
+     "topDecileReal": 0.4512,
+     "topDecileMedian": 0.441,
+     "bottomDecileReal": 0.7345,
+     "topDecileLossShare": 0.0328
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0896,
-     "topDecileReal": 0.3024,
-     "topDecileMedian": 0.1722,
-     "bottomDecileReal": 0.2301,
-     "topDecileLossShare": 0.3689
+     "n": 1844,
+     "rankCorr": 0.2284,
+     "topDecileReal": 0.4597,
+     "topDecileMedian": 0.419,
+     "bottomDecileReal": 1.4964,
+     "topDecileLossShare": 0.038
     }
    },
    {
-    "name": "media / volatilità",
+    "name": "Kelly (γ=1)",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.0966,
-     "topDecileReal": 0.4193,
-     "topDecileMedian": 0.2749,
-     "bottomDecileReal": 0.5045,
-     "topDecileLossShare": 0.3208
+     "n": 4279,
+     "rankCorr": 0.2056,
+     "topDecileReal": 0.4421,
+     "topDecileMedian": 0.4356,
+     "bottomDecileReal": 0.7507,
+     "topDecileLossShare": 0.0304
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0592,
-     "topDecileReal": 0.2725,
-     "topDecileMedian": 0.1574,
-     "bottomDecileReal": 0.242,
-     "topDecileLossShare": 0.3786
+     "n": 1844,
+     "rankCorr": 0.229,
+     "topDecileReal": 0.4578,
+     "topDecileMedian": 0.4136,
+     "bottomDecileReal": 1.5134,
+     "topDecileLossShare": 0.0272
     }
    },
    {
-    "name": "media × P(non perdere)",
+    "name": "guadagno bilanciato",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.0782,
-     "topDecileReal": 0.4198,
-     "topDecileMedian": 0.2017,
-     "bottomDecileReal": 0.5227,
-     "topDecileLossShare": 0.3917
+     "n": 4279,
+     "rankCorr": 0.203,
+     "topDecileReal": 0.4392,
+     "topDecileMedian": 0.4342,
+     "bottomDecileReal": 0.717,
+     "topDecileLossShare": 0.0304
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0468,
-     "topDecileReal": 0.223,
-     "topDecileMedian": 0.154,
-     "bottomDecileReal": 0.2352,
-     "topDecileLossShare": 0.4272
+     "n": 1844,
+     "rankCorr": 0.2275,
+     "topDecileReal": 0.4595,
+     "topDecileMedian": 0.4136,
+     "bottomDecileReal": 1.4772,
+     "topDecileLossShare": 0.0272
     }
    },
    {
-    "name": "P(≥ +25%)",
+    "name": "equivalente certo γ=1,5",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.0767,
-     "topDecileReal": 0.4309,
-     "topDecileMedian": 0.2371,
-     "bottomDecileReal": 0.4961,
-     "topDecileLossShare": 0.325
+     "n": 4279,
+     "rankCorr": 0.2019,
+     "topDecileReal": 0.4282,
+     "topDecileMedian": 0.4151,
+     "bottomDecileReal": 0.753,
+     "topDecileLossShare": 0.0351
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0413,
-     "topDecileReal": 0.3152,
-     "topDecileMedian": 0.2021,
-     "bottomDecileReal": 0.354,
-     "topDecileLossShare": 0.3495
+     "n": 1844,
+     "rankCorr": 0.2249,
+     "topDecileReal": 0.4511,
+     "topDecileMedian": 0.4085,
+     "bottomDecileReal": 1.5091,
+     "topDecileLossShare": 0.0326
     }
    },
    {
-    "name": "rendimento atteso annuo",
+    "name": "equivalente certo γ=2",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.075,
-     "topDecileReal": 0.4182,
-     "topDecileMedian": 0.2384,
-     "bottomDecileReal": 0.3244,
-     "topDecileLossShare": 0.3333
+     "n": 4279,
+     "rankCorr": 0.1987,
+     "topDecileReal": 0.4191,
+     "topDecileMedian": 0.4138,
+     "bottomDecileReal": 0.7323,
+     "topDecileLossShare": 0.0398
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0425,
-     "topDecileReal": 0.4176,
-     "topDecileMedian": 0.1923,
-     "bottomDecileReal": 0.2847,
-     "topDecileLossShare": 0.3398
+     "n": 1844,
+     "rankCorr": 0.2223,
+     "topDecileReal": 0.4208,
+     "topDecileMedian": 0.3835,
+     "bottomDecileReal": 1.5666,
+     "topDecileLossShare": 0.038
     }
    },
    {
-    "name": "media (guadagno medio)",
+    "name": "prudente (γ=3)",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.0583,
-     "topDecileReal": 0.3239,
-     "topDecileMedian": 0.0966,
-     "bottomDecileReal": 0.5044,
-     "topDecileLossShare": 0.4542
+     "n": 4279,
+     "rankCorr": 0.1943,
+     "topDecileReal": 0.3925,
+     "topDecileMedian": 0.396,
+     "bottomDecileReal": 0.712,
+     "topDecileLossShare": 0.0703
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0332,
-     "topDecileReal": 0.2465,
-     "topDecileMedian": 0.1554,
-     "bottomDecileReal": 0.2254,
-     "topDecileLossShare": 0.4563
+     "n": 1844,
+     "rankCorr": 0.2189,
+     "topDecileReal": 0.3729,
+     "topDecileMedian": 0.3683,
+     "bottomDecileReal": 1.5667,
+     "topDecileLossShare": 0.087
     }
    },
    {
-    "name": "media × √P(≥ +50%)",
+    "name": "guadagno probabile 75%",
     "train": {
-     "n": 2401,
-     "rankCorr": 0.0542,
-     "topDecileReal": 0.3463,
-     "topDecileMedian": 0.1188,
-     "bottomDecileReal": 0.523,
-     "topDecileLossShare": 0.4458
+     "n": 4279,
+     "rankCorr": 0.193,
+     "topDecileReal": 0.3652,
+     "topDecileMedian": 0.3802,
+     "bottomDecileReal": 0.756,
+     "topDecileLossShare": 0.0773
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.0244,
-     "topDecileReal": 0.2433,
-     "topDecileMedian": 0.147,
-     "bottomDecileReal": 0.2198,
-     "topDecileLossShare": 0.466
+     "n": 1844,
+     "rankCorr": 0.2183,
+     "topDecileReal": 0.3579,
+     "topDecileMedian": 0.3405,
+     "bottomDecileReal": 1.5638,
+     "topDecileLossShare": 0.0815
     }
    },
    {
     "name": "P(≥ +50%)",
     "train": {
-     "n": 2401,
-     "rankCorr": -0.0106,
-     "topDecileReal": 0.3759,
-     "topDecileMedian": 0.1917,
-     "bottomDecileReal": 0.4187,
-     "topDecileLossShare": 0.4042
+     "n": 4279,
+     "rankCorr": 0.1832,
+     "topDecileReal": 0.5532,
+     "topDecileMedian": 0.3426,
+     "bottomDecileReal": 0.4013,
+     "topDecileLossShare": 0.267
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": -0.0355,
-     "topDecileReal": 0.3125,
-     "topDecileMedian": 0.0249,
-     "bottomDecileReal": 0.248,
-     "topDecileLossShare": 0.4854
+     "n": 1844,
+     "rankCorr": 0.1783,
+     "topDecileReal": 0.5895,
+     "topDecileMedian": 0.3769,
+     "bottomDecileReal": 0.4891,
+     "topDecileLossShare": 0.2772
+    }
+   },
+   {
+    "name": "media × P(non perdere)",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.1805,
+     "topDecileReal": 0.5448,
+     "topDecileMedian": 0.4392,
+     "bottomDecileReal": 0.3576,
+     "topDecileLossShare": 0.1054
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.2031,
+     "topDecileReal": 0.864,
+     "topDecileMedian": 0.4469,
+     "bottomDecileReal": 0.3299,
+     "topDecileLossShare": 0.1033
+    }
+   },
+   {
+    "name": "media / volatilità",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.1683,
+     "topDecileReal": 0.4452,
+     "topDecileMedian": 0.3885,
+     "bottomDecileReal": 0.3641,
+     "topDecileLossShare": 0.0726
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.1962,
+     "topDecileReal": 0.35,
+     "topDecileMedian": 0.3664,
+     "bottomDecileReal": 0.7373,
+     "topDecileLossShare": 0.0815
+    }
+   },
+   {
+    "name": "media − perdita 5% peggiore",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.1676,
+     "topDecileReal": 0.4273,
+     "topDecileMedian": 0.3716,
+     "bottomDecileReal": 0.3536,
+     "topDecileLossShare": 0.1124
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.2032,
+     "topDecileReal": 0.5497,
+     "topDecileMedian": 0.3387,
+     "bottomDecileReal": 0.7445,
+     "topDecileLossShare": 0.1196
+    }
+   },
+   {
+    "name": "media × √P(≥ +50%)",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.1637,
+     "topDecileReal": 1.9865,
+     "topDecileMedian": 0.2788,
+     "bottomDecileReal": 0.3669,
+     "topDecileLossShare": 0.3279
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.1758,
+     "topDecileReal": 1.9431,
+     "topDecileMedian": 0.4136,
+     "bottomDecileReal": 0.7589,
+     "topDecileLossShare": 0.2935
+    }
+   },
+   {
+    "name": "media (guadagno medio)",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.1573,
+     "topDecileReal": 2.3704,
+     "topDecileMedian": 0.2743,
+     "bottomDecileReal": 0.367,
+     "topDecileLossShare": 0.3513
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.1722,
+     "topDecileReal": 1.9332,
+     "topDecileMedian": 0.3989,
+     "bottomDecileReal": 0.7633,
+     "topDecileLossShare": 0.337
+    }
+   },
+   {
+    "name": "rapporto perdita/guadagno (inverso)",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.1493,
+     "topDecileReal": 0.3706,
+     "topDecileMedian": 0.3802,
+     "bottomDecileReal": 2.0729,
+     "topDecileLossShare": 0.0726
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.1762,
+     "topDecileReal": 0.3822,
+     "topDecileMedian": 0.3775,
+     "bottomDecileReal": 3.2253,
+     "topDecileLossShare": 0.0707
+    }
+   },
+   {
+    "name": "rendimento atteso annuo",
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.0742,
+     "topDecileReal": 2.4927,
+     "topDecileMedian": 0.2015,
+     "bottomDecileReal": 0.3067,
+     "topDecileLossShare": 0.4028
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.073,
+     "topDecileReal": 1.6432,
+     "topDecileMedian": 0.2267,
+     "bottomDecileReal": 0.6959,
+     "topDecileLossShare": 0.4457
     }
    }
   ],
   "azioni": [
    {
-    "name": "equivalente certo γ=2",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.2009,
-     "topDecileReal": 0.4788,
-     "topDecileMedian": 0.3174,
-     "bottomDecileReal": 0.3853,
-     "topDecileLossShare": 0.224
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1328,
-     "topDecileReal": 0.3332,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.096,
-     "topDecileLossShare": 0.3086
-    }
-   },
-   {
-    "name": "equivalente certo γ=1,5",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1997,
-     "topDecileReal": 0.5054,
-     "topDecileMedian": 0.3174,
-     "bottomDecileReal": 0.3403,
-     "topDecileLossShare": 0.2131
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1322,
-     "topDecileReal": 0.3647,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.0666,
-     "topDecileLossShare": 0.2963
-    }
-   },
-   {
-    "name": "guadagno probabile 75%",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1984,
-     "topDecileReal": 0.4294,
-     "topDecileMedian": 0.2996,
-     "bottomDecileReal": 0.386,
-     "topDecileLossShare": 0.2678
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1474,
-     "topDecileReal": 0.4575,
-     "topDecileMedian": 0.2985,
-     "bottomDecileReal": 0.0803,
-     "topDecileLossShare": 0.2099
-    }
-   },
-   {
-    "name": "prudente (γ=3)",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1967,
-     "topDecileReal": 0.4749,
-     "topDecileMedian": 0.3107,
-     "bottomDecileReal": 0.3198,
-     "topDecileLossShare": 0.2186
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1305,
-     "topDecileReal": 0.3752,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1183,
-     "topDecileLossShare": 0.284
-    }
-   },
-   {
-    "name": "Kelly (γ=1)",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1893,
-     "topDecileReal": 0.5303,
-     "topDecileMedian": 0.3463,
-     "bottomDecileReal": 0.3996,
-     "topDecileLossShare": 0.2186
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1266,
-     "topDecileReal": 0.3825,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1756,
-     "topDecileLossShare": 0.2963
-    }
-   },
-   {
-    "name": "guadagno bilanciato",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1779,
-     "topDecileReal": 0.547,
-     "topDecileMedian": 0.3463,
-     "bottomDecileReal": 0.4039,
-     "topDecileLossShare": 0.2186
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1219,
-     "topDecileReal": 0.4132,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1761,
-     "topDecileLossShare": 0.3086
-    }
-   },
-   {
-    "name": "mediana",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1692,
-     "topDecileReal": 0.5158,
-     "topDecileMedian": 0.3107,
-     "bottomDecileReal": 0.4324,
-     "topDecileLossShare": 0.2404
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1234,
-     "topDecileReal": 0.3026,
-     "topDecileMedian": 0.1606,
-     "bottomDecileReal": 0.1602,
-     "topDecileLossShare": 0.3704
-    }
-   },
-   {
-    "name": "media − perdita 5% peggiore",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1672,
-     "topDecileReal": 0.4947,
-     "topDecileMedian": 0.2996,
-     "bottomDecileReal": 0.3592,
-     "topDecileLossShare": 0.2404
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0916,
-     "topDecileReal": 0.3317,
-     "topDecileMedian": 0.2021,
-     "bottomDecileReal": 0.345,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "name": "equivalente certo γ=0,5",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1523,
-     "topDecileReal": 0.5012,
-     "topDecileMedian": 0.3085,
-     "bottomDecileReal": 0.4038,
-     "topDecileLossShare": 0.2678
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0921,
-     "topDecileReal": 0.3261,
-     "topDecileMedian": 0.1722,
-     "bottomDecileReal": 0.313,
-     "topDecileLossShare": 0.358
-    }
-   },
-   {
-    "name": "rapporto perdita/guadagno (inverso)",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1425,
-     "topDecileReal": 0.5135,
-     "topDecileMedian": 0.3085,
-     "bottomDecileReal": 0.3407,
-     "topDecileLossShare": 0.2404
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1033,
-     "topDecileReal": 0.2878,
-     "topDecileMedian": 0.1722,
-     "bottomDecileReal": 0.3095,
-     "topDecileLossShare": 0.3704
-    }
-   },
-   {
-    "name": "media / volatilità",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1136,
-     "topDecileReal": 0.4581,
-     "topDecileMedian": 0.2876,
-     "bottomDecileReal": 0.2908,
-     "topDecileLossShare": 0.2951
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0544,
-     "topDecileReal": 0.3483,
-     "topDecileMedian": 0.2021,
-     "bottomDecileReal": 0.4248,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "name": "media × P(non perdere)",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.0891,
-     "topDecileReal": 0.4584,
-     "topDecileMedian": 0.2325,
-     "bottomDecileReal": 0.3215,
-     "topDecileLossShare": 0.3607
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0381,
-     "topDecileReal": 0.287,
-     "topDecileMedian": 0.1606,
-     "bottomDecileReal": 0.4565,
-     "topDecileLossShare": 0.4198
-    }
-   },
-   {
     "name": "P(≥ +25%)",
     "train": {
-     "n": 1833,
-     "rankCorr": 0.0827,
-     "topDecileReal": 0.482,
-     "topDecileMedian": 0.2758,
-     "bottomDecileReal": 0.4063,
-     "topDecileLossShare": 0.2896
+     "n": 3560,
+     "rankCorr": 0.179,
+     "topDecileReal": 0.398,
+     "topDecileMedian": 0.2534,
+     "bottomDecileReal": 0.6054,
+     "topDecileLossShare": 0.3118
     },
     "valid": {
-     "n": 811,
-     "rankCorr": 0.0483,
-     "topDecileReal": 0.2891,
-     "topDecileMedian": 0.1892,
-     "bottomDecileReal": 0.2659,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "name": "rendimento atteso annuo",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.0714,
-     "topDecileReal": 0.4344,
-     "topDecileMedian": 0.2259,
-     "bottomDecileReal": 0.2551,
-     "topDecileLossShare": 0.3388
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0704,
-     "topDecileReal": 0.3678,
-     "topDecileMedian": 0.1923,
-     "bottomDecileReal": 0.3276,
-     "topDecileLossShare": 0.358
-    }
-   },
-   {
-    "name": "media (guadagno medio)",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.0626,
-     "topDecileReal": 0.3901,
-     "topDecileMedian": 0.1291,
-     "bottomDecileReal": 0.3277,
-     "topDecileLossShare": 0.4262
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0176,
-     "topDecileReal": 0.2414,
-     "topDecileMedian": -0.0281,
-     "bottomDecileReal": 0.4565,
-     "topDecileLossShare": 0.5185
-    }
-   },
-   {
-    "name": "media × √P(≥ +50%)",
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.056,
-     "topDecileReal": 0.3962,
-     "topDecileMedian": 0.1275,
-     "bottomDecileReal": 0.3257,
-     "topDecileLossShare": 0.4153
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.0047,
-     "topDecileReal": 0.1913,
-     "topDecileMedian": -0.0281,
-     "bottomDecileReal": 0.4422,
-     "topDecileLossShare": 0.5185
+     "n": 1590,
+     "rankCorr": 0.1995,
+     "topDecileReal": 0.4881,
+     "topDecileMedian": 0.2591,
+     "bottomDecileReal": 0.8527,
+     "topDecileLossShare": 0.3019
     }
    },
    {
     "name": "P(≥ +50%)",
     "train": {
-     "n": 1833,
-     "rankCorr": -0.0173,
-     "topDecileReal": 0.4065,
-     "topDecileMedian": 0.2192,
-     "bottomDecileReal": 0.3085,
-     "topDecileLossShare": 0.3825
+     "n": 3560,
+     "rankCorr": 0.1698,
+     "topDecileReal": 0.5865,
+     "topDecileMedian": 0.235,
+     "bottomDecileReal": 0.4159,
+     "topDecileLossShare": 0.3624
     },
     "valid": {
-     "n": 811,
-     "rankCorr": -0.0614,
-     "topDecileReal": 0.4066,
-     "topDecileMedian": 0.1489,
-     "bottomDecileReal": 0.351,
-     "topDecileLossShare": 0.4444
+     "n": 1590,
+     "rankCorr": 0.1662,
+     "topDecileReal": 0.6917,
+     "topDecileMedian": 0.2471,
+     "bottomDecileReal": 0.8401,
+     "topDecileLossShare": 0.3648
+    }
+   },
+   {
+    "name": "equivalente certo γ=0,5",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1674,
+     "topDecileReal": 0.4041,
+     "topDecileMedian": 0.2425,
+     "bottomDecileReal": 0.4939,
+     "topDecileLossShare": 0.2978
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.2016,
+     "topDecileReal": 0.5474,
+     "topDecileMedian": 0.2661,
+     "bottomDecileReal": 0.8763,
+     "topDecileLossShare": 0.2956
+    }
+   },
+   {
+    "name": "mediana",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1671,
+     "topDecileReal": 0.3137,
+     "topDecileMedian": 0.2235,
+     "bottomDecileReal": 0.6038,
+     "topDecileLossShare": 0.2697
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1972,
+     "topDecileReal": 0.3211,
+     "topDecileMedian": 0.262,
+     "bottomDecileReal": 1.238,
+     "topDecileLossShare": 0.2704
+    }
+   },
+   {
+    "name": "Kelly (γ=1)",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1663,
+     "topDecileReal": 0.2936,
+     "topDecileMedian": 0.2155,
+     "bottomDecileReal": 0.6047,
+     "topDecileLossShare": 0.2949
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.2004,
+     "topDecileReal": 0.2861,
+     "topDecileMedian": 0.2566,
+     "bottomDecileReal": 1.0183,
+     "topDecileLossShare": 0.2893
+    }
+   },
+   {
+    "name": "equivalente certo γ=1,5",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.165,
+     "topDecileReal": 0.2906,
+     "topDecileMedian": 0.2093,
+     "bottomDecileReal": 0.5955,
+     "topDecileLossShare": 0.2978
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1988,
+     "topDecileReal": 0.2561,
+     "topDecileMedian": 0.2149,
+     "bottomDecileReal": 1.3279,
+     "topDecileLossShare": 0.3082
+    }
+   },
+   {
+    "name": "guadagno bilanciato",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1645,
+     "topDecileReal": 0.2999,
+     "topDecileMedian": 0.2155,
+     "bottomDecileReal": 0.5517,
+     "topDecileLossShare": 0.2949
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1993,
+     "topDecileReal": 0.2818,
+     "topDecileMedian": 0.2473,
+     "bottomDecileReal": 0.9708,
+     "topDecileLossShare": 0.2893
+    }
+   },
+   {
+    "name": "equivalente certo γ=2",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1639,
+     "topDecileReal": 0.264,
+     "topDecileMedian": 0.1945,
+     "bottomDecileReal": 0.5855,
+     "topDecileLossShare": 0.309
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1973,
+     "topDecileReal": 0.2208,
+     "topDecileMedian": 0.2041,
+     "bottomDecileReal": 1.3369,
+     "topDecileLossShare": 0.3459
+    }
+   },
+   {
+    "name": "prudente (γ=3)",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1632,
+     "topDecileReal": 0.237,
+     "topDecileMedian": 0.1758,
+     "bottomDecileReal": 0.5839,
+     "topDecileLossShare": 0.3287
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1965,
+     "topDecileReal": 0.2293,
+     "topDecileMedian": 0.1811,
+     "bottomDecileReal": 1.3408,
+     "topDecileLossShare": 0.3396
+    }
+   },
+   {
+    "name": "guadagno probabile 75%",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1626,
+     "topDecileReal": 0.2523,
+     "topDecileMedian": 0.1945,
+     "bottomDecileReal": 0.5757,
+     "topDecileLossShare": 0.323
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1966,
+     "topDecileReal": 0.2173,
+     "topDecileMedian": 0.1811,
+     "bottomDecileReal": 1.3401,
+     "topDecileLossShare": 0.3585
+    }
+   },
+   {
+    "name": "media − perdita 5% peggiore",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1278,
+     "topDecileReal": 0.337,
+     "topDecileMedian": 0.1917,
+     "bottomDecileReal": 0.3654,
+     "topDecileLossShare": 0.3371
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1726,
+     "topDecileReal": 0.2228,
+     "topDecileMedian": 0.188,
+     "bottomDecileReal": 0.7436,
+     "topDecileLossShare": 0.3396
+    }
+   },
+   {
+    "name": "media × P(non perdere)",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.126,
+     "topDecileReal": 0.6441,
+     "topDecileMedian": 0.2425,
+     "bottomDecileReal": 0.3747,
+     "topDecileLossShare": 0.3596
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1543,
+     "topDecileReal": 1.7313,
+     "topDecileMedian": 0.2559,
+     "bottomDecileReal": 0.1314,
+     "topDecileLossShare": 0.3333
+    }
+   },
+   {
+    "name": "media / volatilità",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1247,
+     "topDecileReal": 0.3699,
+     "topDecileMedian": 0.1984,
+     "bottomDecileReal": 0.2894,
+     "topDecileLossShare": 0.323
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1609,
+     "topDecileReal": 0.4737,
+     "topDecileMedian": 0.2181,
+     "bottomDecileReal": 0.1372,
+     "topDecileLossShare": 0.3082
+    }
+   },
+   {
+    "name": "media × √P(≥ +50%)",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1215,
+     "topDecileReal": 2.5979,
+     "topDecileMedian": 0.1075,
+     "bottomDecileReal": 0.3957,
+     "topDecileLossShare": 0.4213
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1347,
+     "topDecileReal": 1.8852,
+     "topDecileMedian": 0.2267,
+     "bottomDecileReal": 0.1634,
+     "topDecileLossShare": 0.4025
+    }
+   },
+   {
+    "name": "media (guadagno medio)",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1115,
+     "topDecileReal": 2.9794,
+     "topDecileMedian": 0.0922,
+     "bottomDecileReal": 0.4028,
+     "topDecileLossShare": 0.4466
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1266,
+     "topDecileReal": 2.5786,
+     "topDecileMedian": 0.1181,
+     "bottomDecileReal": 0.2032,
+     "topDecileLossShare": 0.4528
+    }
+   },
+   {
+    "name": "rapporto perdita/guadagno (inverso)",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.0979,
+     "topDecileReal": 0.281,
+     "topDecileMedian": 0.2096,
+     "bottomDecileReal": 1.2223,
+     "topDecileLossShare": 0.2921
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1382,
+     "topDecileReal": 0.2694,
+     "topDecileMedian": 0.2149,
+     "bottomDecileReal": 2.7372,
+     "topDecileLossShare": 0.3082
+    }
+   },
+   {
+    "name": "rendimento atteso annuo",
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.0169,
+     "topDecileReal": 2.8153,
+     "topDecileMedian": 0.0984,
+     "bottomDecileReal": 0.369,
+     "topDecileLossShare": 0.4522
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.0255,
+     "topDecileReal": 1.8053,
+     "topDecileMedian": 0.0431,
+     "bottomDecileReal": 0.513,
+     "topDecileLossShare": 0.4843
     }
    }
   ],
   "etf": [
    {
-    "name": "prudente (γ=3)",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.101,
-     "topDecileReal": 0.1138,
-     "topDecileMedian": 0.1062,
-     "bottomDecileReal": 0.364,
-     "topDecileLossShare": 0.4182
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1064,
-     "topDecileReal": 0.5595,
-     "topDecileMedian": 0.2317,
-     "bottomDecileReal": 0.4213,
-     "topDecileLossShare": 0.2381
-    }
-   },
-   {
-    "name": "equivalente certo γ=2",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0965,
-     "topDecileReal": 0.2002,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.3312,
-     "topDecileLossShare": 0.3455
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1087,
-     "topDecileReal": 0.4612,
-     "topDecileMedian": 0.2317,
-     "bottomDecileReal": 0.4114,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "name": "guadagno probabile 75%",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0949,
-     "topDecileReal": 0.1535,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.1163,
-     "topDecileLossShare": 0.3636
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.0806,
-     "topDecileReal": 0.4848,
-     "topDecileMedian": 0.1696,
-     "bottomDecileReal": 0.2763,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "name": "equivalente certo γ=1,5",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0927,
-     "topDecileReal": 0.1698,
-     "topDecileMedian": 0.143,
-     "bottomDecileReal": 0.3054,
-     "topDecileLossShare": 0.3636
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1083,
-     "topDecileReal": 0.3958,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.3209,
-     "topDecileLossShare": 0.381
-    }
-   },
-   {
-    "name": "Kelly (γ=1)",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.085,
-     "topDecileReal": 0.1809,
-     "topDecileMedian": 0.1176,
-     "bottomDecileReal": 0.3472,
-     "topDecileLossShare": 0.3818
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1135,
-     "topDecileReal": 0.1621,
-     "topDecileMedian": 0.003,
-     "bottomDecileReal": 0.0816,
-     "topDecileLossShare": 0.4762
-    }
-   },
-   {
-    "name": "guadagno bilanciato",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0748,
-     "topDecileReal": 0.1584,
-     "topDecileMedian": 0.0717,
-     "bottomDecileReal": 0.8957,
-     "topDecileLossShare": 0.4182
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1129,
-     "topDecileReal": 0.1525,
-     "topDecileMedian": 0.003,
-     "bottomDecileReal": 0.0736,
-     "topDecileLossShare": 0.4762
-    }
-   },
-   {
-    "name": "mediana",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0696,
-     "topDecileReal": 0.1494,
-     "topDecileMedian": 0.0575,
-     "bottomDecileReal": 0.3727,
-     "topDecileLossShare": 0.4545
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.08,
-     "topDecileReal": 0.1869,
-     "topDecileMedian": -0.0408,
-     "bottomDecileReal": -0.0115,
-     "topDecileLossShare": 0.5238
-    }
-   },
-   {
-    "name": "media − perdita 5% peggiore",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0634,
-     "topDecileReal": 0.1449,
-     "topDecileMedian": 0.1062,
-     "bottomDecileReal": 0.3907,
-     "topDecileLossShare": 0.4182
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1719,
-     "topDecileReal": 0.33,
-     "topDecileMedian": 0.1696,
-     "bottomDecileReal": 0.0966,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "name": "equivalente certo γ=0,5",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0519,
-     "topDecileReal": 0.1086,
-     "topDecileMedian": -0.0126,
-     "bottomDecileReal": 0.3857,
-     "topDecileLossShare": 0.5091
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1305,
-     "topDecileReal": 0.2869,
-     "topDecileMedian": 0.1554,
-     "bottomDecileReal": 0.0739,
-     "topDecileLossShare": 0.4286
-    }
-   },
-   {
-    "name": "rapporto perdita/guadagno (inverso)",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0246,
-     "topDecileReal": 0.1859,
-     "topDecileMedian": 0.0717,
-     "bottomDecileReal": 0.1633,
-     "topDecileLossShare": 0.4182
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.0194,
-     "topDecileReal": 0.2239,
-     "topDecileMedian": 0.0263,
-     "bottomDecileReal": 0.4446,
-     "topDecileLossShare": 0.4762
-    }
-   },
-   {
-    "name": "media / volatilità",
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0002,
-     "topDecileReal": 0.095,
-     "topDecileMedian": -0.0973,
-     "bottomDecileReal": 0.3793,
-     "topDecileLossShare": 0.5273
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1346,
-     "topDecileReal": 0.2777,
-     "topDecileMedian": 0.1696,
-     "bottomDecileReal": 0.1163,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
     "name": "P(≥ +25%)",
     "train": {
-     "n": 559,
-     "rankCorr": -0.0031,
-     "topDecileReal": 0.0838,
-     "topDecileMedian": -0.0973,
-     "bottomDecileReal": 0.5471,
-     "topDecileLossShare": 0.5273
+     "n": 699,
+     "rankCorr": 0.4398,
+     "topDecileReal": 0.6062,
+     "topDecileMedian": 0.5632,
+     "bottomDecileReal": 0.0458,
+     "topDecileLossShare": 0.0145
     },
     "valid": {
-     "n": 216,
-     "rankCorr": -0.001,
-     "topDecileReal": 0.3283,
-     "topDecileMedian": 0.1554,
-     "bottomDecileReal": 0.213,
-     "topDecileLossShare": 0.381
-    }
-   },
-   {
-    "name": "media × P(non perdere)",
-    "train": {
-     "n": 559,
-     "rankCorr": -0.0033,
-     "topDecileReal": 0.078,
-     "topDecileMedian": -0.1686,
-     "bottomDecileReal": 0.3805,
-     "topDecileLossShare": 0.5818
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1431,
-     "topDecileReal": 0.2339,
-     "topDecileMedian": 0.1679,
-     "bottomDecileReal": 0.088,
-     "topDecileLossShare": 0.381
-    }
-   },
-   {
-    "name": "media × √P(≥ +50%)",
-    "train": {
-     "n": 559,
-     "rankCorr": -0.0089,
-     "topDecileReal": 0.0544,
-     "topDecileMedian": -0.218,
-     "bottomDecileReal": 0.4484,
-     "topDecileLossShare": 0.6
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1528,
-     "topDecileReal": 0.2949,
-     "topDecileMedian": 0.1679,
-     "bottomDecileReal": 0.0659,
-     "topDecileLossShare": 0.3333
+     "n": 238,
+     "rankCorr": 0.5224,
+     "topDecileReal": 0.693,
+     "topDecileMedian": 0.5853,
+     "bottomDecileReal": 0.0201,
+     "topDecileLossShare": 0
     }
    },
    {
     "name": "media (guadagno medio)",
     "train": {
-     "n": 559,
-     "rankCorr": -0.0101,
-     "topDecileReal": 0.0766,
-     "topDecileMedian": -0.2018,
-     "bottomDecileReal": 0.4671,
-     "topDecileLossShare": 0.5818
+     "n": 699,
+     "rankCorr": 0.4283,
+     "topDecileReal": 0.4948,
+     "topDecileMedian": 0.4353,
+     "bottomDecileReal": 0.0593,
+     "topDecileLossShare": 0.0435
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1512,
-     "topDecileReal": 0.2987,
-     "topDecileMedian": 0.2517,
-     "bottomDecileReal": 0.0336,
-     "topDecileLossShare": 0.2857
+     "n": 238,
+     "rankCorr": 0.5383,
+     "topDecileReal": 0.6607,
+     "topDecileMedian": 0.5546,
+     "bottomDecileReal": 0.0201,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "equivalente certo γ=0,5",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4268,
+     "topDecileReal": 0.5776,
+     "topDecileMedian": 0.5559,
+     "bottomDecileReal": 0.0341,
+     "topDecileLossShare": 0.0145
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5213,
+     "topDecileReal": 0.6903,
+     "topDecileMedian": 0.5853,
+     "bottomDecileReal": 0.0411,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "media × P(non perdere)",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.423,
+     "topDecileReal": 0.5857,
+     "topDecileMedian": 0.57,
+     "bottomDecileReal": 0.0625,
+     "topDecileLossShare": 0.0145
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5163,
+     "topDecileReal": 0.7254,
+     "topDecileMedian": 0.6245,
+     "bottomDecileReal": 0.0847,
+     "topDecileLossShare": 0
     }
    },
    {
     "name": "rendimento atteso annuo",
     "train": {
-     "n": 559,
-     "rankCorr": -0.0141,
-     "topDecileReal": 0.5284,
-     "topDecileMedian": -0.038,
-     "bottomDecileReal": 0.2641,
-     "topDecileLossShare": 0.5091
+     "n": 699,
+     "rankCorr": 0.4198,
+     "topDecileReal": 0.5234,
+     "topDecileMedian": 0.4364,
+     "bottomDecileReal": 0.0556,
+     "topDecileLossShare": 0.058
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.0026,
-     "topDecileReal": 0.3021,
-     "topDecileMedian": 0.1461,
-     "bottomDecileReal": 0.5004,
-     "topDecileLossShare": 0.4762
+     "n": 238,
+     "rankCorr": 0.5214,
+     "topDecileReal": 0.6893,
+     "topDecileMedian": 0.5757,
+     "bottomDecileReal": 0.0201,
+     "topDecileLossShare": 0.0435
+    }
+   },
+   {
+    "name": "mediana",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4172,
+     "topDecileReal": 0.5796,
+     "topDecileMedian": 0.5425,
+     "bottomDecileReal": 0.0466,
+     "topDecileLossShare": 0.0145
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.4876,
+     "topDecileReal": 0.6724,
+     "topDecileMedian": 0.5757,
+     "bottomDecileReal": 0.055,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "media × √P(≥ +50%)",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4086,
+     "topDecileReal": 0.4887,
+     "topDecileMedian": 0.3904,
+     "bottomDecileReal": 0.0603,
+     "topDecileLossShare": 0.0435
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5027,
+     "topDecileReal": 0.5218,
+     "topDecileMedian": 0.4308,
+     "bottomDecileReal": 0.0201,
+     "topDecileLossShare": 0.0435
+    }
+   },
+   {
+    "name": "Kelly (γ=1)",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4043,
+     "topDecileReal": 0.6205,
+     "topDecileMedian": 0.5745,
+     "bottomDecileReal": 0.1042,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.4595,
+     "topDecileReal": 0.7128,
+     "topDecileMedian": 0.6206,
+     "bottomDecileReal": 0.1407,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "guadagno bilanciato",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.3762,
+     "topDecileReal": 0.6232,
+     "topDecileMedian": 0.5745,
+     "bottomDecileReal": 0.2497,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.4308,
+     "topDecileReal": 0.7133,
+     "topDecileMedian": 0.6206,
+     "bottomDecileReal": 0.256,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "equivalente certo γ=1,5",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.3589,
+     "topDecileReal": 0.6219,
+     "topDecileMedian": 0.5745,
+     "bottomDecileReal": 0.2756,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.3993,
+     "topDecileReal": 0.7192,
+     "topDecileMedian": 0.6245,
+     "bottomDecileReal": 0.3711,
+     "topDecileLossShare": 0
     }
    },
    {
     "name": "P(≥ +50%)",
     "train": {
-     "n": 559,
-     "rankCorr": -0.0679,
-     "topDecileReal": 0.3057,
-     "topDecileMedian": -0.0246,
-     "bottomDecileReal": 0.1312,
-     "topDecileLossShare": 0.5091
+     "n": 699,
+     "rankCorr": 0.356,
+     "topDecileReal": 0.4799,
+     "topDecileMedian": 0.4068,
+     "bottomDecileReal": 0.0739,
+     "topDecileLossShare": 0.058
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.0372,
-     "topDecileReal": 0.4512,
-     "topDecileMedian": 0.166,
-     "bottomDecileReal": 0.2223,
-     "topDecileLossShare": 0.3333
+     "n": 238,
+     "rankCorr": 0.4331,
+     "topDecileReal": 0.4657,
+     "topDecileMedian": 0.3878,
+     "bottomDecileReal": 0.0201,
+     "topDecileLossShare": 0.0435
+    }
+   },
+   {
+    "name": "equivalente certo γ=2",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.3128,
+     "topDecileReal": 0.6225,
+     "topDecileMedian": 0.5754,
+     "bottomDecileReal": 0.3368,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.3492,
+     "topDecileReal": 0.702,
+     "topDecileMedian": 0.6245,
+     "bottomDecileReal": 0.4856,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "prudente (γ=3)",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.1778,
+     "topDecileReal": 0.5879,
+     "topDecileMedian": 0.5632,
+     "bottomDecileReal": 0.3453,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.1817,
+     "topDecileReal": 0.691,
+     "topDecileMedian": 0.6245,
+     "bottomDecileReal": 0.4563,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "guadagno probabile 75%",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.0617,
+     "topDecileReal": 0.5739,
+     "topDecileMedian": 0.568,
+     "bottomDecileReal": 0.338,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.0637,
+     "topDecileReal": 0.6123,
+     "topDecileMedian": 0.5853,
+     "bottomDecileReal": 0.5145,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "media − perdita 5% peggiore",
+    "train": {
+     "n": 699,
+     "rankCorr": 0.0332,
+     "topDecileReal": 0.5863,
+     "topDecileMedian": 0.5657,
+     "bottomDecileReal": 0.3446,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.0189,
+     "topDecileReal": 0.6447,
+     "topDecileMedian": 0.6206,
+     "bottomDecileReal": 0.4567,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "name": "media / volatilità",
+    "train": {
+     "n": 699,
+     "rankCorr": -0.0338,
+     "topDecileReal": 0.1428,
+     "topDecileMedian": 0.032,
+     "bottomDecileReal": 0.286,
+     "topDecileLossShare": 0.2174
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": -0.0785,
+     "topDecileReal": 0.0494,
+     "topDecileMedian": 0.0301,
+     "bottomDecileReal": 0.3708,
+     "topDecileLossShare": 0.3043
+    }
+   },
+   {
+    "name": "rapporto perdita/guadagno (inverso)",
+    "train": {
+     "n": 699,
+     "rankCorr": -0.034,
+     "topDecileReal": 0.1869,
+     "topDecileMedian": 0.0321,
+     "bottomDecileReal": 0.2999,
+     "topDecileLossShare": 0.2174
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": -0.0926,
+     "topDecileReal": 0.0329,
+     "topDecileMedian": 0.0301,
+     "bottomDecileReal": 0.4859,
+     "topDecileLossShare": 0.3043
     }
    }
   ]
@@ -988,193 +988,193 @@
    {
     "w": {
      "gamma": 1,
-     "wLoss": 2,
-     "wDD": 0.5,
-     "wAsym": 0.5
-    },
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1776,
-     "topDecileReal": 0.46,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.4742,
-     "topDecileLossShare": 0.2208
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1322,
-     "topDecileReal": 0.3928,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1374,
-     "topDecileLossShare": 0.2621
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1.5,
-     "wDD": 1,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.177,
-     "topDecileReal": 0.4609,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.5887,
-     "topDecileLossShare": 0.2208
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1329,
-     "topDecileReal": 0.4165,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1135,
-     "topDecileLossShare": 0.2524
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1,
-     "wDD": 1,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.177,
-     "topDecileReal": 0.4609,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.5822,
-     "topDecileLossShare": 0.2208
-    },
-    "valid": {
-     "n": 1030,
-     "rankCorr": 0.1322,
-     "topDecileReal": 0.4105,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.0997,
-     "topDecileLossShare": 0.2524
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
      "wLoss": 0,
-     "wDD": 1,
-     "wAsym": 1
+     "wDD": 0,
+     "wAsym": 0
     },
     "train": {
-     "n": 2401,
-     "rankCorr": 0.1786,
-     "topDecileReal": 0.4328,
-     "topDecileMedian": 0.3003,
-     "bottomDecileReal": 0.4326,
-     "topDecileLossShare": 0.225
+     "n": 4279,
+     "rankCorr": 0.2056,
+     "topDecileReal": 0.4421,
+     "topDecileMedian": 0.4356,
+     "bottomDecileReal": 0.7507,
+     "topDecileLossShare": 0.0304
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.1288,
-     "topDecileReal": 0.3736,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.1138,
-     "topDecileLossShare": 0.2621
+     "n": 1844,
+     "rankCorr": 0.229,
+     "topDecileReal": 0.4578,
+     "topDecileMedian": 0.4136,
+     "bottomDecileReal": 1.5134,
+     "topDecileLossShare": 0.0272
     }
    },
    {
     "w": {
      "gamma": 0.5,
-     "wLoss": 2,
-     "wDD": 1,
-     "wAsym": 1
+     "wLoss": 0,
+     "wDD": 0.25,
+     "wAsym": 0
     },
     "train": {
-     "n": 2401,
-     "rankCorr": 0.176,
-     "topDecileReal": 0.449,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.4757,
-     "topDecileLossShare": 0.2208
+     "n": 4279,
+     "rankCorr": 0.2042,
+     "topDecileReal": 0.4394,
+     "topDecileMedian": 0.427,
+     "bottomDecileReal": 0.6415,
+     "topDecileLossShare": 0.0304
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.1302,
-     "topDecileReal": 0.4011,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1362,
-     "topDecileLossShare": 0.2621
+     "n": 1844,
+     "rankCorr": 0.231,
+     "topDecileReal": 0.4711,
+     "topDecileMedian": 0.4249,
+     "bottomDecileReal": 1.4985,
+     "topDecileLossShare": 0.0217
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.2111,
+     "topDecileReal": 0.4621,
+     "topDecileMedian": 0.446,
+     "bottomDecileReal": 0.6432,
+     "topDecileLossShare": 0.0445
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.2352,
+     "topDecileReal": 0.4927,
+     "topDecileMedian": 0.4446,
+     "bottomDecileReal": 1.5012,
+     "topDecileLossShare": 0.0489
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0.5,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.2059,
+     "topDecileReal": 0.4414,
+     "topDecileMedian": 0.4356,
+     "bottomDecileReal": 0.6451,
+     "topDecileLossShare": 0.0351
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.2308,
+     "topDecileReal": 0.4743,
+     "topDecileMedian": 0.4297,
+     "bottomDecileReal": 1.4909,
+     "topDecileLossShare": 0.0272
     }
    },
    {
     "w": {
      "gamma": 1,
      "wLoss": 0.5,
-     "wDD": 1,
-     "wAsym": 0.5
+     "wDD": 0,
+     "wAsym": 0
     },
     "train": {
-     "n": 2401,
-     "rankCorr": 0.178,
-     "topDecileReal": 0.4502,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.4397,
-     "topDecileLossShare": 0.225
+     "n": 4279,
+     "rankCorr": 0.2025,
+     "topDecileReal": 0.433,
+     "topDecileMedian": 0.4234,
+     "bottomDecileReal": 0.7555,
+     "topDecileLossShare": 0.0304
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.1311,
-     "topDecileReal": 0.4046,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1222,
-     "topDecileLossShare": 0.2427
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1,
-     "wDD": 1,
-     "wAsym": 0.5
-    },
-    "train": {
-     "n": 2401,
-     "rankCorr": 0.1779,
+     "n": 1844,
+     "rankCorr": 0.2263,
      "topDecileReal": 0.4518,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.4616,
-     "topDecileLossShare": 0.225
+     "topDecileMedian": 0.4089,
+     "bottomDecileReal": 1.5131,
+     "topDecileLossShare": 0.0272
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 1,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.2027,
+     "topDecileReal": 0.4356,
+     "topDecileMedian": 0.4247,
+     "bottomDecileReal": 0.6755,
+     "topDecileLossShare": 0.0328
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.1321,
-     "topDecileReal": 0.4046,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1481,
-     "topDecileLossShare": 0.2427
+     "n": 1844,
+     "rankCorr": 0.2279,
+     "topDecileReal": 0.4497,
+     "topDecileMedian": 0.4089,
+     "bottomDecileReal": 1.492,
+     "topDecileLossShare": 0.0326
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0.5,
+     "wDD": 0.25,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 4279,
+     "rankCorr": 0.2016,
+     "topDecileReal": 0.4304,
+     "topDecileMedian": 0.4205,
+     "bottomDecileReal": 0.6739,
+     "topDecileLossShare": 0.0328
+    },
+    "valid": {
+     "n": 1844,
+     "rankCorr": 0.2279,
+     "topDecileReal": 0.44,
+     "topDecileMedian": 0.3954,
+     "bottomDecileReal": 1.4909,
+     "topDecileLossShare": 0.038
     }
    },
    {
     "w": {
      "gamma": 1,
-     "wLoss": 1.5,
-     "wDD": 1,
-     "wAsym": 0.5
+     "wLoss": 0,
+     "wDD": 0.25,
+     "wAsym": 0
     },
     "train": {
-     "n": 2401,
-     "rankCorr": 0.1779,
-     "topDecileReal": 0.4554,
-     "topDecileMedian": 0.3045,
-     "bottomDecileReal": 0.4674,
-     "topDecileLossShare": 0.225
+     "n": 4279,
+     "rankCorr": 0.2015,
+     "topDecileReal": 0.4292,
+     "topDecileMedian": 0.4199,
+     "bottomDecileReal": 0.7523,
+     "topDecileLossShare": 0.0328
     },
     "valid": {
-     "n": 1030,
-     "rankCorr": 0.1328,
-     "topDecileReal": 0.4042,
-     "topDecileMedian": 0.2689,
-     "bottomDecileReal": 0.1561,
-     "topDecileLossShare": 0.2524
+     "n": 1844,
+     "rankCorr": 0.2264,
+     "topDecileReal": 0.4372,
+     "topDecileMedian": 0.4085,
+     "bottomDecileReal": 1.5115,
+     "topDecileLossShare": 0.0326
     }
    }
   ],
@@ -1183,242 +1183,24 @@
     "w": {
      "gamma": 1,
      "wLoss": 0.5,
-     "wDD": 1,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.2,
-     "topDecileReal": 0.4934,
-     "topDecileMedian": 0.3463,
-     "bottomDecileReal": 0.357,
-     "topDecileLossShare": 0.2077
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1352,
-     "topDecileReal": 0.3584,
-     "topDecileMedian": 0.2078,
-     "bottomDecileReal": 0.1141,
-     "topDecileLossShare": 0.284
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 0,
-     "wDD": 1,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1997,
-     "topDecileReal": 0.4948,
-     "topDecileMedian": 0.3174,
-     "bottomDecileReal": 0.3864,
-     "topDecileLossShare": 0.2077
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1335,
-     "topDecileReal": 0.3633,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1255,
-     "topDecileLossShare": 0.2716
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1.5,
-     "wDD": 1,
-     "wAsym": 0.5
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.2006,
-     "topDecileReal": 0.4734,
-     "topDecileMedian": 0.3085,
-     "bottomDecileReal": 0.3455,
-     "topDecileLossShare": 0.2131
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1367,
-     "topDecileReal": 0.3681,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.102,
-     "topDecileLossShare": 0.2716
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1,
-     "wDD": 1,
-     "wAsym": 0.5
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.2004,
-     "topDecileReal": 0.4734,
-     "topDecileMedian": 0.3085,
-     "bottomDecileReal": 0.3529,
-     "topDecileLossShare": 0.2131
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1354,
-     "topDecileReal": 0.3676,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.1014,
-     "topDecileLossShare": 0.2716
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 2,
-     "wDD": 1,
-     "wAsym": 0.5
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.2003,
-     "topDecileReal": 0.4865,
-     "topDecileMedian": 0.3091,
-     "bottomDecileReal": 0.3487,
-     "topDecileLossShare": 0.2131
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1372,
-     "topDecileReal": 0.3667,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.102,
-     "topDecileLossShare": 0.2716
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1,
-     "wDD": 1,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.2001,
-     "topDecileReal": 0.4883,
-     "topDecileMedian": 0.3174,
-     "bottomDecileReal": 0.3634,
-     "topDecileLossShare": 0.2131
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.1367,
-     "topDecileReal": 0.3653,
-     "topDecileMedian": 0.2276,
-     "bottomDecileReal": 0.1236,
-     "topDecileLossShare": 0.284
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 0,
-     "wDD": 0.5,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1972,
-     "topDecileReal": 0.4825,
-     "topDecileMedian": 0.3174,
-     "bottomDecileReal": 0.4001,
-     "topDecileLossShare": 0.2077
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.131,
-     "topDecileReal": 0.3157,
-     "topDecileMedian": 0.1892,
-     "bottomDecileReal": 0.0912,
-     "topDecileLossShare": 0.3086
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1.5,
-     "wDD": 0.5,
-     "wAsym": 0
-    },
-    "train": {
-     "n": 1833,
-     "rankCorr": 0.1987,
-     "topDecileReal": 0.468,
-     "topDecileMedian": 0.3091,
-     "bottomDecileReal": 0.3741,
-     "topDecileLossShare": 0.2131
-    },
-    "valid": {
-     "n": 811,
-     "rankCorr": 0.137,
-     "topDecileReal": 0.3935,
-     "topDecileMedian": 0.257,
-     "bottomDecileReal": 0.1259,
-     "topDecileLossShare": 0.2716
-    }
-   }
-  ],
-  "etf": [
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1.5,
      "wDD": 0,
-     "wAsym": 0.5
+     "wAsym": 0
     },
     "train": {
-     "n": 559,
-     "rankCorr": 0.0934,
-     "topDecileReal": 0.1908,
-     "topDecileMedian": 0.1935,
-     "bottomDecileReal": 0.2932,
-     "topDecileLossShare": 0.3455
+     "n": 3560,
+     "rankCorr": 0.165,
+     "topDecileReal": 0.2905,
+     "topDecileMedian": 0.2128,
+     "bottomDecileReal": 0.6073,
+     "topDecileLossShare": 0.2865
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1176,
-     "topDecileReal": 0.4216,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.0978,
-     "topDecileLossShare": 0.3333
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 1,
-     "wDD": 0,
-     "wAsym": 0.5
-    },
-    "train": {
-     "n": 559,
-     "rankCorr": 0.0931,
-     "topDecileReal": 0.1908,
-     "topDecileMedian": 0.1935,
-     "bottomDecileReal": 0.2932,
-     "topDecileLossShare": 0.3455
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1185,
-     "topDecileReal": 0.4216,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.0898,
-     "topDecileLossShare": 0.3333
+     "n": 1590,
+     "rankCorr": 0.1994,
+     "topDecileReal": 0.2711,
+     "topDecileMedian": 0.2275,
+     "bottomDecileReal": 1.0183,
+     "topDecileLossShare": 0.2956
     }
    },
    {
@@ -1426,143 +1208,361 @@
      "gamma": 0.5,
      "wLoss": 2,
      "wDD": 0,
-     "wAsym": 1
+     "wAsym": 0
     },
     "train": {
-     "n": 559,
-     "rankCorr": 0.091,
-     "topDecileReal": 0.1886,
-     "topDecileMedian": 0.1935,
-     "bottomDecileReal": 0.294,
-     "topDecileLossShare": 0.3455
+     "n": 3560,
+     "rankCorr": 0.1635,
+     "topDecileReal": 0.2993,
+     "topDecileMedian": 0.2103,
+     "bottomDecileReal": 0.5507,
+     "topDecileLossShare": 0.2837
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1278,
-     "topDecileReal": 0.4216,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.2025,
-     "topDecileLossShare": 0.3333
+     "n": 1590,
+     "rankCorr": 0.1992,
+     "topDecileReal": 0.2702,
+     "topDecileMedian": 0.2275,
+     "bottomDecileReal": 0.9702,
+     "topDecileLossShare": 0.3019
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 1,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1643,
+     "topDecileReal": 0.296,
+     "topDecileMedian": 0.2152,
+     "bottomDecileReal": 0.4967,
+     "topDecileLossShare": 0.2893
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.2001,
+     "topDecileReal": 0.2796,
+     "topDecileMedian": 0.2473,
+     "bottomDecileReal": 0.9587,
+     "topDecileLossShare": 0.2893
     }
    },
    {
     "w": {
      "gamma": 1,
-     "wLoss": 0.5,
-     "wDD": 0.5,
-     "wAsym": 1
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0
     },
     "train": {
-     "n": 559,
-     "rankCorr": 0.0984,
-     "topDecileReal": 0.1764,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.2933,
-     "topDecileLossShare": 0.3636
+     "n": 3560,
+     "rankCorr": 0.1663,
+     "topDecileReal": 0.2936,
+     "topDecileMedian": 0.2155,
+     "bottomDecileReal": 0.6047,
+     "topDecileLossShare": 0.2949
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1191,
-     "topDecileReal": 0.4692,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.2933,
-     "topDecileLossShare": 0.2381
+     "n": 1590,
+     "rankCorr": 0.2004,
+     "topDecileReal": 0.2861,
+     "topDecileMedian": 0.2566,
+     "bottomDecileReal": 1.0183,
+     "topDecileLossShare": 0.2893
     }
    },
    {
     "w": {
-     "gamma": 1,
+     "gamma": 0.5,
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0.5
+    },
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1633,
+     "topDecileReal": 0.2917,
+     "topDecileMedian": 0.2128,
+     "bottomDecileReal": 0.4948,
+     "topDecileLossShare": 0.2893
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1997,
+     "topDecileReal": 0.2604,
+     "topDecileMedian": 0.213,
+     "bottomDecileReal": 0.9151,
+     "topDecileLossShare": 0.3082
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1674,
+     "topDecileReal": 0.4041,
+     "topDecileMedian": 0.2425,
+     "bottomDecileReal": 0.4939,
+     "topDecileLossShare": 0.2978
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.2016,
+     "topDecileReal": 0.5474,
+     "topDecileMedian": 0.2661,
+     "bottomDecileReal": 0.8763,
+     "topDecileLossShare": 0.2956
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
      "wLoss": 0.5,
      "wDD": 0,
-     "wAsym": 1
+     "wAsym": 0
     },
     "train": {
-     "n": 559,
-     "rankCorr": 0.0974,
-     "topDecileReal": 0.1706,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.2794,
-     "topDecileLossShare": 0.3636
+     "n": 3560,
+     "rankCorr": 0.1653,
+     "topDecileReal": 0.298,
+     "topDecileMedian": 0.2134,
+     "bottomDecileReal": 0.503,
+     "topDecileLossShare": 0.2949
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1218,
-     "topDecileReal": 0.4335,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.1351,
-     "topDecileLossShare": 0.2857
+     "n": 1590,
+     "rankCorr": 0.201,
+     "topDecileReal": 0.3043,
+     "topDecileMedian": 0.2149,
+     "bottomDecileReal": 0.906,
+     "topDecileLossShare": 0.3145
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0.5,
+     "wDD": 0,
+     "wAsym": 0.5
+    },
+    "train": {
+     "n": 3560,
+     "rankCorr": 0.1634,
+     "topDecileReal": 0.2996,
+     "topDecileMedian": 0.2128,
+     "bottomDecileReal": 0.5026,
+     "topDecileLossShare": 0.2921
+    },
+    "valid": {
+     "n": 1590,
+     "rankCorr": 0.1995,
+     "topDecileReal": 0.2683,
+     "topDecileMedian": 0.2275,
+     "bottomDecileReal": 0.906,
+     "topDecileLossShare": 0.3019
+    }
+   }
+  ],
+  "etf": [
+   {
+    "w": {
+     "gamma": 0,
+     "wLoss": 0.5,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4288,
+     "topDecileReal": 0.5617,
+     "topDecileMedian": 0.5479,
+     "bottomDecileReal": 0.0488,
+     "topDecileLossShare": 0.0145
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5298,
+     "topDecileReal": 0.7173,
+     "topDecileMedian": 0.5853,
+     "bottomDecileReal": 0.06,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "w": {
+     "gamma": 0,
+     "wLoss": 0,
+     "wDD": 0.25,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4278,
+     "topDecileReal": 0.6099,
+     "topDecileMedian": 0.5687,
+     "bottomDecileReal": 0.0405,
+     "topDecileLossShare": 0.0145
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5245,
+     "topDecileReal": 0.7439,
+     "topDecileMedian": 0.7519,
+     "bottomDecileReal": 0.0411,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4268,
+     "topDecileReal": 0.5776,
+     "topDecileMedian": 0.5559,
+     "bottomDecileReal": 0.0341,
+     "topDecileLossShare": 0.0145
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5213,
+     "topDecileReal": 0.6903,
+     "topDecileMedian": 0.5853,
+     "bottomDecileReal": 0.0411,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "w": {
+     "gamma": 0.5,
+     "wLoss": 0.5,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 699,
+     "rankCorr": 0.408,
+     "topDecileReal": 0.6137,
+     "topDecileMedian": 0.5745,
+     "bottomDecileReal": 0.1148,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.4715,
+     "topDecileReal": 0.7058,
+     "topDecileMedian": 0.6206,
+     "bottomDecileReal": 0.1714,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "w": {
+     "gamma": 0,
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4283,
+     "topDecileReal": 0.4948,
+     "topDecileMedian": 0.4353,
+     "bottomDecileReal": 0.0593,
+     "topDecileLossShare": 0.0435
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.5383,
+     "topDecileReal": 0.6607,
+     "topDecileMedian": 0.5546,
+     "bottomDecileReal": 0.0201,
+     "topDecileLossShare": 0
     }
    },
    {
     "w": {
      "gamma": 1,
+     "wLoss": 0,
+     "wDD": 0,
+     "wAsym": 0
+    },
+    "train": {
+     "n": 699,
+     "rankCorr": 0.4043,
+     "topDecileReal": 0.6205,
+     "topDecileMedian": 0.5745,
+     "bottomDecileReal": 0.1042,
+     "topDecileLossShare": 0
+    },
+    "valid": {
+     "n": 238,
+     "rankCorr": 0.4595,
+     "topDecileReal": 0.7128,
+     "topDecileMedian": 0.6206,
+     "bottomDecileReal": 0.1407,
+     "topDecileLossShare": 0
+    }
+   },
+   {
+    "w": {
+     "gamma": 0,
      "wLoss": 1,
-     "wDD": 0.5,
-     "wAsym": 1
+     "wDD": 0,
+     "wAsym": 0
     },
     "train": {
-     "n": 559,
-     "rankCorr": 0.0973,
-     "topDecileReal": 0.1764,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.2933,
-     "topDecileLossShare": 0.3636
+     "n": 699,
+     "rankCorr": 0.4083,
+     "topDecileReal": 0.5884,
+     "topDecileMedian": 0.5687,
+     "bottomDecileReal": 0.134,
+     "topDecileLossShare": 0.0145
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1209,
-     "topDecileReal": 0.4692,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.2548,
-     "topDecileLossShare": 0.2381
+     "n": 238,
+     "rankCorr": 0.4985,
+     "topDecileReal": 0.7229,
+     "topDecileMedian": 0.6206,
+     "bottomDecileReal": 0.0959,
+     "topDecileLossShare": 0
     }
    },
    {
     "w": {
-     "gamma": 1,
-     "wLoss": 1.5,
-     "wDD": 0.5,
-     "wAsym": 1
+     "gamma": 0,
+     "wLoss": 0.5,
+     "wDD": 0.25,
+     "wAsym": 0
     },
     "train": {
-     "n": 559,
-     "rankCorr": 0.0966,
-     "topDecileReal": 0.1554,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.2933,
-     "topDecileLossShare": 0.3636
+     "n": 699,
+     "rankCorr": 0.3994,
+     "topDecileReal": 0.6164,
+     "topDecileMedian": 0.5745,
+     "bottomDecileReal": 0.1083,
+     "topDecileLossShare": 0
     },
     "valid": {
-     "n": 216,
-     "rankCorr": 0.1192,
-     "topDecileReal": 0.4692,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.2548,
-     "topDecileLossShare": 0.2381
-    }
-   },
-   {
-    "w": {
-     "gamma": 1,
-     "wLoss": 2,
-     "wDD": 0.5,
-     "wAsym": 1
-    },
-    "train": {
-     "n": 559,
-     "rankCorr": 0.096,
-     "topDecileReal": 0.1554,
-     "topDecileMedian": 0.1442,
-     "bottomDecileReal": 0.3055,
-     "topDecileLossShare": 0.3636
-    },
-    "valid": {
-     "n": 216,
-     "rankCorr": 0.1177,
-     "topDecileReal": 0.4692,
-     "topDecileMedian": 0.2251,
-     "bottomDecileReal": 0.2236,
-     "topDecileLossShare": 0.2381
+     "n": 238,
+     "rankCorr": 0.4816,
+     "topDecileReal": 0.7311,
+     "topDecileMedian": 0.6312,
+     "bottomDecileReal": 0.0786,
+     "topDecileLossShare": 0
     }
    }
   ]

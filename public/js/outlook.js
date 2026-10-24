@@ -150,7 +150,14 @@ export function forwardParams(p, settings = {}) {
   const betaRaw = Math.min(rawBetas.length ? rawBetas.reduce((a, b) => a + b, 0) / rawBetas.length : 1, betaBound);
   // Aggiustamento di Blume (verso 1) solo per le singole azioni: per un ETF il beta stimato su un
   // portafoglio diversificato è stabile, e un monetario o obbligazionario ha davvero beta ≈ 0.
-  let beta = p.type === 'stock' ? Math.max(0.67 * betaRaw + 0.33, s.minStockBeta) : Math.max(betaRaw, 0);
+  // Per gli ETF azionari (almeno metà del patrimonio in azioni, o beta chiaramente azionario quando la
+  // composizione non è nota) si applica lo stesso aggiustamento: il beta di un settore misurato su 5 anni
+  // riflette il ciclo del periodo (es. sanità 0,6 dopo anni dominati dalla tecnologia) e la retta
+  // rischio-rendimento osservata è più piatta di quella teorica (anomalia del basso beta: i settori
+  // difensivi non rendono meno in proporzione al beta). Monetari e obbligazionari restano a beta ≈ 0.
+  const stockShare = Number.isFinite(p.holdings?.stockPosition) ? p.holdings.stockPosition : null;
+  const equityEtf = p.type === 'etf' && (stockShare != null ? stockShare >= 0.5 : betaRaw >= 0.6);
+  let beta = p.type === 'stock' ? Math.max(0.67 * betaRaw + 0.33, s.minStockBeta) : equityEtf ? 0.67 * Math.max(betaRaw, 0) + 0.33 : Math.max(betaRaw, 0);
   const equilibrium = p.type === 'crypto' ? rf + s.cryptoPremium / 100 : rf + Math.max(beta, 0) * (s.equityPremium / 100);
 
   // --- Storico "credibile": shrinkage bayesiano (modello normale-normale) verso l'equilibrio.
@@ -197,11 +204,14 @@ export function forwardParams(p, settings = {}) {
     };
   }
 
+  // Stima dalle partecipazioni: contiene già le stime degli analisti sulle singole società del fondo,
+  // quindi prende anche il peso della componente "analisti" (assente per un ETF).
+  const wFund = analysts == null && fundamentalsEst?.source === 'holdings' ? s.weightFundamentals + s.weightAnalysts : s.weightFundamentals;
   const parts = [
     ['history', historyShrunk, s.weightHistory],
     ['equilibrium', equilibrium, s.weightEquilibrium],
     ['analysts', analysts, s.weightAnalysts],
-    ['fundamentals', fundamentalsEst?.expected ?? null, s.weightFundamentals],
+    ['fundamentals', fundamentalsEst?.expected ?? null, wFund],
   ].filter(([, v, w]) => v != null && Number.isFinite(v) && w > 0);
   const wSum = parts.reduce((a, [, , w]) => a + w, 0) || 1;
   // Limiti di realismo per il rendimento annuo atteso

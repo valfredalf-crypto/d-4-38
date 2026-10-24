@@ -94,6 +94,7 @@ test('balanced: guadagni attesi − 2,25 × perdite attese, coerente con la medi
   const rnd = mulberry32(5);
   for (let i = 0; i < 520; i++) prices.push((p *= Math.exp(0.002 + 0.08 * (rnd() - 0.5))));
   const s = simulate(prices, { sims: 600, seed: 3 });
-  assert.ok(Math.abs(s.expGain - s.expLoss - s.netMean) < 1e-9);
+  assert.ok(s.expGain - s.expLoss <= s.netMean + 1e-9, 'con il tetto ai guadagni non supera la media');
+  assert.ok(s.expGain <= 2 + 1e-9);
   assert.ok(Math.abs(s.balanced - (s.expGain - 2.25 * s.expLoss)) < 1e-9);
 });

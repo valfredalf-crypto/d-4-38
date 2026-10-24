@@ -151,3 +151,15 @@ test('prospettive di crescita per tutti: ETF e azioni senza stime usano il merca
   const crypto = forwardParams({ type: 'crypto', timestamps: etf.ts, prices: etf.p, market: m.expected, years: 5, lookbackYears: 10 }, B);
   assert.equal(crypto.components.fundamentals, null);
 });
+
+test('limite di Sharpe: un monetario non può "rendere" il 10% annuo', () => {
+  const ts = [];
+  const p = [100];
+  for (let i = 0; i < 521; i++) {
+    ts.push(1_500_000_000 + i * WEEK);
+    if (i) p.push(p[i - 1] * Math.exp(0.1 / 52 + (i % 2 ? 1 : -1) * 0.002)); // +10%/anno con volatilità ~1,4%
+  }
+  const f = forwardParams({ type: 'etf', timestamps: ts, prices: p, years: 5, lookbackYears: 10 }, B);
+  assert.ok(f.historyRaw > 0.09);
+  assert.ok(f.components.history < 0.04, String(f.components.history));
+});

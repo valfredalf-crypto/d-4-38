@@ -29,6 +29,7 @@ export const BASE_OUTLOOK = {
   ewmaWeight: 0.4,        // peso della volatilità recente (EWMA) rispetto a quella di lungo periodo
   regimeUncertainty: 4.0, // % annuo: quanto cambia il rendimento medio da un regime di mercato all'altro
   fullHistoryYears: 5,    // sotto questi anni di dati reali la credibilità dello storico si riduce in proporzione
+  maxSharpe: 1.0,         // rendimento storico oltre il tasso privo di rischio limitato a maxSharpe × volatilità
   volScale: 1.0,          // correzione complessiva della volatilità (tarata sulle perdite massime reali)
 };
 
@@ -148,7 +149,11 @@ export function forwardParams(p, settings = {}) {
   const precHist = 1 / histVar;
   const precPrior = 1 / (s.priorUncertainty / 100) ** 2;
   const credibility = (precHist / (precHist + precPrior)) * Math.min(1, years / s.fullHistoryYears);
-  const historyShrunk = equilibrium + credibility * (histArith - equilibrium);
+  // Limite di Sharpe: nessuno strumento sostiene a lungo un rendimento oltre il tasso privo di rischio
+  // superiore a ~1 volta la sua volatilità; oltre, è un periodo eccezionale o un dato anomalo
+  // (es. ETF obbligazionari a brevissimo termine con prezzi aggiustati sempre in salita).
+  const histCapped = Math.min(histArith, rf + s.maxSharpe * Math.max(sigmaLong, sigmaReal));
+  const historyShrunk = equilibrium + credibility * (histCapped - equilibrium);
 
   // --- Consenso analisti (solo primo anno, poi equilibrio)
   let analysts = null;

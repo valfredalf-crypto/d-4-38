@@ -230,28 +230,27 @@ table.mini .num { white-space: nowrap; }
   .frow input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
   td .name { max-width: 140px; }
   /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */
-  /* Colonne: 1 #, 2 Strumento, 3 plausibile €, 4 bilanciato/perdita max, 5 medio/perdita max, 6 Tipo, 7 Prezzo, 8–11 variazioni,
-     12 Atteso, 13 Crescita, 14 Perdita max, 15 DD mediano, 16 Mediana, 17 Media, 18 Probabile 75%, 19 Rapporto,
-     20 Rapporto finale, 21 Bilanciato, 22–25 rapporti con crescita, 26 Rapporto DD, 27 P(perdita), 28 P(≥25%), 29 P(≥50%) */
-  /* Telefono, vista "Previsioni": plausibile (3), mediana (16), perdita max (14) */
-  #table th:nth-child(n+4):nth-child(-n+13), #table td:nth-child(n+4):nth-child(-n+13),
-  #table th:nth-child(15), #table td:nth-child(15),
-  #table th:nth-child(n+17), #table td:nth-child(n+17) { display: none; }
+  /* Colonne: 1 #, 2 Strumento, 3 corretto rischio €, 4 efficiente €, 5 bilanciato/perdita max, 6 medio/perdita max, 7 Tipo,
+     8 Prezzo, 9–12 variazioni, 13 Atteso, 14 Crescita, 15 Perdita max, 16 DD mediano, 17 Mediana, 18 Media, 19 Probabile 75%,
+     20 Rapporto, 21 Rapporto finale, 22 Bilanciato, 23–26 rapporti con crescita, 27 Rapporto DD, 28 P(perdita), 29 P(≥25%), 30 P(≥50%) */
+  /* Telefono, vista "Previsioni": corretto rischio (3), efficiente (4), mediana (17) */
+  #table th:nth-child(n+5):nth-child(-n+16), #table td:nth-child(n+5):nth-child(-n+16),
+  #table th:nth-child(n+18), #table td:nth-child(n+18) { display: none; }
   .mobile-view { display: flex; }
-  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (8–11) */
-  body.mview-perf #table th:nth-child(n+8):nth-child(-n+11), body.mview-perf #table td:nth-child(n+8):nth-child(-n+11) { display: table-cell; }
-  body.mview-perf #table th:nth-child(3), body.mview-perf #table td:nth-child(3),
-  body.mview-perf #table th:nth-child(n+14), body.mview-perf #table td:nth-child(n+14) { display: none; }
-  /* Vista "Rischio": perdita max (14), drawdown mediano (15), rapporto DD mediano (26), P(perdita) (27) */
-  body.mview-risk #table th:nth-child(n+14):nth-child(-n+15), body.mview-risk #table td:nth-child(n+14):nth-child(-n+15),
-  body.mview-risk #table th:nth-child(n+26):nth-child(-n+27), body.mview-risk #table td:nth-child(n+26):nth-child(-n+27) { display: table-cell; }
-  body.mview-risk #table th:nth-child(3), body.mview-risk #table td:nth-child(3),
-  body.mview-risk #table th:nth-child(16), body.mview-risk #table td:nth-child(16) { display: none; }
-  /* Vista "Probabilità": plausibile (3), guadagno probabile 75% (18), P(≥+25%) (28), P(≥+50%) (29) */
-  body.mview-prob #table th:nth-child(18), body.mview-prob #table td:nth-child(18),
-  body.mview-prob #table th:nth-child(n+28), body.mview-prob #table td:nth-child(n+28) { display: table-cell; }
-  body.mview-prob #table th:nth-child(14), body.mview-prob #table td:nth-child(14),
-  body.mview-prob #table th:nth-child(16), body.mview-prob #table td:nth-child(16) { display: none; }
+  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (9–12) */
+  body.mview-perf #table th:nth-child(n+9):nth-child(-n+12), body.mview-perf #table td:nth-child(n+9):nth-child(-n+12) { display: table-cell; }
+  body.mview-perf #table th:nth-child(n+3):nth-child(-n+4), body.mview-perf #table td:nth-child(n+3):nth-child(-n+4),
+  body.mview-perf #table th:nth-child(n+15), body.mview-perf #table td:nth-child(n+15) { display: none; }
+  /* Vista "Rischio": perdita max (15), drawdown mediano (16), rapporto DD mediano (27), P(perdita) (28) */
+  body.mview-risk #table th:nth-child(n+15):nth-child(-n+16), body.mview-risk #table td:nth-child(n+15):nth-child(-n+16),
+  body.mview-risk #table th:nth-child(n+27):nth-child(-n+28), body.mview-risk #table td:nth-child(n+27):nth-child(-n+28) { display: table-cell; }
+  body.mview-risk #table th:nth-child(4), body.mview-risk #table td:nth-child(4),
+  body.mview-risk #table th:nth-child(17), body.mview-risk #table td:nth-child(17) { display: none; }
+  /* Vista "Probabilità": efficiente (4), guadagno probabile 75% (19), P(≥+25%) (29), P(≥+50%) (30) */
+  body.mview-prob #table th:nth-child(19), body.mview-prob #table td:nth-child(19),
+  body.mview-prob #table th:nth-child(n+29), body.mview-prob #table td:nth-child(n+29) { display: table-cell; }
+  body.mview-prob #table th:nth-child(3), body.mview-prob #table td:nth-child(3),
+  body.mview-prob #table th:nth-child(17), body.mview-prob #table td:nth-child(17) { display: none; }
   th, td { padding: 8px 3px; }
   #table td { font-size: 12.5px; }
   th .l { display: none; }

@@ -228,6 +228,11 @@ export function simulate(prices, options = {}) {
     netP95: percentile(nets, 0.95),
     netMean: meanNet,
     probLoss: nets.filter((x) => x < 0).length / nets.length,
+    // Netto Reale 5A (NR5): guadagno netto medio − 0,5 × perdita media nel 5% peggiore degli scenari
+    es5: (() => {
+      const n = Math.max(1, Math.floor(nets.length * 0.05));
+      return Math.max(0, -nets.slice(0, n).reduce((a, x) => a + x, 0) / n); // nets è ordinato crescente
+    })(),
     // Guadagno netto plausibile: equivalente certo di tutti gli scenari netti (costi e tasse inclusi)
     // ce1 = criterio di Kelly (utilità logaritmica: massimizza la crescita del capitale nel lungo periodo),
     // ce3 = investitore prudente. La media (prudenza zero) è netMean.
@@ -256,6 +261,7 @@ export function simulate(prices, options = {}) {
     histogram: { lo, width, counts: histogram },
   };
   stats.balanced = stats.expGain - LOSS_AVERSION * stats.expLoss;
+  stats.nr5 = stats.netMean - 0.5 * stats.es5;
   return { ...stats, ...score(stats, o) };
 }
 

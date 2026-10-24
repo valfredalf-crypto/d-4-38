@@ -66,6 +66,8 @@ export function tableResult(r) {
       ce1: r4(s.ce1),
       ce3: r4(s.ce3),
       ce: s.ce ? Object.fromEntries(Object.entries(s.ce).map(([k, v]) => [k, r4(v)])) : null,
+      es5: r4(s.es5),
+      nr5: r4(s.nr5),
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
       ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
@@ -185,11 +187,14 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     fwd.fundOfFunds = funds * 2 >= holdings.holdings.length; // le partecipazioni sono a loro volta fondi: diversificato
     fwd.top10 = fwd.fundOfFunds ? 0.3 : Math.min(1, holdings.holdings.reduce((a, h) => a + (h.weight || 0), 0));
   }
-  const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag : null, targetVol: fwd?.vol ?? null });
+  // Imposta di bollo italiana: 0,20% annuo sul controvalore, prelevata lungo il percorso (deriva)
+  const stampDuty = (o.stampDutyPct ?? 0.2) / 100;
+  const sim = simulate(filled ? filled.closesEur : prices, { ...o, targetDrift: fwd ? fwd.drift - distDrag - stampDuty : null, targetVol: fwd?.vol ?? null });
   if (sim.ok) {
     sim.distYield = distYield;
     sim.distDrag = distDrag;
     sim.taxRate = o.taxRate;
+    sim.stampDuty = stampDuty;
     sim.divYield = cleanDividend(fundamentals?.dividendYield); // per la verifica del dividendo non sostenuto
     // Indicatori "storici" mostrati: solo sui dati reali
     const lookback = Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1;

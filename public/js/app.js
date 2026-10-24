@@ -27,7 +27,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters(), prudence: Number(localStorage.getItem('trmc.prudence2') ?? 0.5) },
+  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -474,53 +474,6 @@ function applyFilters() {
 }
 
 const growthOf = (r) => (r && !r.error ? r.forward?.growth ?? r.forward?.expectedGrowth ?? null : null);
-/**
- * Indicatore complessivo di guadagno netto a 5 anni = guadagno netto efficiente (equivalente certo; include
- * il fisco: 26% sui guadagni e imposta anticipata sui dividendi distribuiti)
- *  - penalita' di asimmetria: meta' di quanto la perdita finale nel 5% peggiore supera il guadagno tipico
- *    (zero se il guadagno tipico copre la perdita sfavorevole)
- *  - penalita' "value trap": dividendo oltre la crescita attesa + 3 punti, per meta' degli anni
- *    (zero quando il dividendo e' sostenuto dalla crescita degli utili)
- *  - penalita' di calo temporaneo: un quarto di quanto la perdita massima (95° percentile) supera il 40%,
- *    soglia oltre la quale molti investitori vendono in perdita (zero sotto il 40%)
- *  - penalita' di rischio di perdita: la perdita attesa (media delle perdite su tutti gli scenari), cosi' che
- *    le perdite contino il doppio dei guadagni (avversione alla perdita)
- *  - penalita' di concentrazione: 15% di quanto le prime 10 partecipazioni pesano oltre il 30% del fondo
- *    (un'azione singola o una crypto = 100%; settoriali/tematici senza dati di composizione = 55%,
- *    singolo paese = 45%, globali/ampi = 30%).
- */
-const DD_TOLERANCE = 0.4;
-const CONC_TOLERANCE = 0.3;
-const W_LOSS = 0.5;
-const W_DD = 0.25;
-const W_ASYM = 0;
-const SECTOR_RE = /technolog|\btech\b|semicond|health|pharma|biotech|financial|\bbank|energy|oil|gas|gold|miner|metal|real estate|property|reit|utilit|consumer|industrial|material|robotic|automation|\bai\b|intelligen|clean|solar|water|cyber|cloud|digital|blockchain|crypto|gaming|esports|defen|aerospace|infrastruct|travel|luxury|auto|batter|lithium|uranium|nuclear|space|genomic|cannabis|dividend|select|momentum|value|quality|small cap|mid cap|low volatil|min(imum)? vol/i;
-const COUNTRY_RE = /nasdaq|dax|\bmib\b|cac|ibex|ftse 100|ftse 250|aex|smi\b|nikkei|topix|hang seng|csi|kospi|s&p 500|msci (usa|japan|china|india|brazil|korea|taiwan|germany|italy|france|spain|uk|switzerland|canada|australia)|euro stoxx 50|stoxx 50/i;
-function concentrationOf(inst, r) {
-  if (inst.type !== 'etf') return 1;
-  if (r?.forward?.top10 != null) return r.forward.top10;
-  const n = inst.name || '';
-  if (SECTOR_RE.test(n)) return 0.55;
-  if (COUNTRY_RE.test(n)) return 0.45;
-  return CONC_TOLERANCE;
-}
-function overallOf(sim, r, inst) {
-  if (!sim) return { overall: null, penAsym: null, penTrap: null, penDD: null, penLoss: null, penConc: null, fiscalCost: null };
-  const years = state.settings.mc.years || 5;
-  const base = state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1);
-  if (base == null || sim.finalLoss == null || sim.netMedian == null) return { overall: null, penAsym: null, penTrap: null, penDD: null, penLoss: null, penConc: null, fiscalCost: null };
-  // Pesi tarati sul backtest (data/rank-calibration.json): perdita attesa ×0,5, calo oltre il 40% ×0,25,
-  // asimmetria ×0 (non migliora la previsione: resta solo nella scheda di verifica).
-  const penAsym = W_ASYM * Math.max(0, sim.finalLoss - Math.max(sim.netMedian, 0));
-  const g = growthOf(r) ?? 0;
-  const y = sim.divYield || 0;
-  const penTrap = 0.5 * years * Math.max(0, y - Math.max(g, 0) - 0.03);
-  const penDD = W_DD * Math.max(0, (sim.maxLoss || 0) - DD_TOLERANCE);
-  const penLoss = W_LOSS * (sim.expLoss ?? 0);
-  const conc = inst ? concentrationOf(inst, r) : CONC_TOLERANCE;
-  const penConc = 0.15 * Math.max(0, conc - CONC_TOLERANCE);
-  return { overall: base - penAsym - penTrap - penDD - penLoss - penConc, penAsym, penTrap, penDD, penLoss, penConc, conc, fiscalCost: (sim.distDrag || 0) * years };
-}
 // Crescita attesa cumulata sull'orizzonte (la crescita è annua, i guadagni sono a 5 anni: vanno sommati nella stessa unità)
 const growth5 = (r) => {
   const g = growthOf(r);
@@ -538,9 +491,10 @@ function rowValues(i) {
   const sim = r && !r.error ? r.sim : null;
   const v = {
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
-    plausible: sim ? (state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1)) ?? null : null,
-    // Indicatore complessivo con le penalita' esplicite dei "3 fattori" (vedi overallOf)
-    ...overallOf(sim, r, i),
+    plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
+    // Netto Reale 5A (NR5): la classifica predefinita
+    overall: sim?.nr5 ?? null,
+    es5: sim?.es5 ?? null,
     growthEvidence: r && !r.error ? r.forward?.evidence ?? null : null,
     inst: i,
     name: i.name.toLowerCase(),
@@ -662,7 +616,7 @@ function render() {
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
-        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)}${r.penAsym + r.penTrap + r.penDD + r.penLoss + r.penConc > 0.0005 ? ` · penalità ${pct(r.penAsym + r.penTrap + r.penDD + r.penLoss + r.penConc)}` : ' · nessuna penalità'}</span>`}</td>
+        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)} · media ${pct(r.netMean, true)} − ½ × ${pct(r.es5)}</span>`}</td>
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
@@ -788,7 +742,8 @@ function renderDetail(inst, r, d) {
   $('#d-body').innerHTML = `
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
-      ${sim.ce1 != null ? `<div class="kpi kpi-main"><div class="k">Guadagno netto plausibile ${s.mc.years}a su ${eur(amt)}</div><div class="v ${cls(sim.ce?.['0.5'] ?? sim.ce1)}">${(sim.ce?.['0.5'] ?? sim.ce1) > 0 ? '+' : ''}${Math.round((sim.ce?.['0.5'] ?? sim.ce1) * amt).toLocaleString('it-IT')} €</div><div class="h">equivalente certo tarato sul backtest (γ=0,5: ${sim.ce?.['0.5'] != null ? pct(sim.ce['0.5'], true) : '–'}) · Kelly: <b>${sim.ce1 > 0 ? '+' : ''}${Math.round(sim.ce1 * amt).toLocaleString('it-IT')} €</b> · se accetti tutto il rischio (media): <b>${sim.netMean > 0 ? '+' : ''}${Math.round(sim.netMean * amt).toLocaleString('it-IT')} €</b> · se sei prudente: <b>${sim.ce3 > 0 ? '+' : ''}${Math.round(sim.ce3 * amt).toLocaleString('it-IT')} €</b>${f?.fundamentalsDetail?.evidence != null ? ` · crescita confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)}` : ''}</div></div>` : ''}
+      ${sim.nr5 != null ? `<div class="kpi kpi-main"><div class="k">Netto Reale 5A (NR5) su ${eur(amt)}</div><div class="v ${cls(sim.nr5)}">${sim.nr5 > 0 ? '+' : ''}${Math.round(sim.nr5 * amt).toLocaleString('it-IT')} €</div><div class="h">guadagno netto medio ${pct(sim.netMean, true)} − ½ × perdita media nel 5% peggiore ${pct(sim.es5)} · netto vero per scenario: tasse italiane, bollo, commissioni e spread</div></div>` : ''}
+      ${sim.ce1 != null ? `<div class="kpi"><div class="k">Guadagno netto efficiente ${s.mc.years}a</div><div class="v ${cls(sim.ce?.['0.5'] ?? sim.ce1)}">${(sim.ce?.['0.5'] ?? sim.ce1) > 0 ? '+' : ''}${Math.round((sim.ce?.['0.5'] ?? sim.ce1) * amt).toLocaleString('it-IT')} €</div><div class="h">equivalente certo tarato sul backtest (γ=0,5: ${sim.ce?.['0.5'] != null ? pct(sim.ce['0.5'], true) : '–'}) · Kelly: <b>${sim.ce1 > 0 ? '+' : ''}${Math.round(sim.ce1 * amt).toLocaleString('it-IT')} €</b> · se accetti tutto il rischio (media): <b>${sim.netMean > 0 ? '+' : ''}${Math.round(sim.netMean * amt).toLocaleString('it-IT')} €</b> · se sei prudente: <b>${sim.ce3 > 0 ? '+' : ''}${Math.round(sim.ce3 * amt).toLocaleString('it-IT')} €</b>${f?.fundamentalsDetail?.evidence != null ? ` · crescita confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)}` : ''}</div></div>` : ''}
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
       ${f?.expected != null ? `<div class="kpi"><div class="k">Rendimento atteso</div><div class="v ${cls(f.expected)}">${pct(f.expected, true)}/anno</div><div class="h">come in tabella ("Atteso / anno") · su ${s.mc.years} anni ${pct((1 + f.expected) ** s.mc.years - 1, true)} lordo (prima di costi e tasse)</div></div>` : ''}
@@ -866,21 +821,14 @@ function renderDetail(inst, r, d) {
             return rows.join('');
           })()}
         </tbody></table>
-        ${(() => {
-          const o = overallOf(sim, r, inst);
-          if (o.overall == null) return '';
+        ${sim.nr5 != null ? (() => {
           const e = (x) => `${x > 0 ? '+' : ''}${Math.round(x * amt).toLocaleString('it-IT')} €`;
-          const base = sim.ce?.['0.5'] ?? sim.ce1;
           return `<table class="mini"><tbody>
-            <tr><td>Guadagno netto efficiente (fisco incluso${o.fiscalCost > 0 ? `, di cui imposta anticipata sui dividendi ${e(-o.fiscalCost)}` : ''})</td><td class="num ${cls(base)}">${e(base)}</td></tr>
-            <tr><td>− Penalità asimmetria del rischio (peso 0 dopo la taratura: non migliora la previsione)</td><td class="num">0 €</td></tr>
-            <tr><td>− Penalità value trap (dividendo non sostenuto dalla crescita)</td><td class="num ${o.penTrap > 0 ? 'neg' : ''}">${o.penTrap > 0 ? e(-o.penTrap) : '0 €'}</td></tr>
-            <tr><td>− Penalità calo temporaneo (¼ della perdita massima oltre il 40%: −${pct(sim.maxLoss)})</td><td class="num ${o.penDD > 0 ? 'neg' : ''}">${o.penDD > 0 ? e(-o.penDD) : '0 €'}</td></tr>
-            <tr><td>− Penalità rischio di perdita (½ della perdita attesa: media delle perdite su tutti gli scenari, P(perdita) ${pct(sim.probLoss, false, 0)}; peso tarato sul backtest)</td><td class="num ${o.penLoss > 0 ? 'neg' : ''}">${o.penLoss > 0 ? e(-o.penLoss) : '0 €'}</td></tr>
-            <tr><td>− Penalità concentrazione (15% del peso delle prime 10 partecipazioni oltre il 30%: ${pct(o.conc, false, 0)}${inst.type !== 'etf' ? ', strumento singolo' : r.forward?.fundOfFunds ? ', fondo di fondi: diversificato' : r.forward?.top10 == null ? ', stimato dal tipo di fondo' : ''})</td><td class="num ${o.penConc > 0 ? 'neg' : ''}">${o.penConc > 0 ? e(-o.penConc) : '0 €'}</td></tr>
-            <tr><th>= Guadagno netto complessivo ${s.mc.years}a</th><th class="num ${cls(o.overall)}">${e(o.overall)}</th></tr>
+            <tr><td>Guadagno netto medio su ${s.mc.sims.toLocaleString('it-IT')} scenari (netto vero: ${sim.distYield > 0 ? `26% sui dividendi a ogni stacco, ` : ''}${sim.taxRate != null && sim.taxRate !== 26 ? `${nf1.format(sim.taxRate)}% effettivo alla vendita con 12,5% sulla quota di titoli di Stato` : '26% sulla plusvalenza alla vendita'}, nessun credito se in perdita, bollo 0,20%/anno, commissioni e spread)</td><td class="num ${cls(sim.netMean)}">${e(sim.netMean)}</td></tr>
+            <tr><td>− ½ × perdita media nel 5% peggiore degli scenari (−${pct(sim.es5)})</td><td class="num neg">${e(-0.5 * sim.es5)}</td></tr>
+            <tr><th>= Netto Reale 5A (NR5)</th><th class="num ${cls(sim.nr5)}">${e(sim.nr5)}</th></tr>
           </tbody></table>`;
-        })()}
+        })() : ''}
       </div>
       <div class="card">
         <h3>Stima prospettica del rendimento annuo</h3>
@@ -1311,19 +1259,7 @@ function bind() {
     }
   };
   $$('[data-mview]').forEach((b) => b.addEventListener('click', () => setMview(b.dataset.mview)));
-  const pr = $('#prudence');
-  if (pr) {
-    pr.value = String(state.view.prudence);
-    pr.addEventListener('change', () => {
-      state.view.prudence = Number(pr.value);
-      try {
-        localStorage.setItem('trmc.prudence2', pr.value);
-      } catch {
-        /* niente */
-      }
-      render();
-    });
-  }
+
   // Barra di scorrimento orizzontale sempre visibile (i browser con barre "a scomparsa" la nascondono)
   const wrap = $('.table-wrap');
   const hs = $('#hscroll');

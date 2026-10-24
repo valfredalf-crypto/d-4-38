@@ -59,13 +59,7 @@
   <div id="progress" class="progress" hidden><div class="bar"></div><span class="label"></span><button id="btn-stop" class="ghost small">Interrompi</button></div>
 
   <main>
-    <div class="prudence-bar"><label for="prudence">Guadagno plausibile calcolato per un investitore</label>
-      <select id="prudence" title="Come pesare il rischio nel guadagno plausibile: la media conta ogni scenario alla pari (prospettive di crescita al massimo peso); Kelly massimizza la crescita del capitale nel lungo periodo (penalizza la volatilità quanto effettivamente costa); prudente pesa molto le perdite">
-        <option value="0.5" selected>tarato sul backtest (ordina meglio i rendimenti reali a 5 anni) — predefinito</option>
-        <option value="0">che accetta tutto il rischio (media degli scenari)</option>
-        <option value="1">equilibrato (criterio di Kelly: massima crescita del capitale)</option>
-        <option value="3">prudente (le perdite pesano molto)</option>
-      </select></div>
+
     <div id="active-filters" class="active-filters" hidden></div>
     <div class="scroll-btns"><button type="button" class="ghost small" data-scroll="-1" title="Scorri la tabella a sinistra">◀ Colonne</button><input type="range" id="hscroll" min="0" max="1000" value="0" step="1" aria-label="Scorri le colonne della tabella" title="Trascina per scorrere le colonne"><button type="button" class="ghost small" data-scroll="1" title="Scorri la tabella a destra (altri indicatori)">Colonne ▶</button></div>
     <div class="table-wrap">
@@ -75,7 +69,7 @@
             <th data-sort="rank" class="num">#</th>
             <th data-sort="name">Strumento</th>
             <th data-sort="riskAdj" class="num" title="Guadagno netto corretto per il rischio a 5 anni: guadagno tipico (mediano) meno la perdita finale nel caso sfavorevole (5% peggiore degli scenari), netto costi e tasse. In euro sul capitale investito, percentuale sotto. Più alto è meglio"><span class="l">Guadagno corretto per il rischio 5a</span><span class="s">Corretto rischio</span></th>
-            <th data-sort="overall" class="num" title="Guadagno netto complessivo a 5 anni, in euro sul capitale investito = guadagno netto efficiente (equivalente certo di tutti gli scenari, netto costi e tasse; prudenza predefinita tarata sul backtest) con i tre fattori: 1) fisco italiano: 26% sui guadagni e imposta anticipata sui dividendi distribuiti; 2) asimmetria del rischio: mostrata nella verifica, peso zero dopo la taratura; 3) qualità della crescita: penalità se il dividendo non è sostenuto dalla crescita attesa (value trap); 4) calo temporaneo: penalità pari a un quarto della perdita massima oltre il 40%; 5) rischio di perdita: penalità pari a metà della perdita attesa; 6) diversificazione: penalità sulla concentrazione delle prime 10 partecipazioni oltre il 30% (azione singola = 100%). Le prospettive sono quelle aggiornate (analisti, crescita confermata), lo storico pesa poco. La classifica (#) è in ordine decrescente per questo valore"><span class="l">Guadagno netto complessivo 5a</span><span class="s">In tasca 5a</span></th>
+            <th data-sort="overall" class="num" title="Netto Reale 5A (NR5) = guadagno netto medio a 5 anni − 0,5 × perdita media nel 5% peggiore degli scenari. Per ogni scenario Monte Carlo il netto è quello vero: 26% sui dividendi a ogni stacco (ETF a distribuzione), 26% sulla plusvalenza alla vendita o 12,5% sulla quota di titoli di Stato, nessun credito d'imposta se si chiude in perdita, bollo 0,20% annuo, commissioni e spread. La classifica (#) è in ordine decrescente per questo valore"><span class="l">Netto Reale 5A (NR5)</span><span class="s">NR5</span></th>
             <th data-sort="netP25" class="num" title="Guadagno netto probabile a 5 anni: rendimento netto ottenuto o superato nel 75% degli scenari simulati (crescita attesa e rischio di perdita già inclusi), dopo costi e tasse"><span class="l">Guadagno probabile (75%)</span><span class="s">Prob. 75%</span></th>
             <th data-sort="balancedOverLoss" class="num" title="Guadagno bilanciato 5a ÷ perdita massima 5a. Più alto è meglio; verde da 1 in su"><span class="l">Guad. bilanciato / perdita max</span><span class="s">Bilanc./perd.</span></th>
             <th data-sort="meanOverLoss" class="num" title="Guadagno medio 5a ÷ perdita massima 5a. Più alto è meglio; verde da 1 in su"><span class="l">Guad. medio / perdita max</span><span class="s">Medio/perd.</span></th>

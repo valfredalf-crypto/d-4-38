@@ -110,5 +110,33 @@ for (const [gname, gf] of Object.entries(groups)) {
   log(`→ migliore in taratura: ${out[0].name} (verifica ${out[0].valid.rankCorr.toFixed(3)})`);
   report.results[gname] = out.map((o) => ({ name: o.name, train: Object.fromEntries(Object.entries(o.train).map(([k, v]) => [k, r4(v)])), valid: Object.fromEntries(Object.entries(o.valid).map(([k, v]) => [k, r4(v)])) }));
 }
+// --- Indicatore complessivo: taratura dei pesi delle penalità sul rendimento reale.
+// complessivo = equivalente certo(γ) − wLoss × perdita attesa − wDD × max(0, perdita max − 40%)
+//               − wAsym × max(0, perdita finale sfavorevole − guadagno tipico)
+// (concentrazione e dividendo non sono testabili sul passato: restano regole fisse)
+const GRID = { gamma: [0, 0.5, 1], wLoss: [0, 0.5, 1, 1.5, 2], wDD: [0, 0.25, 0.5, 1], wAsym: [0, 0.5, 1] };
+const composite = (w) => (p) => {
+  const base = w.gamma === 0 ? p.netMean : p.ce?.[w.gamma];
+  if (base == null || p.expLoss == null) return NaN;
+  return base - w.wLoss * p.expLoss - w.wDD * Math.max(0, p.mddP95 - 0.4) - w.wAsym * Math.max(0, Math.max(0, -p.netP5) - Math.max(p.netMedian, 0));
+};
+const combos = [];
+for (const gamma of GRID.gamma) for (const wLoss of GRID.wLoss) for (const wDD of GRID.wDD) for (const wAsym of GRID.wAsym) combos.push({ gamma, wLoss, wDD, wAsym });
+report.composite = {};
+for (const [gname, gf] of Object.entries(groups)) {
+  const train = rows.filter((r) => gf(r) && !r.val);
+  const valid = rows.filter((r) => gf(r) && r.val);
+  const scored = combos
+    .map((w) => ({ w, train: evaluate(train, composite(w)), valid: evaluate(valid, composite(w)) }))
+    .filter((x) => x.train && x.valid)
+    // obiettivo: ordinare bene (correlazione) E non mettere perdenti in cima (quota in perdita del decile migliore)
+    .sort((a, b) => b.train.rankCorr - 0.5 * b.train.topDecileLossShare - (a.train.rankCorr - 0.5 * a.train.topDecileLossShare));
+  log(`\n=== COMPLESSIVO ${gname}: migliori 8 combinazioni (taratura → verifica)`);
+  for (const x of scored.slice(0, 8)) log(`γ=${x.w.gamma} wLoss=${x.w.wLoss} wDD=${x.w.wDD} wAsym=${x.w.wAsym} | corr ${x.train.rankCorr.toFixed(3)} → ${x.valid.rankCorr.toFixed(3)} | 10% migliore reale ${(x.valid.topDecileReal * 100).toFixed(0)}% mediana ${(x.valid.topDecileMedian * 100).toFixed(0)}% in perdita ${(x.valid.topDecileLossShare * 100).toFixed(0)}%`);
+  const base = { w: { gamma: 0.5, wLoss: 0, wDD: 0, wAsym: 0 } };
+  const b = evaluate(valid, composite(base.w));
+  log(`riferimento solo efficiente γ=0,5: verifica corr ${b.rankCorr.toFixed(3)} | 10% migliore reale ${(b.topDecileReal * 100).toFixed(0)}% in perdita ${(b.topDecileLossShare * 100).toFixed(0)}%`);
+  report.composite[gname] = scored.slice(0, 8).map((x) => ({ w: x.w, train: Object.fromEntries(Object.entries(x.train).map(([k, v]) => [k, r4(v)])), valid: Object.fromEntries(Object.entries(x.valid).map(([k, v]) => [k, r4(v)])) }));
+}
 fs.mkdirSync('data', { recursive: true });
 fs.writeFileSync('data/rank-calibration.json', JSON.stringify(report, null, 1));

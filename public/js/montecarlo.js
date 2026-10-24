@@ -10,6 +10,8 @@ export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
  * penalizza volatilità e code negative in modo coerente con la teoria dell'utilità attesa.
  */
 export const RISK_AVERSION = 3;
+/** Livelli di prudenza per cui si pubblica l'equivalente certo (0 = media). */
+export const CE_GAMMAS = [0.5, 1, 1.5, 2, 3];
 export function certaintyEquivalent(nets, gamma = RISK_AVERSION) {
   let sum = 0;
   if (gamma === 1) {
@@ -231,6 +233,7 @@ export function simulate(prices, options = {}) {
     // ce3 = investitore prudente. La media (prudenza zero) è netMean.
     ce1: certaintyEquivalent(nets, 1),
     ce3: certaintyEquivalent(nets, 3),
+    ce: Object.fromEntries(CE_GAMMAS.map((g) => [g, certaintyEquivalent(nets, g)])),
     // Probabilità di ottenere almeno ciascun rendimento netto di PROB_THRESHOLDS (stesso ordine)
     probAtLeast: PROB_THRESHOLDS.map((t) => nets.filter((x) => x >= t).length / nets.length),
     // Perdita definitiva a fine orizzonte nello scenario sfavorevole (5% peggiore) ÷ guadagno tipico (mediano)

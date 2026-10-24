@@ -1,0 +1,986 @@
+{
+ "generatedAt": "2026-10-24T17:47:31.508Z",
+ "rows": 3444,
+ "origins": [
+  260,
+  364
+ ],
+ "sims": 100,
+ "results": {
+  "tutti": [
+   {
+    "name": "equivalente certo γ=2",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1856,
+     "topDecileReal": 0.4469,
+     "topDecileMedian": 0.301,
+     "bottomDecileReal": 0.5915,
+     "topDecileLossShare": 0.2448
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.128,
+     "topDecileReal": 0.3614,
+     "topDecileMedian": 0.257,
+     "bottomDecileReal": 0.1408,
+     "topDecileLossShare": 0.2621
+    }
+   },
+   {
+    "name": "prudente (γ=3)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1851,
+     "topDecileReal": 0.4247,
+     "topDecileMedian": 0.3013,
+     "bottomDecileReal": 0.55,
+     "topDecileLossShare": 0.2448
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.1204,
+     "topDecileReal": 0.4068,
+     "topDecileMedian": 0.28,
+     "bottomDecileReal": 0.2191,
+     "topDecileLossShare": 0.2233
+    }
+   },
+   {
+    "name": "equivalente certo γ=1,5",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1846,
+     "topDecileReal": 0.4394,
+     "topDecileMedian": 0.2996,
+     "bottomDecileReal": 0.4831,
+     "topDecileLossShare": 0.2573
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.1309,
+     "topDecileReal": 0.362,
+     "topDecileMedian": 0.2236,
+     "bottomDecileReal": 0.1405,
+     "topDecileLossShare": 0.2816
+    }
+   },
+   {
+    "name": "guadagno probabile 75%",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1837,
+     "topDecileReal": 0.4061,
+     "topDecileMedian": 0.2854,
+     "bottomDecileReal": 0.5697,
+     "topDecileLossShare": 0.2531
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.1385,
+     "topDecileReal": 0.3909,
+     "topDecileMedian": 0.257,
+     "bottomDecileReal": 0.0547,
+     "topDecileLossShare": 0.2427
+    }
+   },
+   {
+    "name": "Kelly (γ=1)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1801,
+     "topDecileReal": 0.459,
+     "topDecileMedian": 0.3003,
+     "bottomDecileReal": 0.4458,
+     "topDecileLossShare": 0.2656
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.1263,
+     "topDecileReal": 0.3394,
+     "topDecileMedian": 0.1722,
+     "bottomDecileReal": 0.1223,
+     "topDecileLossShare": 0.3301
+    }
+   },
+   {
+    "name": "guadagno bilanciato",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1714,
+     "topDecileReal": 0.4732,
+     "topDecileMedian": 0.2996,
+     "bottomDecileReal": 0.4837,
+     "topDecileLossShare": 0.2614
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.1223,
+     "topDecileReal": 0.3332,
+     "topDecileMedian": 0.1722,
+     "bottomDecileReal": 0.0958,
+     "topDecileLossShare": 0.3398
+    }
+   },
+   {
+    "name": "mediana",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1671,
+     "topDecileReal": 0.4298,
+     "topDecileMedian": 0.2855,
+     "bottomDecileReal": 0.5311,
+     "topDecileLossShare": 0.2822
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.1285,
+     "topDecileReal": 0.3239,
+     "topDecileMedian": 0.2021,
+     "bottomDecileReal": 0.0934,
+     "topDecileLossShare": 0.3301
+    }
+   },
+   {
+    "name": "media − perdita 5% peggiore",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1651,
+     "topDecileReal": 0.4444,
+     "topDecileMedian": 0.2876,
+     "bottomDecileReal": 0.4618,
+     "topDecileLossShare": 0.2656
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.102,
+     "topDecileReal": 0.3264,
+     "topDecileMedian": 0.1923,
+     "bottomDecileReal": 0.0856,
+     "topDecileLossShare": 0.3204
+    }
+   },
+   {
+    "name": "equivalente certo γ=0,5",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1586,
+     "topDecileReal": 0.4576,
+     "topDecileMedian": 0.3045,
+     "bottomDecileReal": 0.399,
+     "topDecileLossShare": 0.2863
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0995,
+     "topDecileReal": 0.4051,
+     "topDecileMedian": 0.1923,
+     "bottomDecileReal": 0.1694,
+     "topDecileLossShare": 0.3398
+    }
+   },
+   {
+    "name": "rapporto perdita/guadagno (inverso)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.144,
+     "topDecileReal": 0.4412,
+     "topDecileMedian": 0.2996,
+     "bottomDecileReal": 0.3828,
+     "topDecileLossShare": 0.2407
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0947,
+     "topDecileReal": 0.3528,
+     "topDecileMedian": 0.2078,
+     "bottomDecileReal": 0.2269,
+     "topDecileLossShare": 0.3107
+    }
+   },
+   {
+    "name": "media / volatilità",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.1188,
+     "topDecileReal": 0.4177,
+     "topDecileMedian": 0.2996,
+     "bottomDecileReal": 0.399,
+     "topDecileLossShare": 0.3154
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0708,
+     "topDecileReal": 0.3617,
+     "topDecileMedian": 0.1722,
+     "bottomDecileReal": 0.1918,
+     "topDecileLossShare": 0.3883
+    }
+   },
+   {
+    "name": "media × P(non perdere)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.099,
+     "topDecileReal": 0.3946,
+     "topDecileMedian": 0.2017,
+     "bottomDecileReal": 0.4054,
+     "topDecileLossShare": 0.3693
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0568,
+     "topDecileReal": 0.2816,
+     "topDecileMedian": 0.1351,
+     "bottomDecileReal": 0.1828,
+     "topDecileLossShare": 0.4369
+    }
+   },
+   {
+    "name": "P(≥ +25%)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.0841,
+     "topDecileReal": 0.382,
+     "topDecileMedian": 0.2089,
+     "bottomDecileReal": 0.4365,
+     "topDecileLossShare": 0.3444
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0607,
+     "topDecileReal": 0.2853,
+     "topDecileMedian": 0.1567,
+     "bottomDecileReal": 0.3909,
+     "topDecileLossShare": 0.3786
+    }
+   },
+   {
+    "name": "media (guadagno medio)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.0766,
+     "topDecileReal": 0.5359,
+     "topDecileMedian": 0.1393,
+     "bottomDecileReal": 0.3835,
+     "topDecileLossShare": 0.4191
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0435,
+     "topDecileReal": 0.2115,
+     "topDecileMedian": -0.0451,
+     "bottomDecileReal": 0.1832,
+     "topDecileLossShare": 0.5243
+    }
+   },
+   {
+    "name": "rendimento atteso annuo",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.0757,
+     "topDecileReal": 0.4232,
+     "topDecileMedian": 0.2384,
+     "bottomDecileReal": 0.3306,
+     "topDecileLossShare": 0.332
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.047,
+     "topDecileReal": 0.4235,
+     "topDecileMedian": 0.1923,
+     "bottomDecileReal": 0.2797,
+     "topDecileLossShare": 0.3398
+    }
+   },
+   {
+    "name": "media × √P(≥ +50%)",
+    "train": {
+     "n": 2411,
+     "rankCorr": 0.0697,
+     "topDecileReal": 0.4651,
+     "topDecileMedian": 0.1746,
+     "bottomDecileReal": 0.3778,
+     "topDecileLossShare": 0.4149
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": 0.0344,
+     "topDecileReal": 0.2419,
+     "topDecileMedian": -0.0727,
+     "bottomDecileReal": 0.1819,
+     "topDecileLossShare": 0.534
+    }
+   },
+   {
+    "name": "P(≥ +50%)",
+    "train": {
+     "n": 2411,
+     "rankCorr": -0.0071,
+     "topDecileReal": 0.3287,
+     "topDecileMedian": 0.1136,
+     "bottomDecileReal": 0.3853,
+     "topDecileLossShare": 0.4274
+    },
+    "valid": {
+     "n": 1033,
+     "rankCorr": -0.0301,
+     "topDecileReal": 0.2751,
+     "topDecileMedian": 0.0675,
+     "bottomDecileReal": 0.3314,
+     "topDecileLossShare": 0.4757
+    }
+   }
+  ],
+  "azioni": [
+   {
+    "name": "guadagno probabile 75%",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.2039,
+     "topDecileReal": 0.4425,
+     "topDecileMedian": 0.3085,
+     "bottomDecileReal": 0.3126,
+     "topDecileLossShare": 0.235
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1526,
+     "topDecileReal": 0.4183,
+     "topDecileMedian": 0.2689,
+     "bottomDecileReal": -0.0218,
+     "topDecileLossShare": 0.2099
+    }
+   },
+   {
+    "name": "equivalente certo γ=2",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.2037,
+     "topDecileReal": 0.4602,
+     "topDecileMedian": 0.3045,
+     "bottomDecileReal": 0.3726,
+     "topDecileLossShare": 0.235
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1351,
+     "topDecileReal": 0.4122,
+     "topDecileMedian": 0.2689,
+     "bottomDecileReal": 0.1296,
+     "topDecileLossShare": 0.2346
+    }
+   },
+   {
+    "name": "prudente (γ=3)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.2026,
+     "topDecileReal": 0.4462,
+     "topDecileMedian": 0.3091,
+     "bottomDecileReal": 0.3511,
+     "topDecileLossShare": 0.2295
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1248,
+     "topDecileReal": 0.3851,
+     "topDecileMedian": 0.2813,
+     "bottomDecileReal": 0.1927,
+     "topDecileLossShare": 0.2469
+    }
+   },
+   {
+    "name": "equivalente certo γ=1,5",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.2024,
+     "topDecileReal": 0.4739,
+     "topDecileMedian": 0.3091,
+     "bottomDecileReal": 0.3912,
+     "topDecileLossShare": 0.2295
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1387,
+     "topDecileReal": 0.3764,
+     "topDecileMedian": 0.2078,
+     "bottomDecileReal": 0.0496,
+     "topDecileLossShare": 0.284
+    }
+   },
+   {
+    "name": "Kelly (γ=1)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1975,
+     "topDecileReal": 0.4714,
+     "topDecileMedian": 0.3343,
+     "bottomDecileReal": 0.317,
+     "topDecileLossShare": 0.2295
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1349,
+     "topDecileReal": 0.331,
+     "topDecileMedian": 0.1567,
+     "bottomDecileReal": 0.1328,
+     "topDecileLossShare": 0.3333
+    }
+   },
+   {
+    "name": "guadagno bilanciato",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1893,
+     "topDecileReal": 0.4799,
+     "topDecileMedian": 0.3107,
+     "bottomDecileReal": 0.3548,
+     "topDecileLossShare": 0.235
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.134,
+     "topDecileReal": 0.2878,
+     "topDecileMedian": 0.1489,
+     "bottomDecileReal": 0.1246,
+     "topDecileLossShare": 0.358
+    }
+   },
+   {
+    "name": "mediana",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1851,
+     "topDecileReal": 0.4788,
+     "topDecileMedian": 0.3186,
+     "bottomDecileReal": 0.3694,
+     "topDecileLossShare": 0.2514
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1481,
+     "topDecileReal": 0.3129,
+     "topDecileMedian": 0.1606,
+     "bottomDecileReal": 0.1052,
+     "topDecileLossShare": 0.358
+    }
+   },
+   {
+    "name": "media − perdita 5% peggiore",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1835,
+     "topDecileReal": 0.4684,
+     "topDecileMedian": 0.2897,
+     "bottomDecileReal": 0.3338,
+     "topDecileLossShare": 0.2568
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1021,
+     "topDecileReal": 0.3632,
+     "topDecileMedian": 0.2021,
+     "bottomDecileReal": 0.3163,
+     "topDecileLossShare": 0.2963
+    }
+   },
+   {
+    "name": "equivalente certo γ=0,5",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1754,
+     "topDecileReal": 0.4506,
+     "topDecileMedian": 0.3326,
+     "bottomDecileReal": 0.3821,
+     "topDecileLossShare": 0.2678
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1083,
+     "topDecileReal": 0.3665,
+     "topDecileMedian": 0.1567,
+     "bottomDecileReal": 0.1419,
+     "topDecileLossShare": 0.3827
+    }
+   },
+   {
+    "name": "rapporto perdita/guadagno (inverso)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1571,
+     "topDecileReal": 0.4752,
+     "topDecileMedian": 0.3174,
+     "bottomDecileReal": 0.4197,
+     "topDecileLossShare": 0.2295
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.1153,
+     "topDecileReal": 0.3135,
+     "topDecileMedian": 0.1774,
+     "bottomDecileReal": 0.2762,
+     "topDecileLossShare": 0.3086
+    }
+   },
+   {
+    "name": "media / volatilità",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1405,
+     "topDecileReal": 0.4406,
+     "topDecileMedian": 0.3107,
+     "bottomDecileReal": 0.226,
+     "topDecileLossShare": 0.2787
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.073,
+     "topDecileReal": 0.3649,
+     "topDecileMedian": 0.1574,
+     "bottomDecileReal": 0.2914,
+     "topDecileLossShare": 0.3827
+    }
+   },
+   {
+    "name": "media × P(non perdere)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.1143,
+     "topDecileReal": 0.42,
+     "topDecileMedian": 0.2192,
+     "bottomDecileReal": 0.2043,
+     "topDecileLossShare": 0.3552
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.0556,
+     "topDecileReal": 0.2977,
+     "topDecileMedian": 0.1351,
+     "bottomDecileReal": 0.2914,
+     "topDecileLossShare": 0.4198
+    }
+   },
+   {
+    "name": "P(≥ +25%)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.0991,
+     "topDecileReal": 0.4235,
+     "topDecileMedian": 0.2349,
+     "bottomDecileReal": 0.3591,
+     "topDecileLossShare": 0.3115
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.0799,
+     "topDecileReal": 0.2934,
+     "topDecileMedian": 0.1567,
+     "bottomDecileReal": 0.3002,
+     "topDecileLossShare": 0.3704
+    }
+   },
+   {
+    "name": "media (guadagno medio)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.0834,
+     "topDecileReal": 0.4913,
+     "topDecileMedian": 0.1275,
+     "bottomDecileReal": 0.2032,
+     "topDecileLossShare": 0.4153
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.0351,
+     "topDecileReal": 0.2987,
+     "topDecileMedian": 0.147,
+     "bottomDecileReal": 0.2914,
+     "topDecileLossShare": 0.4815
+    }
+   },
+   {
+    "name": "media × √P(≥ +50%)",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.0743,
+     "topDecileReal": 0.5095,
+     "topDecileMedian": 0.1788,
+     "bottomDecileReal": 0.2032,
+     "topDecileLossShare": 0.3934
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.0226,
+     "topDecileReal": 0.3009,
+     "topDecileMedian": 0.0675,
+     "bottomDecileReal": 0.2914,
+     "topDecileLossShare": 0.4938
+    }
+   },
+   {
+    "name": "rendimento atteso annuo",
+    "train": {
+     "n": 1833,
+     "rankCorr": 0.073,
+     "topDecileReal": 0.4483,
+     "topDecileMedian": 0.2371,
+     "bottomDecileReal": 0.2567,
+     "topDecileLossShare": 0.3333
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": 0.0737,
+     "topDecileReal": 0.3735,
+     "topDecileMedian": 0.1722,
+     "bottomDecileReal": 0.3238,
+     "topDecileLossShare": 0.3333
+    }
+   },
+   {
+    "name": "P(≥ +50%)",
+    "train": {
+     "n": 1833,
+     "rankCorr": -0.0053,
+     "topDecileReal": 0.3724,
+     "topDecileMedian": 0.1233,
+     "bottomDecileReal": 0.358,
+     "topDecileLossShare": 0.4262
+    },
+    "valid": {
+     "n": 811,
+     "rankCorr": -0.056,
+     "topDecileReal": 0.3122,
+     "topDecileMedian": 0.0626,
+     "bottomDecileReal": 0.3737,
+     "topDecileLossShare": 0.4815
+    }
+   }
+  ],
+  "etf": [
+   {
+    "name": "prudente (γ=3)",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.1211,
+     "topDecileReal": 0.148,
+     "topDecileMedian": 0.1734,
+     "bottomDecileReal": 0.6671,
+     "topDecileLossShare": 0.3571
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.0998,
+     "topDecileReal": 0.3532,
+     "topDecileMedian": 0.1289,
+     "bottomDecileReal": 0.4293,
+     "topDecileLossShare": 0.2857
+    }
+   },
+   {
+    "name": "equivalente certo γ=2",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.1143,
+     "topDecileReal": 0.1894,
+     "topDecileMedian": 0.1935,
+     "bottomDecileReal": 0.2601,
+     "topDecileLossShare": 0.3214
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.0961,
+     "topDecileReal": 0.4453,
+     "topDecileMedian": 0.1696,
+     "bottomDecileReal": 0.3289,
+     "topDecileLossShare": 0.2857
+    }
+   },
+   {
+    "name": "guadagno probabile 75%",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.1108,
+     "topDecileReal": 0.1465,
+     "topDecileMedian": 0.143,
+     "bottomDecileReal": 0.3005,
+     "topDecileLossShare": 0.3571
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.0769,
+     "topDecileReal": 0.2356,
+     "topDecileMedian": 0.0669,
+     "bottomDecileReal": 0.4343,
+     "topDecileLossShare": 0.381
+    }
+   },
+   {
+    "name": "equivalente certo γ=1,5",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.1103,
+     "topDecileReal": 0.1425,
+     "topDecileMedian": 0.1442,
+     "bottomDecileReal": 0.2323,
+     "topDecileLossShare": 0.3571
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.0962,
+     "topDecileReal": 0.4454,
+     "topDecileMedian": 0.2251,
+     "bottomDecileReal": 0.2379,
+     "topDecileLossShare": 0.2857
+    }
+   },
+   {
+    "name": "Kelly (γ=1)",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.1,
+     "topDecileReal": 0.1282,
+     "topDecileMedian": 0.143,
+     "bottomDecileReal": 0.3912,
+     "topDecileLossShare": 0.375
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.101,
+     "topDecileReal": 0.4106,
+     "topDecileMedian": 0.1696,
+     "bottomDecileReal": 0.1592,
+     "topDecileLossShare": 0.3333
+    }
+   },
+   {
+    "name": "mediana",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.0849,
+     "topDecileReal": 0.1195,
+     "topDecileMedian": 0.0717,
+     "bottomDecileReal": 0.3522,
+     "topDecileLossShare": 0.4107
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.048,
+     "topDecileReal": 0.1328,
+     "topDecileMedian": 0.003,
+     "bottomDecileReal": 0.1953,
+     "topDecileLossShare": 0.4286
+    }
+   },
+   {
+    "name": "guadagno bilanciato",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.0841,
+     "topDecileReal": 0.1313,
+     "topDecileMedian": 0.143,
+     "bottomDecileReal": 0.3426,
+     "topDecileLossShare": 0.375
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.0926,
+     "topDecileReal": 0.3932,
+     "topDecileMedian": 0.1696,
+     "bottomDecileReal": 0.0344,
+     "topDecileLossShare": 0.3333
+    }
+   },
+   {
+    "name": "media − perdita 5% peggiore",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.075,
+     "topDecileReal": 0.1761,
+     "topDecileMedian": 0.1935,
+     "bottomDecileReal": 0.4728,
+     "topDecileLossShare": 0.3571
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.1326,
+     "topDecileReal": 0.3668,
+     "topDecileMedian": 0.2251,
+     "bottomDecileReal": 0.1617,
+     "topDecileLossShare": 0.2857
+    }
+   },
+   {
+    "name": "equivalente certo γ=0,5",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.0651,
+     "topDecileReal": 0.1509,
+     "topDecileMedian": 0.143,
+     "bottomDecileReal": 0.4169,
+     "topDecileLossShare": 0.375
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.1021,
+     "topDecileReal": 0.2141,
+     "topDecileMedian": 0.1289,
+     "bottomDecileReal": 0.0608,
+     "topDecileLossShare": 0.4286
+    }
+   },
+   {
+    "name": "rapporto perdita/guadagno (inverso)",
+    "train": {
+     "n": 569,
+     "rankCorr": 0.0535,
+     "topDecileReal": 0.0971,
+     "topDecileMedian": 0.0717,
+     "bottomDecileReal": 0.1428,
+     "topDecileLossShare": 0.4107
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": -0.0233,
+     "topDecileReal": 0.2593,
+     "topDecileMedian": 0.0263,
+     "bottomDecileReal": 0.2906,
+     "topDecileLossShare": 0.381
+    }
+   },
+   {
+    "name": "media / volatilità",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.0066,
+     "topDecileReal": 0.5612,
+     "topDecileMedian": 0.0717,
+     "bottomDecileReal": 0.4305,
+     "topDecileLossShare": 0.4464
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.116,
+     "topDecileReal": 0.3515,
+     "topDecileMedian": 0.2517,
+     "bottomDecileReal": 0.0603,
+     "topDecileLossShare": 0.2381
+    }
+   },
+   {
+    "name": "rendimento atteso annuo",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.0127,
+     "topDecileReal": 0.5431,
+     "topDecileMedian": 0.0113,
+     "bottomDecileReal": 0.2368,
+     "topDecileLossShare": 0.5
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.0103,
+     "topDecileReal": 0.1485,
+     "topDecileMedian": -0.1402,
+     "bottomDecileReal": 0.6236,
+     "topDecileLossShare": 0.5238
+    }
+   },
+   {
+    "name": "media × P(non perdere)",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.0156,
+     "topDecileReal": 0.5272,
+     "topDecileMedian": -0.0388,
+     "bottomDecileReal": 0.4739,
+     "topDecileLossShare": 0.5179
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.1156,
+     "topDecileReal": 0.1809,
+     "topDecileMedian": 0.166,
+     "bottomDecileReal": 0.08,
+     "topDecileLossShare": 0.2857
+    }
+   },
+   {
+    "name": "media (guadagno medio)",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.0255,
+     "topDecileReal": 0.5025,
+     "topDecileMedian": -0.2018,
+     "bottomDecileReal": 0.448,
+     "topDecileLossShare": 0.5714
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.1202,
+     "topDecileReal": 0.2979,
+     "topDecileMedian": 0.2517,
+     "bottomDecileReal": 0.0431,
+     "topDecileLossShare": 0.1905
+    }
+   },
+   {
+    "name": "media × √P(≥ +50%)",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.031,
+     "topDecileReal": 0.4952,
+     "topDecileMedian": -0.2018,
+     "bottomDecileReal": 0.4593,
+     "topDecileLossShare": 0.5893
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.125,
+     "topDecileReal": 0.2281,
+     "topDecileMedian": 0.2416,
+     "bottomDecileReal": 0.0784,
+     "topDecileLossShare": 0.2857
+    }
+   },
+   {
+    "name": "P(≥ +25%)",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.0496,
+     "topDecileReal": 0.1469,
+     "topDecileMedian": -0.038,
+     "bottomDecileReal": 0.2023,
+     "topDecileLossShare": 0.5357
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": -0.0045,
+     "topDecileReal": 0.3434,
+     "topDecileMedian": 0.2517,
+     "bottomDecileReal": 0.3168,
+     "topDecileLossShare": 0.3333
+    }
+   },
+   {
+    "name": "P(≥ +50%)",
+    "train": {
+     "n": 569,
+     "rankCorr": -0.1149,
+     "topDecileReal": 0.1964,
+     "topDecileMedian": -0.2178,
+     "bottomDecileReal": 0.2336,
+     "topDecileLossShare": 0.5714
+    },
+    "valid": {
+     "n": 219,
+     "rankCorr": 0.054,
+     "topDecileReal": 0.3018,
+     "topDecileMedian": 0.166,
+     "bottomDecileReal": 0.295,
+     "topDecileLossShare": 0.2857
+    }
+   }
+  ]
+ }
+}

@@ -64,6 +64,7 @@ export function tableResult(r) {
       probLoss: r4(s.probLoss),
       ce1: r4(s.ce1),
       ce3: r4(s.ce3),
+      ce: s.ce ? Object.fromEntries(Object.entries(s.ce).map(([k, v]) => [k, r4(v)])) : null,
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };

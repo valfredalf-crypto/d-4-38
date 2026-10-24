@@ -68,6 +68,7 @@ export function tableResult(r) {
       ce: s.ce ? Object.fromEntries(Object.entries(s.ce).map(([k, v]) => [k, r4(v)])) : null,
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
+      ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };
@@ -93,6 +94,24 @@ export function leverageOf(name = '') {
 /** Partecipazione che è essa stessa un fondo/ETF (fondi di fondi come i Vanguard LifeStrategy). */
 export function isFundHolding(h) {
   return /\b(etf|ucits|fund|fonds|index|trust|sicav|oeic|portfolio)\b/i.test(h?.name || '') || /^(VWRP|VAGP|VEVE|VFEM|VGOV|VUKE|VUSA|VERX|VJPN|VAPX)\b/i.test(h?.symbol || '');
+}
+
+/**
+ * Aliquota italiana effettiva: 26% su azioni, ETF azionari e obbligazioni societarie; 12,5% sui titoli di
+ * Stato (white list). Per gli ETF obbligazionari governativi e per i bilanciati la quota di titoli di Stato
+ * viene stimata dalla composizione (quota obbligazionaria × 60% di governativi negli indici aggregati).
+ */
+const GOV_RE = /govern|treasur|\bgovt\b|sovereign|\bbtp\b|\bbund\b|\bgilt|\boat\b|bonos|inflation[- ]linked|\btips\b|euro(zone)? gov|ibonds.*(italy|govt|gov|treasury)/i;
+const CORP_RE = /corporate|\bcorp\b|high yield|fallen angel|credit/i;
+export function effectiveTaxRate(inst, holdings, baseRate = 26) {
+  if (inst.type !== 'etf') return baseRate;
+  const bond = Number.isFinite(holdings?.bondPosition) ? Math.max(0, Math.min(1, holdings.bondPosition)) : null;
+  let govShare = 0;
+  const name = inst.name || '';
+  if (GOV_RE.test(name) && !CORP_RE.test(name)) govShare = bond ?? 1;
+  else if (CORP_RE.test(name)) govShare = 0; // obbligazioni societarie: 26%
+  else if (bond != null && bond > 0.05) govShare = bond * 0.6;
+  return baseRate - govShare * (baseRate - 12.5);
 }
 
 export function distributesDividends(inst, fundamentals = null) {
@@ -156,6 +175,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   // periodo. Rispetto a un accumulo l'unica differenza, reinvestendo il netto, è l'anticipo dell'imposta:
   // il capitale che compone è minore. Costo del differimento ≈ tassa × dividendo × rendimento × (anni−1)/2
   // all'anno, sottratto alla deriva della simulazione (la tassa finale resta sul guadagno complessivo).
+  // Aliquota italiana effettiva (12,5% sulla quota di titoli di Stato) usata per tasse finali e dividendi
+  o.taxRate = effectiveTaxRate(instrument, holdings, o.taxRate);
   const distYield = distributesDividends(instrument, fundamentals) ? cleanDividend(fundamentals?.dividendYield) : 0;
   const distDrag = distYield > 0 && fwd ? (o.taxRate / 100) * distYield * Math.max(fwd.expected, 0) * ((o.years - 1) / 2) : 0;
   // Concentrazione: peso delle prime 10 partecipazioni (dalla composizione del fondo); per la diversificazione
@@ -168,6 +189,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   if (sim.ok) {
     sim.distYield = distYield;
     sim.distDrag = distDrag;
+    sim.taxRate = o.taxRate;
     sim.divYield = cleanDividend(fundamentals?.dividendYield); // per la verifica del dividendo non sostenuto
     // Indicatori "storici" mostrati: solo sui dati reali
     const lookback = Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1;

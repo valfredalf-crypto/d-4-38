@@ -263,3 +263,13 @@ test('fondi di fondi: le partecipazioni-ETF non contano come concentrazione', as
   assert.equal(isFundHolding({ symbol: 'VWRP.L', name: 'Vanguard FTSE All-World UCITS ETF' }), true);
   assert.equal(isFundHolding({ symbol: 'NVDA', name: 'NVIDIA Corp' }), false);
 });
+
+test('aliquota italiana effettiva: 12,5% sui titoli di Stato, 26% altrove', async () => {
+  const { effectiveTaxRate } = await import('../public/js/analyze.js');
+  assert.equal(effectiveTaxRate({ type: 'stock', name: 'Enel' }, null), 26);
+  assert.equal(effectiveTaxRate({ type: 'etf', name: 'iShares Core MSCI World' }, { bondPosition: 0 }), 26);
+  assert.equal(effectiveTaxRate({ type: 'etf', name: 'Xtrackers II Eurozone Government Bond UCITS ETF' }, { bondPosition: 1 }), 12.5);
+  assert.equal(effectiveTaxRate({ type: 'etf', name: 'iShares € Corp Bond UCITS ETF' }, { bondPosition: 1 }), 26);
+  const mixed = effectiveTaxRate({ type: 'etf', name: 'Vanguard LifeStrategy 80% Equity' }, { bondPosition: 0.2 });
+  assert.ok(mixed < 26 && mixed > 24, String(mixed)); // 20% obbligazioni × 60% governativi → 12% al 12,5%
+});

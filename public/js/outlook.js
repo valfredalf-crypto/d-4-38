@@ -246,11 +246,13 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
   if (Number.isFinite(f.growthLongTerm)) {
     g0 = Math.max(-0.1, Math.min(0.4, f.growthLongTerm)); // stima a 5 anni: stime estreme limitate
   } else {
-    // Solo stima del prossimo anno: spesso è un rimbalzo dopo un anno negativo, che non si ripete per
-    // 5 anni. Si limita a +25% e se ne crede metà oltre la crescita di lungo periodo.
-    const g1 = Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
+    // Solo stima del prossimo anno: limitata a +25% e, se ci sono le stime dei ricavi, a non più di
+    // 10 punti sopra la crescita dei ricavi. Un balzo degli utili con ricavi fermi è un rimbalzo dopo
+    // un anno negativo (non si ripete per 5 anni); una crescita trainata dai ricavi è più duratura.
+    let g1 = Number.isFinite(f.epsGrowthNext) ? f.epsGrowthNext : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
     if (g1 == null) return null;
-    g0 = gL + 0.5 * (Math.max(-0.1, Math.min(0.25, g1)) - gL);
+    if (Number.isFinite(f.revenueGrowthNext)) g1 = Math.min(g1, f.revenueGrowthNext + 0.1);
+    g0 = Math.max(-0.1, Math.min(0.25, g1));
   }
   const gStart = gL + s.growthHaircut * (g0 - gL);
   const growth = (gStart + gL) / 2; // media di un rallentamento lineare da gStart a gL

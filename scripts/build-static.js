@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { universe } from '../lib/store.js';
 import { computeSnapshot } from '../lib/snapshot.js';
-import { fileKey, DEFAULT_SETTINGS, BENCHMARK_SYMBOL } from '../public/js/analyze.js';
+import { fileKey, DEFAULT_SETTINGS, BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL } from '../public/js/analyze.js';
 import { runBacktest, backtestPayload } from '../public/js/backtest.js';
 import { CALIBRATION } from '../public/js/calibration.js';
 
@@ -55,7 +55,8 @@ fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
 // Backtest: previsioni fatte con i dati di 5 anni fa confrontate con l'esito reale.
 const benchmark = histories.find((h) => h.instrument.symbol === BENCHMARK_SYMBOL)?.history;
-const bt = runBacktest(histories.map((h) => ({ ...h, benchmark })), DEFAULT_SETTINGS);
+const cryptoBenchmark = histories.find((h) => h.instrument.symbol === CRYPTO_BENCHMARK_SYMBOL)?.history;
+const bt = runBacktest(histories.map((h) => ({ ...h, benchmark, cryptoBenchmark })), DEFAULT_SETTINGS);
 let calibration = null;
 try {
   calibration = JSON.parse(fs.readFileSync('data/calibration-report.json', 'utf8'));

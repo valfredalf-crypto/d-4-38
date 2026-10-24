@@ -4,6 +4,7 @@ import { forwardParams, DEFAULT_OUTLOOK } from './outlook.js';
 import { backfillWithProxy } from './backfill.js';
 
 export const BENCHMARK_SYMBOL = 'EUNL.DE'; // iShares Core MSCI World (EUR) per il calcolo del beta
+export const CRYPTO_BENCHMARK_SYMBOL = 'BTC-EUR'; // riferimento per ricostruire lo storico delle crypto giovani
 
 const { targetDrift, targetVol, seed, ...MC_DEFAULTS } = DEFAULT_OPTIONS;
 export const DEFAULT_SETTINGS = { mc: { ...MC_DEFAULTS, cryptoSpreadPct: 0 }, outlook: { ...DEFAULT_OUTLOOK } };
@@ -50,7 +51,7 @@ export function tableQuote(q) {
   return { priceEur: r4(q.priceEur), changePct: r4(q.changePct), price: q.price, currency: q.currency, ...(q.perf ? { perf: q.perf } : {}) };
 }
 
-export function analyze({ instrument, history, benchmark, fundamentals }, settings) {
+export function analyze({ instrument, history, benchmark, cryptoBenchmark, fundamentals }, settings) {
   const o = { ...DEFAULT_OPTIONS, ...settings.mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
   const prices = history.closesEur;
@@ -59,8 +60,10 @@ export function analyze({ instrument, history, benchmark, fundamentals }, settin
     return { forward: null, sim: { ok: false, reason: `Storico insufficiente (${realYears.toFixed(1)} anni, minimo ${o.minYears})`, historyYears: realYears } };
   }
   const bench = instrument.symbol === BENCHMARK_SYMBOL ? null : benchmark;
-  // Storico breve: rischio stimato su uno storico ricostruito con l'MSCI World (solo azioni ed ETF).
-  const filled = instrument.type !== 'crypto' && bench ? backfillWithProxy(history, bench, { lookbackYears: o.lookbackYears, seedKey: instrument.symbol }) : null;
+  // Storico breve: rischio stimato su uno storico ricostruito con un riferimento
+  // (MSCI World per azioni ed ETF, Bitcoin per le crypto).
+  const proxy = instrument.type === 'crypto' ? (instrument.symbol === CRYPTO_BENCHMARK_SYMBOL ? null : cryptoBenchmark) : bench;
+  const filled = proxy ? backfillWithProxy(history, proxy, { lookbackYears: o.lookbackYears, seedKey: instrument.symbol }) : null;
   const fwd = forwardParams(
     {
       type: instrument.type,
@@ -81,6 +84,7 @@ export function analyze({ instrument, history, benchmark, fundamentals }, settin
     sim.historicalMdd = historicalMaxDrawdown(prices.slice(-lookback));
     sim.historyYears = Math.min(realYears, o.lookbackYears);
     sim.backfilledYears = filled ? filled.backfilledWeeks / WEEKS_PER_YEAR : 0;
+    sim.backfillProxy = filled ? (instrument.type === 'crypto' ? 'Bitcoin' : 'MSCI World') : null;
   }
   return { forward: fwd, sim };
 }

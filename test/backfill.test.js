@@ -49,3 +49,14 @@ test('backfill: ricostruisce gli anni mancanti con beta e include le crisi passa
   assert.ok(withB.sim.backfilledYears > 6);
   assert.ok(Math.abs(withB.forward.historyRaw - noB.forward.historyRaw) < 1e-12);
 });
+
+test('crypto giovane: storico ricostruito con Bitcoin', () => {
+  const btc = market();
+  const start = 521 - 157;
+  const coin = { timestamps: btc.timestamps.slice(start), closesEur: btc.closesEur.slice(start).map((v, i) => v * (1 + 0.001 * (i % 3))) };
+  const r = analyze({ instrument: { symbol: 'NEW-EUR', type: 'crypto' }, history: coin, benchmark: null, cryptoBenchmark: btc }, DEFAULT_SETTINGS);
+  assert.ok(r.sim.backfilledYears > 6);
+  assert.equal(r.sim.backfillProxy, 'Bitcoin');
+  const self = analyze({ instrument: { symbol: 'BTC-EUR', type: 'crypto' }, history: coin, benchmark: null, cryptoBenchmark: btc }, DEFAULT_SETTINGS);
+  assert.equal(self.sim.backfilledYears, 0); // Bitcoin non si ricostruisce con se stesso
+});

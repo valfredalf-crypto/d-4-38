@@ -10,7 +10,7 @@ const r4 = (x) => (Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : x === Infini
  * Prevede (fino a T0) e misura (da T0 a oggi) per un singolo strumento; null se lo storico è troppo corto.
  * `preYears`: se indicato, finge che prima di T0 esistessero solo quegli anni di dati (test degli storici brevi).
  */
-export function backtestOne({ instrument, history, benchmark }, settings, mode, { originWeeksAgo = null, sims = 1000, preYears = null } = {}) {
+export function backtestOne({ instrument, history, benchmark, cryptoBenchmark }, settings, mode, { originWeeksAgo = null, sims = 1000, preYears = null } = {}) {
   const mc = { ...DEFAULT_OPTIONS, ...settings.mc, sims };
   const o = { ...mc };
   if (instrument.type === 'crypto') o.spreadPct = settings.mc.cryptoSpreadPct ?? o.spreadPct;
@@ -24,15 +24,16 @@ export function backtestOne({ instrument, history, benchmark }, settings, mode, 
   const iStart = preYears ? Math.max(0, i0 - Math.round(preYears * WEEKS_PER_YEAR)) : 0;
   const preHistory = { timestamps: ts.slice(iStart, i0 + 1), closesEur: prices.slice(iStart, i0 + 1) };
   const post = prices.slice(i0, i0 + horizon + 1);
-  // Benchmark troncato a T0: nessuna informazione successiva entra nella previsione.
-  let bench = null;
-  if (benchmark?.timestamps?.length) {
-    const k = benchmark.timestamps.findIndex((t) => t > t0);
-    const end = k === -1 ? benchmark.timestamps.length : k;
-    bench = { timestamps: benchmark.timestamps.slice(0, end), closesEur: benchmark.closesEur.slice(0, end) };
-  }
+  // Riferimenti troncati a T0: nessuna informazione successiva entra nella previsione.
+  const cut = (b) => {
+    if (!b?.timestamps?.length) return null;
+    const k = b.timestamps.findIndex((t) => t > t0);
+    const end = k === -1 ? b.timestamps.length : k;
+    return { timestamps: b.timestamps.slice(0, end), closesEur: b.closesEur.slice(0, end) };
+  };
+  const bench = cut(benchmark);
   // Stessa analisi dell'app (storico ricostruito con l'indice incluso), senza analisti (non disponibili storicamente).
-  const { forward: fwd, sim } = analyze({ instrument, history: preHistory, benchmark: bench, fundamentals: null }, { mc: { ...mc, seed: 12345 }, outlook: { ...settings.outlook, mode } });
+  const { forward: fwd, sim } = analyze({ instrument, history: preHistory, benchmark: bench, cryptoBenchmark: cut(cryptoBenchmark), fundamentals: null }, { mc: { ...mc, seed: 12345 }, outlook: { ...settings.outlook, mode } });
   if (!fwd || !sim.ok) return null;
   const gross = post.at(-1) / post[0] - 1;
   const rets = logReturns(post);

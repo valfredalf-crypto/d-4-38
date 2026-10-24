@@ -1,4 +1,4 @@
-import { BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
+import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS } from './montecarlo.js';
@@ -170,7 +170,11 @@ async function analyzeOne(inst) {
   const benchmark = state.settings.outlook.mode === 'forward' ? await getBenchmark() : null;
   const price = state.quotes[inst.symbol]?.priceEur;
   const history = applyLivePrice(d.history, price);
-  const r = await runAnalysis({ instrument: inst, history, benchmark, fundamentals: d.fundamentals, settings: state.settings });
+  if (inst.type === 'crypto' && !state.cryptoBenchmark) {
+    state.cryptoBenchmark = await api(`/api/history?symbol=${encodeURIComponent(CRYPTO_BENCHMARK_SYMBOL)}`).catch(() => null);
+  }
+  const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
+  const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, settings: state.settings });
   state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
@@ -661,7 +665,7 @@ function renderDetail(inst, r, d) {
           <tr><td>Volatilità implicita opzioni</td><td class="num">${f.sigmaImpl ? pct(f.sigmaImpl) + ` <span class="muted">(${fu.impliedVolDays} gg)</span>` : '<span class="muted">n.d.</span>'}</td></tr>
           <tr><td>Beta vs MSCI World (EUR)</td><td class="num">${f.betaRaw != null ? nf2.format(f.betaRaw) : 'n.d.'} <span class="muted">(aggiustato ${nf2.format(f.beta)})</span></td></tr>` : ''}
           <tr><td>Max drawdown storico (${nf2.format(sim.historyYears)} anni reali)</td><td class="num neg">−${pct(sim.historicalMdd)}</td></tr>
-          ${sim.backfilledYears > 0.1 ? `<tr><td colspan="2" class="muted">Storico breve: per il rischio i ${nf2.format(sim.backfilledYears)} anni mancanti sono ricostruiti con l'MSCI World (β ${nf2.format(f?.betaRaw ?? 1)}), così le simulazioni includono anche crisi passate. Il rendimento atteso usa solo i dati reali.</td></tr>` : ''}
+          ${sim.backfilledYears > 0.1 ? `<tr><td colspan="2" class="muted">Storico breve: per il rischio i ${nf2.format(sim.backfilledYears)} anni mancanti sono ricostruiti con ${sim.backfillProxy || "l'indice di riferimento"}, così le simulazioni includono anche crisi passate. Il rendimento atteso usa solo i dati reali.</td></tr>` : ''}
           <tr><td>Max drawdown simulato: mediano / 95°</td><td class="num neg">−${pct(sim.mddMedian)} / −${pct(sim.mddP95)}</td></tr>
           ${fu.dividendYield ? `<tr><td>Rendimento da dividendi</td><td class="num">${pct(fu.dividendYield)}</td></tr>` : ''}
         </tbody></table>

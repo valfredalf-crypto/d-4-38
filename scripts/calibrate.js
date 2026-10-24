@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import { listInstruments } from '../lib/store.js';
 import { historyEur } from '../lib/market.js';
 import { backtestOne, rowLoss, rowLossReturns, rowLossRisk, summarize } from '../public/js/backtest.js';
-import { BENCHMARK_SYMBOL } from '../public/js/analyze.js';
+import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL } from '../public/js/analyze.js';
 import { BASE_OUTLOOK } from '../public/js/outlook.js';
 import { DEFAULT_OPTIONS, hashString } from '../public/js/montecarlo.js';
 import { hasImplausibleJumps } from '../lib/universe.js';
@@ -42,6 +42,7 @@ const baseSettings = (outlook) => ({ mc: { ...mcDefaults, cryptoSpreadPct: 0 }, 
 // --- dati
 const all = listInstruments();
 const benchmark = await historyEur(BENCHMARK_SYMBOL);
+const cryptoBenchmark = await historyEur(CRYPTO_BENCHMARK_SYMBOL).catch(() => null);
 const pool = [];
 let i = 0;
 await Promise.all(
@@ -52,7 +53,7 @@ await Promise.all(
       if (!history || history.closesEur.length < 52 * 7 + 1) continue;
       // Dati anomali (salti ×3 o ÷3 in una settimana per azioni/ETF): esclusi, falserebbero la taratura.
       if (inst.type !== 'crypto' && hasImplausibleJumps(history.closesEur)) continue;
-      pool.push({ instrument: inst, history, benchmark });
+      pool.push({ instrument: inst, history, benchmark, cryptoBenchmark });
     }
   }),
 );

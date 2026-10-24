@@ -8,7 +8,7 @@ import { search, pickListing } from './lib/yahoo.js';
 import { parseInstrumentCsv } from './lib/importer.js';
 import { cached } from './lib/cache.js';
 import { runBacktest, backtestPayload } from './public/js/backtest.js';
-import { DEFAULT_SETTINGS, BENCHMARK_SYMBOL } from './public/js/analyze.js';
+import { DEFAULT_SETTINGS, BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL } from './public/js/analyze.js';
 import { CALIBRATION } from './public/js/calibration.js';
 
 const PORT = Number(process.env.PORT || 3000);
@@ -101,10 +101,11 @@ const routes = {
     cached('backtest_local', 12 * 3600e3, async () => {
       const list = listInstruments();
       const benchmark = await historyEur(BENCHMARK_SYMBOL).catch(() => null);
+      const cryptoBenchmark = await historyEur(CRYPTO_BENCHMARK_SYMBOL).catch(() => null);
       const items = [];
       for (const instrument of list) {
         const history = await historyEur(instrument.symbol).catch(() => null);
-        if (history) items.push({ instrument, history, benchmark });
+        if (history) items.push({ instrument, history, benchmark, cryptoBenchmark });
       }
       const report = (() => {
         try {

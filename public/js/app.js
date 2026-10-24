@@ -27,7 +27,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'plausible', dir: -1 }, limit: PAGE, filters: loadFilters(), prudence: Number(localStorage.getItem('trmc.prudence2') ?? 0.5) },
+  view: { type: 'all', q: '', onlyComputed: false, sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters(), prudence: Number(localStorage.getItem('trmc.prudence2') ?? 0.5) },
   running: false,
   stop: false,
 };
@@ -474,6 +474,25 @@ function applyFilters() {
 }
 
 const growthOf = (r) => (r && !r.error ? r.forward?.growth ?? r.forward?.expectedGrowth ?? null : null);
+/**
+ * Indicatore complessivo di guadagno netto a 5 anni = guadagno netto efficiente (equivalente certo; include
+ * il fisco: 26% sui guadagni e imposta anticipata sui dividendi distribuiti)
+ *  - penalita' di asimmetria: meta' di quanto la perdita finale nel 5% peggiore supera il guadagno tipico
+ *    (zero se il guadagno tipico copre la perdita sfavorevole)
+ *  - penalita' "value trap": dividendo oltre la crescita attesa + 3 punti, per meta' degli anni
+ *    (zero quando il dividendo e' sostenuto dalla crescita degli utili).
+ */
+function overallOf(sim, r) {
+  if (!sim) return { overall: null, penAsym: null, penTrap: null, fiscalCost: null };
+  const years = state.settings.mc.years || 5;
+  const base = state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1);
+  if (base == null || sim.finalLoss == null || sim.netMedian == null) return { overall: null, penAsym: null, penTrap: null, fiscalCost: null };
+  const penAsym = 0.5 * Math.max(0, sim.finalLoss - Math.max(sim.netMedian, 0));
+  const g = growthOf(r) ?? 0;
+  const y = sim.divYield || 0;
+  const penTrap = 0.5 * years * Math.max(0, y - Math.max(g, 0) - 0.03);
+  return { overall: base - penAsym - penTrap, penAsym, penTrap, fiscalCost: (sim.distDrag || 0) * years };
+}
 // Crescita attesa cumulata sull'orizzonte (la crescita è annua, i guadagni sono a 5 anni: vanno sommati nella stessa unità)
 const growth5 = (r) => {
   const g = growthOf(r);
@@ -490,8 +509,10 @@ function rowValues(i) {
   const q = state.quotes[i.symbol];
   const sim = r && !r.error ? r.sim : null;
   const v = {
-    // Guadagno netto plausibile a 5 anni secondo la prudenza scelta: la classifica predefinita
+    // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
     plausible: sim ? (state.view.prudence === 0 ? sim.netMean : sim.ce?.[state.view.prudence] ?? (state.view.prudence >= 3 ? sim.ce3 : sim.ce1)) ?? null : null,
+    // Indicatore complessivo con le penalita' esplicite dei "3 fattori" (vedi overallOf)
+    ...overallOf(sim, r),
     growthEvidence: r && !r.error ? r.forward?.evidence ?? null : null,
     inst: i,
     name: i.name.toLowerCase(),
@@ -564,7 +585,7 @@ function rowValues(i) {
 
 function sortRows(rows) {
   const { key, dir } = state.view.sort;
-  const k = key === 'rank' ? 'plausible' : key;
+  const k = key === 'rank' ? 'overall' : key;
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -581,7 +602,7 @@ function sortRows(rows) {
 
 function rankMap(rows) {
   // La posizione in classifica è sempre per guadagno plausibile decrescente, indipendentemente dall'ordinamento scelto.
-  const ranked = rows.filter((r) => r.plausible != null && Number.isFinite(r.plausible)).sort((a, b) => b.plausible - a.plausible);
+  const ranked = rows.filter((r) => r.overall != null && Number.isFinite(r.overall)).sort((a, b) => b.overall - a.overall);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
 
@@ -613,7 +634,7 @@ function render() {
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
-        <td class="num ${cls(r.plausible)}"><b class="big">${r.plausible == null ? '–' : `${r.plausible > 0 ? '+' : ''}${Math.round(r.plausible * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.plausible == null ? '' : `<span class="eur">${pct(r.plausible, true)} su ${(state.settings.mc.amount || 10000).toLocaleString('it-IT')} €</span>`}</td>
+        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)}${r.penAsym > 0.0005 || r.penTrap > 0.0005 ? ` · penalità ${pct(r.penAsym + r.penTrap)}` : ' · nessuna penalità'}</span>`}</td>
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
@@ -817,7 +838,18 @@ function renderDetail(inst, r, d) {
             return rows.join('');
           })()}
         </tbody></table>
-        <p class="muted small-note">Tutti e tre i fattori entrano già nel "Guadagno netto efficiente 5a" (la classifica): il fisco nella simulazione, l'asimmetria nell'equivalente certo, la crescita nel rendimento atteso.</p>
+        ${(() => {
+          const o = overallOf(sim, r);
+          if (o.overall == null) return '';
+          const e = (x) => `${x > 0 ? '+' : ''}${Math.round(x * amt).toLocaleString('it-IT')} €`;
+          const base = sim.ce?.['0.5'] ?? sim.ce1;
+          return `<table class="mini"><tbody>
+            <tr><td>Guadagno netto efficiente (fisco incluso${o.fiscalCost > 0 ? `, di cui imposta anticipata sui dividendi ${e(-o.fiscalCost)}` : ''})</td><td class="num ${cls(base)}">${e(base)}</td></tr>
+            <tr><td>− Penalità asimmetria del rischio (½ dell'eccesso della perdita sfavorevole sul guadagno tipico)</td><td class="num ${o.penAsym > 0 ? 'neg' : ''}">${o.penAsym > 0 ? e(-o.penAsym) : '0 €'}</td></tr>
+            <tr><td>− Penalità value trap (dividendo non sostenuto dalla crescita)</td><td class="num ${o.penTrap > 0 ? 'neg' : ''}">${o.penTrap > 0 ? e(-o.penTrap) : '0 €'}</td></tr>
+            <tr><th>= Guadagno netto complessivo ${s.mc.years}a</th><th class="num ${cls(o.overall)}">${e(o.overall)}</th></tr>
+          </tbody></table>`;
+        })()}
       </div>
       <div class="card">
         <h3>Stima prospettica del rendimento annuo</h3>
@@ -1309,7 +1341,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'p25GrowthLoss', 'p25GrowthDD', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'p25GrowthLoss', 'p25GrowthDD', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),

@@ -66,6 +66,7 @@ export function tableResult(r) {
       ce3: r4(s.ce3),
       ce: s.ce ? Object.fromEntries(Object.entries(s.ce).map(([k, v]) => [k, r4(v)])) : null,
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
+      ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };
@@ -155,6 +156,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   if (sim.ok) {
     sim.distYield = distYield;
     sim.distDrag = distDrag;
+    sim.divYield = cleanDividend(fundamentals?.dividendYield); // per la verifica del dividendo non sostenuto
     // Indicatori "storici" mostrati: solo sui dati reali
     const lookback = Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1;
     sim.historicalMdd = historicalMaxDrawdown(prices.slice(-lookback));

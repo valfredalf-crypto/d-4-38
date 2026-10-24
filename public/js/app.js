@@ -487,8 +487,12 @@ function rowValues(i) {
       const num = sim.netP25 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
       return sim.maxLoss > 0 ? num / sim.maxLoss : num > 0 ? Infinity : 0;
     })(),
-    // Guadagno medio 5a × l'indicatore precedente: più alto è meglio
-    meanTimesP25GL: null,
+    // (Guadagno probabile 75% + crescita annua attesa, 0 se non disponibile) ÷ drawdown mediano: più alto è meglio
+    p25GrowthDD: (() => {
+      if (!sim || sim.mddMedian == null || sim.netP25 == null) return null;
+      const num = sim.netP25 + (r.forward?.growth ?? r.forward?.expectedGrowth ?? 0);
+      return sim.mddMedian > 0 ? num / sim.mddMedian : num > 0 ? Infinity : 0;
+    })(),
     riskAdj: sim && sim.finalLoss != null && sim.netMedian != null ? sim.netMedian - sim.finalLoss : null,
     // ratioFinal null con guadagno mediano ≤ 0 (Infinity non sopravvive al JSON) → ∞
     ratioFinal: sim && sim.finalLoss != null ? (sim.ratioFinal ?? (sim.netMedian > 0 ? null : Infinity)) : null,
@@ -509,11 +513,6 @@ function rowValues(i) {
     perfYtd: netPerf(q?.perf?.ytd, i),
     error: r?.error || null,
   };
-  // Se uno dei due fattori è negativo il risultato è negativo (negativo × negativo non è un buon segno)
-  if (v.netMean != null && v.p25GrowthLoss != null) {
-    const x = Number.isFinite(v.p25GrowthLoss) ? v.netMean * v.p25GrowthLoss : v.netMean > 0 ? Infinity : v.netMean;
-    v.meanTimesP25GL = v.netMean < 0 || v.p25GrowthLoss < 0 ? -Math.abs(x) : x;
-  }
   return v;
 }
 
@@ -586,7 +585,7 @@ function render() {
         <td class="num">${r.riskGain == null ? '–' : r.riskGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.riskGain < 1 ? 'pos' : ''}">${nf2.format(r.riskGain)}</span>`}</td>
         <td class="num">${r.maxLossGain == null ? '–' : r.maxLossGain === Infinity ? '<span class="neg">∞</span>' : `<span class="${r.maxLossGain < 1 ? 'pos' : ''}">${nf2.format(r.maxLossGain)}</span>`}</td>
         <td class="num">${r.p25GrowthLoss == null ? '–' : r.p25GrowthLoss === Infinity || r.p25GrowthLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthLoss >= 1 ? 'pos' : r.p25GrowthLoss < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthLoss)}</span>`}</td>
-        <td class="num ${cls(r.meanTimesP25GL)}">${r.meanTimesP25GL == null ? '–' : r.meanTimesP25GL === Infinity || r.meanTimesP25GL > 9.99 ? '<span title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;999%</span>' : pct(r.meanTimesP25GL, true)}</td>
+        <td class="num">${r.p25GrowthDD == null ? '–' : r.p25GrowthDD === Infinity || r.p25GrowthDD > 99 ? '<span class="pos" title="Drawdown quasi nullo (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.p25GrowthDD >= 1 ? 'pos' : r.p25GrowthDD < 0 ? 'neg' : ''}">${nf2.format(r.p25GrowthDD)}</span>`}</td>
         <td class="num">${r.ratioMedian == null ? '–' : r.ratioMedian === Infinity ? '<span class="neg">∞</span>' : nf2.format(r.ratioMedian)}</td>
         <td class="num">${pct(r.probLoss, false, 0)}</td>
         <td class="num">${pct(r.prob25, false, 0)}</td>
@@ -703,11 +702,7 @@ function renderDetail(inst, r, d) {
         const den = (sim.netMedian + sim.netMean) / 2 + g;
         const numP = sim.netP25 + g;
         return `<div class="kpi"><div class="k">(Guadagno probabile + crescita) / perdita max</div><div class="v ${cls(numP)}">${sim.maxLoss > 0 ? nf2.format(numP / sim.maxLoss) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa ${pct(g, true)}) ÷ perdita max ${pct(sim.maxLoss)} · più alto = migliore</div></div>
-      <div class="kpi"><div class="k">Guadagno medio × indicatore precedente</div>${(() => {
-        const x = sim.maxLoss > 0 ? (sim.netMean * numP) / sim.maxLoss : Infinity;
-        const y = sim.netMean < 0 || numP < 0 ? -Math.abs(x) : x;
-        return `<div class="v ${cls(y)}">${Number.isFinite(y) ? pct(y, true) : '∞'}</div>`;
-      })()}<div class="h">guadagno medio ${pct(sim.netMean, true)} × (guad. probabile + crescita) / perdita max ${sim.maxLoss > 0 ? nf2.format(numP / sim.maxLoss) : '∞'} · più alto = migliore</div></div>
+      <div class="kpi"><div class="k">(Guadagno probabile + crescita) / drawdown mediano</div><div class="v ${cls(numP)}">${sim.mddMedian > 0 ? nf2.format(numP / sim.mddMedian) : '∞'}</div><div class="h">(guadagno probabile 75% ${pct(sim.netP25, true)} + crescita attesa ${pct(g, true)}) ÷ drawdown mediano ${pct(sim.mddMedian)} · più alto = migliore</div></div>
       <div class="kpi"><div class="k">Perdita max / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format(sim.maxLoss / den) : '∞'}</div><div class="h">perdita max ${pct(sim.maxLoss)} ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>
       <div class="kpi"><div class="k">Perdite medie / (guadagni medi + crescita)</div><div class="v">${den > 0 ? nf2.format((sim.mddMedian + sim.maxLoss) / 2 / den) : '∞'}</div><div class="h">media(drawdown mediano ${pct(sim.mddMedian)}, perdita max ${pct(sim.maxLoss)}) ÷ (media(guadagno mediano ${pct(sim.netMedian, true)}, medio ${pct(sim.netMean, true)}) + crescita attesa ${pct(g, true)}) · più basso = migliore</div></div>`;
       })()}
@@ -1223,7 +1218,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25GrowthLoss', 'meanTimesP25GL', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'p25GrowthLoss', 'p25GrowthDD', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),

@@ -98,7 +98,15 @@ export function leverageOf(name = '') {
  */
 /** Partecipazione che è essa stessa un fondo/ETF (fondi di fondi come i Vanguard LifeStrategy). */
 export function isFundHolding(h) {
-  return /\b(etf|ucits|fund|fonds|index|trust|sicav|oeic|portfolio)\b/i.test(h?.name || '') || /^(VWRP|VAGP|VEVE|VFEM|VGOV|VUKE|VUSA|VERX|VJPN|VAPX)\b/i.test(h?.symbol || '');
+  const name = h?.name || '';
+  if (/\b(etf|etc|ucits|fund|fonds|index|trust|sicav|oeic|portfolio)\b/i.test(name)) return true;
+  // Case di gestione che non sono società quotate: un titolo che inizia col loro nome è un loro fondo
+  // (es. «Vanguard FTSE North America», «iShares Core MSCI World»). Yahoo accorcia i nomi e spesso perde «ETF».
+  if (/^(vanguard|ishares|xtrackers|lyxor|spdr|vaneck|db x-trackers)\b/i.test(name)) return true;
+  // Case quotate in borsa (Invesco, Amundi, Franklin, WisdomTree, HSBC, UBS…): fondo solo se il nome
+  // contiene anche un indice o una classe di attivo, altrimenti potrebbe essere l'azione della società
+  if (/^(invesco|amundi|franklin|wisdomtree|hsbc|ubs|fidelity|jpm\w*|jpmorgan|bnp paribas|legal & general|l&g|pimco|goldman sachs|schwab|dimensional)\b/i.test(name) && /\b(ftse|msci|s&p|stoxx|nasdaq|bloomberg|russell|dax|euro ?stoxx|treasury|govt?|gov ?bd|corp(orate)? ?bd|bond|bd|aggregate|aggt|equity|eq|equities|high yield|money market|liquidity)\b/i.test(name)) return true;
+  return /^(VWRP|VAGP|VEVE|VFEM|VGOV|VUKE|VUSA|VERX|VJPN|VAPX|VNRA|VHVE|VWRA|VAGF|VUAA|VFEA|VWCG|VJPA|VAPU|VDTE|VGEA|VDCE|VECA)\b/i.test(h?.symbol || '');
 }
 
 /**
@@ -192,7 +200,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   // Concentrazione: peso delle prime 10 partecipazioni (dalla composizione del fondo); per la diversificazione
   if (fwd && holdings?.holdings?.length) {
     const funds = holdings.holdings.filter((h) => isFundHolding(h)).length;
-    fwd.fundOfFunds = funds * 2 >= holdings.holdings.length; // le partecipazioni sono a loro volta fondi: diversificato
+    fwd.fundOfFunds = holdings.fundOfFunds === true || funds * 2 >= holdings.holdings.length; // le partecipazioni sono a loro volta fondi: diversificato
     fwd.top10 = fwd.fundOfFunds ? 0.3 : Math.min(1, holdings.holdings.reduce((a, h) => a + (h.weight || 0), 0));
   }
   // NR5: la perdita media nel 5% peggiore pesa ½ per ETF e crypto, ⅓ per le azioni singole

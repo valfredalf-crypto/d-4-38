@@ -376,14 +376,16 @@ async function refreshQuotes(symbols) {
 function filtered() {
   const { type, q, onlyComputed, allEtf } = state.view;
   const needle = q.trim().toLowerCase();
+  const code = needle.replace(/[\s-]/g, ''); // ISIN o ticker anche scritti con spazi/trattini
   const active = activeFilters(state.view.filters);
   return state.instruments.filter((i) => {
     if (type === 'growth' ? i.growth == null : type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
     // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
-    // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta
-    if (!allEtf && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
-    if (needle && !`${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle)) return false;
+    // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta.
+    // Chi cerca per nome, ticker o ISIN deve però trovare tutto: con un testo di ricerca si mostrano anche loro.
+    if (!allEtf && !needle && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
+    if (needle && !`${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle) && !(code && `${i.symbol} ${i.isin || ''}`.toLowerCase().replace(/[\s-]/g, '').includes(code))) return false;
     return !active.length || passes(rowValues(i), active);
   });
 }

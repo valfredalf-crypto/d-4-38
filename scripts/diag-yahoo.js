@@ -15,7 +15,13 @@ if (process.env.SYMBOLS) {
     console.log('\n###', sym, inst.type, inst.name, '\nfondamentali:', JSON.stringify(f));
     let lt = null;
     if (inst.type === 'etf') {
-      const comp = await holdings(sym).catch(() => null);
+      let comp = await holdings(sym).catch(() => null);
+      const { expandFundOfFunds } = await import('../lib/snapshot.js');
+      const ex = comp ? await expandFundOfFunds(comp, (x) => holdings(x)) : null;
+      if (ex) {
+        console.log('  fondo di fondi: scomposti', ex.fundsExpanded, 'di', ex.fundsTotal, 'fondi partecipati →', ex.holdings.length, 'titoli');
+        comp = { ...ex, holdings: ex.holdings.slice(0, 25) };
+      }
       if (comp?.holdings?.length) {
         lt = { ...comp, holdings: [] };
         for (const h of comp.holdings) {

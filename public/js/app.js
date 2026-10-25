@@ -1354,11 +1354,15 @@ function stressTable({ beta, netCagr, capital, betaNote = '', profile = null }) 
 function loadPortfolio() {
   try {
     const p = JSON.parse(localStorage.getItem('trmc.portfolio') || 'null');
-    if (p?.rows?.length) return p;
+    if (p?.rows?.length) {
+      p.stocks = Array.isArray(p.stocks) ? p.stocks : [];
+      p.bonds = Array.isArray(p.bonds) ? p.bonds : [];
+      return p;
+    }
   } catch {
     /* niente */
   }
-  return JSON.parse(JSON.stringify(GEMINI_PORTFOLIO));
+  return { ...JSON.parse(JSON.stringify(GEMINI_PORTFOLIO)), stocks: [], bonds: [] };
 }
 function savePortfolio(p) {
   try {
@@ -1385,12 +1389,12 @@ function renderPortfolio() {
       const pp = inst && r && !r.error ? projParams(inst, r) : null;
       const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
       return `<tr data-k="${k}">
-        <td><input data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
-        <td class="num"><input data-f="weight" type="number" step="1" min="0" value="${pcIn(row.weight, 1)}" size="4"> %</td>
-        <td class="num"><input data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
-        <td class="num"><input data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
-        <td class="num"><input data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
-        <td class="num"><input data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
+        <td><input data-bucket="rows" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
+        <td class="num"><input data-bucket="rows" data-f="weight" type="number" step="1" min="0" value="${pcIn(row.weight, 1)}" size="4"> %</td>
+        <td class="num"><input data-bucket="rows" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
+        <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
+        <td class="num"><input data-bucket="rows" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-bucket="rows" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
+        <td class="num"><input data-bucket="rows" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="rows" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
         ${(() => {
           // Guadagno netto atteso della quota: algoritmo 019 sui parametri della riga, per orizzonte, × (1 − MDD)
           const quota = p.capital * ((row.weight || 0) / (wSum || 1));
@@ -1404,7 +1408,7 @@ function renderPortfolio() {
           return `<td class="num">${eur(Math.round(quota))}</td><td class="num">${cells.join('')}</td>`;
         })()}
         <td class="num">${kn != null ? `<span class="${cls(kn)}">${kn > 0 ? '+' : ''}${pct(kn, false)}</span>` : '<span class="muted">–</span>'}</td>
-        <td><button class="ghost small" data-del="${k}" aria-label="Rimuovi">✕</button></td>
+        <td><button class="ghost small" data-bucket="rows" data-del="${k}" aria-label="Rimuovi">✕</button></td>
       </tr>`;
     })
     .join('');
@@ -1420,6 +1424,52 @@ function renderPortfolio() {
     rho,
   );
   const profile = rk ? classifyPortfolio({ vol: rk.vol, mdd: rk.mdd }) : null;
+  // Sezione €: azioni / bond con importo in euro diretto (non percentuale), stesso algoritmo 019
+  const amountSection = (bucket, title, hint) => {
+    const arr = p[bucket] || [];
+    const cap = arr.reduce((a, r) => a + (r.amount || 0), 0);
+    const rowsH = arr
+      .map((row, k) => {
+        const inst = findByCode(row.isin);
+        const r = inst ? state.results[inst.symbol] : null;
+        const pp = inst && r && !r.error ? projParams(inst, r) : null;
+        const prm = Number.isFinite(row.cagr) ? { cagr: row.cagr, ter: Number.isFinite(row.ter) ? row.ter : 0, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - (Number.isFinite(row.ter) ? row.ter : 0) } : null;
+        const gain = row.amount > 0 && prm
+          ? years.map((y) => {
+              const h = project(prm, row.amount, y);
+              const adj = Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
+              return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${y}a</span></div>${adj != null ? `<div class="muted small-note">netto atteso ${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</div>` : ''}`;
+            }).join('')
+          : '<span class="muted">–</span>';
+        return `<tr data-bucket="${bucket}" data-k="${k}">
+          <td><input data-bucket="${bucket}" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 46) : row.isin ? '<span class="neg">non in elenco: parametri a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
+          <td class="num"><input data-bucket="${bucket}" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €</td>
+          <td class="num"><input data-bucket="${bucket}" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
+          <td class="num"><input data-bucket="${bucket}" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="${bucket}" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
+          <td class="num"><input data-bucket="${bucket}" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %</td>
+          <td class="num"><input data-bucket="${bucket}" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="${bucket}" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
+          <td class="num">${gain}</td>
+          <td><button class="ghost small" data-bucket="${bucket}" data-del="${k}" aria-label="Rimuovi">✕</button></td>
+        </tr>`;
+      })
+      .join('');
+    const og = cap > 0 ? projectPortfolio({ rows: arr.map((r) => ({ ...r, weight: r.amount || 0 })), capital: cap, years }) : null;
+    const grk = cap > 0 ? portfolioRisk(arr.map((r) => { const inst = findByCode(r.isin); const res = inst ? state.results[inst.symbol] : null; return { weight: r.amount || 0, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null }; }), rho) : null;
+    const prof = grk ? classifyPortfolio({ vol: grk.vol, mdd: grk.mdd }) : null;
+    return `<h3 style="margin-top:24px">${title}</h3>
+      <p class="muted small-note">${hint} Stesso algoritmo 019; qui l'importo da investire si indica in euro, non in percentuale. Totale investito: <b>${eur(Math.round(cap))}</b>.</p>
+      <div style="margin:8px 0"><button class="ghost small" data-addbucket="${bucket}">+ Strumento</button></div>
+      <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo €</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num">MDD storico</th><th class="num">Guadagno netto atteso</th><th></th></tr></thead><tbody>${rowsH}</tbody></table></div>
+      ${og ? `<table class="mini"><tbody>
+        <tr><td>CAGR lordo atteso (ponderato per importo)</td><td class="num">${pct(og.params.cagr, false, 2)}</td></tr>
+        <tr><td>CAGR netto pre-tasse (CAGR − TER)</td><td class="num"><b>${pct(og.params.net, false, 2)}</b></td></tr>
+        <tr><td>Aliquota fiscale ponderata</td><td class="num">${pct(og.params.tax, false, 2)}</td></tr>
+        ${prof ? `<tr><td>Tipo</td><td class="num"><b>${prof.label}</b></td></tr>` : ''}
+        ${grk ? `<tr><td>MDD<sub>p</sub> (drawdown storico ponderato)</td><td class="num neg">−${pct(grk.mdd, false, 1)}</td></tr>` : ''}
+        ${grk && grk.vol != null ? `<tr><td>Volatilità attesa σ<sub>p</sub></td><td class="num">${pct(grk.vol, false, 1)} annua</td></tr>` : ''}
+        ${og.horizons.map((h) => `<tr><th>Guadagno netto ${h.years}a (${pct(h.netPct, true)})</th><th class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${fmt(h.netGain)}${grk ? ` · CAGR netto atteso ${h.netGain * (1 - grk.mdd) > 0 ? '+' : ''}${fmt(h.netGain * (1 - grk.mdd))}` : ''}</th></tr>`).join('')}
+      </tbody></table>` : `<p class="muted">Inserisci almeno uno strumento con importo e CAGR.</p>`}`;
+  };
   // Confronto: NR5 del modello, ponderato con gli stessi pesi (solo righe presenti in elenco con stima)
   let nr5W = 0;
   let nr5Cov = 0;
@@ -1437,7 +1487,7 @@ function renderPortfolio() {
     <div class="row" style="flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0">
       <label>Capitale <input id="pf-capital" type="number" step="100" min="0" value="${p.capital}" size="7"> €</label>
       <label>Orizzonti <input id="pf-y1" type="number" min="1" max="40" value="${years[0]}" size="2"> e <input id="pf-y2" type="number" min="1" max="40" value="${years[1] ?? 7}" size="2"> anni</label>
-      <button id="pf-add" class="ghost small">+ Strumento</button>
+      <button class="ghost small" data-addbucket="rows">+ Strumento (ETF, a %)</button>
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
     </div>
@@ -1530,9 +1580,13 @@ function renderPortfolio() {
     })()}
     <h3>Confronto con la simulazione</h3>
     <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}
+    ${amountSection('stocks', 'Azioni (importi in €)', 'Azioni singole da inserire separatamente dagli ETF.')}
+    ${amountSection('bonds', 'Bond (importi in €)', 'Obbligazionari e monetari da inserire separatamente.')}
   `;
-  const upd = (k, f, v) => {
-    const row = p.rows[k];
+  const bucketOf = (name) => (name === 'stocks' ? (p.stocks ||= []) : name === 'bonds' ? (p.bonds ||= []) : p.rows);
+  const upd = (bucket, k, f, v) => {
+    const arr = bucketOf(bucket);
+    const row = arr[k];
     if (!row) return;
     if (f === 'isin') {
       row.isin = v.trim().toUpperCase();
@@ -1556,41 +1610,47 @@ function renderPortfolio() {
         row.cagr = null;
         row.mdd = null;
       }
+    } else if (f === 'amount') {
+      const n = parseFloat(String(v).replace(',', '.'));
+      row.amount = Number.isFinite(n) ? Math.max(0, n) : null;
     } else {
       const n = parseFloat(String(v).replace(',', '.'));
       row[f] = Number.isFinite(n) ? n / 100 : null;
     }
     savePortfolio(p);
   };
-  for (const inp of $$('#pf-body tbody input')) {
+  for (const inp of $$('#pf-body [data-bucket][data-f]')) {
     const k = +inp.closest('tr').dataset.k;
     inp.addEventListener('change', (e) => {
-      upd(k, e.target.dataset.f, e.target.value);
+      upd(e.target.dataset.bucket, k, e.target.dataset.f, e.target.value);
       renderPortfolio();
     });
   }
-  for (const b of $$('#pf-body [data-use]')) b.addEventListener('click', () => {
-    p.rows[+b.dataset.k][b.dataset.use] = +b.dataset.v;
+  for (const b of $$('#pf-body [data-use][data-bucket]')) b.addEventListener('click', () => {
+    bucketOf(b.dataset.bucket)[+b.dataset.k][b.dataset.use] = +b.dataset.v;
     savePortfolio(p);
     renderPortfolio();
   });
-  for (const b of $$('#pf-body [data-del]')) b.addEventListener('click', () => {
-    p.rows.splice(+b.dataset.del, 1);
+  for (const b of $$('#pf-body [data-del][data-bucket]')) b.addEventListener('click', () => {
+    bucketOf(b.dataset.bucket).splice(+b.dataset.del, 1);
     savePortfolio(p);
     renderPortfolio();
   });
-  $('#pf-add').addEventListener('click', () => {
-    p.rows.push({ isin: '', name: '', weight: 0, ter: 0.002, cagr: null, tax: 0.26, mdd: null });
+  for (const b of $$('#pf-body [data-addbucket]')) b.addEventListener('click', () => {
+    const bk = b.dataset.addbucket;
+    if (bk === 'rows') p.rows.push({ isin: '', name: '', weight: 0, ter: 0.002, cagr: null, tax: 0.26, mdd: null });
+    else bucketOf(bk).push({ isin: '', name: '', amount: null, ter: bk === 'stocks' ? 0 : 0.002, cagr: null, tax: 0.26, mdd: null });
     savePortfolio(p);
     renderPortfolio();
   });
   $('#pf-preset').addEventListener('click', () => {
-    state.portfolio = JSON.parse(JSON.stringify(GEMINI_PORTFOLIO));
+    // Il preset riguarda la parte ETF (a %): le sezioni Azioni e Bond in euro restano invariate.
+    state.portfolio = { ...JSON.parse(JSON.stringify(GEMINI_PORTFOLIO)), stocks: p.stocks || [], bonds: p.bonds || [] };
     savePortfolio(state.portfolio);
     renderPortfolio();
   });
   $('#pf-model').addEventListener('click', () => {
-    for (const row of p.rows) {
+    for (const row of [...p.rows, ...(p.stocks || []), ...(p.bonds || [])]) {
       const inst = findByCode(row.isin);
       const r = inst ? state.results[inst.symbol] : null;
       const pp = inst && r && !r.error ? projParams(inst, r) : null;

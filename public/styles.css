@@ -276,3 +276,6 @@ table.mini .num { white-space: nowrap; }
 .pf-type.pf-bilanciato { border-left: 4px solid #c2a000; }
 .pf-type.pf-dinamico { border-left: 4px solid #d87f1e; }
 .pf-type.pf-speculativo { border-left: 4px solid #d33; }
+
+/* Nel pannello portafoglio le tabelle sono corte: niente altezza minima della tabella principale */
+#pf-body .table-wrap { min-height: 0; max-height: none; }

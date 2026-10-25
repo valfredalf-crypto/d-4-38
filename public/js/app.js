@@ -1344,7 +1344,7 @@ function renderPortfolio() {
       const pp = inst && r && !r.error ? projParams(inst, r) : null;
       const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
       return `<tr data-k="${k}">
-        <td><input data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) : 'non in elenco'}</div></td>
+        <td><input data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
         <td class="num"><input data-f="weight" type="number" step="1" min="0" value="${pcIn(row.weight, 1)}" size="4"> %</td>
         <td class="num"><input data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
         <td class="num"><input data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
@@ -1456,7 +1456,25 @@ function renderPortfolio() {
     if (f === 'isin') {
       row.isin = v.trim().toUpperCase();
       const inst = findByCode(row.isin);
-      if (inst) row.name = inst.name;
+      if (inst) {
+        row.name = inst.name;
+        // Nuovo strumento: CAGR atteso, TER, aliquota e MDD storico dal modello (l'utente può poi correggerli)
+        const r = state.results[inst.symbol];
+        const pp = r && !r.error ? projParams(inst, r) : null;
+        if (pp) {
+          row.cagr = pp.cagr;
+          row.tax = pp.tax;
+          row.ter = pp.ter;
+          row.mdd = pp.mdd ?? null;
+        } else {
+          row.cagr = null;
+          row.mdd = null;
+        }
+      } else {
+        row.name = '';
+        row.cagr = null;
+        row.mdd = null;
+      }
     } else {
       const n = parseFloat(String(v).replace(',', '.'));
       row[f] = Number.isFinite(n) ? n / 100 : null;

@@ -259,6 +259,7 @@ async function checkNewData() {
   }
   updateStaticBanner(meta);
   render();
+  if ($('#portfolio')?.open && !$('#pf-body')?.contains(document.activeElement)) renderPortfolio(); // nuovi dati: aggiorna le stime (non mentre si digita)
 }
 
 // Versione online: quotazioni e previsioni aggiornate ogni ~5 minuti in orario di borsa
@@ -326,6 +327,7 @@ async function liveTick() {
       await liveCrypto().catch(() => {});
       updateStaticBanner({ generatedAt: state.dataVersion });
       render();
+      if ($('#portfolio')?.open && !$('#pf-body')?.contains(document.activeElement)) renderPortfolio(); // aggiorna le stime del portafoglio (non mentre si digita)
     } else {
       await refreshQuotes(visibleSymbols());
     }
@@ -1381,6 +1383,23 @@ function findByCode(code) {
 }
 function renderPortfolio() {
   const p = state.portfolio;
+  // Le stime prese dal modello si aggiornano quando i dati vengono ricalcolati; i valori modificati a mano
+  // (elencati in row.manual) restano. Così «aggiorna dati» aggiorna anche le stime del portafoglio.
+  let pfChanged = false;
+  const syncRow = (row, isStock) => {
+    if (!row || !row.isin) return;
+    const inst = findByCode(row.isin);
+    const r = inst ? state.results[inst.symbol] : null;
+    const pp = inst && r && !r.error ? projParams(inst, r, isStock) : null;
+    if (!pp) return;
+    const man = row.manual || [];
+    const set = (f, v) => { if (v != null && !man.includes(f) && row[f] !== v) { row[f] = v; pfChanged = true; } };
+    set('cagr', pp.cagr); set('ter', pp.ter); set('tax', pp.tax); set('mdd', pp.mdd);
+  };
+  for (const row of p.rows) syncRow(row, false);
+  for (const row of p.stocks || []) syncRow(row, true);
+  for (const row of p.bonds || []) syncRow(row, false);
+  if (pfChanged) savePortfolio(p);
   const body = $('#pf-body');
   const pcIn = (v, d = 2) => (Number.isFinite(v) ? String(+(v * 100).toFixed(d)) : ''); // input numerici: punto decimale
   const years = Array.from(new Set([Number(p.years?.[0]) || 5, Number(p.years?.[1]) || 7])).filter((y) => y > 0);
@@ -1639,6 +1658,7 @@ function renderPortfolio() {
         // Per le azioni si usa il CAGR fondamentale forward (prospettive di crescita aggiornate, metodo Gemini).
         const r = state.results[inst.symbol];
         const pp = r && !r.error ? projParams(inst, r, bucket === 'stocks') : null;
+        row.manual = []; // nuovo strumento: tutte le stime seguono il modello
         if (pp) {
           row.cagr = pp.cagr;
           row.tax = pp.tax;
@@ -1659,6 +1679,7 @@ function renderPortfolio() {
     } else {
       const n = parseFloat(String(v).replace(',', '.'));
       row[f] = Number.isFinite(n) ? n / 100 : null;
+      row.manual = Array.from(new Set([...(row.manual || []), f])); // valore inserito a mano: non più sovrascritto dal modello
     }
     savePortfolio(p);
   };
@@ -1670,7 +1691,9 @@ function renderPortfolio() {
     });
   }
   for (const b of $$('#pf-body [data-use][data-bucket]')) b.addEventListener('click', () => {
-    bucketOf(b.dataset.bucket)[+b.dataset.k][b.dataset.use] = +b.dataset.v;
+    const row = bucketOf(b.dataset.bucket)[+b.dataset.k];
+    row[b.dataset.use] = +b.dataset.v;
+    row.manual = (row.manual || []).filter((f) => f !== b.dataset.use); // torna a seguire il modello
     savePortfolio(p);
     renderPortfolio();
   });
@@ -1689,12 +1712,14 @@ function renderPortfolio() {
   $('#pf-preset').addEventListener('click', () => {
     // Il preset riguarda la parte ETF (a %): le sezioni Azioni e Bond in euro restano invariate.
     state.portfolio = { ...JSON.parse(JSON.stringify(GEMINI_PORTFOLIO)), stocks: p.stocks || [], bonds: p.bonds || [] };
+    for (const row of state.portfolio.rows) row.manual = ['cagr', 'ter', 'tax', 'mdd']; // valori del documento: fissi finché non si usa «Usa stime del modello»
     savePortfolio(state.portfolio);
     renderPortfolio();
   });
   $('#pf-model').addEventListener('click', () => {
     const inStocks = new Set(p.stocks || []);
     for (const row of [...p.rows, ...(p.stocks || []), ...(p.bonds || [])]) {
+      row.manual = []; // d'ora in poi segue sempre il modello
       const inst = findByCode(row.isin);
       const r = inst ? state.results[inst.symbol] : null;
       const pp = inst && r && !r.error ? projParams(inst, r, inStocks.has(row)) : null;

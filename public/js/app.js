@@ -673,6 +673,7 @@ function render() {
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)}<span class="xl"> · netto 019 ${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} € (${pct(r.proj019, true)})${r.histMdd != null ? ` × (1 − <span class="neg">MDD storico ${pct(r.histMdd, false, 0)}</span>)` : ''} · CAGR atteso ${pct(r.cagr, false)} = ${r.cagr > 0 ? '+' : ''}${Math.round(r.cagr * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €/anno</span></span>`}</td>
         <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
+        <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
         <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)} · media ${pct(r.netMean, true)} − ${fracLabel(nr5Weight(r.inst.type))} × ${pct(r.es5)} (estremi attenuati)</span>`}</td>
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
@@ -685,7 +686,6 @@ function render() {
         <td class="num ${cls(r.varM3)}">${pct(r.varM3, true)}</td>
         <td class="num ${cls(r.varY)}">${pct(r.varY, true)}</td>
         <td class="num ${cls(r.expected)}">${pct(r.expected, true)}</td>
-        <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
         <td class="num neg">${r.maxLoss != null ? '−' + pct(r.maxLoss) + eurAmt(-r.maxLoss) : '–'}</td>
         <td class="num neg">${r.mddMedian != null ? '−' + pct(r.mddMedian) + eurAmt(-r.mddMedian) : '–'}</td>
         <td class="num ${cls(r.netGain)}">${pct(r.netGain, true)}${eurAmt(r.netGain)}</td>

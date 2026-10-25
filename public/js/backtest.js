@@ -66,6 +66,12 @@ export function backtestOne({ instrument, history, benchmark, cryptoBenchmark },
         const g = (1 + fwd.expected - ter) ** (horizon / WEEKS_PER_YEAR) - 1;
         return g > 0 ? g * (1 - (sim.taxRate ?? 26) / 100) : g;
       })()),
+      // Indicatore principale: netto 019 − MDD storico (conosciuto a T0)
+      proj019Mdd: r4((() => {
+        const ter = instrument.type === 'etf' ? 0.002 : 0;
+        const g = (1 + fwd.expected - ter) ** (horizon / WEEKS_PER_YEAR) - 1;
+        return (g > 0 ? g * (1 - (sim.taxRate ?? 26) / 100) : g) - (sim.historicalMdd ?? 0);
+      })()),
       ratio: r4(sim.ratio),
       vol: r4(sim.annualVol),
       expected: r4(fwd.expected),
@@ -154,6 +160,7 @@ export function summarize(rows) {
       aboveMedian: r4(share(rows, (r) => r.real.net > r.pred.netMedian)), // atteso ≈ 50%
       medianRankCorr: r4(spearman(rows.map((r) => r.pred.netMedian), rows.map((r) => r.real.net))),
       proj019RankCorr: r4(spearman(rows.map((r) => r.pred.proj019), rows.map((r) => r.real.net))),
+      proj019MddRankCorr: r4(spearman(rows.map((r) => r.pred.proj019Mdd), rows.map((r) => r.real.net))),
       nr5RankCorr: r4(spearman(rows.map((r) => r.pred.nr5), rows.map((r) => r.real.net))),
       realNetMedian: r4(median(rows.map((r) => r.real.net))),
       predNetMedian: r4(median(rows.map((r) => r.pred.netMedian))),
@@ -161,6 +168,7 @@ export function summarize(rows) {
     byRatio: quintiles(rows, (r) => r.pred.ratio, 'low'),
     byMedian: quintiles(rows, (r) => r.pred.netMedian, 'high'),
     byProj019: quintiles(rows, (r) => r.pred.proj019, 'high'),
+    byProj019Mdd: quintiles(rows, (r) => r.pred.proj019Mdd, 'high'),
     probLoss: pl.filter((b) => b.n > 0),
   };
 }

@@ -1,7 +1,9 @@
 // Filtri sugli indicatori (min/max). I valori percentuali si inseriscono in punti percentuali
 // (es. 40 = 40%); la perdita massima si indica come numero positivo (40 = perdita fino al 40%).
 export const INDICATORS = [
-  { key: 'proj', label: 'Guadagno netto 5a (algoritmo 019: CAGR − TER, imposta)', pct: true },
+  { key: 'proj', label: 'Netto 019 − MDD storico 5a (indicatore principale)', pct: true },
+  { key: 'proj019', label: 'Guadagno netto 5a (algoritmo 019: CAGR − TER, imposta)', pct: true },
+  { key: 'cagr', label: 'CAGR atteso annuo (modulo 1)', pct: true },
   { key: 'histMdd', label: 'MDD storico (modulo 4)', pct: true },
   { key: 'overall', label: 'Netto Reale 5A (NR5)', pct: true },
   { key: 'es5', label: 'Perdita media nel 5% peggiore degli scenari', pct: true },
@@ -41,7 +43,8 @@ export const INDICATORS = [
 ];
 
 export const PRESETS = [
-  { label: 'Netto 019 > 30%', filters: { proj: { min: 30 } } },
+  { label: 'Netto 019 − MDD > 10%', filters: { proj: { min: 10 } } },
+  { label: 'CAGR atteso > 8%', filters: { cagr: { min: 8 } } },
   { label: 'NR5 > 20%', filters: { overall: { min: 20 } } },
   { label: 'Sortino > 1', filters: { sortino: { min: 1 } } },
   { label: 'Rapporto < 1', filters: { ratio: { max: 1 } } },

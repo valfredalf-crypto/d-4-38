@@ -2,7 +2,7 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
-import { project, projectPortfolio, portfolioRisk, stressTest, GEMINI_PORTFOLIO } from './projection.js';
+import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, GEMINI_PORTFOLIO } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -1323,11 +1323,13 @@ function exportCsv() {
 }
 
 /** Tabella «Valutazione del rischio»: stress test e tempo di recupero (sezione 5 del documento). */
-function stressTable({ beta, netCagr, capital, betaNote = '' }) {
+function stressTable({ beta, netCagr, capital, betaNote = '', profile = null }) {
   const rows = stressTest({ beta, netCagr, capital });
   const months = (m) => (m == null ? '<span class="neg">nessun recupero con questo CAGR</span>' : m === 0 ? '–' : `≈ ${Math.round(m)} mesi`);
+  // L'azione operativa sul bear market si adatta al tipo di portafoglio (prudente → speculativo)
+  const sopFor = (x) => (profile?.bear && x.market >= 0.3 ? profile.bear : x.sop);
   return `<table class="mini"><thead><tr><th>Evento di mercato</th><th class="num">Impatto (β ${nf2.format(rows[0].beta)}${betaNote})</th><th class="num">Capitale temporaneo</th><th class="num">Tempo di recupero</th><th>Azione operativa</th></tr></thead><tbody>${rows
-    .map((x) => `<tr><td>${x.label} (mercato −${pct(x.market, false, 0)})</td><td class="num neg">−${pct(x.impact, false, 1)}</td><td class="num">${eur(Math.round(x.capitalAfter))}</td><td class="num">${months(x.recoveryMonths)}</td><td class="muted">${x.sop}</td></tr>`)
+    .map((x) => `<tr><td>${x.label} (mercato −${pct(x.market, false, 0)})</td><td class="num neg">−${pct(x.impact, false, 1)}</td><td class="num">${eur(Math.round(x.capitalAfter))}</td><td class="num">${months(x.recoveryMonths)}</td><td class="muted">${sopFor(x)}</td></tr>`)
     .join('')}</tbody></table>
   <p class="muted small-note">Impatto = β × calo del mercato. Tempo di recupero = mesi necessari a tornare al capitale iniziale componendo al CAGR netto pre-tasse (${pct(netCagr, false, 2)}): 12 × ln(1 ÷ (1 − impatto)) ÷ ln(1 + CAGR).</p>`;
 }
@@ -1401,6 +1403,7 @@ function renderPortfolio() {
     }),
     rho,
   );
+  const profile = rk ? classifyPortfolio({ vol: rk.vol, mdd: rk.mdd }) : null;
   // Confronto: NR5 del modello, ponderato con gli stessi pesi (solo righe presenti in elenco con stima)
   let nr5W = 0;
   let nr5Cov = 0;
@@ -1448,13 +1451,14 @@ function renderPortfolio() {
     <h3>Modulo 4: quantificazione del rischio</h3>
     ${(() => {
       if (!rk) return '';
-      return `<table class="mini"><tbody>
+      return `${profile ? `<p class="pf-type pf-${profile.type}">Tipo di portafoglio: <b>${profile.label}</b> <span class="muted">— ${profile.desc}</span></p>` : ''}
+      <table class="mini"><tbody>
         <tr><td>MDD<sub>p</sub> = Σ peso × MDD storico (${pct(rk.mddCoverage, false, 0)} del portafoglio con MDD)</td><td class="num neg"><b>−${pct(rk.mdd, false, 1)}</b></td></tr>
         <tr><td>Flessione massima teorica in una recessione severa su ${eur(p.capital)}</td><td class="num neg">−${eur(Math.round(p.capital * rk.mdd))} → capitale protetto ${eur(Math.round(p.capital * (1 - rk.mdd)))} (${pct(1 - rk.mdd, false, 0)})</td></tr>
         <tr><td>Volatilità attesa σ<sub>p</sub> con covarianza (ρ tra asset diversi <input id="pf-rho" type="number" step="0.05" min="-1" max="1" value="${rho}" style="width:4.5em">; σ dei singoli dal modello, ${pct(rk.volCoverage, false, 0)} del portafoglio)</td><td class="num">${rk.vol != null ? pct(rk.vol, false, 1) + ' annua' : '<span class="muted">n.d.</span>'}</td></tr>
       </tbody></table>`;
     })()}
-    <h3>Stress test e tempo di recupero (documento 018, sezione 5)</h3>
+    <h3>Stress test e tempo di recupero${profile ? ` — portafoglio ${profile.label.toLowerCase()}` : ''} (documento 018, sezione 5)</h3>
     ${(() => {
       let bw = 0;
       let unknown = 0;
@@ -1468,7 +1472,7 @@ function renderPortfolio() {
           unknown += row.weight / (wSum || 1);
         }
       }
-      return stressTable({ beta: bw, netCagr: out.params.net, capital: p.capital, betaNote: unknown > 0 ? `, β = 1 ipotizzato per il ${pct(unknown, false, 0)} non in elenco` : ' ponderato' });
+      return stressTable({ beta: bw, netCagr: out.params.net, capital: p.capital, betaNote: unknown > 0 ? `, β = 1 ipotizzato per il ${pct(unknown, false, 0)} non in elenco` : ' ponderato', profile });
     })()}
     <h3>Confronto con la simulazione</h3>
     <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}

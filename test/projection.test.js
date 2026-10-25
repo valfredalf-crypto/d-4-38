@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -45,4 +45,15 @@ test('stressTest: impatto proporzionale al beta e tempo di recupero al CAGR nett
   assert.ok(bear.recoveryMonths > 40 && bear.recoveryMonths < 60, String(bear.recoveryMonths));
   assert.equal(stressTest({ beta: 1, netCagr: -0.01, capital: 1000 })[0].recoveryMonths, null);
   assert.equal(stressTest({ beta: 0, netCagr: 0.03, capital: 1000 })[1].impact, 0);
+});
+
+test('classifyPortfolio: tipo dal rischio (volatilità o MDD)', () => {
+  assert.equal(classifyPortfolio({ vol: 0.05 }).type, 'prudente');
+  assert.equal(classifyPortfolio({ vol: 0.10 }).type, 'moderato');
+  assert.equal(classifyPortfolio({ vol: 0.135 }).type, 'bilanciato');
+  assert.equal(classifyPortfolio({ vol: 0.20 }).type, 'dinamico');
+  assert.equal(classifyPortfolio({ vol: 0.40 }).type, 'speculativo');
+  // senza volatilità ripiega sull'MDD (0,60 × 0,45 = 0,27 → dinamico/speculativo)
+  assert.equal(classifyPortfolio({ mdd: 0.60 }).type, 'speculativo');
+  assert.equal(classifyPortfolio({}), null);
 });

@@ -92,3 +92,23 @@ export function stressTest({ beta, netCagr, capital, shocks = STRESS_SHOCKS }) {
     return { ...sh, beta: b, impact, capitalAfter: after, recoveryMonths: months };
   });
 }
+
+/**
+ * Classifica il tipo di portafoglio dal rischio, per adattare la quantificazione del rischio e lo stress
+ * test. Usa la volatilità annua attesa σ_p (misura primaria); in mancanza ripiega sull'MDD storico
+ * ponderato (convertito in volatilità equivalente ≈ MDD × 0,45). Restituisce null senza né σ né MDD.
+ */
+export const PORTFOLIO_TYPES = [
+  { max: 0.07, type: 'prudente', label: 'Prudente', desc: 'Prevalenza di obbligazioni e strumenti a bassa oscillazione: cali contenuti e recupero rapido.', bear: 'Mantenere: il calo è contenuto e il recupero atteso è breve.' },
+  { max: 0.12, type: 'moderato', label: 'Moderato', desc: 'Mix equilibrato con una componente difensiva importante: oscillazioni medie.', bear: 'Mantenere: la componente difensiva limita il calo; recupero in genere entro pochi anni.' },
+  { max: 0.17, type: 'bilanciato', label: 'Bilanciato', desc: 'Esposizione azionaria prevalente ma diversificata: oscillazioni marcate, orizzonte pluriennale.', bear: 'Non vendere: sfruttare la flessibilità temporale; il recupero richiede alcuni anni.' },
+  { max: 0.25, type: 'dinamico', label: 'Dinamico / aggressivo', desc: 'Forte esposizione azionaria, spesso concentrata su settori o aree a crescita: cali ampi e recupero lungo.', bear: 'Non vendere, ma attendersi un recupero lungo: servono anni e nervi saldi.' },
+  { max: Infinity, type: 'speculativo', label: 'Molto aggressivo / speculativo', desc: 'Volatilità molto elevata (tecnologia concentrata, singole azioni, crypto): sono possibili perdite profonde e durature.', bear: 'Rischio di perdita anche permanente: valutare con attenzione la dimensione della posizione.' },
+];
+export function classifyPortfolio({ vol, mdd } = {}) {
+  const v = Number.isFinite(vol) ? vol : null;
+  const m = Number.isFinite(mdd) ? mdd : null;
+  const score = v != null ? v : m != null ? m * 0.45 : null;
+  if (score == null) return null;
+  return { ...PORTFOLIO_TYPES.find((t) => score < t.max), vol: v, mdd: m, score };
+}

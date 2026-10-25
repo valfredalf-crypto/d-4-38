@@ -268,3 +268,11 @@ table.mini .num { white-space: nowrap; }
 #pf-body input[data-f="isin"] { width: 9.5em; padding: 4px 6px; }
 #pf-body table.mini td { vertical-align: top; }
 #pf-body h3 { font-size: 15px; margin: 18px 0 8px; }
+
+/* Tipo di portafoglio (quantificazione del rischio) */
+.pf-type { margin: 4px 0 10px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
+.pf-type.pf-prudente { border-left: 4px solid #2e9e5b; }
+.pf-type.pf-moderato { border-left: 4px solid #4a9e2e; }
+.pf-type.pf-bilanciato { border-left: 4px solid #c2a000; }
+.pf-type.pf-dinamico { border-left: 4px solid #d87f1e; }
+.pf-type.pf-speculativo { border-left: 4px solid #d33; }

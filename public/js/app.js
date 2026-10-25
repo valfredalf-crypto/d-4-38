@@ -2,7 +2,7 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
-import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, GEMINI_PORTFOLIO } from './projection.js';
+import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, GEMINI_PORTFOLIO } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -1458,21 +1458,17 @@ function renderPortfolio() {
         <tr><td>Volatilità attesa σ<sub>p</sub> con covarianza (ρ tra asset diversi <input id="pf-rho" type="number" step="0.05" min="-1" max="1" value="${rho}" style="width:4.5em">; σ dei singoli dal modello, ${pct(rk.volCoverage, false, 0)} del portafoglio)</td><td class="num">${rk.vol != null ? pct(rk.vol, false, 1) + ' annua' : '<span class="muted">n.d.</span>'}</td></tr>
       </tbody></table>`;
     })()}
-    <h3>Stress test e tempo di recupero${profile ? ` — portafoglio ${profile.label.toLowerCase()}` : ''} (documento 018, sezione 5)</h3>
+    <h3>Stress test e tempo di recupero${profile ? ` — portafoglio ${profile.label.toLowerCase()}` : ''}</h3>
     ${(() => {
-      let bw = 0;
-      let unknown = 0;
-      for (const row of p.rows) {
-        if (!(row.weight > 0)) continue;
-        const inst = findByCode(row.isin);
-        const b = inst ? state.results[inst.symbol]?.forward?.beta : null;
-        if (Number.isFinite(b)) bw += (row.weight / (wSum || 1)) * b;
-        else {
-          bw += (row.weight / (wSum || 1)) * 1;
-          unknown += row.weight / (wSum || 1);
-        }
-      }
-      return stressTable({ beta: bw, netCagr: out.params.net, capital: p.capital, betaNote: unknown > 0 ? `, β = 1 ipotizzato per il ${pct(unknown, false, 0)} non in elenco` : ' ponderato', profile });
+      if (!rk) return '<p class="muted">Inserisci strumenti con volatilità o MDD per lo stress test.</p>';
+      const scen = portfolioStress({ vol: rk.vol, mdd: rk.mdd, netCagr: out.params.net, capital: p.capital });
+      if (!scen.length) return '<p class="muted">Volatilità e MDD del portafoglio non disponibili.</p>';
+      const months = (m) => (m == null ? '<span class="neg">nessun recupero con questo CAGR</span>' : m === 0 ? '–' : `≈ ${Math.round(m)} mesi`);
+      const bear = scen[scen.length - 1];
+      return `<table class="mini"><thead><tr><th>Scenario del portafoglio</th><th class="num">Calo</th><th class="num">Capitale residuo</th><th class="num">Tempo di recupero</th><th>Azione operativa</th></tr></thead><tbody>${scen
+        .map((x, k) => `<tr><td>${x.label}<div class="muted small-note">${x.note}</div></td><td class="num neg">−${pct(x.drop, false, 1)}</td><td class="num">${eur(Math.round(x.capitalAfter))}</td><td class="num">${months(x.recoveryMonths)}</td><td class="muted">${k === scen.length - 1 && profile?.bear ? profile.bear : k === 0 ? 'Nessuna azione: oscillazione fisiologica.' : 'Mantenere le posizioni.'}</td></tr>`)
+        .join('')}</tbody></table>
+      <p class="muted small-note">Gli scenari derivano dal rischio del portafoglio: σ<sub>p</sub> (volatilità attesa ${rk.vol != null ? pct(rk.vol, false, 1) : 'n.d.'}) e MDD<sub>p</sub> (drawdown massimo storico −${pct(rk.mdd, false, 1)}), ricalcolati da strumenti e pesi. Tempo di recupero = 12 × ln(1 ÷ (1 − calo)) ÷ ln(1 + CAGR netto ${pct(out.params.net, false, 2)}).</p>`;
     })()}
     <h3>Confronto con la simulazione</h3>
     <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}

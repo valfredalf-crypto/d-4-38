@@ -112,3 +112,29 @@ export function classifyPortfolio({ vol, mdd } = {}) {
   if (score == null) return null;
   return { ...PORTFOLIO_TYPES.find((t) => score < t.max), vol: v, mdd: m, score };
 }
+
+/**
+ * Stress test basato sul rischio effettivo del portafoglio (non su shock di mercato generici): gli scenari
+ * derivano dalla volatilità attesa σ_p e dal drawdown massimo storico MDD_p, entrambi calcolati dalla
+ * composizione (strumenti e pesi). Così gli scenari si ricalcolano quando cambia il portafoglio.
+ *   - Correzione: calo pari a 1 × σ_p
+ *   - Ribasso marcato: calo pari a 2 × σ_p (limitato all'MDD_p se disponibile e inferiore)
+ *   - Recessione severa: calo pari all'MDD_p (drawdown massimo storico ponderato)
+ * Per ogni scenario: capitale residuo e tempo di recupero in mesi al CAGR netto pre-tasse
+ * (12 × ln(1 / (1 − calo)) / ln(1 + CAGR)). Con CAGR ≤ 0 il recupero non avviene (null).
+ */
+export function portfolioStress({ vol, mdd, netCagr, capital }) {
+  const scen = [];
+  if (Number.isFinite(vol) && vol > 0) {
+    scen.push({ label: 'Correzione (−1σ)', drop: Math.min(0.99, vol), note: 'oscillazione ordinaria di un anno' });
+    scen.push({ label: 'Ribasso marcato (−2σ)', drop: Math.min(0.99, Number.isFinite(mdd) ? Math.min(2 * vol, Math.max(mdd, vol)) : 2 * vol), note: 'ribasso raro ma possibile' });
+  }
+  if (Number.isFinite(mdd) && mdd > 0) {
+    scen.push({ label: 'Recessione severa (MDD storico)', drop: Math.min(0.99, mdd), note: 'peggior crollo nello storico del portafoglio' });
+  }
+  return scen.map((sh) => {
+    const after = capital * (1 - sh.drop);
+    const months = netCagr > 0 && sh.drop > 0 ? (12 * Math.log(1 / (1 - sh.drop))) / Math.log(1 + netCagr) : sh.drop > 0 ? null : 0;
+    return { ...sh, capitalAfter: after, recoveryMonths: months };
+  });
+}

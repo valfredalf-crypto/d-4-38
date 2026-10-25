@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -56,4 +56,18 @@ test('classifyPortfolio: tipo dal rischio (volatilità o MDD)', () => {
   // senza volatilità ripiega sull'MDD (0,60 × 0,45 = 0,27 → dinamico/speculativo)
   assert.equal(classifyPortfolio({ mdd: 0.60 }).type, 'speculativo');
   assert.equal(classifyPortfolio({}), null);
+});
+
+test('portfolioStress: scenari derivati da σ_p e MDD_p del portafoglio', () => {
+  const r = portfolioStress({ vol: 0.12, mdd: 0.3, netCagr: 0.07, capital: 10000 });
+  assert.equal(r.length, 3);
+  assert.ok(Math.abs(r[0].drop - 0.12) < 1e-9); // 1σ
+  assert.ok(Math.abs(r[1].drop - 0.24) < 1e-9); // 2σ (< mdd)
+  assert.ok(Math.abs(r[2].drop - 0.30) < 1e-9); // MDD
+  assert.ok(Math.abs(r[2].capitalAfter - 7000) < 1e-6);
+  assert.ok(r[2].recoveryMonths > 50 && r[2].recoveryMonths < 70);
+  // senza volatilità: solo lo scenario MDD
+  assert.equal(portfolioStress({ mdd: 0.4, netCagr: 0.05, capital: 1000 }).length, 1);
+  // CAGR nullo: nessun recupero
+  assert.equal(portfolioStress({ vol: 0.1, netCagr: 0, capital: 1000 })[0].recoveryMonths, null);
 });

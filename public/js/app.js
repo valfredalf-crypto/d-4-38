@@ -1464,6 +1464,48 @@ function renderPortfolio() {
     </tbody></table>`,
       )
       .join('')}
+    ${(() => {
+      // Proiezioni separate per classe di strumento (azioni, ETF, bond), stesso algoritmo 019
+      const CLASSES = [
+        { key: 'stock', label: 'Azioni' },
+        { key: 'etf', label: 'ETF' },
+        { key: 'bond', label: 'Bond' },
+        { key: 'crypto', label: 'Crypto' },
+      ];
+      const classOf = (row) => {
+        const inst = findByCode(row.isin);
+        if (!inst) return 'altro';
+        if (isBond(inst)) return 'bond';
+        return inst.type || 'altro';
+      };
+      const groups = CLASSES.map((c) => {
+        const rows = p.rows.filter((row) => row.weight > 0 && Number.isFinite(row.cagr) && classOf(row) === c.key);
+        const gw = rows.reduce((a, r) => a + r.weight, 0);
+        return { ...c, rows, gw };
+      }).filter((g) => g.gw > 0);
+      if (groups.length < 2) return ''; // una sola classe: la proiezione aggregata basta
+      const row = (g) => {
+        const gCap = p.capital * (g.gw / (wSum || 1));
+        const og = projectPortfolio({ rows: g.rows.map((x) => ({ ...x })), capital: gCap, years });
+        if (!og) return '';
+        const grk = portfolioRisk(
+          g.rows.map((r) => {
+            const inst = findByCode(r.isin);
+            const res = inst ? state.results[inst.symbol] : null;
+            return { weight: r.weight, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null };
+          }),
+          Number.isFinite(p.rho) ? p.rho : 0.65,
+        );
+        const mdd = grk?.mdd ?? 0;
+        const cells = og.horizons
+          .map((h) => `<td class="num ${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${fmt(h.netGain)}</b> <span class="muted">${h.years}a</span>${mdd ? `<div class="muted small-note">netto atteso ${h.netGain * (1 - mdd) > 0 ? '+' : ''}${fmt(h.netGain * (1 - mdd))}</div>` : ''}</td>`)
+          .join('');
+        return `<tr><td><b>${g.label}</b><div class="muted small-note">${pct(g.gw / (wSum || 1), false, 0)} del portafoglio${mdd ? ` · MDD ${pct(mdd, false, 0)}` : ''}</div></td><td class="num">${eur(Math.round(gCap))}</td><td class="num">${pct(og.params.cagr, false, 2)} − TER ${pct(og.params.ter, false, 2)}</td>${cells}</tr>`;
+      };
+      return `<h3>Proiezioni per classe di strumento (stesso algoritmo)</h3>
+      <table class="mini"><thead><tr><th>Classe</th><th class="num">Quota</th><th class="num">CAGR lordo</th>${years.map((y) => `<th class="num">Guadagno netto ${y}a</th>`).join('')}</tr></thead><tbody>${groups.map(row).join('')}</tbody></table>
+      <p class="muted small-note">Ogni classe usa lo stesso algoritmo 019 (CAGR atteso − TER, montante composto, imposta sulla plusvalenza) sulla quota di capitale che le spetta; «netto atteso» applica l'MDD storico ponderato della classe.</p>`;
+    })()}
     <h3>Modulo 4: quantificazione del rischio</h3>
     ${(() => {
       if (!rk) return '';

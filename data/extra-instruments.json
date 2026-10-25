@@ -5,5 +5,12 @@
   "name": "Vanguard LifeStrategy 80% Equity UCITS ETF (EUR) Accumulating",
   "type": "etf",
   "addedAt": "2026-10-23T04:49:37.909Z"
+ },
+ {
+  "symbol": "ZPDH.DE",
+  "isin": "IE00BWBXM617",
+  "name": "State Street SPDR S&P U.S. Health Care Select Sector UCITS ETF",
+  "type": "etf",
+  "addedAt": "2026-10-25T12:20:20.408Z"
  }
 ]

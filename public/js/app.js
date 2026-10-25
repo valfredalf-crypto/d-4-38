@@ -2,6 +2,7 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
+import { project, projectPortfolio, GEMINI_PORTFOLIO } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -500,6 +501,23 @@ export const NR5_MODES = {
 };
 const nr5Weight = (type) => (NR5_MODES[state.view.nr5Mode] || NR5_MODES.std)[type === 'stock' ? 'stock' : 'etf'];
 const fracLabel = (k) => ({ 0.5: '½', 0.25: '¼', 1: '1', 2: '2' })[k] || (Math.abs(k - 1 / 3) < 1e-9 ? '⅓' : Math.abs(k - 1 / 6) < 1e-9 ? '⅙' : String(k));
+// Proiezione deterministica (algoritmo del documento PRJ-FIN-2026-018), applicata a ogni strumento:
+// CAGR lordo = rendimento annuo atteso dal modello; TER 0,20% per gli ETF (0 per azioni e crypto, che non
+// hanno costi di gestione); aliquota = quella effettiva dello strumento (26%, 12,5% sulla quota di titoli
+// di Stato); montante composto sugli anni dell'orizzonte, imposta sulla plusvalenza, nessun credito se in perdita.
+const DEFAULT_TER = { etf: 0.002, stock: 0, crypto: 0 };
+function projParams(i, r) {
+  const cagr = r?.forward?.expected;
+  if (!Number.isFinite(cagr)) return null;
+  const tax = Number.isFinite(r?.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
+  const ter = DEFAULT_TER[i.type] ?? 0;
+  return { cagr, ter, tax, net: cagr - ter };
+}
+function projOf(i, r) {
+  const pp = projParams(i, r);
+  if (!pp) return null;
+  return project(pp, state.settings.mc.amount || 10000, state.settings.mc.years || 5);
+}
 /** NR5 ricalcolato secondo il profilo scelto: guadagno netto medio (estremi attenuati) − k × perdita media nel 5% peggiore. */
 function nr5Of(sim, type) {
   if (!sim) return null;
@@ -513,6 +531,8 @@ function rowValues(i) {
   const v = {
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
     plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
+    // Proiezione deterministica netta (CAGR composto − TER, imposta sulla plusvalenza), in frazione del capitale
+    proj: r && !r.error ? projOf(i, r)?.netPct ?? null : null,
     // Netto Reale 5A (NR5): la classifica predefinita
     overall: nr5Of(sim, i.type),
     es5: sim?.es5 ?? null,
@@ -638,6 +658,7 @@ function render() {
           if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)} · CAGR ${pct(state.results[i.symbol]?.forward?.expected, false)} − TER ${pct(DEFAULT_TER[i.type] ?? 0, false, 2)}</span>`}</td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
         <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)} · media ${pct(r.netMean, true)} − ${fracLabel(nr5Weight(r.inst.type))} × ${pct(r.es5)} (estremi attenuati)</span>`}</td>
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
@@ -757,6 +778,9 @@ function renderDetail(inst, r, d) {
   const amt = s.mc.amount;
   const nr5 = nr5Of(sim, inst.type);
   const kNr5 = nr5Weight(inst.type);
+  const pp = projParams(inst, r);
+  const pj = projOf(inst, r);
+  const pj7 = pp ? project(pp, amt, 7) : null;
   const comp = f?.components || {};
   const w = f?.weights || {};
   const compRow = (label, key, note) =>
@@ -765,6 +789,7 @@ function renderDetail(inst, r, d) {
   $('#d-body').innerHTML = `
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
+      ${pj ? `<div class="kpi kpi-main"><div class="k">Proiezione netta CAGR ${s.mc.years}a su ${eur(amt)}</div><div class="v ${cls(pj.netGain)}">${pj.netGain > 0 ? '+' : ''}${Math.round(pj.netGain).toLocaleString('it-IT')} €</div><div class="h">${eur(amt)} × (1 + ${pct(pp.cagr, false, 2)} − TER ${pct(pp.ter, false, 2)})^${s.mc.years} = ${eur(Math.round(pj.gross))}; plusvalenza ${eur(Math.round(pj.gain))} − imposta ${pct(pp.tax, false, 1)} ${eur(Math.round(pj.tax))} · a 7 anni: <b>${pj7.netGain > 0 ? '+' : ''}${Math.round(pj7.netGain).toLocaleString('it-IT')} €</b> · metodo deterministico: nessun rischio di perdita considerato</div></div>` : ''}
       ${nr5 != null ? `<div class="kpi kpi-main"><div class="k">Netto Reale 5A (NR5) su ${eur(amt)}</div><div class="v ${cls(nr5)}">${nr5 > 0 ? '+' : ''}${Math.round(nr5 * amt).toLocaleString('it-IT')} €</div><div class="h">guadagno netto medio ${pct(sim.netMean, true)} − ${fracLabel(kNr5)} × perdita media nel 5% peggiore ${pct(sim.es5)} · profilo: ${(NR5_MODES[state.view.nr5Mode] || NR5_MODES.std).label} · netto vero per scenario: tasse italiane, bollo, commissioni e spread</div></div>` : ''}
       ${sim.ce1 != null ? `<div class="kpi"><div class="k">Guadagno netto efficiente ${s.mc.years}a</div><div class="v ${cls(sim.ce?.['0.5'] ?? sim.ce1)}">${(sim.ce?.['0.5'] ?? sim.ce1) > 0 ? '+' : ''}${Math.round((sim.ce?.['0.5'] ?? sim.ce1) * amt).toLocaleString('it-IT')} €</div><div class="h">equivalente certo tarato sul backtest (γ=0,5: ${sim.ce?.['0.5'] != null ? pct(sim.ce['0.5'], true) : '–'}) · Kelly: <b>${sim.ce1 > 0 ? '+' : ''}${Math.round(sim.ce1 * amt).toLocaleString('it-IT')} €</b> · se accetti tutto il rischio (media): <b>${sim.netMean > 0 ? '+' : ''}${Math.round(sim.netMean * amt).toLocaleString('it-IT')} €</b> · se sei prudente: <b>${sim.ce3 > 0 ? '+' : ''}${Math.round(sim.ce3 * amt).toLocaleString('it-IT')} €</b>${f?.fundamentalsDetail?.evidence != null ? ` · crescita confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)}` : ''}</div></div>` : ''}
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
@@ -1243,9 +1268,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Crescita utili attesa', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'Proiezione netta CAGR 5a', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Crescita utili attesa', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.growthExp), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.proj), num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.growthExp), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -1253,6 +1278,170 @@ function exportCsv() {
   a.download = `classifica-tr-montecarlo-${new Date().toISOString().slice(0, 10)}.csv`;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+// ---------- proiezione di portafoglio (algoritmo deterministico del documento PRJ-FIN-2026-018)
+function loadPortfolio() {
+  try {
+    const p = JSON.parse(localStorage.getItem('trmc.portfolio') || 'null');
+    if (p?.rows?.length) return p;
+  } catch {
+    /* niente */
+  }
+  return JSON.parse(JSON.stringify(GEMINI_PORTFOLIO));
+}
+function savePortfolio(p) {
+  try {
+    localStorage.setItem('trmc.portfolio', JSON.stringify(p));
+  } catch {
+    /* niente */
+  }
+}
+function findByCode(code) {
+  const c = (code || '').trim().toUpperCase().replace(/[\s-]/g, '');
+  if (!c) return null;
+  return state.instruments.find((i) => (i.isin || '').toUpperCase() === c) || state.instruments.find((i) => i.symbol.toUpperCase() === c || i.symbol.toUpperCase().split('.')[0] === c) || null;
+}
+function renderPortfolio() {
+  const p = state.portfolio;
+  const body = $('#pf-body');
+  const pcIn = (v, d = 2) => (Number.isFinite(v) ? String(+(v * 100).toFixed(d)) : ''); // input numerici: punto decimale
+  const rowsHtml = p.rows
+    .map((row, k) => {
+      const inst = findByCode(row.isin);
+      const r = inst ? state.results[inst.symbol] : null;
+      const pp = inst && r && !r.error ? projParams(inst, r) : null;
+      const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
+      return `<tr data-k="${k}">
+        <td><input data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) : 'non in elenco'}</div></td>
+        <td class="num"><input data-f="weight" type="number" step="1" min="0" value="${pcIn(row.weight, 1)}" size="4"> %</td>
+        <td class="num"><input data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
+        <td class="num"><input data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
+        <td class="num"><input data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
+        <td class="num">${kn != null ? `<span class="${cls(kn)}">${kn > 0 ? '+' : ''}${pct(kn, false)}</span>` : '<span class="muted">–</span>'}</td>
+        <td><button class="ghost small" data-del="${k}" aria-label="Rimuovi">✕</button></td>
+      </tr>`;
+    })
+    .join('');
+  const years = Array.from(new Set([Number(p.years?.[0]) || 5, Number(p.years?.[1]) || 7])).filter((y) => y > 0);
+  const out = projectPortfolio({ rows: p.rows.map((x) => ({ ...x })), capital: p.capital, years });
+  const fmt = (x) => eur(Math.round(x * 100) / 100);
+  const wSum = p.rows.reduce((a, x) => a + (x.weight || 0), 0);
+  // Confronto: NR5 del modello, ponderato con gli stessi pesi (solo righe presenti in elenco con stima)
+  let nr5W = 0;
+  let nr5Cov = 0;
+  for (const row of p.rows) {
+    const inst = findByCode(row.isin);
+    const r = inst ? state.results[inst.symbol] : null;
+    const v = r && !r.error ? nr5Of(r.sim, inst.type) : null;
+    if (v != null && row.weight > 0) {
+      nr5W += row.weight * v;
+      nr5Cov += row.weight;
+    }
+  }
+  body.innerHTML = `
+    <p class="muted">Stesso algoritmo del documento tecnico: CAGR lordo, TER e aliquota ponderati per il peso; CAGR netto pre-tasse = CAGR − TER; montante = capitale × (1 + CAGR netto)<sup>anni</sup>; imposta sulla plusvalenza; guadagno netto = plusvalenza − imposta. I pesi vengono normalizzati alla loro somma${Math.abs(wSum - 1) > 0.005 ? ` <b class="neg">(ora ${pct(wSum, false, 0)})</b>` : ''}.</p>
+    <div class="row" style="flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0">
+      <label>Capitale <input id="pf-capital" type="number" step="100" min="0" value="${p.capital}" size="7"> €</label>
+      <label>Orizzonti <input id="pf-y1" type="number" min="1" max="40" value="${years[0]}" size="2"> e <input id="pf-y2" type="number" min="1" max="40" value="${years[1] ?? 7}" size="2"> anni</label>
+      <button id="pf-add" class="ghost small">+ Strumento</button>
+      <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
+      <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
+    </div>
+    <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Peso</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num" title="Netto Reale 5A del modello (simulazione), per confronto">NR5 modello</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+    ${out ? `
+    <h3>Parametri ponderati</h3>
+    <table class="mini"><tbody>
+      <tr><td>CAGR lordo atteso</td><td class="num">${pct(out.params.cagr, false, 2)}</td></tr>
+      <tr><td>TER</td><td class="num">${pct(out.params.ter, false, 2)}</td></tr>
+      <tr><td>CAGR netto pre-tasse (CAGR − TER)</td><td class="num"><b>${pct(out.params.net, false, 2)}</b></td></tr>
+      <tr><td>Aliquota fiscale</td><td class="num">${pct(out.params.tax, false, 2)}</td></tr>
+    </tbody></table>
+    ${out.horizons
+      .map(
+        (h) => `
+    <h3>Scenario a ${h.years} anni</h3>
+    <table class="mini"><tbody>
+      <tr><td>Montante lordo: ${eur(p.capital)} × (1 + ${pct(out.params.net, false, 2)})<sup>${h.years}</sup></td><td class="num">${fmt(h.gross)}</td></tr>
+      <tr><td>Plusvalenza lorda</td><td class="num">${fmt(h.gain)}</td></tr>
+      <tr><td>Imposta sostitutiva (${pct(out.params.tax, false, 2)})</td><td class="num neg">− ${fmt(h.tax)}</td></tr>
+      <tr><th>Guadagno netto finale (${pct(h.netPct, true)})</th><th class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${fmt(h.netGain)}</th></tr>
+      <tr><td>Capitale netto a scadenza</td><td class="num"><b>${fmt(h.finalCapital)}</b></td></tr>
+    </tbody></table>`,
+      )
+      .join('')}
+    <h3>Confronto con la simulazione</h3>
+    <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}
+  `;
+  const upd = (k, f, v) => {
+    const row = p.rows[k];
+    if (!row) return;
+    if (f === 'isin') {
+      row.isin = v.trim().toUpperCase();
+      const inst = findByCode(row.isin);
+      if (inst) row.name = inst.name;
+    } else {
+      const n = parseFloat(String(v).replace(',', '.'));
+      row[f] = Number.isFinite(n) ? n / 100 : null;
+    }
+    savePortfolio(p);
+  };
+  for (const inp of $$('#pf-body tbody input')) {
+    const k = +inp.closest('tr').dataset.k;
+    inp.addEventListener('change', (e) => {
+      upd(k, e.target.dataset.f, e.target.value);
+      renderPortfolio();
+    });
+  }
+  for (const b of $$('#pf-body [data-use]')) b.addEventListener('click', () => {
+    p.rows[+b.dataset.k][b.dataset.use] = +b.dataset.v;
+    savePortfolio(p);
+    renderPortfolio();
+  });
+  for (const b of $$('#pf-body [data-del]')) b.addEventListener('click', () => {
+    p.rows.splice(+b.dataset.del, 1);
+    savePortfolio(p);
+    renderPortfolio();
+  });
+  $('#pf-add').addEventListener('click', () => {
+    p.rows.push({ isin: '', name: '', weight: 0, ter: 0.002, cagr: null, tax: 0.26 });
+    savePortfolio(p);
+    renderPortfolio();
+  });
+  $('#pf-preset').addEventListener('click', () => {
+    state.portfolio = JSON.parse(JSON.stringify(GEMINI_PORTFOLIO));
+    savePortfolio(state.portfolio);
+    renderPortfolio();
+  });
+  $('#pf-model').addEventListener('click', () => {
+    for (const row of p.rows) {
+      const inst = findByCode(row.isin);
+      const r = inst ? state.results[inst.symbol] : null;
+      const pp = inst && r && !r.error ? projParams(inst, r) : null;
+      if (pp) {
+        row.cagr = pp.cagr;
+        row.tax = pp.tax;
+        row.ter = pp.ter;
+      }
+    }
+    savePortfolio(p);
+    renderPortfolio();
+  });
+  $('#pf-capital').addEventListener('change', (e) => {
+    p.capital = Math.max(0, parseFloat(e.target.value) || 0);
+    savePortfolio(p);
+    renderPortfolio();
+  });
+  for (const id of ['#pf-y1', '#pf-y2']) $(id).addEventListener('change', () => {
+    p.years = [Math.max(1, parseInt($('#pf-y1').value, 10) || 5), Math.max(1, parseInt($('#pf-y2').value, 10) || 7)];
+    savePortfolio(p);
+    renderPortfolio();
+  });
+}
+function openPortfolio() {
+  if (!state.portfolio) state.portfolio = loadPortfolio();
+  renderPortfolio();
+  $('#portfolio').showModal();
 }
 
 // ---------- avvio
@@ -1351,7 +1540,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['proj', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),
@@ -1370,6 +1559,7 @@ function bind() {
   $('#btn-quotes').addEventListener('click', () => refreshQuotes(visibleSymbols()));
   $('#btn-export').addEventListener('click', exportCsv);
   $('#btn-backtest').addEventListener('click', openBacktest);
+  $('#btn-portfolio').addEventListener('click', openPortfolio);
   $('#btn-settings').addEventListener('click', () => {
     fillSettings();
     $('#settings').showModal();

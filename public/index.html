@@ -17,6 +17,7 @@
       <button id="btn-add" class="ghost">+ Aggiungi ISIN</button>
       <button id="btn-settings" class="ghost">Parametri</button>
       <button id="btn-backtest" class="ghost">Backtest</button>
+      <button id="btn-portfolio" class="ghost" title="Proiezione deterministica di un portafoglio (CAGR − TER, montante composto, imposta sulla plusvalenza)">Portafoglio</button>
       <button id="btn-quotes" class="ghost">Aggiorna quotazioni</button>
       <button id="btn-run" class="primary">Calcola classifica</button>
     </div>
@@ -70,6 +71,7 @@
           <tr>
             <th data-sort="rank" class="num">#</th>
             <th data-sort="name">Strumento</th>
+            <th data-sort="proj" class="num" title="Proiezione netta deterministica a 5 anni (algoritmo del documento PRJ-FIN-2026-018): capitale × (1 + CAGR lordo − TER)^5, imposta sulla plusvalenza con l'aliquota effettiva dello strumento (26%, 12,5% sulla quota di titoli di Stato), nessun credito se in perdita. CAGR lordo = rendimento annuo atteso dal modello; TER 0,20% per gli ETF, 0 per azioni e crypto. È una media composta: non considera il rischio di perdita né la dispersione degli scenari (per quelli vedi NR5)"><span class="l">Proiezione netta CAGR 5a</span><span class="s">CAGR 5a</span></th>
             <th data-sort="riskAdj" class="num" title="Guadagno netto corretto per il rischio a 5 anni: guadagno tipico (mediano) meno la perdita finale nel caso sfavorevole (5% peggiore degli scenari), netto costi e tasse. In euro sul capitale investito, percentuale sotto. Più alto è meglio"><span class="l">Guadagno corretto per il rischio 5a</span><span class="s">Corretto rischio</span></th>
             <th data-sort="overall" class="num" title="Netto Reale 5A (NR5) = guadagno netto medio a 5 anni (con i guadagni estremi oltre il 75° percentile attenuati, per non premiare i titoli-lotteria) − 0,5 × perdita media nel 5% peggiore degli scenari (⅓ per le azioni singole) nel profilo Standard; il menu «NR5» in alto cambia il coefficiente (¼, 1 o 2) e la classifica si riordina. Per ogni scenario Monte Carlo il netto è quello vero: 26% sui dividendi a ogni stacco, non reinvestiti (ETF a distribuzione), 26% sulla plusvalenza alla vendita o 12,5% sulla quota di titoli di Stato, nessun credito d'imposta se si chiude in perdita, bollo 0,20% annuo, commissioni e spread. La classifica (#) è in ordine decrescente per questo valore"><span class="l">Netto Reale 5A (NR5)</span><span class="s">NR5</span></th>
             <th data-sort="netP25" class="num" title="Guadagno netto probabile a 5 anni: rendimento netto ottenuto o superato nel 75% degli scenari simulati (crescita attesa e rischio di perdita già inclusi), dopo costi e tasse"><span class="l">Guadagno probabile (75%)</span><span class="s">Prob. 75%</span></th>
@@ -132,6 +134,18 @@
       <button class="ghost" aria-label="Chiudi">✕</button>
     </form>
     <div id="bt-body" class="bt"></div>
+  </dialog>
+
+  <!-- Proiezione di portafoglio -->
+  <dialog id="portfolio" class="sheet">
+    <form method="dialog" class="sheet-head">
+      <div>
+        <h2>Proiezione di portafoglio</h2>
+        <div class="muted">Metodo deterministico: CAGR ponderato − TER, montante composto, imposta sulla plusvalenza</div>
+      </div>
+      <button class="ghost" aria-label="Chiudi">✕</button>
+    </form>
+    <div id="pf-body" class="bt"></div>
   </dialog>
 
   <!-- Parametri -->

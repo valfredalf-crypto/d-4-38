@@ -403,12 +403,18 @@ function filtered() {
   const code = needle.replace(/[\s-]/g, ''); // ISIN o ticker anche scritti con spazi/trattini
   const active = activeFilters(state.view.filters);
   return state.instruments.filter((i) => {
-    if (type === 'growth' ? i.growth == null : type !== 'all' && i.type !== type) return false;
+    if (type === 'growth') {
+      if (i.growth == null) return false;
+    } else if (type === 'bond') {
+      if (!isBond(i)) return false;
+    } else if (type === 'etf') {
+      if (i.type !== 'etf' || isBond(i)) return false; // i bond hanno la loro scheda, qui solo ETF non obbligazionari
+    } else if (type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
     // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
     // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta.
-    // Chi cerca per nome, ticker o ISIN deve però trovare tutto: con un testo di ricerca si mostrano anche loro.
-    if (!allEtf && !needle && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
+    // Chi cerca per nome/ISIN, o nella scheda Bond (obbligazionari, stima dal mercato), si mostrano comunque.
+    if (!allEtf && !needle && type !== 'bond' && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
     if (needle && !`${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle) && !(code && `${i.symbol} ${i.isin || ''}`.toLowerCase().replace(/[\s-]/g, '').includes(code))) return false;
     return !active.length || passes(rowValues(i), active);
   });
@@ -515,6 +521,10 @@ const eurAmt = (x, sign = true) => {
   return `<span class="eur">${sign && v > 0 ? '+' : ''}${Math.round(v).toLocaleString('it-IT')} €</span>`;
 };
 const hasHoldingsEstimate = (i) => state.results[i.symbol]?.forward?.growthSource === 'holdings';
+// ETF obbligazionario (o monetario): riconosciuto dal nome. I bond ETF di solito non hanno una stima
+// dalla composizione (sono obbligazioni, non azioni), quindi la scheda Bond li mostra comunque.
+const BOND_RE = /\b(bond|bonds|obbligaz\w*|treasur\w*|govt|government bond|gilts?|bund|btp|oat|bonos|sovereign|aggregate|aggt|corporate|high[- ]yield|fixed income|reddito fisso|titoli di stato|inflation[- ]linked|tips|green bond|covered bond|money market|monetario|liquidity|ultrashort|senior loan|floating rate)\b/i;
+const isBond = (i) => i.type === 'etf' && BOND_RE.test(i.name || '');
 // Profili del Netto Reale 5A: coefficiente applicato alla perdita media nel 5% peggiore (ETF / azione singola)
 export const NR5_MODES = {
   std: { label: 'Standard (½ ETF, ⅓ azioni)', etf: 0.5, stock: 1 / 3 },
@@ -735,8 +745,14 @@ function render() {
   moreBtn.hidden = rows.length <= state.view.limit;
   moreBtn.textContent = `Mostra altri (${rows.length - visible.length} rimanenti)`;
 
-  for (const t of ['all', 'stock', 'etf', 'crypto', 'growth']) {
-    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => (t === 'growth' ? i.growth != null : t === 'all' || i.type === t) && (state.view.allEtf || i.type !== 'etf' || hasHoldingsEstimate(i))).length;
+  for (const t of ['all', 'stock', 'etf', 'bond', 'crypto', 'growth']) {
+    $(`[data-count="${t}"]`).textContent = state.instruments.filter((i) => {
+      if (t === 'growth') return i.growth != null;
+      if (t === 'bond') return isBond(i); // i bond si contano tutti, anche senza stima dalla composizione
+      if (t === 'etf' && isBond(i)) return false; // i bond sono contati nella loro scheda
+      const typeOk = t === 'all' || i.type === t;
+      return typeOk && (state.view.allEtf || i.type !== 'etf' || hasHoldingsEstimate(i));
+    }).length;
   }
   $$('#table th').forEach((th) => {
     const on = th.dataset.sort === state.view.sort.key;

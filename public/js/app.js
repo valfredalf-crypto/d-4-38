@@ -27,7 +27,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -489,6 +489,21 @@ const eurAmt = (x, sign = true) => {
   return `<span class="eur">${sign && v > 0 ? '+' : ''}${Math.round(v).toLocaleString('it-IT')} €</span>`;
 };
 const hasHoldingsEstimate = (i) => state.results[i.symbol]?.forward?.growthSource === 'holdings';
+// Profili del Netto Reale 5A: coefficiente applicato alla perdita media nel 5% peggiore (ETF / azione singola)
+export const NR5_MODES = {
+  std: { label: 'Standard (½ ETF, ⅓ azioni)', etf: 0.5, stock: 1 / 3 },
+  growth: { label: 'Più peso alla crescita (¼ ETF, ⅙ azioni)', etf: 0.25, stock: 1 / 6 },
+  even: { label: 'Crescita e rischio 1:1', etf: 1, stock: 1 },
+  risk: { label: 'Più peso al rischio (2:1)', etf: 2, stock: 2 },
+};
+const nr5Weight = (type) => (NR5_MODES[state.view.nr5Mode] || NR5_MODES.std)[type === 'stock' ? 'stock' : 'etf'];
+const fracLabel = (k) => ({ 0.5: '½', 0.25: '¼', 1: '1', 2: '2' })[k] || (Math.abs(k - 1 / 3) < 1e-9 ? '⅓' : Math.abs(k - 1 / 6) < 1e-9 ? '⅙' : String(k));
+/** NR5 ricalcolato secondo il profilo scelto: guadagno netto medio (estremi attenuati) − k × perdita media nel 5% peggiore. */
+function nr5Of(sim, type) {
+  if (!sim) return null;
+  if (sim.expGain == null || sim.expLoss == null || sim.es5 == null) return sim.nr5 ?? null;
+  return sim.expGain - sim.expLoss - nr5Weight(type) * sim.es5;
+}
 function rowValues(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
@@ -497,7 +512,7 @@ function rowValues(i) {
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
     plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
     // Netto Reale 5A (NR5): la classifica predefinita
-    overall: sim?.nr5 ?? null,
+    overall: nr5Of(sim, i.type),
     es5: sim?.es5 ?? null,
     sharpe: sim?.sharpe ?? null,
     sortino: sim?.sortino ?? null,
@@ -622,7 +637,7 @@ function render() {
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
-        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)} · media ${pct(r.netMean, true)} − ${r.inst.type === 'stock' ? '⅓' : '½'} × ${pct(r.es5)} (estremi attenuati)</span>`}</td>
+        <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)} · media ${pct(r.netMean, true)} − ${fracLabel(nr5Weight(r.inst.type))} × ${pct(r.es5)} (estremi attenuati)</span>`}</td>
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
@@ -738,6 +753,8 @@ function renderDetail(inst, r, d) {
   const fu = d?.fundamentals || {};
   const lossLabel = { mdd_p95: 'max drawdown, 95° percentile', mdd_median: 'max drawdown mediano', final_p5: 'perdita finale, 5% peggiore' }[s.mc.lossMetric];
   const amt = s.mc.amount;
+  const nr5 = nr5Of(sim, inst.type);
+  const kNr5 = nr5Weight(inst.type);
   const comp = f?.components || {};
   const w = f?.weights || {};
   const compRow = (label, key, note) =>
@@ -746,7 +763,7 @@ function renderDetail(inst, r, d) {
   $('#d-body').innerHTML = `
     <div class="kpis">
       <div class="kpi"><div class="k">Prezzo</div><div class="v">${eur(q?.priceEur ?? d.history.closesEur.at(-1))}</div><div class="h ${cls(q?.changePct)}">${q ? pct(q.changePct, true, 2) + ' oggi' : 'ultima chiusura settimanale'}</div></div>
-      ${sim.nr5 != null ? `<div class="kpi kpi-main"><div class="k">Netto Reale 5A (NR5) su ${eur(amt)}</div><div class="v ${cls(sim.nr5)}">${sim.nr5 > 0 ? '+' : ''}${Math.round(sim.nr5 * amt).toLocaleString('it-IT')} €</div><div class="h">guadagno netto medio ${pct(sim.netMean, true)} − ${inst.type === 'stock' ? '⅓' : '½'} × perdita media nel 5% peggiore ${pct(sim.es5)} · netto vero per scenario: tasse italiane, bollo, commissioni e spread</div></div>` : ''}
+      ${nr5 != null ? `<div class="kpi kpi-main"><div class="k">Netto Reale 5A (NR5) su ${eur(amt)}</div><div class="v ${cls(nr5)}">${nr5 > 0 ? '+' : ''}${Math.round(nr5 * amt).toLocaleString('it-IT')} €</div><div class="h">guadagno netto medio ${pct(sim.netMean, true)} − ${fracLabel(kNr5)} × perdita media nel 5% peggiore ${pct(sim.es5)} · profilo: ${(NR5_MODES[state.view.nr5Mode] || NR5_MODES.std).label} · netto vero per scenario: tasse italiane, bollo, commissioni e spread</div></div>` : ''}
       ${sim.ce1 != null ? `<div class="kpi"><div class="k">Guadagno netto efficiente ${s.mc.years}a</div><div class="v ${cls(sim.ce?.['0.5'] ?? sim.ce1)}">${(sim.ce?.['0.5'] ?? sim.ce1) > 0 ? '+' : ''}${Math.round((sim.ce?.['0.5'] ?? sim.ce1) * amt).toLocaleString('it-IT')} €</div><div class="h">equivalente certo tarato sul backtest (γ=0,5: ${sim.ce?.['0.5'] != null ? pct(sim.ce['0.5'], true) : '–'}) · Kelly: <b>${sim.ce1 > 0 ? '+' : ''}${Math.round(sim.ce1 * amt).toLocaleString('it-IT')} €</b> · se accetti tutto il rischio (media): <b>${sim.netMean > 0 ? '+' : ''}${Math.round(sim.netMean * amt).toLocaleString('it-IT')} €</b> · se sei prudente: <b>${sim.ce3 > 0 ? '+' : ''}${Math.round(sim.ce3 * amt).toLocaleString('it-IT')} €</b>${f?.fundamentalsDetail?.evidence != null ? ` · crescita confermata dalle evidenze al ${pct(f.fundamentalsDetail.evidence, false, 0)}` : ''}</div></div>` : ''}
       <div class="kpi"><div class="k">Perdita massima ${s.mc.years}a</div><div class="v neg">−${pct(sim.maxLoss)}</div><div class="h">${lossLabel}</div></div>
       <div class="kpi"><div class="k">Drawdown mediano ${s.mc.years}a</div><div class="v neg">−${pct(sim.mddMedian)}</div><div class="h">perdita dal picco al minimo nello scenario tipico</div></div>
@@ -817,13 +834,13 @@ function renderDetail(inst, r, d) {
             return rows.join('');
           })()}
         </tbody></table>
-        ${sim.nr5 != null ? (() => {
+        ${nr5 != null ? (() => {
           const e = (x) => `${x > 0 ? '+' : ''}${Math.round(x * amt).toLocaleString('it-IT')} €`;
           return `<table class="mini"><tbody>
             <tr><td>Guadagno netto medio su ${s.mc.sims.toLocaleString('it-IT')} scenari (netto vero: ${sim.distYield > 0 ? `26% sui dividendi a ogni stacco e non reinvestiti, ` : ''}${sim.taxRate != null && sim.taxRate !== 26 ? `${nf1.format(sim.taxRate)}% effettivo alla vendita con 12,5% sulla quota di titoli di Stato` : '26% sulla plusvalenza alla vendita'}, nessun credito se in perdita, bollo 0,20%/anno, commissioni e spread)</td><td class="num ${cls(sim.netMean)}">${e(sim.netMean)}</td></tr>
             <tr><td>− attenuazione dei guadagni estremi (oltre il 75° percentile pesano sempre meno: evita i titoli-lotteria)</td><td class="num ${sim.netMean - (sim.expGain - sim.expLoss) > 0.0005 ? 'neg' : ''}">${sim.netMean - (sim.expGain - sim.expLoss) > 0.0005 ? e(-(sim.netMean - (sim.expGain - sim.expLoss))) : '0 €'}</td></tr>
-            <tr><td>− ${inst.type === 'stock' ? '⅓ (azione singola)' : '½'} × perdita media nel 5% peggiore degli scenari (−${pct(sim.es5)})</td><td class="num neg">${e(-(sim.nr5LossWeight ?? 0.5) * sim.es5)}</td></tr>
-            <tr><th>= Netto Reale 5A (NR5)</th><th class="num ${cls(sim.nr5)}">${e(sim.nr5)}</th></tr>
+            <tr><td>− ${fracLabel(kNr5)}${inst.type === 'stock' ? ' (azione singola)' : ''} × perdita media nel 5% peggiore degli scenari (−${pct(sim.es5)}) · profilo «${(NR5_MODES[state.view.nr5Mode] || NR5_MODES.std).label}»</td><td class="num neg">${e(-kNr5 * sim.es5)}</td></tr>
+            <tr><th>= Netto Reale 5A (NR5)</th><th class="num ${cls(nr5)}">${e(nr5)}</th></tr>
           </tbody></table>`;
         })() : ''}
       </div>
@@ -1305,6 +1322,20 @@ function bind() {
       state.view.allEtf = e.target.checked;
       try {
         localStorage.setItem('trmc.allEtf', e.target.checked ? '1' : '0');
+      } catch {
+        /* niente */
+      }
+      render();
+    });
+  }
+  const nm = $('#nr5-mode');
+  if (nm) {
+    nm.innerHTML = Object.entries(NR5_MODES).map(([k, m]) => `<option value="${k}">${m.label}</option>`).join('');
+    nm.value = NR5_MODES[state.view.nr5Mode] ? state.view.nr5Mode : 'std';
+    nm.addEventListener('change', (e) => {
+      state.view.nr5Mode = e.target.value;
+      try {
+        localStorage.setItem('trmc.nr5Mode', e.target.value);
       } catch {
         /* niente */
       }

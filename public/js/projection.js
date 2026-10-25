@@ -138,3 +138,23 @@ export function portfolioStress({ vol, mdd, netCagr, capital }) {
     return { ...sh, capitalAfter: after, recoveryMonths: months };
   });
 }
+
+/**
+ * Scenari per un portafoglio di AZIONI singole (metodo del documento PRJ-FIN-2026-010): le azioni non
+ * hanno TER né rendimento di mercato garantito. Tre scenari a `years` anni sul capitale `capital` col
+ * CAGR lordo ponderato `cagr` (media per importo) e imposta 26% sulle plusvalenze:
+ *   - Base (target): capitalizzazione composta al CAGR atteso.
+ *   - Bull (iper-crescita): CAGR maggiorato (× 1,4), i megatrend accelerano.
+ *   - Bear (stress): perdita idiosincratica pari al drawdown massimo storico del portafoglio (MDD_p),
+ *     nessuna imposta su una perdita; il capitale NON è garantito come negli ETF diversificati.
+ */
+export function stockScenarios({ capital, cagr, tax = 0.26, mdd, years = 5, bullFactor = 1.4 }) {
+  if (!Number.isFinite(cagr) || !(capital > 0)) return null;
+  const run = (g) => project({ cagr: g, ter: 0, tax, net: g }, capital, years);
+  const base = run(cagr);
+  const bullCagr = cagr * bullFactor;
+  const bull = run(bullCagr);
+  const loss = Number.isFinite(mdd) ? Math.min(0.95, Math.abs(mdd)) : null;
+  const bear = loss != null ? { years, drop: loss, netGain: -capital * loss, finalCapital: capital * (1 - loss), netPct: -loss } : null;
+  return { base, bull, bullCagr, bear, cagr, years };
+}

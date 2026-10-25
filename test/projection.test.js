@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, stockScenarios } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -70,4 +70,17 @@ test('portfolioStress: scenari derivati da σ_p e MDD_p del portafoglio', () => 
   assert.equal(portfolioStress({ mdd: 0.4, netCagr: 0.05, capital: 1000 }).length, 1);
   // CAGR nullo: nessun recupero
   assert.equal(portfolioStress({ vol: 0.1, netCagr: 0, capital: 1000 })[0].recoveryMonths, null);
+});
+
+test('stockScenarios: metodo azioni del documento 010 (base/bull/bear, niente TER)', () => {
+  const s = stockScenarios({ capital: 2400, cagr: 0.156, tax: 0.26, mdd: 0.4, years: 5 });
+  // base: 2400 × 1,156^5 = 4954,3 → plus 2554,3 − 26% = netto ~1890
+  assert.ok(Math.abs(s.base.netGain - 1890) < 5, String(s.base.netGain));
+  assert.ok(Math.abs(s.base.finalCapital - 4290) < 5);
+  // bull: CAGR × 1,4 = 21,84%
+  assert.ok(Math.abs(s.bullCagr - 0.2184) < 1e-9);
+  assert.ok(s.bull.netGain > s.base.netGain);
+  // bear: perdita = MDD, nessuna imposta
+  assert.ok(Math.abs(s.bear.netGain + 2400 * 0.4) < 1e-6);
+  assert.equal(stockScenarios({ capital: 0, cagr: 0.1 }), null);
 });

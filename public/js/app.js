@@ -1425,26 +1425,30 @@ function renderPortfolio() {
   );
   const profile = rk ? classifyPortfolio({ vol: rk.vol, mdd: rk.mdd }) : null;
   // Sezione €: azioni / bond con importo in euro diretto (non percentuale), stesso algoritmo 019
-  const amountSection = (bucket, title, hint) => {
+  const amountSection = (bucket, title) => {
     const arr = p[bucket] || [];
+    const isStock = bucket === 'stocks';
     const cap = arr.reduce((a, r) => a + (r.amount || 0), 0);
+    const paramsOf = (row) => (Number.isFinite(row.cagr) ? { cagr: row.cagr, ter: Number.isFinite(row.ter) ? row.ter : 0, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - (Number.isFinite(row.ter) ? row.ter : 0) } : null);
     const rowsH = arr
       .map((row, k) => {
         const inst = findByCode(row.isin);
         const r = inst ? state.results[inst.symbol] : null;
         const pp = inst && r && !r.error ? projParams(inst, r) : null;
-        const prm = Number.isFinite(row.cagr) ? { cagr: row.cagr, ter: Number.isFinite(row.ter) ? row.ter : 0, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - (Number.isFinite(row.ter) ? row.ter : 0) } : null;
+        const prm = paramsOf(row);
+        // Guadagno netto atteso per ogni strumento, per orizzonte (azioni: base; bond: × (1 − MDD))
         const gain = row.amount > 0 && prm
           ? years.map((y) => {
               const h = project(prm, row.amount, y);
-              const adj = Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
+              const adj = !isStock && Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
               return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${y}a</span></div>${adj != null ? `<div class="muted small-note">netto atteso ${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</div>` : ''}`;
             }).join('')
           : '<span class="muted">–</span>';
+        const terCell = isStock ? '' : `<td class="num"><input data-bucket="${bucket}" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>`;
         return `<tr data-bucket="${bucket}" data-k="${k}">
           <td><input data-bucket="${bucket}" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 46) : row.isin ? '<span class="neg">non in elenco: parametri a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
           <td class="num"><input data-bucket="${bucket}" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €</td>
-          <td class="num"><input data-bucket="${bucket}" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
+          ${terCell}
           <td class="num"><input data-bucket="${bucket}" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="${bucket}" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
           <td class="num"><input data-bucket="${bucket}" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %</td>
           <td class="num"><input data-bucket="${bucket}" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="${bucket}" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
@@ -1453,22 +1457,57 @@ function renderPortfolio() {
         </tr>`;
       })
       .join('');
+    // Totali come somma dei singoli strumenti (coerenti con la colonna per strumento)
+    const valid = arr.filter((r) => r.amount > 0 && Number.isFinite(r.cagr));
+    const totalFor = (y, mult = 1) => valid.reduce((a, r) => a + project({ ...paramsOf(r), cagr: r.cagr * mult, net: r.cagr * mult - (Number.isFinite(r.ter) && !isStock ? r.ter : 0) }, r.amount, y).netGain, 0);
+    const bearLoss = valid.reduce((a, r) => a + (Number.isFinite(r.mdd) ? r.amount * Math.min(0.95, Math.abs(r.mdd)) : 0), 0);
+    const bearCov = valid.filter((r) => Number.isFinite(r.mdd)).reduce((a, r) => a + r.amount, 0);
     const og = cap > 0 ? projectPortfolio({ rows: arr.map((r) => ({ ...r, weight: r.amount || 0 })), capital: cap, years }) : null;
     const grk = cap > 0 ? portfolioRisk(arr.map((r) => { const inst = findByCode(r.isin); const res = inst ? state.results[inst.symbol] : null; return { weight: r.amount || 0, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null }; }), rho) : null;
     const prof = grk ? classifyPortfolio({ vol: grk.vol, mdd: grk.mdd }) : null;
-    return `<h3 style="margin-top:24px">${title}</h3>
-      <p class="muted small-note">${hint} Stesso algoritmo 019; qui l'importo da investire si indica in euro, non in percentuale. Totale investito: <b>${eur(Math.round(cap))}</b>.</p>
-      <div style="margin:8px 0"><button class="ghost small" data-addbucket="${bucket}">+ Strumento</button></div>
-      <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo €</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num">MDD storico</th><th class="num">Guadagno netto atteso</th><th></th></tr></thead><tbody>${rowsH}</tbody></table></div>
-      ${og ? `<table class="mini"><tbody>
+    const note = isStock
+      ? "Azioni singole (metodo del documento PRJ-FIN-2026-010): niente TER né rendimento di mercato garantito, imposta 26% sulle plusvalenze. Il guadagno netto totale è la somma dei singoli titoli. Oltre allo scenario base sono mostrati Bull e Bear: nelle azioni singole il capitale NON è protetto come in un ETF diversificato."
+      : "Stesso algoritmo degli ETF (019): CAGR atteso − TER, montante composto, imposta sulla plusvalenza, CAGR netto atteso × (1 − MDD).";
+    let summary = '';
+    if (og && isStock) {
+      summary = `<table class="mini"><tbody>
+        <tr><td>CAGR lordo atteso (ponderato per importo)</td><td class="num"><b>${pct(og.params.cagr, false, 2)}</b></td></tr>
+        <tr><td>Aliquota fiscale</td><td class="num">${pct(og.params.tax, false, 2)}</td></tr>
+        ${prof ? `<tr><td>Tipo</td><td class="num"><b>${prof.label}</b></td></tr>` : ''}
+        ${grk ? `<tr><td>MDD<sub>p</sub> (drawdown storico ponderato)</td><td class="num neg">−${pct(grk.mdd, false, 1)}</td></tr>` : ''}
+      </tbody></table>
+      ${years
+        .map((y) => {
+          const base = totalFor(y, 1);
+          const bull = totalFor(y, 1.4);
+          const hasBear = bearCov > 0;
+          return `<p class="muted small-note" style="margin:12px 0 4px"><b>Scenari a ${y} anni</b> (${eur(Math.round(cap))} investiti) — guadagno netto totale azioni</p>
+          <table class="mini"><thead><tr><th>Scenario</th><th class="num">Guadagno netto totale</th><th class="num">Capitale finale</th><th>Probabilità</th></tr></thead><tbody>
+            <tr><td>Base (target)<div class="muted small-note">i megatrend si sviluppano come previsto</div></td><td class="num ${cls(base)}"><b>${base > 0 ? '+' : ''}${fmt(base)}</b> (${pct(base / cap, true)})</td><td class="num">${fmt(cap + base)}</td><td class="muted">Media</td></tr>
+            <tr><td>Bull (iper-crescita)<div class="muted small-note">i megatrend accelerano (CAGR × 1,4)</div></td><td class="num pos">&gt; +${fmt(bull)} (${pct(bull / cap, true)})</td><td class="num">&gt; ${fmt(cap + bull)}</td><td class="muted">Bassa</td></tr>
+            ${hasBear ? `<tr><td>Bear (stress): forte ribasso idiosincratico<div class="muted small-note">capitale non garantito; perdita ≈ MDD storico${bearCov < cap - 0.5 ? ` (su ${pct(bearCov / cap, false, 0)} con MDD)` : ''}</div></td><td class="num neg"><b>−${fmt(bearLoss)}</b> (${pct(-bearLoss / cap, true)})</td><td class="num">${fmt(cap - bearLoss)}</td><td class="muted">Media</td></tr>` : ''}
+          </tbody></table>`;
+        })
+        .join('')}`;
+    } else if (og) {
+      summary = `<table class="mini"><tbody>
         <tr><td>CAGR lordo atteso (ponderato per importo)</td><td class="num">${pct(og.params.cagr, false, 2)}</td></tr>
         <tr><td>CAGR netto pre-tasse (CAGR − TER)</td><td class="num"><b>${pct(og.params.net, false, 2)}</b></td></tr>
         <tr><td>Aliquota fiscale ponderata</td><td class="num">${pct(og.params.tax, false, 2)}</td></tr>
         ${prof ? `<tr><td>Tipo</td><td class="num"><b>${prof.label}</b></td></tr>` : ''}
         ${grk ? `<tr><td>MDD<sub>p</sub> (drawdown storico ponderato)</td><td class="num neg">−${pct(grk.mdd, false, 1)}</td></tr>` : ''}
         ${grk && grk.vol != null ? `<tr><td>Volatilità attesa σ<sub>p</sub></td><td class="num">${pct(grk.vol, false, 1)} annua</td></tr>` : ''}
-        ${og.horizons.map((h) => `<tr><th>Guadagno netto ${h.years}a (${pct(h.netPct, true)})</th><th class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${fmt(h.netGain)}${grk ? ` · CAGR netto atteso ${h.netGain * (1 - grk.mdd) > 0 ? '+' : ''}${fmt(h.netGain * (1 - grk.mdd))}` : ''}</th></tr>`).join('')}
-      </tbody></table>` : `<p class="muted">Inserisci almeno uno strumento con importo e CAGR.</p>`}`;
+        ${years.map((y) => { const t = totalFor(y, 1); const adj = grk ? t * (1 - grk.mdd) : null; return `<tr><th>Guadagno netto totale ${y}a (${pct(t / cap, true)})</th><th class="num ${cls(t)}">${t > 0 ? '+' : ''}${fmt(t)}${adj != null ? ` · netto atteso ${adj > 0 ? '+' : ''}${fmt(adj)}` : ''}</th></tr>`; }).join('')}
+      </tbody></table>`;
+    } else {
+      summary = `<p class="muted">Inserisci almeno uno strumento con importo e CAGR.</p>`;
+    }
+    const terCol = isStock ? '' : '<th class="num">TER</th>';
+    return `<h3 style="margin-top:24px">${title}</h3>
+      <p class="muted small-note">${note} Qui l'importo da investire si indica in euro, non in percentuale. Totale investito: <b>${eur(Math.round(cap))}</b>.</p>
+      <div style="margin:8px 0"><button class="ghost small" data-addbucket="${bucket}">+ Strumento</button></div>
+      <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo €</th>${terCol}<th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num">MDD storico</th><th class="num">Guadagno netto ${isStock ? 'per azione' : 'atteso'}</th><th></th></tr></thead><tbody>${rowsH}</tbody></table></div>
+      ${summary}`;
   };
   // Confronto: NR5 del modello, ponderato con gli stessi pesi (solo righe presenti in elenco con stima)
   let nr5W = 0;
@@ -1580,8 +1619,8 @@ function renderPortfolio() {
     })()}
     <h3>Confronto con la simulazione</h3>
     <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}
-    ${amountSection('stocks', 'Azioni (importi in €)', 'Azioni singole da inserire separatamente dagli ETF.')}
-    ${amountSection('bonds', 'Bond (importi in €)', 'Obbligazionari e monetari da inserire separatamente.')}
+    ${amountSection('stocks', 'Azioni (importi in €)')}
+    ${amountSection('bonds', 'Bond (importi in €)')}
   `;
   const bucketOf = (name) => (name === 'stocks' ? (p.stocks ||= []) : name === 'bonds' ? (p.bonds ||= []) : p.rows);
   const upd = (bucket, k, f, v) => {

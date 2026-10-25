@@ -66,11 +66,11 @@ export function backtestOne({ instrument, history, benchmark, cryptoBenchmark },
         const g = (1 + fwd.expected - ter) ** (horizon / WEEKS_PER_YEAR) - 1;
         return g > 0 ? g * (1 - (sim.taxRate ?? 26) / 100) : g;
       })()),
-      // Indicatore principale: netto 019 − MDD storico (conosciuto a T0)
+      // Indicatore principale «CAGR netto atteso»: netto 019 × (1 − MDD storico conosciuto a T0)
       proj019Mdd: r4((() => {
         const ter = instrument.type === 'etf' ? 0.002 : 0;
         const g = (1 + fwd.expected - ter) ** (horizon / WEEKS_PER_YEAR) - 1;
-        return (g > 0 ? g * (1 - (sim.taxRate ?? 26) / 100) : g) - (sim.historicalMdd ?? 0);
+        return (g > 0 ? g * (1 - (sim.taxRate ?? 26) / 100) : g) * (1 - Math.min(1, sim.historicalMdd ?? 0));
       })()),
       ratio: r4(sim.ratio),
       vol: r4(sim.annualVol),

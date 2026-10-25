@@ -52,14 +52,37 @@ function store(key, value) {
     return null;
   }
 }
+// Tiene solo le chiavi previste da DEFAULT_SETTINGS: così una configurazione vecchia salvata nel browser
+// (chiavi non più usate) non altera la firma delle impostazioni e i risultati precalcolati restano validi.
+function pickKnown(src, def) {
+  const out = {};
+  for (const k of Object.keys(def)) out[k] = src && k in src ? src[k] : def[k];
+  return out;
+}
 function loadSettings() {
   const s = store('trmc.settings');
   return {
-    mc: { ...DEFAULT_SETTINGS.mc, ...(s?.mc || {}) },
-    outlook: { ...DEFAULT_SETTINGS.outlook, ...(s?.outlook || {}) },
+    mc: pickKnown(s?.mc, DEFAULT_SETTINGS.mc),
+    outlook: pickKnown(s?.outlook, DEFAULT_SETTINGS.outlook),
   };
 }
 const settingsKey = () => JSON.stringify(state.settings);
+// Confronto robusto della firma delle impostazioni: l'ordine delle chiavi nel JSON non conta (browser
+// diversi o versioni diverse possono serializzarle in ordine diverso). Evita che i risultati precalcolati
+// vengano scartati per una semplice differenza di ordine, costringendo a premere «Calcola classifica».
+function canon(v) {
+  if (Array.isArray(v)) return '[' + v.map(canon).join(',') + ']';
+  if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map((k) => JSON.stringify(k) + ':' + canon(v[k])).join(',') + '}';
+  return JSON.stringify(v);
+}
+const keyMatches = (k) => {
+  if (k == null) return false;
+  try {
+    return canon(typeof k === 'string' ? JSON.parse(k) : k) === canon(state.settings);
+  } catch {
+    return false;
+  }
+};
 function saveResults() {
   const compact = {};
   for (const [k, r] of Object.entries(state.results)) compact[k] = compactResult(r);
@@ -67,12 +90,12 @@ function saveResults() {
 }
 async function loadResults() {
   const saved = store('trmc.results');
-  if (saved && saved.key === settingsKey() && saved.day === (state.dataVersion || new Date().toDateString())) {
+  if (saved && keyMatches(saved.key) && saved.day === (state.dataVersion || new Date().toDateString())) {
     state.results = saved.results || {};
   } else if (STATIC) {
     // Classifica precalcolata con i parametri predefiniti
     const pre = await api('/api/results').catch(() => null);
-    if (pre && pre.key === settingsKey()) state.results = pre.results;
+    if (pre && keyMatches(pre.key)) state.results = pre.results;
   }
 }
 
@@ -228,7 +251,7 @@ async function checkNewData() {
     const m = $('#isin-msg');
     if (m) m.innerHTML = `<span class="pos">Aggiunto: ${arrived.map((i) => esc(i.name)).join(', ')}.</span>`;
   }
-  if (pre && pre.key === settingsKey()) {
+  if (pre && keyMatches(pre.key)) {
     state.results = pre.results;
     state.priced = Object.fromEntries(Object.entries(quotes).map(([k, q]) => [k, q?.priceEur]));
   } else {
@@ -251,7 +274,7 @@ async function checkLiveData() {
   if (live.market) state.market = live.market;
   const known = new Set(state.instruments.map((i) => i.symbol));
   for (const [k, q] of Object.entries(live.quotes || {})) if (known.has(k) && q) state.quotes[k] = q;
-  if (live.key === settingsKey()) {
+  if (keyMatches(live.key)) {
     for (const [k, r] of Object.entries(live.results || {})) {
       if (!known.has(k)) continue;
       state.results[k] = r;

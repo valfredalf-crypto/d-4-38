@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-10-24T08:04:37.799Z",
+ "generatedAt": "2026-10-25T12:28:03.207Z",
  "adopted": false,
  "params": {
   "before": {
-   "weightHistory": 0.3,
+   "weightHistory": 0.15,
    "equityPremium": 5,
    "priorUncertainty": 5,
    "regimeUncertainty": 4,
@@ -17,8 +17,8 @@
    "priorUncertainty": 5,
    "regimeUncertainty": 2,
    "minStockBeta": 0.7,
-   "ewmaWeight": 0,
-   "volScale": 1.1
+   "ewmaWeight": 0.2,
+   "volScale": 1
   }
  },
  "grid": {
@@ -71,51 +71,57 @@
   8
  ],
  "sample": {
-  "pool": 3349,
-  "train": 1050,
-  "validation": 450,
+  "pool": 3378,
+  "train": 1049,
+  "validation": 451,
   "sims": 400
  },
  "loss": {
-  "trainBefore": 0.29306588692520674,
-  "trainAfter": 0.30100785875160574,
-  "validationBefore": 0.30522168622325946,
-  "validationAfter": 0.31442995671513774,
-  "improvement": -0.030169122665624437
+  "trainBefore": 0.2841752137567946,
+  "trainAfter": 0.2792371251636237,
+  "validationBefore": 0.29841665533772155,
+  "validationAfter": 0.293279070670727,
+  "improvement": 0.017216145865519117
  },
  "validation": {
   "before": {
    "risk": {
-    "mddAboveP95": 0.0927,
-    "mddAboveMedian": 0.4005,
-    "mddRankCorr": 0.6383,
-    "volRankCorr": 0.8076
+    "mddAboveP95": 0.0828,
+    "mddAboveMedian": 0.3911,
+    "mddRankCorr": 0.6596,
+    "volRankCorr": 0.8322
    },
    "returns": {
-    "inside90": 0.8155,
-    "belowP5": 0.0534,
-    "aboveP95": 0.1311,
-    "aboveMedian": 0.6728,
-    "medianRankCorr": 0.1718,
-    "realNetMedian": 0.2316,
-    "predNetMedian": -0.0119
+    "inside90": 0.8268,
+    "belowP5": 0.0467,
+    "aboveP95": 0.1265,
+    "aboveMedian": 0.6792,
+    "medianRankCorr": 0.1614,
+    "proj019RankCorr": 0.0493,
+    "proj019MddRankCorr": 0.1795,
+    "nr5RankCorr": 0.1502,
+    "realNetMedian": 0.2274,
+    "predNetMedian": -0.0217
    }
   },
   "after": {
    "risk": {
-    "mddAboveP95": 0.068,
-    "mddAboveMedian": 0.3563,
-    "mddRankCorr": 0.6415,
-    "volRankCorr": 0.8068
+    "mddAboveP95": 0.0974,
+    "mddAboveMedian": 0.4157,
+    "mddRankCorr": 0.6608,
+    "volRankCorr": 0.8328
    },
    "returns": {
-    "inside90": 0.8364,
-    "belowP5": 0.0447,
-    "aboveP95": 0.1189,
-    "aboveMedian": 0.6743,
-    "medianRankCorr": 0.1841,
-    "realNetMedian": 0.2316,
-    "predNetMedian": -0.0018
+    "inside90": 0.8308,
+    "belowP5": 0.0502,
+    "aboveP95": 0.119,
+    "aboveMedian": 0.6436,
+    "medianRankCorr": 0.1709,
+    "proj019RankCorr": 0.0483,
+    "proj019MddRankCorr": 0.1757,
+    "nr5RankCorr": 0.1606,
+    "realNetMedian": 0.2274,
+    "predNetMedian": 0.0354
    }
   }
  }

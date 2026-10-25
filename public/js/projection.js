@@ -57,3 +57,23 @@ export function riskAdjustedCagr({ expected, vol, es5, k = 0.5, years = 5 }) {
   const lossPenalty = Number.isFinite(es5) && years > 0 ? (k * Math.max(0, es5)) / years : 0;
   return { cagr: expected - drag - lossPenalty, expected, drag, lossPenalty };
 }
+
+/**
+ * Valutazione del rischio come nel documento (sezione 5): impatto di una correzione del mercato
+ * (−10%) e di un bear market (−30%) in proporzione al beta, capitale temporaneo dopo il calo e tempo di
+ * recupero in mesi al CAGR netto: mesi = 12 × ln(1 / (1 − impatto)) / ln(1 + CAGR netto).
+ * Con CAGR netto ≤ 0 il recupero non avviene (null).
+ */
+export const STRESS_SHOCKS = [
+  { label: 'Correzione fisiologica', market: 0.1, sop: 'Nessuna azione. Mantenere le posizioni.' },
+  { label: 'Recessione / bear market', market: 0.3, sop: 'Non vendere: sfruttare la flessibilità temporale fino al recupero.' },
+];
+export function stressTest({ beta, netCagr, capital, shocks = STRESS_SHOCKS }) {
+  const b = Number.isFinite(beta) ? Math.max(0, beta) : 1;
+  return shocks.map((sh) => {
+    const impact = Math.min(0.99, b * sh.market);
+    const after = capital * (1 - impact);
+    const months = netCagr > 0 && impact > 0 ? (12 * Math.log(1 / (1 - impact))) / Math.log(1 + netCagr) : impact > 0 ? null : 0;
+    return { ...sh, beta: b, impact, capitalAfter: after, recoveryMonths: months };
+  });
+}

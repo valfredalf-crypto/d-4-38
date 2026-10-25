@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, riskAdjustedCagr } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, riskAdjustedCagr, stressTest } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -34,4 +34,14 @@ test('riskAdjustedCagr: drag della volatilità e penalità per la perdita nel 5%
   assert.ok(riskAdjustedCagr({ expected: 0.2, vol: 1, es5: 0.8, k: 1 / 3, years: 5 }).cagr < 0);
   assert.equal(riskAdjustedCagr({ expected: null }), null);
   assert.ok(Math.abs(riskAdjustedCagr({ expected: 0.07 }).cagr - 0.07) < 1e-12);
+});
+
+test('stressTest: impatto proporzionale al beta e tempo di recupero al CAGR netto', () => {
+  const [corr, bear] = stressTest({ beta: 0.85, netCagr: 0.0754, capital: 12000 });
+  assert.ok(Math.abs(corr.impact - 0.085) < 1e-12);
+  assert.ok(Math.abs(bear.impact - 0.255) < 1e-12);
+  assert.ok(Math.abs(bear.capitalAfter - 12000 * 0.745) < 1e-6);
+  assert.ok(bear.recoveryMonths > 40 && bear.recoveryMonths < 60, String(bear.recoveryMonths));
+  assert.equal(stressTest({ beta: 1, netCagr: -0.01, capital: 1000 })[0].recoveryMonths, null);
+  assert.equal(stressTest({ beta: 0, netCagr: 0.03, capital: 1000 })[1].impact, 0);
 });

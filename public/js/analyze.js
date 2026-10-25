@@ -49,6 +49,7 @@ export function tableResult(r) {
       beta: r4(r.forward?.beta), // beta verso il mercato azionario (stress test: impatto di una correzione)
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
       ...(r.forward?.fundamentalsDetail?.evidence != null ? { evidence: r4(r.forward.fundamentalsDetail.evidence) } : {}),
+      ...(r.forward?.fundamentalsDetail?.expected != null ? { fundExpected: r4(r.forward.fundamentalsDetail.expected) } : {}), // CAGR forward dai fondamentali (crescita utili + dividendo + valutazione): prospettive di crescita aggiornate
       ...(r.forward?.top10 != null ? { top10: r4(r.forward.top10), ...(r.forward.fundOfFunds ? { fundOfFunds: true } : {}) } : {}),
     },
     sim: {

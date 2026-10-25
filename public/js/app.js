@@ -539,8 +539,11 @@ const fracLabel = (k) => ({ 0.5: '½', 0.25: '¼', 1: '1', 2: '2' })[k] || (Math
 // aliquota effettiva dello strumento (12,5% sulla quota di titoli di Stato, 26% il resto). Modulo 2:
 // montante composto. Modulo 3: imposta sulla plusvalenza. Modulo 4 (rischio): MDD storico dello strumento.
 const DEFAULT_TER = { etf: 0.002, stock: 0, crypto: 0 };
-function projParams(i, r) {
-  const cagr = r?.forward?.expected;
+function projParams(i, r, growthForward = false) {
+  // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
+  // + dividendo + valutazione: prospettive di crescita aggiornate, come nel metodo Gemini) invece del
+  // rendimento atteso prudenziale mescolato con l'equilibrio CAPM.
+  const cagr = growthForward && Number.isFinite(r?.forward?.fundExpected) ? r.forward.fundExpected : r?.forward?.expected;
   if (!Number.isFinite(cagr)) return null;
   const tax = Number.isFinite(r?.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
   const ter = DEFAULT_TER[i.type] ?? 0;
@@ -1434,7 +1437,7 @@ function renderPortfolio() {
       .map((row, k) => {
         const inst = findByCode(row.isin);
         const r = inst ? state.results[inst.symbol] : null;
-        const pp = inst && r && !r.error ? projParams(inst, r) : null;
+        const pp = inst && r && !r.error ? projParams(inst, r, isStock) : null;
         const prm = paramsOf(row);
         // Guadagno netto atteso per ogni strumento, per orizzonte (azioni: base; bond: × (1 − MDD))
         const gain = row.amount > 0 && prm
@@ -1466,7 +1469,7 @@ function renderPortfolio() {
     const grk = cap > 0 ? portfolioRisk(arr.map((r) => { const inst = findByCode(r.isin); const res = inst ? state.results[inst.symbol] : null; return { weight: r.amount || 0, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null }; }), rho) : null;
     const prof = grk ? classifyPortfolio({ vol: grk.vol, mdd: grk.mdd }) : null;
     const note = isStock
-      ? "Azioni singole (metodo del documento PRJ-FIN-2026-010): niente TER né rendimento di mercato garantito, imposta 26% sulle plusvalenze. Il guadagno netto totale è la somma dei singoli titoli. Oltre allo scenario base sono mostrati Bull e Bear: nelle azioni singole il capitale NON è protetto come in un ETF diversificato."
+      ? "Azioni singole (metodo del documento PRJ-FIN-2026-010): niente TER né rendimento di mercato garantito, imposta 26% sulle plusvalenze. Il CAGR del modello usa le prospettive di crescita aggiornate (fondamentali forward: crescita utili attesa + dividendo + valutazione). Il guadagno netto totale è la somma dei singoli titoli. Oltre allo scenario base sono mostrati Bull e Bear: nelle azioni singole il capitale NON è protetto come in un ETF diversificato."
       : "Stesso algoritmo degli ETF (019): CAGR atteso − TER, montante composto, imposta sulla plusvalenza, CAGR netto atteso × (1 − MDD).";
     let summary = '';
     if (og && isStock) {
@@ -1632,9 +1635,10 @@ function renderPortfolio() {
       const inst = findByCode(row.isin);
       if (inst) {
         row.name = inst.name;
-        // Nuovo strumento: CAGR atteso, TER, aliquota e MDD storico dal modello (l'utente può poi correggerli)
+        // Nuovo strumento: CAGR atteso, TER, aliquota e MDD storico dal modello (l'utente può poi correggerli).
+        // Per le azioni si usa il CAGR fondamentale forward (prospettive di crescita aggiornate, metodo Gemini).
         const r = state.results[inst.symbol];
-        const pp = r && !r.error ? projParams(inst, r) : null;
+        const pp = r && !r.error ? projParams(inst, r, bucket === 'stocks') : null;
         if (pp) {
           row.cagr = pp.cagr;
           row.tax = pp.tax;
@@ -1689,10 +1693,11 @@ function renderPortfolio() {
     renderPortfolio();
   });
   $('#pf-model').addEventListener('click', () => {
+    const inStocks = new Set(p.stocks || []);
     for (const row of [...p.rows, ...(p.stocks || []), ...(p.bonds || [])]) {
       const inst = findByCode(row.isin);
       const r = inst ? state.results[inst.symbol] : null;
-      const pp = inst && r && !r.error ? projParams(inst, r) : null;
+      const pp = inst && r && !r.error ? projParams(inst, r, inStocks.has(row)) : null;
       if (pp) {
         row.cagr = pp.cagr;
         row.tax = pp.tax;

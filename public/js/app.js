@@ -1330,6 +1330,8 @@ function renderPortfolio() {
   const p = state.portfolio;
   const body = $('#pf-body');
   const pcIn = (v, d = 2) => (Number.isFinite(v) ? String(+(v * 100).toFixed(d)) : ''); // input numerici: punto decimale
+  const years = Array.from(new Set([Number(p.years?.[0]) || 5, Number(p.years?.[1]) || 7])).filter((y) => y > 0);
+  const wSum = p.rows.reduce((a, x) => a + (x.weight || 0), 0);
   const rowsHtml = p.rows
     .map((row, k) => {
       const inst = findByCode(row.isin);
@@ -1343,15 +1345,25 @@ function renderPortfolio() {
         <td class="num"><input data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
         <td class="num"><input data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
         <td class="num"><input data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
+        ${(() => {
+          // Guadagno netto atteso della quota: algoritmo 019 sui parametri della riga, per orizzonte, × (1 − MDD)
+          const quota = p.capital * ((row.weight || 0) / (wSum || 1));
+          if (!(quota > 0) || !Number.isFinite(row.cagr)) return '<td class="num muted">–</td><td class="num muted">–</td>';
+          const prm = { cagr: row.cagr, ter: Number.isFinite(row.ter) ? row.ter : 0, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - (Number.isFinite(row.ter) ? row.ter : 0) };
+          const cells = years.map((y) => {
+            const h = project(prm, quota, y);
+            const adj = Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
+            return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${y}a</span></div>${adj != null ? `<div class="muted small-note">× (1 − MDD) = <b class="${cls(adj)}">${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</b></div>` : ''}`;
+          });
+          return `<td class="num">${eur(Math.round(quota))}</td><td class="num">${cells.join('')}</td>`;
+        })()}
         <td class="num">${kn != null ? `<span class="${cls(kn)}">${kn > 0 ? '+' : ''}${pct(kn, false)}</span>` : '<span class="muted">–</span>'}</td>
         <td><button class="ghost small" data-del="${k}" aria-label="Rimuovi">✕</button></td>
       </tr>`;
     })
     .join('');
-  const years = Array.from(new Set([Number(p.years?.[0]) || 5, Number(p.years?.[1]) || 7])).filter((y) => y > 0);
   const out = projectPortfolio({ rows: p.rows.map((x) => ({ ...x })), capital: p.capital, years });
   const fmt = (x) => eur(Math.round(x * 100) / 100);
-  const wSum = p.rows.reduce((a, x) => a + (x.weight || 0), 0);
   const rho = Number.isFinite(p.rho) ? p.rho : 0.65;
   const rk = portfolioRisk(
     p.rows.map((row) => {
@@ -1382,7 +1394,7 @@ function renderPortfolio() {
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
     </div>
-    <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Peso</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num" title="Drawdown massimo storico (modulo 4)">MDD storico</th><th class="num" title="Netto Reale 5A del modello (simulazione), per confronto">NR5 modello</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+    <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Peso</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num" title="Drawdown massimo storico (modulo 4)">MDD storico</th><th class="num">Quota</th><th class="num" title="Guadagno netto atteso della quota (algoritmo 019: CAGR − TER, montante composto, imposta) per ogni orizzonte, e CAGR netto atteso = netto × (1 − MDD)">Guadagno netto atteso</th><th class="num" title="Netto Reale 5A del modello (simulazione), per confronto">NR5 modello</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
     ${out ? `
     <h3>Parametri ponderati</h3>
     <table class="mini"><tbody>

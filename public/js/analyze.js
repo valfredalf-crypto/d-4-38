@@ -53,6 +53,7 @@ export function tableResult(r) {
     },
     sim: {
       maxLoss: r4(s.maxLoss),
+      histMdd: r4(s.histMdd),
       mddMedian: r4(s.mddMedian),
       netGain: r4(s.netGain),
       netP25: r4(s.netP25),
@@ -219,6 +220,9 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     // Indicatori "storici" mostrati: solo sui dati reali
     const lookback = Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1;
     sim.historicalMdd = historicalMaxDrawdown(prices.slice(-lookback));
+    // MDD storico per il modulo di rischio del documento 019: sulla serie usata per la simulazione (con
+    // ricostruzione tramite indice se lo storico reale è corto, per non sottostimare il rischio dei titoli giovani)
+    sim.histMdd = historicalMaxDrawdown((filled ? filled.closesEur : prices).slice(-lookback));
     sim.historyYears = Math.min(realYears, o.lookbackYears);
     sim.backfilledYears = filled ? filled.backfilledWeeks / WEEKS_PER_YEAR : 0;
     sim.backfillProxy = filled ? (instrument.type === 'crypto' ? 'Bitcoin' : 'MSCI World') : null;

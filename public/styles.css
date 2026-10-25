@@ -235,21 +235,21 @@ table.mini .num { white-space: nowrap; }
   /* Colonne: 1 #, 2 Strumento, 3 corretto rischio €, 4 NR5 €, 5 probabile 75% €, 6 bilanciato/perdita max, 7 medio/perdita max,
      8 Tipo, 9 Prezzo, 10–13 variazioni, 14 Atteso, 15 Crescita, 16 Perdita max, 17 DD mediano, 18 Mediana, 19 Media,
      20 Rapporto, 21 Rapporto finale, 22 Bilanciato, 23 Rapporto DD, 24 P(perdita), 25 P(≥25%), 26 P(≥50%), 27 Sharpe, 28 Sortino */
-  /* Telefono, vista "Previsioni": proiezione CAGR (3), corretto rischio (4), NR5 (5), probabile 75% (6) */
-  #table th:nth-child(n+7), #table td:nth-child(n+7) { display: none; }
+  /* Telefono, vista "Previsioni": CAGR netto atteso (3), netto 019 (4), corretto rischio (5), NR5 (6), probabile 75% (7) */
+  #table th:nth-child(n+8), #table td:nth-child(n+8) { display: none; }
   .mobile-view { display: flex; }
-  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (11–14) */
-  body.mview-perf #table th:nth-child(n+11):nth-child(-n+14), body.mview-perf #table td:nth-child(n+11):nth-child(-n+14) { display: table-cell; }
-  body.mview-perf #table th:nth-child(n+3):nth-child(-n+6), body.mview-perf #table td:nth-child(n+3):nth-child(-n+6) { display: none; }
-  /* Vista "Rischio": perdita max (17), drawdown mediano (18), P(perdita) (25), Sortino (29) */
-  body.mview-risk #table th:nth-child(n+17):nth-child(-n+18), body.mview-risk #table td:nth-child(n+17):nth-child(-n+18),
-  body.mview-risk #table th:nth-child(25), body.mview-risk #table td:nth-child(25),
-  body.mview-risk #table th:nth-child(29), body.mview-risk #table td:nth-child(29) { display: table-cell; }
-  body.mview-risk #table th:nth-child(n+3):nth-child(-n+6), body.mview-risk #table td:nth-child(n+3):nth-child(-n+6) { display: none; }
-  /* Vista "Probabilità": probabile 75% (6), mediana (19), P(≥+25%) (26), P(≥+50%) (27) */
-  body.mview-prob #table th:nth-child(19), body.mview-prob #table td:nth-child(19),
-  body.mview-prob #table th:nth-child(n+26):nth-child(-n+27), body.mview-prob #table td:nth-child(n+26):nth-child(-n+27) { display: table-cell; }
-  body.mview-prob #table th:nth-child(n+3):nth-child(-n+5), body.mview-prob #table td:nth-child(n+3):nth-child(-n+5) { display: none; }
+  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (12–15) */
+  body.mview-perf #table th:nth-child(n+12):nth-child(-n+15), body.mview-perf #table td:nth-child(n+12):nth-child(-n+15) { display: table-cell; }
+  body.mview-perf #table th:nth-child(n+3):nth-child(-n+7), body.mview-perf #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
+  /* Vista "Rischio": perdita max (18), drawdown mediano (19), P(perdita) (26), Sortino (30) */
+  body.mview-risk #table th:nth-child(n+18):nth-child(-n+19), body.mview-risk #table td:nth-child(n+18):nth-child(-n+19),
+  body.mview-risk #table th:nth-child(26), body.mview-risk #table td:nth-child(26),
+  body.mview-risk #table th:nth-child(30), body.mview-risk #table td:nth-child(30) { display: table-cell; }
+  body.mview-risk #table th:nth-child(n+3):nth-child(-n+7), body.mview-risk #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
+  /* Vista "Probabilità": probabile 75% (7), mediana (20), P(≥+25%) (27), P(≥+50%) (28) */
+  body.mview-prob #table th:nth-child(20), body.mview-prob #table td:nth-child(20),
+  body.mview-prob #table th:nth-child(n+27):nth-child(-n+28), body.mview-prob #table td:nth-child(n+27):nth-child(-n+28) { display: table-cell; }
+  body.mview-prob #table th:nth-child(n+3):nth-child(-n+6), body.mview-prob #table td:nth-child(n+3):nth-child(-n+6) { display: none; }
   th, td { padding: 8px 3px; }
   #table td { font-size: 12.5px; }
   th .l { display: none; }

@@ -60,6 +60,12 @@ export function backtestOne({ instrument, history, benchmark, cryptoBenchmark },
       balanced: r4(sim.balanced),
       expLoss: r4(sim.expLoss),
       nr5: r4(sim.nr5),
+      // Algoritmo 019: CAGR atteso − TER (0,20% ETF), montante composto sull'orizzonte, imposta sulla plusvalenza
+      proj019: r4((() => {
+        const ter = instrument.type === 'etf' ? 0.002 : 0;
+        const g = (1 + fwd.expected - ter) ** (horizon / WEEKS_PER_YEAR) - 1;
+        return g > 0 ? g * (1 - (sim.taxRate ?? 26) / 100) : g;
+      })()),
       ratio: r4(sim.ratio),
       vol: r4(sim.annualVol),
       expected: r4(fwd.expected),
@@ -147,11 +153,14 @@ export function summarize(rows) {
       aboveP95: r4(share(rows, (r) => r.real.net > r.pred.netP95)), // atteso ≈ 5%
       aboveMedian: r4(share(rows, (r) => r.real.net > r.pred.netMedian)), // atteso ≈ 50%
       medianRankCorr: r4(spearman(rows.map((r) => r.pred.netMedian), rows.map((r) => r.real.net))),
+      proj019RankCorr: r4(spearman(rows.map((r) => r.pred.proj019), rows.map((r) => r.real.net))),
+      nr5RankCorr: r4(spearman(rows.map((r) => r.pred.nr5), rows.map((r) => r.real.net))),
       realNetMedian: r4(median(rows.map((r) => r.real.net))),
       predNetMedian: r4(median(rows.map((r) => r.pred.netMedian))),
     },
     byRatio: quintiles(rows, (r) => r.pred.ratio, 'low'),
     byMedian: quintiles(rows, (r) => r.pred.netMedian, 'high'),
+    byProj019: quintiles(rows, (r) => r.pred.proj019, 'high'),
     probLoss: pl.filter((b) => b.n > 0),
   };
 }

@@ -41,6 +41,7 @@ export const INDICATORS = [
 ];
 
 export const PRESETS = [
+  { label: 'Netto 019 > 30%', filters: { proj: { min: 30 } } },
   { label: 'NR5 > 20%', filters: { overall: { min: 20 } } },
   { label: 'Sortino > 1', filters: { sortino: { min: 1 } } },
   { label: 'Rapporto < 1', filters: { ratio: { max: 1 } } },

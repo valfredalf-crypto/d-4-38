@@ -28,7 +28,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'overall', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'proj', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -611,7 +611,7 @@ function rowValues(i) {
 
 function sortRows(rows) {
   const { key, dir } = state.view.sort;
-  const k = key === 'rank' ? 'overall' : key;
+  const k = key === 'rank' ? 'proj' : key;
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -627,8 +627,8 @@ function sortRows(rows) {
 }
 
 function rankMap(rows) {
-  // La posizione in classifica è sempre per guadagno plausibile decrescente, indipendentemente dall'ordinamento scelto.
-  const ranked = rows.filter((r) => r.overall != null && Number.isFinite(r.overall)).sort((a, b) => b.overall - a.overall);
+  // La posizione in classifica è sempre per guadagno netto 5a (algoritmo 019) decrescente, indipendentemente dall'ordinamento scelto.
+  const ranked = rows.filter((r) => r.proj != null && Number.isFinite(r.proj)).sort((a, b) => b.proj - a.proj);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
 
@@ -955,7 +955,8 @@ function renderBacktest(bt) {
   const row = (label, key, fmt, expected, group = 'risk') =>
     `<tr><td>${label}</td><td class="num">${expected}</td><td class="num"><b>${fmt(f[group][key])}</b></td><td class="num">${fmt(h?.[group]?.[key])}</td></tr>`;
   const p0 = (x) => pct(x, false, 0);
-  const q = f.byRatio;
+  const q = f.byProj019 || f.byRatio;
+  const qIs019 = !!f.byProj019;
   const types = bt.modes.forward.byType || {};
   const TYPE_NAMES = { stock: 'Azioni', etf: 'ETF/ETC', crypto: 'Crypto' };
   const cal = bt.calibration;
@@ -988,15 +989,17 @@ function renderBacktest(bt) {
         ${row('Sopra lo scenario migliore (95%)', 'aboveP95', p0, '≈ 5%', 'returns')}
         ${row('Sopra la mediana prevista', 'aboveMedian', p0, '≈ 50%', 'returns')}
         ${row('Ordine: guadagno previsto vs reale (correlazione)', 'medianRankCorr', num2, 'alta', 'returns')}
+        ${f.returns.proj019RankCorr != null ? row('Ordine: guadagno netto 019 (CAGR − TER, imposta) vs reale', 'proj019RankCorr', num2, 'alta', 'returns') : ''}
+        ${f.returns.nr5RankCorr != null ? row('Ordine: NR5 previsto vs reale', 'nr5RankCorr', num2, 'alta', 'returns') : ''}
         <tr><td>Guadagno netto mediano: previsto → reale</td><td></td><td class="num"><b>${pct(f.returns.predNetMedian, true)} → ${pct(f.returns.realNetMedian, true)}</b></td><td class="num">${pct(h?.returns?.predNetMedian, true)} → ${pct(h?.returns?.realNetMedian, true)}</td></tr>
       </tbody></table></div>
 
-    <h3>La classifica funziona? (5 gruppi secondo il rapporto previsto)</h3>
+    <h3>La classifica funziona? (5 gruppi secondo ${qIs019 ? 'il guadagno netto 019 previsto' : 'il rapporto previsto'})</h3>
     <div class="scroll"><table>
-      <thead><tr><th>Gruppo</th><th class="num">Rapporto previsto</th><th class="num">Guadagno reale medio</th><th class="num">Guadagno reale mediano</th><th class="num">Perdita max reale</th><th class="num">In perdita</th></tr></thead>
+      <thead><tr><th>Gruppo</th><th class="num">${qIs019 ? 'Netto 019 previsto' : 'Rapporto previsto'}</th><th class="num">Guadagno reale medio</th><th class="num">Guadagno reale mediano</th><th class="num">Perdita max reale</th><th class="num">In perdita</th></tr></thead>
       <tbody>${q
         .map(
-          (g, k) => `<tr><td>${k === 0 ? '1 (migliori)' : k === 4 ? '5 (peggiori)' : k + 1}</td><td class="num">${g.predicted >= 1e8 ? '∞' : num2(g.predicted)}</td><td class="num ${cls(g.realNetMean)}">${pct(g.realNetMean, true)}</td><td class="num ${cls(g.realNetMedian)}">${pct(g.realNetMedian, true)}</td><td class="num neg">−${pct(g.realMddMedian)}</td><td class="num">${p0(g.realLossShare)}</td></tr>`,
+          (g, k) => `<tr><td>${k === 0 ? '1 (migliori)' : k === 4 ? '5 (peggiori)' : k + 1}</td><td class="num">${qIs019 ? pct(g.predicted, true) : g.predicted >= 1e8 ? '∞' : num2(g.predicted)}</td><td class="num ${cls(g.realNetMean)}">${pct(g.realNetMean, true)}</td><td class="num ${cls(g.realNetMedian)}">${pct(g.realNetMedian, true)}</td><td class="num neg">−${pct(g.realMddMedian)}</td><td class="num">${p0(g.realLossShare)}</td></tr>`,
         )
         .join('')}</tbody></table></div>
 

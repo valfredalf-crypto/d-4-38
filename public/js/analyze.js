@@ -45,6 +45,7 @@ export function tableResult(r) {
       expected: r4(r.forward?.expected),
       growth: r4(r.forward?.expectedGrowth),
       growthSource: r.forward?.growthSource ?? null,
+      vol: r4(r.forward?.vol), // volatilità annua usata nella simulazione (per il drag della volatilità nel CAGR)
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
       ...(r.forward?.fundamentalsDetail?.evidence != null ? { evidence: r4(r.forward.fundamentalsDetail.evidence) } : {}),
       ...(r.forward?.top10 != null ? { top10: r4(r.forward.top10), ...(r.forward.fundOfFunds ? { fundOfFunds: true } : {}) } : {}),

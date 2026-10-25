@@ -1,7 +1,7 @@
 // Filtri sugli indicatori (min/max). I valori percentuali si inseriscono in punti percentuali
 // (es. 40 = 40%); la perdita massima si indica come numero positivo (40 = perdita fino al 40%).
 export const INDICATORS = [
-  { key: 'proj', label: 'Proiezione netta CAGR 5a (deterministica)', pct: true },
+  { key: 'proj', label: 'Proiezione netta CAGR 5a (rischio incluso)', pct: true },
   { key: 'overall', label: 'Netto Reale 5A (NR5)', pct: true },
   { key: 'es5', label: 'Perdita media nel 5% peggiore degli scenari', pct: true },
   { key: 'sharpe', label: 'Indice di Sharpe', pct: false },

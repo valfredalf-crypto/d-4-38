@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, riskAdjustedCagr } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -23,4 +23,15 @@ test('proiezione deterministica: pesi normalizzati e nessuna imposta su una perd
   assert.equal(loss.horizons[0].tax, 0);
   assert.ok(loss.horizons[0].netGain < 0);
   assert.equal(weightedParams([]), null);
+});
+
+test('riskAdjustedCagr: drag della volatilità e penalità per la perdita nel 5% peggiore', () => {
+  const r = riskAdjustedCagr({ expected: 0.1, vol: 0.2, es5: 0.3, k: 0.5, years: 5 });
+  assert.ok(Math.abs(r.drag - 0.02) < 1e-12);
+  assert.ok(Math.abs(r.lossPenalty - 0.03) < 1e-12);
+  assert.ok(Math.abs(r.cagr - 0.05) < 1e-12);
+  // una penny stock con volatilità 100% ha CAGR composto negativo anche con media attesa +20%
+  assert.ok(riskAdjustedCagr({ expected: 0.2, vol: 1, es5: 0.8, k: 1 / 3, years: 5 }).cagr < 0);
+  assert.equal(riskAdjustedCagr({ expected: null }), null);
+  assert.ok(Math.abs(riskAdjustedCagr({ expected: 0.07 }).cagr - 0.07) < 1e-12);
 });

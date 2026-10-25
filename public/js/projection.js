@@ -43,3 +43,17 @@ export function projectPortfolio({ rows, capital, years }) {
   if (!params) return null;
   return { params, horizons: years.map((y) => project(params, capital, y)) };
 }
+
+/**
+ * CAGR corretto per il rischio di perdita, da usare nella proiezione composta:
+ *   CAGR atteso − σ²/2 (drag della volatilità: il tasso composto che si realizza davvero lungo il
+ *   percorso mediano, inferiore alla media aritmetica) − k × ES5 / anni (perdita media nel 5% peggiore
+ *   degli scenari, spalmata sugli anni dell'orizzonte, con il coefficiente k del profilo NR5).
+ * Restituisce null senza rendimento atteso. Mancando σ o ES5 la relativa correzione è 0.
+ */
+export function riskAdjustedCagr({ expected, vol, es5, k = 0.5, years = 5 }) {
+  if (!Number.isFinite(expected)) return null;
+  const drag = Number.isFinite(vol) ? (vol * vol) / 2 : 0;
+  const lossPenalty = Number.isFinite(es5) && years > 0 ? (k * Math.max(0, es5)) / years : 0;
+  return { cagr: expected - drag - lossPenalty, expected, drag, lossPenalty };
+}

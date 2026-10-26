@@ -1359,7 +1359,8 @@ function stressTable({ beta, netCagr, capital, betaNote = '', profile = null }) 
 function loadPortfolio() {
   try {
     const p = JSON.parse(localStorage.getItem('trmc.portfolio') || 'null');
-    if (p?.rows?.length) {
+    if (p && (p.rows?.length || p.stocks?.length || p.bonds?.length)) {
+      p.rows = Array.isArray(p.rows) ? p.rows : [];
       p.stocks = Array.isArray(p.stocks) ? p.stocks : [];
       p.bonds = Array.isArray(p.bonds) ? p.bonds : [];
       return p;

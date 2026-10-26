@@ -1658,7 +1658,7 @@ function renderPortfolio() {
         ...(p.bonds || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd })),
       ];
       const nSec = [p.rows.length > 0, (p.stocks || []).length > 0, (p.bonds || []).length > 0].filter(Boolean).length;
-      if (nSec < 2) return '';
+      if (nSec < 1) return '';
       const valid = items.filter((i) => i.amount > 0 && Number.isFinite(i.cagr));
       const totCap = valid.reduce((a, i) => a + i.amount, 0);
       if (!(totCap > 0)) return '';
@@ -1697,7 +1697,7 @@ function renderPortfolio() {
         ...(p.bonds || []).map((r) => ({ name: nameOf(r), amount: r.amount, cagr: r.cagr, ter: r.ter, mdd: r.mdd })),
       ];
       const nSections = [p.rows.length > 0, (p.stocks || []).length > 0, (p.bonds || []).length > 0].filter(Boolean).length;
-      if (nSections < 2) return ''; // una sola sezione: lo stress test della sezione basta
+      if (nSections < 1) return '';
       const yr = years[0];
       const ts = totalPortfolioStress({ items, years: yr });
       if (!ts) return '';

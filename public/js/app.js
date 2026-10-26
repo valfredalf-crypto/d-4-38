@@ -1404,7 +1404,11 @@ function renderPortfolio() {
   const body = $('#pf-body');
   const pcIn = (v, d = 2) => (Number.isFinite(v) ? String(+(v * 100).toFixed(d)) : ''); // input numerici: punto decimale
   const years = Array.from(new Set([Number(p.years?.[0]) || 5, Number(p.years?.[1]) || 7])).filter((y) => y > 0);
-  const wSum = p.rows.reduce((a, x) => a + (x.weight || 0), 0);
+  // Sezione ETF a importi in euro: la % di ogni strumento si calcola dagli importi. Migrazione da vecchi
+  // portafogli a pesi: se manca l'importo ma c'è il peso, si deriva dall'ultimo capitale noto.
+  for (const row of p.rows) if (!Number.isFinite(row.amount) && Number.isFinite(row.weight)) row.amount = Math.round((p.capital || 12000) * row.weight);
+  const wSum = p.rows.reduce((a, x) => a + (x.amount || 0), 0); // capitale ETF = somma degli importi
+  if (wSum > 0) p.capital = wSum;
   const rowsHtml = p.rows
     .map((row, k) => {
       const inst = findByCode(row.isin);
@@ -1413,14 +1417,14 @@ function renderPortfolio() {
       const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
       return `<tr data-k="${k}">
         <td><input data-bucket="rows" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
-        <td class="num"><input data-bucket="rows" data-f="weight" type="number" step="1" min="0" value="${pcIn(row.weight, 1)}" size="4"> %</td>
+        <td class="num"><input data-bucket="rows" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €<div class="muted small-note">${wSum > 0 && Number.isFinite(row.amount) ? pct(row.amount / wSum, false, 1) + ' del capitale' : '% automatica'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
         <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
         <td class="num"><input data-bucket="rows" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-bucket="rows" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
         <td class="num"><input data-bucket="rows" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="rows" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
         ${(() => {
           // Guadagno netto atteso della quota: algoritmo 019 sui parametri della riga, per orizzonte, × (1 − MDD)
-          const quota = p.capital * ((row.weight || 0) / (wSum || 1));
+          const quota = row.amount || 0;
           if (!(quota > 0) || !Number.isFinite(row.cagr)) return '<td class="num muted">–</td><td class="num muted">–</td>';
           const prm = { cagr: row.cagr, ter: Number.isFinite(row.ter) ? row.ter : 0, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - (Number.isFinite(row.ter) ? row.ter : 0) };
           const cells = years.map((y) => {
@@ -1435,14 +1439,14 @@ function renderPortfolio() {
       </tr>`;
     })
     .join('');
-  const out = projectPortfolio({ rows: p.rows.map((x) => ({ ...x })), capital: p.capital, years });
+  const out = projectPortfolio({ rows: p.rows.map((x) => ({ ...x, weight: x.amount || 0 })), capital: p.capital, years });
   const fmt = (x) => eur(Math.round(x * 100) / 100);
   const rho = Number.isFinite(p.rho) ? p.rho : 0.65;
   const rk = portfolioRisk(
     p.rows.map((row) => {
       const inst = findByCode(row.isin);
       const r = inst ? state.results[inst.symbol] : null;
-      return { weight: row.weight, mdd: Number.isFinite(row.mdd) ? row.mdd : null, vol: r && !r.error && Number.isFinite(r.forward?.vol) ? r.forward.vol : null };
+      return { weight: row.amount || 0, mdd: Number.isFinite(row.mdd) ? row.mdd : null, vol: r && !r.error && Number.isFinite(r.forward?.vol) ? r.forward.vol : null };
     }),
     rho,
   );
@@ -1539,21 +1543,21 @@ function renderPortfolio() {
     const inst = findByCode(row.isin);
     const r = inst ? state.results[inst.symbol] : null;
     const v = r && !r.error ? nr5Of(r.sim, inst.type) : null;
-    if (v != null && row.weight > 0) {
-      nr5W += row.weight * v;
-      nr5Cov += row.weight;
+    if (v != null && row.amount > 0) {
+      nr5W += row.amount * v;
+      nr5Cov += row.amount;
     }
   }
   body.innerHTML = `
-    <p class="muted">Algoritmo del documento PRJ-FIN-2026-019. Modulo 1: CAGR lordo, TER e aliquota ponderati per il peso, CAGR netto pre-tasse = CAGR − TER. Modulo 2: montante = capitale × (1 + CAGR netto)<sup>anni</sup>. Modulo 3: imposta sulla plusvalenza, guadagno netto = plusvalenza − imposta. Modulo 4: rischio = Σ peso × MDD storico e volatilità con covarianza. I pesi vengono normalizzati alla loro somma${Math.abs(wSum - 1) > 0.005 ? ` <b class="neg">(ora ${pct(wSum, false, 0)})</b>` : ''}.</p>
+    <p class="muted">Algoritmo del documento PRJ-FIN-2026-019. Modulo 1: CAGR lordo, TER e aliquota ponderati per il peso, CAGR netto pre-tasse = CAGR − TER. Modulo 2: montante = capitale × (1 + CAGR netto)<sup>anni</sup>. Modulo 3: imposta sulla plusvalenza, guadagno netto = plusvalenza − imposta. Modulo 4: rischio = Σ peso × MDD storico e volatilità con covarianza. Nella sezione ETF si inserisce l'importo in euro di ogni strumento e la percentuale sul capitale è calcolata automaticamente.</p>
     <div class="row" style="flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0">
-      <label>Capitale <input id="pf-capital" type="number" step="100" min="0" value="${p.capital}" size="7"> €</label>
+      <span>Capitale investito (ETF): <b>${eur(Math.round(wSum))}</b> <span class="muted">(somma degli importi)</span></span>
       <label>Orizzonti <input id="pf-y1" type="number" min="1" max="40" value="${years[0]}" size="2"> e <input id="pf-y2" type="number" min="1" max="40" value="${years[1] ?? 7}" size="2"> anni</label>
-      <button class="ghost small" data-addbucket="rows">+ Strumento (ETF, a %)</button>
+      <button class="ghost small" data-addbucket="rows">+ Strumento (ETF)</button>
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
     </div>
-    <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Peso</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num" title="Drawdown massimo storico (modulo 4)">MDD storico</th><th class="num">Quota</th><th class="num" title="Guadagno netto atteso della quota (algoritmo 019: CAGR − TER, montante composto, imposta) per ogni orizzonte, e CAGR netto atteso = netto × (1 − MDD)">Guadagno netto atteso</th><th class="num" title="Netto Reale 5A del modello (simulazione), per confronto">NR5 modello</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
+    <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo €</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num" title="Drawdown massimo storico (modulo 4)">MDD storico</th><th class="num">Quota</th><th class="num" title="Guadagno netto atteso della quota (algoritmo 019: CAGR − TER, montante composto, imposta) per ogni orizzonte, e CAGR netto atteso = netto × (1 − MDD)">Guadagno netto atteso</th><th class="num" title="Netto Reale 5A del modello (simulazione), per confronto">NR5 modello</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
     ${out ? `
     <h3>Parametri ponderati</h3>
     <table class="mini"><tbody>
@@ -1591,8 +1595,8 @@ function renderPortfolio() {
         return inst.type || 'altro';
       };
       const groups = CLASSES.map((c) => {
-        const rows = p.rows.filter((row) => row.weight > 0 && Number.isFinite(row.cagr) && classOf(row) === c.key);
-        const gw = rows.reduce((a, r) => a + r.weight, 0);
+        const rows = p.rows.filter((row) => row.amount > 0 && Number.isFinite(row.cagr) && classOf(row) === c.key);
+        const gw = rows.reduce((a, r) => a + (r.amount || 0), 0);
         return { ...c, rows, gw };
       }).filter((g) => g.gw > 0);
       if (groups.length < 2) return ''; // una sola classe: la proiezione aggregata basta
@@ -1641,14 +1645,14 @@ function renderPortfolio() {
       <p class="muted small-note">Gli scenari derivano dal rischio del portafoglio: σ<sub>p</sub> (volatilità attesa ${rk.vol != null ? pct(rk.vol, false, 1) : 'n.d.'}) e MDD<sub>p</sub> (drawdown massimo storico −${pct(rk.mdd, false, 1)}), ricalcolati da strumenti e pesi. Tempo di recupero = 12 × ln(1 ÷ (1 − calo)) ÷ ln(1 + CAGR netto ${pct(out.params.net, false, 2)}).</p>`;
     })()}
     <h3>Confronto con la simulazione</h3>
-    <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}
+    <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con importo e CAGR.</p>'}
     ${amountSection('stocks', 'Azioni (importi in €)')}
     ${amountSection('bonds', 'Bond (importi in €)')}
     ${(() => {
       // Stress test TOTALE di tutto il portafoglio (ETF + Azioni + Bond), metodo del documento 041
       const nameOf = (row) => findByCode(row.isin)?.name || row.isin || 'strumento';
       const items = [
-        ...p.rows.map((r) => ({ name: nameOf(r), amount: p.capital * ((r.weight || 0) / (wSum || 1)), cagr: r.cagr, ter: r.ter, mdd: r.mdd })),
+        ...p.rows.map((r) => ({ name: nameOf(r), amount: r.amount || 0, cagr: r.cagr, ter: r.ter, mdd: r.mdd })),
         ...(p.stocks || []).map((r) => ({ name: nameOf(r), amount: r.amount, cagr: r.cagr, ter: 0, mdd: r.mdd })),
         ...(p.bonds || []).map((r) => ({ name: nameOf(r), amount: r.amount, cagr: r.cagr, ter: r.ter, mdd: r.mdd })),
       ];
@@ -1734,7 +1738,7 @@ function renderPortfolio() {
   });
   for (const b of $$('#pf-body [data-addbucket]')) b.addEventListener('click', () => {
     const bk = b.dataset.addbucket;
-    if (bk === 'rows') p.rows.push({ isin: '', name: '', weight: 0, ter: 0.002, cagr: null, tax: 0.26, mdd: null });
+    if (bk === 'rows') p.rows.push({ isin: '', name: '', amount: null, ter: 0.002, cagr: null, tax: 0.26, mdd: null });
     else bucketOf(bk).push({ isin: '', name: '', amount: null, ter: bk === 'stocks' ? 0 : 0.002, cagr: null, tax: 0.26, mdd: null });
     savePortfolio(p);
     renderPortfolio();
@@ -1742,7 +1746,10 @@ function renderPortfolio() {
   $('#pf-preset').addEventListener('click', () => {
     // Il preset riguarda la parte ETF (a %): le sezioni Azioni e Bond in euro restano invariate.
     state.portfolio = { ...JSON.parse(JSON.stringify(GEMINI_PORTFOLIO)), stocks: p.stocks || [], bonds: p.bonds || [] };
-    for (const row of state.portfolio.rows) row.manual = ['cagr', 'ter', 'tax', 'mdd']; // valori del documento: fissi finché non si usa «Usa stime del modello»
+    for (const row of state.portfolio.rows) {
+      row.amount = Math.round((state.portfolio.capital || 12000) * (row.weight || 0)); // importi del documento (60/20/20 su 12.000 €)
+      row.manual = ['cagr', 'ter', 'tax', 'mdd']; // valori del documento: fissi finché non si usa «Usa stime del modello»
+    }
     savePortfolio(state.portfolio);
     renderPortfolio();
   });
@@ -1763,7 +1770,7 @@ function renderPortfolio() {
     savePortfolio(p);
     renderPortfolio();
   });
-  $('#pf-capital').addEventListener('change', (e) => {
+  $('#pf-capital')?.addEventListener('change', (e) => {
     p.capital = Math.max(0, parseFloat(e.target.value) || 0);
     savePortfolio(p);
     renderPortfolio();

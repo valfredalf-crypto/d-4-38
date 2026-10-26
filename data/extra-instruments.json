@@ -12,5 +12,12 @@
   "name": "State Street SPDR S&P U.S. Health Care Select Sector UCITS ETF",
   "type": "etf",
   "addedAt": "2026-10-25T12:20:20.408Z"
+ },
+ {
+  "symbol": "NU",
+  "isin": "KYG6683N1034",
+  "name": "Nu Holdings Ltd.",
+  "type": "stock",
+  "addedAt": "2026-10-26T11:58:17.587Z"
  }
 ]

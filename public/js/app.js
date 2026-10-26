@@ -1649,6 +1649,46 @@ function renderPortfolio() {
     ${amountSection('stocks', 'Azioni (importi in €)')}
     ${amountSection('bonds', 'Bond (importi in €)')}
     ${(() => {
+      // Scenario a 5 e 7 anni dell'INTERO portafoglio (ETF + Azioni + Bond), stesso algoritmo 019.
+      // Ogni strumento è proiettato con i suoi parametri (CAGR, TER, aliquota) e i totali sono la somma.
+      const nameOf = (row) => findByCode(row.isin)?.name || row.isin || 'strumento';
+      const items = [
+        ...p.rows.map((r) => ({ amount: r.amount || 0, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd })),
+        ...(p.stocks || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: 0, tax: r.tax, mdd: r.mdd })),
+        ...(p.bonds || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd })),
+      ];
+      const nSec = [p.rows.length > 0, (p.stocks || []).length > 0, (p.bonds || []).length > 0].filter(Boolean).length;
+      if (nSec < 2) return '';
+      const valid = items.filter((i) => i.amount > 0 && Number.isFinite(i.cagr));
+      const totCap = valid.reduce((a, i) => a + i.amount, 0);
+      if (!(totCap > 0)) return '';
+      let mdd = 0;
+      let mddCov = 0;
+      for (const i of valid) if (Number.isFinite(i.mdd)) { mdd += (i.amount / totCap) * Math.min(0.95, Math.abs(i.mdd)); mddCov += i.amount / totCap; }
+      const fmt2 = (x) => eur(Math.round(x * 100) / 100);
+      const scenario = (y) => {
+        let gross = 0, gain = 0, tax = 0, net = 0;
+        for (const i of valid) {
+          const h = project({ cagr: i.cagr, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: Number.isFinite(i.tax) ? i.tax : 0.26, net: i.cagr - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y);
+          gross += h.gross; gain += h.gain; tax += h.tax; net += h.netGain;
+        }
+        const taxRate = gain > 0 ? tax / gain : 0;
+        const adj = net * (1 - mdd);
+        return `<h4 class="pf-h4">Scenario a ${y} anni</h4>
+        <table class="mini"><tbody>
+          <tr><td>Montante lordo (${eur(Math.round(totCap))} investiti)</td><td class="num">${fmt2(gross)}</td></tr>
+          <tr><td>Plusvalenza lorda</td><td class="num">${fmt2(gain)}</td></tr>
+          <tr><td>Imposta (aliquota media ${pct(taxRate, false, 2)})</td><td class="num neg">− ${fmt2(tax)}</td></tr>
+          <tr><th>Guadagno netto finale (${pct(net / totCap, true)})</th><th class="num ${cls(net)}">${net > 0 ? '+' : ''}${fmt2(net)}</th></tr>
+          <tr><td>Capitale netto a scadenza</td><td class="num"><b>${fmt2(totCap + net)}</b></td></tr>
+          <tr><th>CAGR netto atteso: guadagno netto × (1 − MDD<sub>p</sub> ${pct(mdd, false, 1)})</th><th class="num ${cls(adj)}">${adj > 0 ? '+' : ''}${fmt2(adj)} (${pct(adj / totCap, true)})</th></tr>
+        </tbody></table>`;
+      };
+      return `<h3 style="margin-top:26px">Scenario dell'intero portafoglio (ETF + Azioni + Bond)</h3>
+      <p class="muted small-note">Tutte e tre le sezioni insieme, capitale totale <b>${eur(Math.round(totCap))}</b>. Ogni strumento è proiettato col suo CAGR, TER e aliquota (algoritmo 019); i totali sono la somma. Il CAGR netto atteso applica l'MDD storico ponderato del portafoglio.</p>
+      ${years.map(scenario).join('')}`;
+    })()}
+    ${(() => {
       // Stress test TOTALE di tutto il portafoglio (ETF + Azioni + Bond), metodo del documento 041
       const nameOf = (row) => findByCode(row.isin)?.name || row.isin || 'strumento';
       const items = [

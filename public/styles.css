@@ -279,3 +279,5 @@ table.mini .num { white-space: nowrap; }
 
 /* Nel pannello portafoglio le tabelle sono corte: niente altezza minima della tabella principale */
 #pf-body .table-wrap { min-height: 0; max-height: none; }
+
+#pf-body h4.pf-h4 { font-size: 14px; margin: 14px 0 6px; }

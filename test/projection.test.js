@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, stockScenarios } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, stockScenarios, totalPortfolioStress } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -83,4 +83,20 @@ test('stockScenarios: metodo azioni del documento 010 (base/bull/bear, niente TE
   // bear: perdita = MDD, nessuna imposta
   assert.ok(Math.abs(s.bear.netGain + 2400 * 0.4) < 1e-6);
   assert.equal(stockScenarios({ capital: 0, cagr: 0.1 }), null);
+});
+
+test('totalPortfolioStress (doc 041): crash al picco, MDD ponderato, recovery', () => {
+  const items = [
+    { name: 'A', amount: 6000, cagr: 0.1, ter: 0, mdd: 0.5 },
+    { name: 'B', amount: 4000, cagr: 0.06, ter: 0.002, mdd: 0.3 },
+  ];
+  const s = totalPortfolioStress({ items, years: 5 });
+  assert.ok(Math.abs(s.capital - 10000) < 1e-9);
+  // MDD ponderato = 0,6×0,5 + 0,4×0,3 = 0,42
+  assert.ok(Math.abs(s.mdd - 0.42) < 1e-9);
+  assert.ok(s.peak > s.capital);
+  assert.ok(Math.abs(s.postCrash - s.peak * (1 - 0.42)) < 1e-6);
+  assert.ok(s.recoveryMonths > 0);
+  assert.equal(s.breakdown.length, 2);
+  assert.equal(totalPortfolioStress({ items: [] }), null);
 });

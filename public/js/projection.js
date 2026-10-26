@@ -158,3 +158,42 @@ export function stockScenarios({ capital, cagr, tax = 0.26, mdd, years = 5, bull
   const bear = loss != null ? { years, drop: loss, netGain: -capital * loss, finalCapital: capital * (1 - loss), netPct: -loss } : null;
   return { base, bull, bullCagr, bear, cagr, years };
 }
+
+/**
+ * Stress test TOTALE del portafoglio (metodo del documento PRJ-FIN-2026-041): il crash avviene al picco
+ * di fine orizzonte, quando il montante lordo è massimo. A ogni strumento si applica il suo MDD storico;
+ * l'MDD del portafoglio è la media ponderata per peso (Σ wᵢ × MDDᵢ). Restituisce:
+ *   - peak: montante lordo al termine di `years` (Σ importoᵢ × (1 + CAGRᵢ − TERᵢ)^years)
+ *   - mdd: drawdown ponderato; crash: euro bruciati = peak × mdd; postCrash: valore al minimo
+ *   - vsToday: valore post-crash − capitale investito (negativo = sotto il capitale di partenza)
+ *   - recoveryMonths: tempo per tornare al picco componendo al CAGR netto ponderato
+ *   - breakdown: per strumento peso, MDD e contributo al drawdown (wᵢ × MDDᵢ)
+ * `items`: [{ name, amount, cagr, ter, mdd }]. Restituisce null senza capitale.
+ */
+export function totalPortfolioStress({ items, years = 5 }) {
+  const valid = (items || []).filter((i) => i.amount > 0 && Number.isFinite(i.cagr));
+  const capital = valid.reduce((a, i) => a + i.amount, 0);
+  if (!(capital > 0)) return null;
+  let peak = 0;
+  let mdd = 0;
+  let mddCov = 0;
+  let netCagr = 0;
+  const breakdown = [];
+  for (const i of valid) {
+    const net = i.cagr - (Number.isFinite(i.ter) ? i.ter : 0);
+    const gross = i.amount * (1 + net) ** years;
+    peak += gross;
+    const w = i.amount / capital;
+    netCagr += w * net;
+    const m = Number.isFinite(i.mdd) ? Math.min(0.95, Math.abs(i.mdd)) : null;
+    if (m != null) {
+      mdd += w * m;
+      mddCov += w;
+    }
+    breakdown.push({ name: i.name, weight: w, mdd: m, gross });
+  }
+  const crash = peak * mdd;
+  const postCrash = peak - crash;
+  const recoveryMonths = netCagr > 0 && mdd > 0 ? (12 * Math.log(1 / (1 - mdd))) / Math.log(1 + netCagr) : null;
+  return { capital, years, peak, mdd, mddCov, crash, postCrash, vsToday: postCrash - capital, netCagr, recoveryMonths, breakdown };
+}

@@ -2,7 +2,7 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
-import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, GEMINI_PORTFOLIO } from './projection.js';
+import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -1644,6 +1644,35 @@ function renderPortfolio() {
     <p class="muted">${nr5Cov > 0 ? `Netto Reale 5A del modello, ponderato con gli stessi pesi (${pct(nr5Cov / (wSum || 1), false, 0)} del portafoglio con stima): <b class="${cls(nr5W / nr5Cov)}">${nr5W / nr5Cov > 0 ? '+' : ''}${Math.round((nr5W / nr5Cov) * p.capital).toLocaleString('it-IT')} €</b> su ${eur(p.capital)} a ${state.settings.mc.years} anni. L'NR5 include il rischio di perdita (tutti gli scenari, non solo la media) e il netto vero per scenario; la proiezione deterministica no.` : 'Nessuno strumento del portafoglio è in elenco con una stima del modello.'}</p>` : '<p class="neg">Inserisci almeno uno strumento con peso e CAGR.</p>'}
     ${amountSection('stocks', 'Azioni (importi in €)')}
     ${amountSection('bonds', 'Bond (importi in €)')}
+    ${(() => {
+      // Stress test TOTALE di tutto il portafoglio (ETF + Azioni + Bond), metodo del documento 041
+      const nameOf = (row) => findByCode(row.isin)?.name || row.isin || 'strumento';
+      const items = [
+        ...p.rows.map((r) => ({ name: nameOf(r), amount: p.capital * ((r.weight || 0) / (wSum || 1)), cagr: r.cagr, ter: r.ter, mdd: r.mdd })),
+        ...(p.stocks || []).map((r) => ({ name: nameOf(r), amount: r.amount, cagr: r.cagr, ter: 0, mdd: r.mdd })),
+        ...(p.bonds || []).map((r) => ({ name: nameOf(r), amount: r.amount, cagr: r.cagr, ter: r.ter, mdd: r.mdd })),
+      ];
+      const nSections = [p.rows.length > 0, (p.stocks || []).length > 0, (p.bonds || []).length > 0].filter(Boolean).length;
+      if (nSections < 2) return ''; // una sola sezione: lo stress test della sezione basta
+      const yr = years[0];
+      const ts = totalPortfolioStress({ items, years: yr });
+      if (!ts) return '';
+      const months = (m) => (m == null ? '<span class="neg">nessun recupero con questo CAGR</span>' : `≈ ${Math.round(m)} mesi (circa ${(m / 12).toFixed(1)} anni)`);
+      const fmtk = (x) => eur(Math.round(x));
+      const fme = (row) => `<tr><td>${esc(row.name).slice(0, 40)}</td><td class="num">${pct(row.weight, false, 1)}</td><td class="num neg">${row.mdd != null ? '−' + pct(row.mdd, false, 0) : '<span class="muted">n.d.</span>'}</td><td class="num neg">${row.mdd != null ? '−' + pct(row.weight * row.mdd, false, 1) : '–'}</td></tr>`;
+      return `<h3 style="margin-top:26px">Stress test totale del portafoglio (Black Swan, documento 041)</h3>
+      <p class="muted small-note">Tutto il portafoglio insieme (ETF + Azioni + Bond), capitale ${fmtk(ts.capital)}. Il crash avviene al picco di fine ${yr}° anno, quando il montante è massimo; a ogni strumento si applica il suo MDD storico e l'MDD del portafoglio è la media ponderata.</p>
+      <table class="mini"><thead><tr><th>Strumento</th><th class="num">Peso</th><th class="num">MDD applicato</th><th class="num">Contributo (peso × MDD)</th></tr></thead><tbody>${ts.breakdown.map(fme).join('')}
+        <tr><th>Totale portafoglio</th><th class="num">100%</th><th class="num neg">—</th><th class="num neg">−${pct(ts.mdd, false, 2)}</th></tr></tbody></table>
+      <table class="mini"><tbody>
+        <tr><td>Valore al picco (lordo) a ${yr} anni</td><td class="num"><b>${fmtk(ts.peak)}</b></td></tr>
+        <tr><td>Crash: drawdown ponderato −${pct(ts.mdd, false, 2)}${ts.mddCov < 0.999 ? ` (su ${pct(ts.mddCov, false, 0)} con MDD)` : ''}</td><td class="num neg">− ${fmtk(ts.crash)}</td></tr>
+        <tr><th>Valore dopo il crash (fondo del barile)</th><th class="num">${fmtk(ts.postCrash)}</th></tr>
+        <tr><td>Rispetto al capitale investito (${fmtk(ts.capital)})</td><td class="num ${cls(ts.vsToday)}">${ts.vsToday > 0 ? '+' : ''}${fmtk(ts.vsToday)} (${pct(ts.vsToday / ts.capital, true)})</td></tr>
+        <tr><td>Tempo di recupero stimato (dal minimo al picco, al CAGR netto ${pct(ts.netCagr, false, 2)})</td><td class="num">${months(ts.recoveryMonths)}</td></tr>
+      </tbody></table>
+      <p class="muted small-note"><b>Regole d'ingaggio durante il crash (SOP):</b> 1) niente panic selling: vendere al minimo trasforma una flessione temporanea in perdita permanente. 2) Reinvestire i dividendi degli ETF a distribuzione comprando ciò che è sceso di più (abbassa il prezzo medio, accorcia il recupero). 3) Se hai nuova liquidità, iniettarla mentre il portafoglio è al minimo è la mossa più redditizia. Il recupero può estendere l'orizzonte di 3-4 anni oltre il ${yr}°.</p>`;
+    })()}
   `;
   const bucketOf = (name) => (name === 'stocks' ? (p.stocks ||= []) : name === 'bonds' ? (p.bonds ||= []) : p.rows);
   const upd = (bucket, k, f, v) => {

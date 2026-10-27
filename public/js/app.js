@@ -1357,6 +1357,32 @@ function stressTable({ beta, netCagr, capital, betaNote = '', profile = null }) 
 }
 
 // ---------- proiezione di portafoglio (algoritmo deterministico del documento PRJ-FIN-2026-018)
+// Codice portafoglio condivisibile: solo strumenti, importi e valori impostati a mano; le stime del
+// modello si risincronizzano all'apertura. Base64 URL-safe di un JSON compatto.
+function encodePortfolio(p) {
+  const slim = (arr) => (arr || []).filter((r) => r.isin && (r.amount > 0 || r.weight > 0)).map((r) => ({ i: r.isin, a: Math.round(r.amount || 0), ...(r.manual && r.manual.length ? { c: r.cagr, t: r.ter, x: r.tax, d: r.mdd, m: r.manual } : {}) }));
+  const o = { y: p.years || [5, 7], e: slim(p.rows), s: slim(p.stocks), b: slim(p.bonds) };
+  try {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  } catch {
+    return '';
+  }
+}
+function decodePortfolio(str) {
+  let code = String(str || '').trim();
+  const m = code.match(/[#?&]pf=([A-Za-z0-9_-]+)/); // accetta anche un link completo
+  if (m) code = m[1];
+  if (!code) return null;
+  try {
+    const json = decodeURIComponent(escape(atob(code.replace(/-/g, '+').replace(/_/g, '/'))));
+    const o = JSON.parse(json);
+    const toRows = (arr) => (arr || []).map((r) => ({ isin: r.i, name: '', amount: r.a, ter: r.t, cagr: r.c ?? null, tax: r.x, mdd: r.d ?? null, manual: r.m || [] }));
+    return { capital: 0, years: Array.isArray(o.y) ? o.y : [5, 7], rows: toRows(o.e), stocks: toRows(o.s), bonds: toRows(o.b) };
+  } catch {
+    return null;
+  }
+}
+
 function loadPortfolio() {
   try {
     const p = JSON.parse(localStorage.getItem('trmc.portfolio') || 'null');
@@ -1557,6 +1583,8 @@ function renderPortfolio() {
       <button class="ghost small" data-addbucket="rows">+ Strumento (ETF)</button>
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
+      <button id="pf-share" class="ghost small" title="Copia un link con il tuo portafoglio, da aprire su un altro dispositivo o incollare nell'app">Condividi</button>
+      <button id="pf-import" class="ghost small" title="Incolla un link o codice portafoglio copiato da un altro dispositivo">Importa</button>
     </div>
     <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo €</th><th class="num">TER</th><th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num" title="Drawdown massimo storico (modulo 4)">MDD storico</th><th class="num">Quota</th><th class="num" title="Guadagno netto atteso della quota (algoritmo 019: CAGR − TER, montante composto, imposta) per ogni orizzonte, e CAGR netto atteso = netto × (1 − MDD)">Guadagno netto atteso</th><th class="num" title="Netto Reale 5A del modello (simulazione), per confronto">NR5 modello</th><th></th></tr></thead><tbody>${rowsHtml}</tbody></table></div>
     ${out ? `
@@ -1809,6 +1837,35 @@ function renderPortfolio() {
       }
     }
     savePortfolio(p);
+    renderPortfolio();
+  });
+  $('#pf-share')?.addEventListener('click', async () => {
+    const code = encodePortfolio(p);
+    const link = `${location.origin}${location.pathname}#pf=${code}`;
+    let done = false;
+    try {
+      await navigator.clipboard.writeText(link);
+      done = true;
+    } catch {
+      /* clipboard non disponibile */
+    }
+    const btn = $('#pf-share');
+    if (btn) {
+      btn.textContent = done ? '✓ Link copiato' : 'Copia manuale ↓';
+      setTimeout(() => (btn.textContent = 'Condividi'), 2500);
+    }
+    if (!done) window.prompt('Copia questo link del portafoglio:', link);
+  });
+  $('#pf-import')?.addEventListener('click', () => {
+    const txt = window.prompt('Incolla il link o il codice del portafoglio copiato dall\'altro dispositivo:');
+    if (!txt) return;
+    const imp = decodePortfolio(txt);
+    if (!imp) {
+      alert('Codice non valido.');
+      return;
+    }
+    state.portfolio = imp;
+    savePortfolio(imp);
     renderPortfolio();
   });
   $('#pf-capital')?.addEventListener('change', (e) => {
@@ -2112,6 +2169,19 @@ function bind() {
 async function main() {
   bind();
   buildFiltersPanel();
+  // Portafoglio condiviso via link (#pf=...): lo importa e pulisce l'indirizzo
+  if (location.hash.includes('pf=')) {
+    const imp = decodePortfolio(location.hash);
+    if (imp) {
+      state.portfolio = imp;
+      savePortfolio(imp);
+      try {
+        history.replaceState(null, '', location.pathname + location.search);
+      } catch {
+        /* niente */
+      }
+    }
+  }
   try {
     const meta = STATIC ? await fetch(`data/meta.json?t=${Date.now()}`).then((r) => r.json()) : await api('/api/meta');
     if (STATIC && reloadIfNewBuild(meta)) return;

@@ -281,3 +281,13 @@ table.mini .num { white-space: nowrap; }
 #pf-body .table-wrap { min-height: 0; max-height: none; }
 
 #pf-body h4.pf-h4 { font-size: 14px; margin: 14px 0 6px; }
+
+/* Notifiche (suggerimenti di riallocazione) */
+.notif { border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; padding: 10px 12px; margin: 8px 0; background: var(--panel); }
+.notif-t { margin-bottom: 3px; }
+.notif-ic { font-size: 15px; }
+.notif-buy { border-left-color: #2e9e5b; }
+.notif-good { border-left-color: #2e9e5b; }
+.notif-swap { border-left-color: #2b7de0; }
+.notif-trim { border-left-color: #c2a000; }
+.notif-warn { border-left-color: #d33; }

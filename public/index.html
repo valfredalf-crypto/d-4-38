@@ -18,6 +18,7 @@
       <button id="btn-settings" class="ghost">Parametri</button>
       <button id="btn-backtest" class="ghost">Backtest</button>
       <button id="btn-portfolio" class="ghost" title="Proiezione deterministica di un portafoglio (CAGR − TER, montante composto, imposta sulla plusvalenza)">Portafoglio</button>
+      <button id="btn-notifs" class="ghost" title="Suggerimenti di riallocazione del portafoglio in base agli aggiornamenti di mercato">🔔 Notifiche <span id="notifs-count" class="badge" hidden></span></button>
       <button id="btn-quotes" class="ghost">Aggiorna quotazioni</button>
       <button id="btn-run" class="primary">Calcola classifica</button>
     </div>
@@ -124,6 +125,18 @@
       <button class="ghost" aria-label="Chiudi">✕</button>
     </form>
     <div id="d-body"></div>
+  </dialog>
+
+  <!-- Notifiche -->
+  <dialog id="notifs" class="sheet">
+    <form method="dialog" class="sheet-head">
+      <div>
+        <h2>🔔 Notifiche e riallocazione</h2>
+        <div id="nf-sub" class="muted"></div>
+      </div>
+      <button class="ghost" aria-label="Chiudi">✕</button>
+    </form>
+    <div id="nf-body" class="bt"></div>
   </dialog>
 
   <!-- Backtest -->

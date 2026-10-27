@@ -759,6 +759,7 @@ function render() {
       return typeOk && (state.view.allEtf || i.type !== 'etf' || hasHoldingsEstimate(i));
     }).length;
   }
+  if (state.instruments.length) try { updateNotifsBadge(); } catch { /* niente */ }
   $$('#table th').forEach((th) => {
     const on = th.dataset.sort === state.view.sort.key;
     th.classList.toggle('sorted', on);
@@ -1833,6 +1834,110 @@ function openPortfolio() {
   $('#portfolio').showModal();
 }
 
+// ---------- Notifiche: suggerimenti di riallocazione dai dati di mercato aggiornati
+// Miglior strumento per classe (ETF con stima dalla composizione, azioni, bond) per rapporto
+// rischio/rendimento (CAGR atteso × (1 − MDD)); in cache per versione dei dati.
+function bestByClass() {
+  const ver = state.liveVersion || state.dataVersion || '';
+  if (state.bestCache?.v === ver) return state.bestCache.best;
+  const best = {};
+  for (const i of state.instruments) {
+    const r = state.results[i.symbol];
+    if (!r || r.error) continue;
+    const cagr = r.forward?.expected;
+    if (!Number.isFinite(cagr)) continue;
+    const cls = isBond(i) ? 'bond' : i.type;
+    if (cls === 'etf' && r.forward?.growthSource !== 'holdings') continue;
+    const mdd = Number.isFinite(r.sim?.histMdd) ? Math.min(0.95, r.sim.histMdd) : 0.3;
+    const score = cagr * (1 - mdd);
+    if (!best[cls] || score > best[cls].score) best[cls] = { symbol: i.symbol, name: i.name, isin: i.isin, score, cagr, mdd };
+  }
+  state.bestCache = { v: ver, best };
+  return best;
+}
+
+function buildNotifications(save = false) {
+  const p = state.portfolio || loadPortfolio();
+  const holds = [
+    ...(p.rows || []).map((r) => ({ ...r, section: 'etf' })),
+    ...(p.stocks || []).map((r) => ({ ...r, section: 'stock' })),
+    ...(p.bonds || []).map((r) => ({ ...r, section: 'bond' })),
+  ].filter((r) => r.isin && r.amount > 0);
+  if (!holds.length) return [];
+  const total = holds.reduce((a, r) => a + (r.amount || 0), 0) || 1;
+  let snap = {};
+  try { snap = JSON.parse(localStorage.getItem('trmc.pfSnap') || '{}'); } catch { snap = {}; }
+  const newSnap = {};
+  const best = bestByClass();
+  const out = [];
+  for (const h of holds) {
+    const inst = findByCode(h.isin);
+    if (!inst) continue;
+    const r = state.results[inst.symbol];
+    if (!r || r.error) continue;
+    const isStock = h.section === 'stock';
+    const cagr = projParams(inst, r, isStock)?.cagr;
+    const mdd = Number.isFinite(r.sim?.histMdd) ? r.sim.histMdd : null;
+    const q = state.quotes[inst.symbol];
+    const perf = q?.perf || {};
+    const share = h.amount / total;
+    const cls = isBond(inst) ? 'bond' : inst.type;
+    const nm = esc(inst.name).slice(0, 44);
+    newSnap[inst.symbol] = { cagr: Number.isFinite(cagr) ? cagr : null, price: q?.priceEur ?? null };
+    const prev = snap[inst.symbol];
+    if (perf.m != null && perf.m <= -0.08 && Number.isFinite(cagr) && cagr >= 0.06)
+      out.push({ level: 'buy', icon: '📉', title: `${nm}: occasione d'acquisto`, text: `Sceso ${pct(perf.m, true)} nell'ultimo mese, ma il rendimento atteso resta ${pct(cagr, false)}. Mediazione al ribasso: aumentare la quota a prezzo scontato.` });
+    if (perf.m3 != null && perf.m3 >= 0.2)
+      out.push({ level: 'trim', icon: '📈', title: `${nm}: quota cresciuta`, text: `Salito ${pct(perf.m3, true)} in 3 mesi: ora pesa ${pct(share, false, 0)} del portafoglio. Valuta di prendere profitto e ribilanciare verso gli strumenti scesi.` });
+    if (prev && Number.isFinite(prev.cagr) && Number.isFinite(cagr)) {
+      const d = cagr - prev.cagr;
+      if (d <= -0.02) out.push({ level: 'warn', icon: '⚠️', title: `${nm}: prospettive peggiorate`, text: `Il rendimento atteso è sceso da ${pct(prev.cagr, false)} a ${pct(cagr, false)} con gli ultimi aggiornamenti. Valuta di ridurre o sostituire.` });
+      else if (d >= 0.02) out.push({ level: 'good', icon: '✅', title: `${nm}: prospettive migliorate`, text: `Il rendimento atteso è salito da ${pct(prev.cagr, false)} a ${pct(cagr, false)}. Si potrebbe aumentare la quota.` });
+    }
+    if (cls !== 'bond' && Number.isFinite(cagr) && cagr < 0.03)
+      out.push({ level: 'warn', icon: '🔻', title: `${nm}: rendimento atteso basso`, text: `Rendimento atteso ${pct(cagr, false)}, sotto quello di un'obbligazione. Valuta di sostituirlo con uno strumento a prospettive migliori.` });
+    if (share > 0.4)
+      out.push({ level: 'warn', icon: '🎯', title: `${nm}: concentrazione elevata`, text: `Pesa ${pct(share, false, 0)} del portafoglio: una quota così alta su un singolo strumento aumenta il rischio. Valuta di diversificare.` });
+    const b = best[cls];
+    if (b && b.symbol !== inst.symbol && Number.isFinite(cagr)) {
+      const myScore = cagr * (1 - (Number.isFinite(mdd) ? Math.min(0.95, mdd) : 0.3));
+      if (b.score >= myScore + 0.03)
+        out.push({ level: 'swap', icon: '🔄', title: `${nm}: alternativa migliore`, text: `Nella stessa categoria ${esc(b.name).slice(0, 40)}${b.isin ? ' (' + esc(b.isin) + ')' : ''} ha un profilo rischio/rendimento migliore (atteso ${pct(b.cagr, false)}, MDD ${pct(b.mdd, false, 0)}). Valuta di spostare parte della quota.` });
+    }
+  }
+  if (save) { try { localStorage.setItem('trmc.pfSnap', JSON.stringify(newSnap)); } catch { /* niente */ } }
+  const order = { warn: 0, buy: 1, swap: 2, trim: 3, good: 4 };
+  out.sort((a, b2) => (order[a.level] ?? 9) - (order[b2.level] ?? 9));
+  return out;
+}
+
+function updateNotifsBadge() {
+  const el = $('#notifs-count');
+  if (!el) return;
+  const n = buildNotifications(false).length;
+  el.hidden = !n;
+  el.textContent = n;
+}
+
+function openNotifications() {
+  const notes = buildNotifications(true); // segna come viste (aggiorna la base per i confronti futuri)
+  const body = $('#nf-body');
+  const sub = $('#nf-sub');
+  const when = state.liveVersion || state.dataVersion;
+  if (sub) sub.textContent = `Suggerimenti in base agli ultimi dati di mercato${when ? ' (' + new Date(when).toLocaleString('it-IT') + ')' : ''}`;
+  const p = state.portfolio || loadPortfolio();
+  const hasHold = [...(p.rows || []), ...(p.stocks || []), ...(p.bonds || [])].some((r) => r.isin && r.amount > 0);
+  body.innerHTML = !hasHold
+    ? '<p class="muted">Aggiungi strumenti al portafoglio (sezione «Portafoglio») per ricevere suggerimenti di riallocazione basati sugli aggiornamenti di mercato.</p>'
+    : notes.length
+      ? `<p class="muted small-note">I suggerimenti si aggiornano a ogni ricalcolo dei dati (ogni ~5 minuti in orario di borsa). Sono indicazioni dal modello, non consigli di investimento.</p>${notes
+          .map((nt) => `<div class="notif notif-${nt.level}"><div class="notif-t"><span class="notif-ic">${nt.icon}</span> <b>${nt.title}</b></div><div class="muted">${nt.text}</div></div>`)
+          .join('')}`
+      : '<p class="pos">Nessun suggerimento: il portafoglio è in linea con i dati di mercato aggiornati.</p>';
+  $('#notifs').showModal();
+  updateNotifsBadge();
+}
+
 // ---------- avvio
 async function loadInstruments() {
   state.instruments = await api('/api/instruments');
@@ -1949,6 +2054,7 @@ function bind() {
   $('#btn-export').addEventListener('click', exportCsv);
   $('#btn-backtest').addEventListener('click', openBacktest);
   $('#btn-portfolio').addEventListener('click', openPortfolio);
+  $('#btn-notifs').addEventListener('click', openNotifications);
   $('#btn-settings').addEventListener('click', () => {
     fillSettings();
     $('#settings').showModal();

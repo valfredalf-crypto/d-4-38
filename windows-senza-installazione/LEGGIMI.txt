@@ -1,0 +1,38 @@
+CONTROLLO REMOTO — SENZA INSTALLAZIONE (Windows 11)
+===================================================
+
+NIENTE da installare. NIENTE password amministratore.
+Usa solo cio' che Windows ha gia' dentro (PowerShell + .NET).
+L'unico file esterno e' cloudflared.exe (un singolo file portatile per il
+collegamento internet, scaricato da solo nella cartella): nessuna installazione,
+nessun admin. Per la sola rete di casa non serve nemmeno quello.
+
+
+SUL PC DA CONTROLLARE
+---------------------
+1) Fai doppio clic su:   AVVIA (doppio clic qui).bat
+
+   - La prima volta Windows puo' mostrare "Windows ha protetto il PC":
+     clicca "Ulteriori informazioni" -> "Esegui comunque". (NON e' l'admin.)
+   - Compaiono un INDIRIZZO  https://qualcosa.trycloudflare.com
+     e un TOKEN. (L'indirizzo cambia a ogni avvio.)
+   - Lascia aperta la finestra nera.
+
+   Vuoi restare solo sulla rete di casa (niente internet)?
+   Usa invece:   SOLO-RETE-LOCALE.bat
+
+
+DAL DISPOSITIVO CON CUI COMANDI (telefono / altro PC, ovunque)
+--------------------------------------------------------------
+- Apri il BROWSER all'INDIRIZZO mostrato.
+- Incolla il TOKEN.
+- Ora vedi e comandi lo schermo. Fatto!
+
+
+NOTE
+----
+- Per FERMARE tutto: chiudi la finestra nera sul PC da controllare.
+- Chi ha indirizzo + token puo' comandare il PC: non condividerli.
+- Controlla il monitor principale. Usalo solo sui TUOI computer.
+- Se "AVVIA" non parte col doppio clic: tasto destro -> "Esegui come" NON serve;
+  basta "Esegui comunque" sull'avviso di Windows.

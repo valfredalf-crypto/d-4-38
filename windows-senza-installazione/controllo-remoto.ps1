@@ -150,7 +150,7 @@ function Write-Response($ns, [string]$status, [string]$ctype, [byte[]]$body) {
 
 function Handle-Client($client) {
   $ns = $client.GetStream()
-  $ns.ReadTimeout = 15000
+  $ns.ReadTimeout = 8000
   # leggi header fino a CRLFCRLF
   $ms = New-Object System.IO.MemoryStream
   $buf = New-Object byte[] 4096
@@ -169,6 +169,7 @@ function Handle-Client($client) {
   $headerText = [System.Text.Encoding]::ASCII.GetString($a, 0, $endIdx)
   $lines = $headerText -split "`r`n"
   $parts = $lines[0] -split ' '
+  if ($parts.Count -lt 2) { return }
   $method = $parts[0]; $target = $parts[1]
   $path = $target; $query = ""
   if ($target.Contains('?')) { $path = $target.Substring(0, $target.IndexOf('?')); $query = $target.Substring($target.IndexOf('?')+1) }
@@ -242,8 +243,11 @@ if (-not $LanOnly) {
       Start-Sleep -Seconds 1
       foreach ($f in @($errlog,$log)) {
         if (Test-Path $f) {
-          $m = [regex]::Match((Get-Content $f -Raw -ErrorAction SilentlyContinue), 'https://[a-z0-9-]+\.trycloudflare\.com')
-          if ($m.Success) { $pub = $m.Value; break }
+          $c = Get-Content $f -Raw -ErrorAction SilentlyContinue
+          if ($c) {
+            $m = [regex]::Match([string]$c, 'https://[a-z0-9-]+\.trycloudflare\.com')
+            if ($m.Success) { $pub = $m.Value; break }
+          }
         }
       }
     }

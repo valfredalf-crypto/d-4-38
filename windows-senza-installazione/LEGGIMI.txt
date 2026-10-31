@@ -3,36 +3,45 @@ CONTROLLO REMOTO — SENZA INSTALLAZIONE (Windows 11)
 
 NIENTE da installare. NIENTE password amministratore.
 Usa solo cio' che Windows ha gia' dentro (PowerShell + .NET).
-L'unico file esterno e' cloudflared.exe (un singolo file portatile per il
-collegamento internet, scaricato da solo nella cartella): nessuna installazione,
-nessun admin. Per la sola rete di casa non serve nemmeno quello.
 
 
-SUL PC DA CONTROLLARE
----------------------
-1) Fai doppio clic su:   AVVIA (doppio clic qui).bat
-
-   - La prima volta Windows puo' mostrare "Windows ha protetto il PC":
-     clicca "Ulteriori informazioni" -> "Esegui comunque". (NON e' l'admin.)
-   - Compaiono un INDIRIZZO  https://qualcosa.trycloudflare.com
-     e un TOKEN. (L'indirizzo cambia a ogni avvio.)
-   - Lascia aperta la finestra nera.
-
-   Vuoi restare solo sulla rete di casa (niente internet)?
-   Usa invece:   SOLO-RETE-LOCALE.bat
+!!! IMPORTANTISSIMO PRIMA DI TUTTO !!!
+--------------------------------------
+DEVI ESTRARRE lo ZIP, non aprirlo e basta.
+  - Tasto destro sul file .zip  ->  "Estrai tutto..."  ->  Estrai.
+  - Poi entra nella cartella ESTRATTA e lavora da li'.
+Se fai doppio clic su un file DENTRO lo zip, Windows lo copia in una cartella
+temporanea (AppData\Local\Temp) dove gli altri file non ci sono, e da errore.
 
 
-DAL DISPOSITIVO CON CUI COMANDI (telefono / altro PC, ovunque)
---------------------------------------------------------------
-- Apri il BROWSER all'INDIRIZZO mostrato.
-- Incolla il TOKEN.
-- Ora vedi e comandi lo schermo. Fatto!
+USO NORMALE (avvio manuale)
+---------------------------
+Sul PC da controllare, nella cartella estratta, doppio clic su:
+    AVVIA (doppio clic qui).bat
+
+- Se Windows mostra "Windows ha protetto il PC":
+  "Ulteriori informazioni" -> "Esegui comunque" (NON e' l'amministratore).
+- Compaiono un INDIRIZZO https://...trycloudflare.com e un TOKEN.
+- Dall'altro dispositivo (ovunque): apri il browser su quell'indirizzo,
+  incolla il TOKEN, e comandi lo schermo.
+
+Solo rete di casa (niente internet/download):  SOLO-RETE-LOCALE.bat
+
+
+AVVIO AUTOMATICO + SEMPRE IN BACKGROUND
+---------------------------------------
+Vuoi che parta DA SOLO a ogni accesso a Windows, nascosto?
+    Doppio clic su:  IMPOSTA-AVVIO-AUTOMATICO.bat
+
+- D'ora in poi l'app parte sola, in background (nessuna finestra).
+- L'indirizzo cambia a ogni riavvio del PC: per vederlo in qualsiasi momento,
+  doppio clic su  MOSTRA-INDIRIZZO.bat  (apre indirizzo + token aggiornati).
+- Per spegnere e togliere l'avvio automatico:  DISATTIVA-AVVIO-AUTOMATICO.bat
 
 
 NOTE
 ----
-- Per FERMARE tutto: chiudi la finestra nera sul PC da controllare.
 - Chi ha indirizzo + token puo' comandare il PC: non condividerli.
+- Il TOKEN resta sempre lo stesso; cambia solo l'indirizzo internet.
 - Controlla il monitor principale. Usalo solo sui TUOI computer.
-- Se "AVVIA" non parte col doppio clic: tasto destro -> "Esegui come" NON serve;
-  basta "Esegui comunque" sull'avviso di Windows.
+- Se qualcosa va storto, nella cartella compare errore.txt: mandamelo.

@@ -11,11 +11,43 @@ param(
   [int]$Port = 8787,
   [string]$Token = "",
   [int]$Quality = 40,
-  [switch]$LanOnly
+  [switch]$LanOnly,
+  [switch]$Background
 )
 
 $ErrorActionPreference = "Stop"
-chcp 65001 > $null 2>&1
+
+# qualunque errore fatale viene scritto in errore.txt (utile per il debug)
+trap {
+  try { Set-Content -Path (Join-Path $PSScriptRoot 'errore.txt') -Value ((Get-Date).ToString() + "`r`n" + ($_ | Out-String)) } catch {}
+  exit 1
+}
+
+if (-not $Background) { chcp 65001 > $null 2>&1 }
+
+function Write-AddressFiles([string]$addr, [string]$tok) {
+  $when = (Get-Date).ToString('yyyy-MM-dd HH:mm')
+  try {
+    Set-Content -Path (Join-Path $PSScriptRoot 'INDIRIZZO-E-TOKEN.txt') -Value "Indirizzo: $addr`r`nToken:     $tok`r`n(aggiornato: $when)" -Encoding UTF8
+  } catch {}
+  $safeAddr = $addr -replace '"','&quot;'
+  $html = @"
+<!doctype html><html lang="it"><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="20"><title>Indirizzo controllo remoto</title>
+<style>body{background:#0e1116;color:#e6edf3;font:16px -apple-system,Segoe UI,sans-serif;display:flex;min-height:100vh;margin:0;align-items:center;justify-content:center}
+.c{background:#171c24;border:1px solid #2a333f;border-radius:16px;padding:28px;max-width:460px}
+a{color:#4f8cff;font-size:20px;word-break:break-all}code{background:#0e1116;border:1px solid #2a333f;padding:4px 8px;border-radius:6px;font-size:18px}
+.m{color:#8b98a9;font-size:13px}</style></head><body><div class="c">
+<h2>Controllo remoto — in esecuzione</h2>
+<p class="m">Apri questo indirizzo dal dispositivo con cui comandi:</p>
+<p><a href="$safeAddr">$safeAddr</a></p>
+<p class="m">Token da incollare nella pagina:</p>
+<p><code>$tok</code></p>
+<p class="m">Aggiornato: $when — l'indirizzo cambia a ogni riavvio del PC.</p>
+</div></body></html>
+"@
+  try { Set-Content -Path (Join-Path $PSScriptRoot 'INDIRIZZO-E-TOKEN.html') -Value $html -Encoding UTF8 } catch {}
+}
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
@@ -181,7 +213,11 @@ function Handle-Client($client) {
 # apri il listener PRIMA del tunnel (cosi' cloudflared trova la porta pronta)
 $ip = if ($LanOnly) { [System.Net.IPAddress]::Any } else { [System.Net.IPAddress]::Loopback }
 $listener = New-Object System.Net.Sockets.TcpListener($ip, $Port)
-$listener.Start()
+try { $listener.Start() }
+catch {
+  # porta gia' in uso: un'altra copia e' probabilmente gia' in esecuzione -> esci.
+  exit 0
+}
 
 # --- collegamento internet (cloudflared portatile) --------------------------
 $pub = ""
@@ -214,37 +250,43 @@ if (-not $LanOnly) {
   }
 }
 
-# --- banner -----------------------------------------------------------------
-Clear-Host
-Write-Host ""
-Write-Host "  ================================================================" -ForegroundColor Green
-Write-Host "    QUESTO PC E' ORA CONTROLLABILE DA REMOTO" -ForegroundColor Green
-Write-Host "    (nessuna installazione, nessun amministratore)" -ForegroundColor DarkGray
-Write-Host "  ================================================================" -ForegroundColor Green
-Write-Host ""
+# --- indirizzo + banner -----------------------------------------------------
+$addr = ""
 if ($LanOnly) {
-  Write-Host "    Apri il BROWSER (stessa rete WiFi) a uno di questi indirizzi:" -ForegroundColor White
-  foreach ($a in ([System.Net.Dns]::GetHostAddresses([System.Net.Dns]::GetHostName()) | Where-Object { $_.AddressFamily -eq 'InterNetwork' })) {
-    Write-Host "         http://$($a.IPAddressToString):$Port" -ForegroundColor Cyan
-  }
-} elseif ($pub) {
-  Write-Host "    Da QUALUNQUE dispositivo, ovunque, apri nel BROWSER:" -ForegroundColor White
+  $lan = ([System.Net.Dns]::GetHostAddresses([System.Net.Dns]::GetHostName()) | Where-Object { $_.AddressFamily -eq 'InterNetwork' } | Select-Object -First 1)
+  if ($lan) { $addr = "http://$($lan.IPAddressToString):$Port" }
+} elseif ($pub) { $addr = $pub }
+
+Write-AddressFiles $addr $Token
+
+if (-not $Background) {
+  Clear-Host
   Write-Host ""
-  Write-Host "         $pub" -ForegroundColor Cyan
-} else {
-  Write-Host "    Collegamento internet non pronto. Guarda la finestra di" -ForegroundColor Yellow
-  Write-Host "    cloudflared o riprova. (Per la rete locale riavvia in modo LAN.)" -ForegroundColor Yellow
+  Write-Host "  ================================================================" -ForegroundColor Green
+  Write-Host "    QUESTO PC E' ORA CONTROLLABILE DA REMOTO" -ForegroundColor Green
+  Write-Host "    (nessuna installazione, nessun amministratore)" -ForegroundColor DarkGray
+  Write-Host "  ================================================================" -ForegroundColor Green
+  Write-Host ""
+  if ($addr) {
+    if ($LanOnly) { Write-Host "    Apri il BROWSER (stessa rete WiFi) a:" -ForegroundColor White }
+    else { Write-Host "    Da QUALUNQUE dispositivo, ovunque, apri nel BROWSER:" -ForegroundColor White }
+    Write-Host ""
+    Write-Host "         $addr" -ForegroundColor Cyan
+  } else {
+    Write-Host "    Indirizzo non pronto. Riprova, o usa SOLO-RETE-LOCALE.bat." -ForegroundColor Yellow
+  }
+  Write-Host ""
+  Write-Host "    TOKEN da incollare nella pagina:" -ForegroundColor White
+  Write-Host ""
+  Write-Host "         $Token" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "  ----------------------------------------------------------------" -ForegroundColor DarkGray
+  Write-Host "    Indirizzo e token sono anche nel file INDIRIZZO-E-TOKEN.html" -ForegroundColor DarkGray
+  Write-Host "    Chi ha indirizzo + token puo' comandare il PC: non condividerli." -ForegroundColor DarkGray
+  Write-Host "    Per FERMARE tutto: chiudi questa finestra." -ForegroundColor DarkGray
+  Write-Host "  ================================================================" -ForegroundColor Green
+  Write-Host ""
 }
-Write-Host ""
-Write-Host "    TOKEN da incollare nella pagina:" -ForegroundColor White
-Write-Host ""
-Write-Host "         $Token" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "  ----------------------------------------------------------------" -ForegroundColor DarkGray
-Write-Host "    Chi ha indirizzo + token puo' comandare il PC: non condividerli." -ForegroundColor DarkGray
-Write-Host "    Per FERMARE tutto: chiudi questa finestra." -ForegroundColor DarkGray
-Write-Host "  ================================================================" -ForegroundColor Green
-Write-Host ""
 
 # --- loop del server (bloccante) --------------------------------------------
 while ($true) {

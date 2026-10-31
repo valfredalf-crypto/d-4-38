@@ -216,7 +216,13 @@ $ip = if ($LanOnly) { [System.Net.IPAddress]::Any } else { [System.Net.IPAddress
 $listener = New-Object System.Net.Sockets.TcpListener($ip, $Port)
 try { $listener.Start() }
 catch {
-  # porta gia' in uso: un'altra copia e' probabilmente gia' in esecuzione -> esci.
+  # porta gia' in uso: un'altra copia e' probabilmente gia' in esecuzione.
+  if (-not $Background) {
+    Write-Host ""
+    Write-Host "  La porta $Port e' gia' in uso: l'app e' probabilmente gia' avviata" -ForegroundColor Yellow
+    Write-Host "  in un'altra finestra. Chiudi le altre finestre nere e riprova," -ForegroundColor Yellow
+    Write-Host "  oppure l'indirizzo e' gia' pronto in INDIRIZZO-E-TOKEN.html." -ForegroundColor Yellow
+  }
   exit 0
 }
 

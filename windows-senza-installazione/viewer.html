@@ -61,6 +61,8 @@ var FPS = 6;
 var running = false;
 var queue = [];
 var sending = false;
+// header per saltare la pagina di avviso di ngrok (innocuo con altri tunnel)
+var NGH = { 'ngrok-skip-browser-warning': 'true' };
 
 var img = document.getElementById('s');
 var stage = document.getElementById('stage');
@@ -71,7 +73,7 @@ document.getElementById('f').addEventListener('submit', function (ev) {
   ev.preventDefault();
   T = document.getElementById('t').value.trim();
   document.getElementById('e').hidden = true;
-  fetch('/ping?token=' + encodeURIComponent(T)).then(function (r) {
+  fetch('/ping?token=' + encodeURIComponent(T), { headers: NGH }).then(function (r) {
     if (!r.ok) throw 0;
     start();
   }).catch(function () {
@@ -89,7 +91,7 @@ function start() {
 }
 
 function loop() {
-  fetch('/frame?token=' + encodeURIComponent(T) + '&_=' + Date.now()).then(function (r) {
+  fetch('/frame?token=' + encodeURIComponent(T) + '&_=' + Date.now(), { headers: NGH }).then(function (r) {
     if (!r.ok) throw 0; return r.blob();
   }).then(function (b) {
     var u = URL.createObjectURL(b);
@@ -117,7 +119,7 @@ function flush() {
   if (!queue.length || sending) return;
   sending = true; var ev = queue; queue = [];
   fetch('/input?token=' + encodeURIComponent(T), {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
     body: JSON.stringify({ events: ev })
   }).catch(function () {}).then(function () { sending = false; });
 }

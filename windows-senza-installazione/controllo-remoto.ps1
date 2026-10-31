@@ -25,8 +25,9 @@ trap {
 
 if (-not $Background) { chcp 65001 > $null 2>&1 }
 
-function Write-AddressFiles([string]$addr, [string]$tok) {
+function Write-AddressFiles([string]$addr, [string]$tok, [bool]$fixed = $false) {
   $when = (Get-Date).ToString('yyyy-MM-dd HH:mm')
+  $note = if ($fixed) { "Indirizzo fisso: non cambia." } else { "l'indirizzo cambia a ogni riavvio del PC." }
   try {
     Set-Content -Path (Join-Path $PSScriptRoot 'INDIRIZZO-E-TOKEN.txt') -Value "Indirizzo: $addr`r`nToken:     $tok`r`n(aggiornato: $when)" -Encoding UTF8
   } catch {}
@@ -43,7 +44,7 @@ a{color:#4f8cff;font-size:20px;word-break:break-all}code{background:#0e1116;bord
 <p><a href="$safeAddr">$safeAddr</a></p>
 <p class="m">Token da incollare nella pagina:</p>
 <p><code>$tok</code></p>
-<p class="m">Aggiornato: $when — l'indirizzo cambia a ogni riavvio del PC.</p>
+<p class="m">Aggiornato: $when — $note</p>
 </div></body></html>
 "@
   try { Set-Content -Path (Join-Path $PSScriptRoot 'INDIRIZZO-E-TOKEN.html') -Value $html -Encoding UTF8 } catch {}
@@ -224,25 +225,51 @@ if (-not $listener) {
   exit 0
 }
 
-# --- collegamento internet (cloudflared portatile) --------------------------
+# --- collegamento internet --------------------------------------------------
 $pub = ""
-if (-not $LanOnly) {
+$fixedAddr = $false
+$cfgFile = Join-Path $PSScriptRoot 'indirizzo-fisso.txt'
+
+if (-not $LanOnly -and (Test-Path $cfgFile)) {
+  # ===== INDIRIZZO FISSO via ngrok =====
+  $cfg = @(Get-Content $cfgFile | Where-Object { $_.Trim() -ne '' })
+  $authtoken = if ($cfg.Count -ge 1) { $cfg[0].Trim() } else { "" }
+  $domain = if ($cfg.Count -ge 2) { $cfg[1].Trim() } else { "" }
+  $domain = $domain -replace '^https?://',''
+  $ngrok = Join-Path $PSScriptRoot "ngrok.exe"
+  if ((Test-Path $ngrok) -and $authtoken -and $domain) {
+    $env:NGROK_AUTHTOKEN = $authtoken
+    $log = Join-Path $env:TEMP "ngrok-rc.log"
+    Remove-Item $log -ErrorAction SilentlyContinue
+    Start-Process -FilePath $ngrok -ArgumentList @("http","--url=https://$domain","$Port","--log=stdout","--log-format=logfmt") -RedirectStandardOutput $log -RedirectStandardError "$log.err" -WindowStyle Hidden | Out-Null
+    if (-not $Background) { Write-Host "  Avvio l'indirizzo fisso, attendi..." -ForegroundColor Cyan }
+    for ($i=0; $i -lt 20; $i++) {
+      Start-Sleep -Seconds 1
+      try {
+        $t = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels" -TimeoutSec 2
+        $u = ($t.tunnels | Where-Object { $_.public_url -like 'https*' } | Select-Object -First 1).public_url
+        if ($u) { $pub = $u; break }
+      } catch {}
+    }
+    if (-not $pub) { $pub = "https://$domain" }   # dominio riservato: comunque fisso
+    $fixedAddr = $true
+  } elseif (-not $Background) {
+    Write-Host "  Configurazione indirizzo fisso incompleta. Esegui IMPOSTA-INDIRIZZO-FISSO.bat" -ForegroundColor Yellow
+  }
+}
+elseif (-not $LanOnly) {
+  # ===== indirizzo CASUALE via cloudflared =====
   $cf = Join-Path $PSScriptRoot "cloudflared.exe"
   if (-not (Test-Path $cf)) {
-    Write-Host "  Scarico il collegamento internet (un file, una volta sola)..." -ForegroundColor Cyan
-    try {
-      Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile $cf -UseBasicParsing
-    } catch {
-      Write-Host "  Non sono riuscito a scaricare cloudflared ($($_.Exception.Message))." -ForegroundColor Yellow
-      Write-Host "  Puoi comunque usarlo sulla stessa rete: riavvia con l'opzione rete locale." -ForegroundColor Yellow
-    }
+    if (-not $Background) { Write-Host "  Scarico il collegamento internet (un file, una volta sola)..." -ForegroundColor Cyan }
+    try { Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile $cf -UseBasicParsing } catch {}
   }
   if (Test-Path $cf) {
     $log = Join-Path $env:TEMP "cf-rc-out.log"
     $errlog = Join-Path $env:TEMP "cf-rc-err.log"
     Remove-Item $log,$errlog -ErrorAction SilentlyContinue
     Start-Process -FilePath $cf -ArgumentList @("tunnel","--no-autoupdate","--url","http://localhost:$Port") -RedirectStandardOutput $log -RedirectStandardError $errlog -WindowStyle Hidden | Out-Null
-    Write-Host "  Creo il collegamento internet, attendi..." -ForegroundColor Cyan
+    if (-not $Background) { Write-Host "  Creo il collegamento internet, attendi..." -ForegroundColor Cyan }
     for ($i=0; $i -lt 40 -and -not $pub; $i++) {
       Start-Sleep -Seconds 1
       foreach ($f in @($errlog,$log)) {
@@ -265,7 +292,7 @@ if ($LanOnly) {
   if ($lan) { $addr = "http://$($lan.IPAddressToString):$Port" }
 } elseif ($pub) { $addr = $pub }
 
-Write-AddressFiles $addr $Token
+Write-AddressFiles $addr $Token $fixedAddr
 
 if (-not $Background) {
   Clear-Host
@@ -280,6 +307,7 @@ if (-not $Background) {
     else { Write-Host "    Da QUALUNQUE dispositivo, ovunque, apri nel BROWSER:" -ForegroundColor White }
     Write-Host ""
     Write-Host "         $addr" -ForegroundColor Cyan
+    if ($fixedAddr) { Write-Host "         (indirizzo FISSO: non cambia)" -ForegroundColor DarkGray }
   } else {
     Write-Host "    Indirizzo non pronto. Riprova, o usa SOLO-RETE-LOCALE.bat." -ForegroundColor Yellow
   }

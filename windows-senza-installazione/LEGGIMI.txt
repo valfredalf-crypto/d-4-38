@@ -28,6 +28,17 @@ Sul PC da controllare, nella cartella estratta, doppio clic su:
 Solo rete di casa (niente internet/download):  SOLO-RETE-LOCALE.bat
 
 
+INDIRIZZO FISSO (che non cambia mai)
+------------------------------------
+Di base l'indirizzo internet cambia a ogni riavvio. Per averne uno FISSO:
+    Doppio clic su:  IMPOSTA-INDIRIZZO-FISSO.bat
+- Si aprono le pagine di ngrok: registrati gratis, copia l'AUTHTOKEN e crea un
+  DOMINIO gratuito (es. qualcosa.ngrok-free.app), poi incollali quando richiesto.
+- Da quel momento l'indirizzo e' SEMPRE lo stesso: salvalo tra i preferiti.
+- Vale per QUESTO PC. Su un altro PC rifai la stessa cosa con un dominio diverso
+  (ngrok gratis = 1 dominio per account; per piu' PC usa piu' account gratuiti).
+
+
 AVVIO AUTOMATICO + SEMPRE IN BACKGROUND
 ---------------------------------------
 Vuoi che parta DA SOLO a ogni accesso a Windows, nascosto?

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Controllo remoto</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%234f8cff'/><rect x='3' y='4' width='10' height='6' rx='1' fill='%23fff'/></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Login -->
+  <section id="login" class="screen">
+    <form id="loginForm" class="card">
+      <h1>Controllo remoto</h1>
+      <p class="muted">Inserisci il token di accesso del relay per vedere i tuoi dispositivi.</p>
+      <input id="token" type="password" placeholder="Token di accesso" autocomplete="current-password" />
+      <button type="submit">Entra</button>
+      <p id="loginErr" class="err" hidden></p>
+    </form>
+  </section>
+
+  <!-- Device list -->
+  <section id="devices" class="screen" hidden>
+    <header class="bar">
+      <strong>I tuoi dispositivi</strong>
+      <span class="spacer"></span>
+      <span id="dot" class="dot"></span>
+      <button id="logout" class="ghost">Esci</button>
+    </header>
+    <ul id="deviceList" class="grid"></ul>
+    <p id="empty" class="muted center" hidden>
+      Nessun dispositivo online. Avvia l'agente su un computer:<br />
+      <code>node agent.js --server &lt;url&gt; --token &lt;token&gt;</code>
+    </p>
+  </section>
+
+  <!-- Control -->
+  <section id="control" class="screen" hidden>
+    <header class="bar">
+      <button id="back" class="ghost">‹ Dispositivi</button>
+      <strong id="ctrlName"></strong>
+      <span id="ctrlInfo" class="muted"></span>
+      <span class="spacer"></span>
+      <label class="toggle"><input id="viewOnly" type="checkbox" /> Sola visione</label>
+      <button id="fs" class="ghost">Schermo intero</button>
+    </header>
+    <div id="stage" class="stage" tabindex="0">
+      <img id="screen" alt="schermo remoto" draggable="false" />
+      <div id="hint" class="hint">Clicca qui e usa mouse + tastiera. <kbd>Esc</kbd> va al dispositivo remoto.</div>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

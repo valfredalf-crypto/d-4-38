@@ -213,16 +213,14 @@ function Handle-Client($client) {
 
 # apri il listener PRIMA del tunnel (cosi' cloudflared trova la porta pronta)
 $ip = if ($LanOnly) { [System.Net.IPAddress]::Any } else { [System.Net.IPAddress]::Loopback }
-$listener = New-Object System.Net.Sockets.TcpListener($ip, $Port)
-try { $listener.Start() }
-catch {
-  # porta gia' in uso: un'altra copia e' probabilmente gia' in esecuzione.
-  if (-not $Background) {
-    Write-Host ""
-    Write-Host "  La porta $Port e' gia' in uso: l'app e' probabilmente gia' avviata" -ForegroundColor Yellow
-    Write-Host "  in un'altra finestra. Chiudi le altre finestre nere e riprova," -ForegroundColor Yellow
-    Write-Host "  oppure l'indirizzo e' gia' pronto in INDIRIZZO-E-TOKEN.html." -ForegroundColor Yellow
-  }
+# se 8787 e' occupata, prova le porte successive (nessun conflitto con altre app)
+$listener = $null
+for ($p = $Port; $p -lt $Port + 12; $p++) {
+  try { $l = New-Object System.Net.Sockets.TcpListener($ip, $p); $l.Start(); $listener = $l; $Port = $p; break }
+  catch { }
+}
+if (-not $listener) {
+  if (-not $Background) { Write-Host "  Nessuna porta libera trovata. Riavvia il PC e riprova." -ForegroundColor Yellow }
   exit 0
 }
 

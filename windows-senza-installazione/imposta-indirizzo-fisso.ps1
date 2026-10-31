@@ -19,12 +19,17 @@ Write-Host "       https://dashboard.ngrok.com/domains" -ForegroundColor DarkGra
 Write-Host "     Avra' un nome tipo:  qualcosa-1234.ngrok-free.app" -ForegroundColor DarkGray
 Write-Host ""
 
-Start-Process "https://dashboard.ngrok.com/signup"
-Start-Sleep -Milliseconds 800
-Start-Process "https://dashboard.ngrok.com/get-started/your-authtoken"
-Start-Sleep -Milliseconds 800
-Start-Process "https://dashboard.ngrok.com/domains"
+# prova ad aprire le pagine nel browser (se non c'e' un browser, non e' un problema)
+try { Start-Process "https://dashboard.ngrok.com/signup" } catch {}
+Start-Sleep -Milliseconds 600
+try { Start-Process "https://dashboard.ngrok.com/get-started/your-authtoken" } catch {}
+Start-Sleep -Milliseconds 600
+try { Start-Process "https://dashboard.ngrok.com/domains" } catch {}
 
+Write-Host ""
+Write-Host "  NON serve un browser su QUESTO PC: puoi registrarti e copiare i due" -ForegroundColor White
+Write-Host "  valori anche dal TELEFONO o da un altro computer. Qui basta incollarli." -ForegroundColor White
+Write-Host ""
 Write-Host "  Quando li hai sotto mano, incollali qui:" -ForegroundColor White
 Write-Host ""
 $authtoken = (Read-Host "  AUTHTOKEN").Trim()

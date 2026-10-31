@@ -1,7 +1,6 @@
 CONTROLLO REMOTO — ISTRUZIONI RAPIDE (Windows 11)
 ==================================================
 
-Hai bisogno di due computer sulla STESSA rete WiFi/internet di casa:
   A) il PC DA CONTROLLARE  (quello che vuoi comandare)
   B) il dispositivo DA CUI comandi (altro PC o telefono, basta il browser)
 
@@ -12,25 +11,32 @@ SUL PC DA CONTROLLARE (A)
    (solo la prima volta; se Windows chiede conferme, clicca Si')
    Quando dice "FATTO", chiudi la finestra.
 
-2) Doppio clic su:  2-AVVIA-SU-QUESTO-PC.bat
-   Compaiono un INDIRIZZO (es. http://192.168.1.50:8787) e un TOKEN.
-   Se Windows chiede di consentire l'accesso di rete a Node: CONSENTI.
-   Lascia aperte le finestre.
+2) Scegli COME vuoi comandarlo:
+
+   DA FUORI CASA / OVUNQUE (internet):
+       Doppio clic su:  2-AVVIA-DA-INTERNET.bat
+       Compare un indirizzo tipo  https://qualcosa.trycloudflare.com
+       e un TOKEN. (L'indirizzo cambia a ogni avvio.)
+
+   SOLO STESSA RETE WiFi (casa):
+       Doppio clic su:  2-AVVIA-SU-QUESTO-PC.bat
+       Compare un indirizzo tipo  http://192.168.1.50:8787  e un TOKEN.
+
+   In entrambi i casi: se Windows chiede l'accesso di rete a Node, CONSENTI.
+   Lascia aperte le finestre nere.
 
 
 DAL DISPOSITIVO CON CUI COMANDI (B)
 -----------------------------------
-- Se e' un PC Windows: doppio clic su  APRI-IL-CONTROLLO.bat
-  e incolla i numeri dell'indirizzo mostrato dal PC A.
-- Se e' un telefono/altro: apri il browser e vai all'INDIRIZZO mostrato dal PC A.
-
-Nella pagina: incolla il TOKEN, poi clicca il dispositivo nella lista.
-Ora vedi e comandi lo schermo del PC A. Fatto!
+- Apri il BROWSER e vai all'INDIRIZZO mostrato dal PC A.
+  (Se B e' un PC Windows sulla stessa rete puoi usare APRI-IL-CONTROLLO.bat.)
+- Incolla il TOKEN, poi clicca il dispositivo nella lista.
+- Ora vedi e comandi lo schermo del PC A. Fatto!
 
 
-NOTE
-----
-- Funziona quando i due dispositivi sono sulla STESSA rete.
-  Per comandarlo da FUORI casa (internet), scrivimelo: aggiungo il passaggio.
-- Per fermare tutto sul PC A: chiudi le due finestre nere.
+SICUREZZA (IMPORTANTE con internet)
+-----------------------------------
+- Con 2-AVVIA-DA-INTERNET il PC e' raggiungibile dal mondo: l'unica protezione
+  e' il TOKEN. Non condividere indirizzo + token con nessuno.
+- Per fermare tutto: chiudi le finestre nere sul PC A.
 - Usalo solo sui TUOI computer.

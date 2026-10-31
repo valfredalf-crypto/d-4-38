@@ -29,11 +29,21 @@ if %errorlevel%==0 (
 )
 
 echo.
+where cloudflared >nul 2>nul
+if %errorlevel%==0 (
+  echo    [OK] cloudflared e' gia' presente.
+) else (
+  echo    Installo cloudflared ^(collegamento internet^) ...
+  winget install -e --id Cloudflare.cloudflared --accept-source-agreements --accept-package-agreements
+)
+
+echo.
 echo  ============================================================
 echo    FATTO.
-echo    Ora CHIUDI questa finestra e fai doppio clic su:
+echo    Ora CHIUDI questa finestra e fai doppio clic su UNO di:
 echo.
-echo        2-AVVIA-SU-QUESTO-PC.bat
+echo        2-AVVIA-DA-INTERNET.bat   (per comandare da FUORI casa)
+echo        2-AVVIA-SU-QUESTO-PC.bat  (solo stessa rete WiFi)
 echo.
 echo  ============================================================
 echo.

@@ -238,18 +238,18 @@ table.mini .num { white-space: nowrap; }
   /* Telefono, vista "Previsioni": CAGR netto atteso (3), netto 019 (4), crescita attesa (5), corretto rischio (6), NR5 (7) */
   #table th:nth-child(n+8), #table td:nth-child(n+8) { display: none; }
   .mobile-view { display: flex; }
-  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (13–16) */
-  body.mview-perf #table th:nth-child(n+13):nth-child(-n+16), body.mview-perf #table td:nth-child(n+13):nth-child(-n+16) { display: table-cell; }
+  /* Vista "Andamento": variazioni oggi / 1 mese / 3 mesi / 1 anno (14–17) */
+  body.mview-perf #table th:nth-child(n+14):nth-child(-n+17), body.mview-perf #table td:nth-child(n+14):nth-child(-n+17) { display: table-cell; }
   body.mview-perf #table th:nth-child(n+3):nth-child(-n+7), body.mview-perf #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
-  /* Vista "Rischio": perdita max (18), drawdown mediano (19), P(perdita) (26), Sortino (30) */
-  body.mview-risk #table th:nth-child(n+18):nth-child(-n+19), body.mview-risk #table td:nth-child(n+18):nth-child(-n+19),
-  body.mview-risk #table th:nth-child(26), body.mview-risk #table td:nth-child(26),
-  body.mview-risk #table th:nth-child(30), body.mview-risk #table td:nth-child(30) { display: table-cell; }
+  /* Vista "Rischio": perdita max (19), drawdown mediano (20), P(perdita) (27), Sortino (31) */
+  body.mview-risk #table th:nth-child(n+19):nth-child(-n+20), body.mview-risk #table td:nth-child(n+19):nth-child(-n+20),
+  body.mview-risk #table th:nth-child(27), body.mview-risk #table td:nth-child(27),
+  body.mview-risk #table th:nth-child(31), body.mview-risk #table td:nth-child(31) { display: table-cell; }
   body.mview-risk #table th:nth-child(n+3):nth-child(-n+7), body.mview-risk #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
-  /* Vista "Probabilità": probabile 75% (8), mediana (20), P(≥+25%) (27), P(≥+50%) (28) */
+  /* Vista "Probabilità": probabile 75% (8), mediana (21), P(≥+25%) (28), P(≥+50%) (29) */
   body.mview-prob #table th:nth-child(8), body.mview-prob #table td:nth-child(8),
-  body.mview-prob #table th:nth-child(20), body.mview-prob #table td:nth-child(20),
-  body.mview-prob #table th:nth-child(n+27):nth-child(-n+28), body.mview-prob #table td:nth-child(n+27):nth-child(-n+28) { display: table-cell; }
+  body.mview-prob #table th:nth-child(21), body.mview-prob #table td:nth-child(21),
+  body.mview-prob #table th:nth-child(n+28):nth-child(-n+29), body.mview-prob #table td:nth-child(n+28):nth-child(-n+29) { display: table-cell; }
   body.mview-prob #table th:nth-child(n+3):nth-child(-n+7), body.mview-prob #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
   th, td { padding: 8px 3px; }
   #table td { font-size: 12.5px; }

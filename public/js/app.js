@@ -611,6 +611,12 @@ function rowValues(i) {
     meanOverLoss: sim && sim.netMean != null && sim.maxLoss != null ? (sim.maxLoss > 0 ? sim.netMean / sim.maxLoss : sim.netMean > 0 ? Infinity : 0) : null,
     // Guadagno bilanciato ÷ perdita max 5a (filtro): più alto è meglio
     balancedOverLoss: sim && sim.balanced != null && sim.maxLoss != null ? (sim.maxLoss > 0 ? sim.balanced / sim.maxLoss : sim.balanced > 0 ? Infinity : 0) : null,
+    // Guadagno netto 019 (CAGR − TER, imposta) ÷ perdita max 5a: più alto è meglio
+    net019OverLoss: (() => {
+      const g = r && !r.error ? projOf(i, r)?.netPct ?? null : null;
+      if (g == null || sim?.maxLoss == null) return null;
+      return sim.maxLoss > 0 ? g / sim.maxLoss : g > 0 ? Infinity : 0;
+    })(),
     // Media delle perdite (drawdown mediano e perdita max) ÷ (media dei guadagni mediano e medio + crescita
     // annua attesa degli utili, 0 se non disponibile): più basso è meglio; ∞ se il denominatore è ≤ 0
     riskGain: (() => {
@@ -717,6 +723,7 @@ function render() {
         <td class="num ${cls(r.netP25)}"><b class="big">${r.netP25 == null ? '–' : `${r.netP25 > 0 ? '+' : ''}${Math.round(r.netP25 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.netP25 == null ? '' : `<span class="eur">${pct(r.netP25, true)}</span>`}</td>
         <td class="num">${r.balancedOverLoss == null ? '–' : r.balancedOverLoss === Infinity || r.balancedOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.balancedOverLoss >= 1 ? 'pos' : r.balancedOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.balancedOverLoss)}</span>`}</td>
         <td class="num">${r.meanOverLoss == null ? '–' : r.meanOverLoss === Infinity || r.meanOverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.meanOverLoss >= 1 ? 'pos' : r.meanOverLoss < 0 ? 'neg' : ''}">${nf2.format(r.meanOverLoss)}</span>`}</td>
+        <td class="num">${r.net019OverLoss == null ? '–' : r.net019OverLoss === Infinity || r.net019OverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.net019OverLoss >= 1 ? 'pos' : r.net019OverLoss < 0 ? 'neg' : ''}">${nf2.format(r.net019OverLoss)}</span>`}</td>
         <td><span class="pill">${TYPE_LABEL[i.type]}</span></td>
         <td class="num">${eur(r.price)}</td>
         <td class="num ${cls(r.change)}">${pct(r.change, true, 2)}</td>
@@ -2091,7 +2098,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['proj', 'proj019', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['proj', 'proj019', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),

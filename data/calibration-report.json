@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-10-25T12:28:03.207Z",
+ "generatedAt": "2026-11-01T14:16:52.594Z",
  "adopted": false,
  "params": {
   "before": {
@@ -71,57 +71,57 @@
   8
  ],
  "sample": {
-  "pool": 3378,
+  "pool": 3414,
   "train": 1049,
   "validation": 451,
   "sims": 400
  },
  "loss": {
-  "trainBefore": 0.2841752137567946,
-  "trainAfter": 0.2792371251636237,
-  "validationBefore": 0.29841665533772155,
-  "validationAfter": 0.293279070670727,
-  "improvement": 0.017216145865519117
+  "trainBefore": 0.28354736395702373,
+  "trainAfter": 0.27869939219428647,
+  "validationBefore": 0.29628878911054357,
+  "validationAfter": 0.29121191957893616,
+  "improvement": 0.01713486881109516
  },
  "validation": {
   "before": {
    "risk": {
-    "mddAboveP95": 0.0828,
-    "mddAboveMedian": 0.3911,
-    "mddRankCorr": 0.6596,
-    "volRankCorr": 0.8322
+    "mddAboveP95": 0.088,
+    "mddAboveMedian": 0.39,
+    "mddRankCorr": 0.6561,
+    "volRankCorr": 0.8255
    },
    "returns": {
-    "inside90": 0.8268,
-    "belowP5": 0.0467,
-    "aboveP95": 0.1265,
-    "aboveMedian": 0.6792,
-    "medianRankCorr": 0.1614,
-    "proj019RankCorr": 0.0493,
-    "proj019MddRankCorr": 0.1795,
-    "nr5RankCorr": 0.1502,
-    "realNetMedian": 0.2274,
-    "predNetMedian": -0.0217
+    "inside90": 0.8225,
+    "belowP5": 0.0475,
+    "aboveP95": 0.13,
+    "aboveMedian": 0.6735,
+    "medianRankCorr": 0.157,
+    "proj019RankCorr": 0.0402,
+    "proj019MddRankCorr": 0.1761,
+    "nr5RankCorr": 0.1448,
+    "realNetMedian": 0.2255,
+    "predNetMedian": -0.0106
    }
   },
   "after": {
    "risk": {
-    "mddAboveP95": 0.0974,
-    "mddAboveMedian": 0.4157,
-    "mddRankCorr": 0.6608,
-    "volRankCorr": 0.8328
+    "mddAboveP95": 0.1015,
+    "mddAboveMedian": 0.416,
+    "mddRankCorr": 0.6577,
+    "volRankCorr": 0.8269
    },
    "returns": {
-    "inside90": 0.8308,
-    "belowP5": 0.0502,
-    "aboveP95": 0.119,
-    "aboveMedian": 0.6436,
-    "medianRankCorr": 0.1709,
-    "proj019RankCorr": 0.0483,
-    "proj019MddRankCorr": 0.1757,
-    "nr5RankCorr": 0.1606,
-    "realNetMedian": 0.2274,
-    "predNetMedian": 0.0354
+    "inside90": 0.8275,
+    "belowP5": 0.054,
+    "aboveP95": 0.1185,
+    "aboveMedian": 0.6375,
+    "medianRankCorr": 0.1675,
+    "proj019RankCorr": 0.048,
+    "proj019MddRankCorr": 0.1768,
+    "nr5RankCorr": 0.1563,
+    "realNetMedian": 0.2255,
+    "predNetMedian": 0.0406
    }
   }
  }

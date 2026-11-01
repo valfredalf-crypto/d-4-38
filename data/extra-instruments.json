@@ -19,5 +19,12 @@
   "name": "Nu Holdings Ltd.",
   "type": "stock",
   "addedAt": "2026-10-26T11:58:17.587Z"
+ },
+ {
+  "symbol": "VGWE.DE",
+  "isin": "IE00BK5BR626",
+  "name": "Vanguard FTSE All-World High Dividend Yield UCITS ETF USD Accumulation",
+  "type": "etf",
+  "addedAt": "2026-11-01T21:34:28.797Z"
  }
 ]

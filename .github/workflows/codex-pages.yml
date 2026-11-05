@@ -1,0 +1,56 @@
+name: Pubblica Codex Studio (Pages)
+
+# Workflow DEDICATO a Codex Studio, separato da quello dell'app Monte Carlo.
+# Si attiva solo per modifiche a codex-studio/** (o a comando) e non è bloccato
+# dai dati di mercato: usa la cache e ALLOW_PARTIAL per pubblicare in fretta.
+on:
+  push:
+    branches: [main, claude/trade-republic-monte-carlo-app-ysf7po]
+    paths:
+      - 'codex-studio/**'
+      - '.github/workflows/codex-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Riusa la cache dei dati di mercato delle esecuzioni pianificate: la build resta veloce.
+      - uses: actions/cache@v4
+        with:
+          path: data/cache
+          key: market-cache-${{ github.run_id }}
+          restore-keys: |
+            market-cache-
+            live-cache-
+            import-cache-
+      - run: node --test codex-studio/test/*.test.js
+      # ALLOW_PARTIAL=1: il sito (con /codex) si pubblica anche se i dati di mercato sono scarsi.
+      - run: ALLOW_PARTIAL=1 node scripts/build-static.js
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

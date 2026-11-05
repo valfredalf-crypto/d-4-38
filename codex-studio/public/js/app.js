@@ -13,7 +13,7 @@ const LS = {
 };
 const state = {
   mode: 'doc',
-  provider: LS.get('codex.provider', 'claude'),
+  provider: LS.get('codex.provider', 'subscription'),
   thinking: LS.get('codex.thinking', true),
   providers: {},
   keys: LS.get('codex.keys', {}),
@@ -297,17 +297,50 @@ function fillModels() {
   const supports = p.supportsThinking;
   sw.style.opacity = supports ? '1' : '.4';
   sw.title = supports ? '' : 'Questo provider non espone il ragionamento';
+  updateCostPill();
+}
+
+// Mostra se il motore selezionato consuma crediti API oppure no.
+function updateCostPill() {
+  const pill = $('#costPill');
+  if (!pill) return;
+  const p = state.providers[state.provider];
+  if (!p) { pill.hidden = true; return; }
+  pill.hidden = false;
+  if (p.free) {
+    pill.textContent = '✓ nessun credito';
+    pill.style.background = 'rgba(70,209,158,.14)';
+    pill.style.color = '#46d19e';
+    pill.title = p.local && state.provider === 'subscription'
+      ? 'Usa il tuo abbonamento Claude via Claude Code: non consuma crediti API'
+      : 'Gira in locale/gratis: non consuma crediti API';
+  } else {
+    pill.textContent = '€ consuma crediti';
+    pill.style.background = 'rgba(240,179,65,.14)';
+    pill.style.color = '#f0b341';
+    pill.title = 'Questo motore usa una API key e consuma crediti del provider';
+  }
 }
 function renderKeyRows() {
   const box = $('#keyRows'); box.innerHTML = '';
   for (const [id, p] of Object.entries(state.providers)) {
     const row = el('div', { className: 'key-row' });
+    // Provider locali (abbonamento via Claude Code, Ollama): nessuna chiave API.
+    if (p.local) {
+      const note = id === 'subscription'
+        ? 'Usa il tuo <b>abbonamento Claude</b> tramite la CLI di Claude Code già installata e connessa. Nessuna chiave, <b>nessun credito API</b>. Verifica di aver eseguito l\'accesso con <code>claude</code> nel terminale.'
+        : 'Gira in <b>locale</b> sul tuo computer, gratis e senza chiavi. Richiede <a href="' + p.keyUrl + '" target="_blank" rel="noopener">Ollama</a> in esecuzione (<code>ollama serve</code>).';
+      row.appendChild(el('div', { className: 'top' }, `<b>${p.label}</b><span class="ok">● nessun credito</span>`));
+      row.appendChild(el('div', { className: 'hint', innerHTML: note }));
+      box.appendChild(row);
+      continue;
+    }
     const hasEnv = p.envKey;
     const hasLocal = Boolean(state.keys[id]);
     row.appendChild(el('div', { className: 'top' }, `<b>${p.label}</b>${hasEnv ? '<span class="ok">● chiave da variabile d\'ambiente</span>' : (hasLocal ? '<span class="ok">● salvata</span>' : '')}`));
     const input = el('input', { type: 'password', id: 'key_' + id, placeholder: hasEnv ? 'Già configurata lato server (override opzionale)' : 'Incolla la chiave API…', value: state.keys[id] || '' });
     row.appendChild(input);
-    row.appendChild(el('div', { className: 'hint', innerHTML: `Ottieni la chiave: <a href="${p.keyUrl}" target="_blank" rel="noopener">${p.keyUrl}</a>` }));
+    row.appendChild(el('div', { className: 'hint', innerHTML: `⚠️ Consuma crediti API. Ottieni la chiave: <a href="${p.keyUrl}" target="_blank" rel="noopener">${p.keyUrl}</a>` }));
     box.appendChild(row);
   }
 }

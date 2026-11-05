@@ -1,8 +1,20 @@
 # Codex Studio
 
-App avanzata per **generare documentazione tecnica**, **analizzare codice** e **lavorare con SQL**, con un motore AI collegabile a scelta tra **Claude (Anthropic)**, **Google AI Studio (Gemini)** e **OpenAI (ChatGPT / Codex)**.
+**App unica** per **generare documentazione tecnica**, **generare app**, **analizzare codice** e **lavorare con SQL**: scegli l'**ambiente** (workspace) dalla barra laterale e il **motore AI** dalla barra in alto.
 
-Zero dipendenze: solo Node.js (≥ 18). Le chiamate ai provider passano da un **proxy locale** in streaming, così le chiavi restano sul tuo computer e non ci sono problemi di CORS.
+Il motore **predefinito** è **Claude · abbonamento** (instradato dalla **CLI di Claude Code** con cui sei già loggato): usa il tuo **abbonamento Pro/Max**, **non consuma crediti API** e non richiede nessuna chiave. In alternativa puoi usare un modello **locale gratuito** (Ollama) oppure, se vuoi, i motori a consumo (Claude API, Gemini, OpenAI).
+
+Zero dipendenze: solo Node.js (≥ 18). Le chiamate passano da un **proxy locale** in streaming, così chiavi e dati restano sul tuo computer e non ci sono problemi di CORS.
+
+## Motori (provider)
+
+| Motore | Costo | Chiave | Note |
+|--------|-------|--------|------|
+| **Claude · abbonamento** (default) | **0 crediti API** | nessuna | Via CLI `claude` (Claude Code) già connessa al tuo abbonamento. Richiede Claude Code installato e l'accesso eseguito. |
+| **Locale · Ollama** | **gratis** | nessuna | Gira in locale; richiede [Ollama](https://ollama.com/download) in esecuzione (`ollama serve`). |
+| Claude (Anthropic) API | consuma crediti | `ANTHROPIC_API_KEY` | Opzionale. |
+| Google AI Studio (Gemini) | consuma crediti | `GOOGLE_API_KEY` | Opzionale. |
+| OpenAI (ChatGPT / Codex) | consuma crediti | `OPENAI_API_KEY` | Opzionale. |
 
 ## Funzionalità
 
@@ -24,34 +36,47 @@ Zero dipendenze: solo Node.js (≥ 18). Le chiamate ai provider passano da un **
 ```bash
 # dalla radice del repository
 npm run codex          # avvia su http://localhost:4100
-# oppure, senza alcuna chiave, con risposte simulate:
+# oppure, senza nulla, con risposte simulate (DEMO):
 npm run codex:demo
 ```
 
-Poi apri **http://localhost:4100**, clicca **⚙️ Impostazioni & chiavi** e incolla almeno una chiave API.
+Poi apri **http://localhost:4100**. Con il motore predefinito (**Claude · abbonamento**) sei già pronto: non serve alcuna chiave, basta avere **Claude Code** installato e aver fatto l'accesso (`claude` nel terminale). Scegli l'ambiente a sinistra e premi **Genera**.
 
-## Chiavi API
+### Motore abbonamento (default, nessun credito API)
 
-Puoi fornire le chiavi in due modi (la chiave inserita nell'app ha la precedenza):
+Le richieste vengono instradate alla CLI locale:
 
-1. **Nel pannello Impostazioni dell'app** — salvate solo nel tuo browser (`localStorage`).
-2. **Come variabili d'ambiente** — copia `.env.example` e valorizza:
-
-| Provider | Variabile | Dove ottenerla |
-|----------|-----------|----------------|
-| Claude | `ANTHROPIC_API_KEY` | https://console.anthropic.com/settings/keys |
-| Google AI Studio | `GOOGLE_API_KEY` | https://aistudio.google.com/apikey — le chiavi iniziano con `AIza…` |
-| OpenAI | `OPENAI_API_KEY` | https://platform.openai.com/api-keys |
-
-```bash
-ANTHROPIC_API_KEY=sk-ant-... npm run codex
+```
+claude -p --output-format stream-json --include-partial-messages --verbose \
+  --model claude-opus-4-8 --max-turns 1 --permission-prompts none \
+  --strict-mcp-config --allowedTools --system-prompt "<system>"
 ```
 
-> Le pagine web di **ChatGPT Codex** e **Google AI Studio** sono interfacce interattive: per usarle da un'app serve la rispettiva **API key** dai link qui sopra. Codex Studio non usa e non richiede credenziali di login del browser.
+- Usa l'**abbonamento** con cui sei loggato in Claude Code → **nessun consumo di crediti API**.
+- Generazione pura: nessun tool, nessun prompt di permessi, un solo turno.
+- Attivando **Pensiero** nella UI viene impostato `MAX_THINKING_TOKENS` per abilitare il ragionamento esteso.
+- Se il binario non è nel `PATH`, impostalo con `CLAUDE_CLI_BIN=/percorso/claude`.
 
-## Modello e parametri per Claude
+### Modello locale gratuito (Ollama)
 
-Codex Studio usa `claude-opus-4-8` con:
+Scegli **Locale · Ollama** come motore. Richiede Ollama attivo:
+
+```bash
+ollama serve
+ollama pull llama3.1        # oppure qwen2.5-coder per codice/SQL
+# host non standard: OLLAMA_HOST=http://host:porta npm run codex
+```
+
+### Motori a consumo (opzionali, consumano crediti API)
+
+Solo se scegli Claude API / Gemini / OpenAI servono le chiavi, in due modi (quella inserita nell'app ha la precedenza):
+
+1. **Nel pannello ⚙️ Impostazioni dell'app** — salvate solo nel tuo browser (`localStorage`).
+2. **Come variabili d'ambiente** — copia `.env.example` e valorizza `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `OPENAI_API_KEY`.
+
+## Parametri per Claude
+
+Il motore **abbonamento** usa `claude-opus-4-8` (effort **alto** e **pensiero** attivi di default). Il motore **Claude API** (a consumo) usa `claude-opus-4-8` con:
 
 - `thinking: { type: "adaptive", display: "summarized" }` quando la modalità pensiero è attiva (il parametro `budget_tokens` non è più supportato su Opus 4.8);
 - `output_config: { effort: "high" }` configurabile dalla UI;

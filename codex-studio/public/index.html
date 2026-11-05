@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Codex Studio</title>
-  <meta name="description" content="Genera documenti tecnici e analizza codice e SQL con Claude, Gemini e OpenAI.">
+  <meta name="description" content="App unica per documenti tecnici, generazione app e SQL, collegata al tuo abbonamento Claude (via Claude Code) senza consumare crediti API.">
   <meta name="theme-color" content="#0e1116">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -20,7 +20,7 @@
     <aside class="side">
       <div class="brand">
         <div class="logo">&lt;/&gt;</div>
-        <div><b>Codex Studio</b><span>AI per codice &amp; docs</span></div>
+        <div><b>Codex Studio</b><span>Abbonamento Claude · 0 crediti API</span></div>
       </div>
       <nav class="nav" id="nav">
         <button data-mode="doc" class="active"><span class="ico">📄</span> Documenti tecnici</button>
@@ -45,7 +45,8 @@
           <button class="ghost mobile-only" id="mSettings" title="Impostazioni &amp; chiavi">⚙️</button>
           <button class="ghost mobile-only" id="mTheme" title="Tema">🌓</button>
           <span class="pill demo" id="demoPill" hidden>● DEMO</span>
-          <select id="provider" title="Provider AI"></select>
+          <span class="pill" id="costPill" title="Costo del motore selezionato" hidden></span>
+          <select id="provider" title="Motore AI / ambiente di esecuzione"></select>
           <select id="model" title="Modello"></select>
           <select id="effort" title="Livello di impegno (effort)">
             <option value="low">Effort: basso</option>
@@ -92,7 +93,7 @@
   <dialog id="settings">
     <div class="dlg-head"><h2>Impostazioni &amp; chiavi API</h2><button class="x" id="closeSettings">×</button></div>
     <div class="dlg-body">
-      <p class="hint">Le chiavi restano salvate <b>solo nel tuo browser</b> e vengono inviate al server locale di Codex Studio per contattare il provider. Non vengono mai committate nel repository.</p>
+      <p class="hint">Il motore predefinito è <b>Claude · abbonamento</b> (via Claude Code): nessuna chiave, <b>nessun credito API</b>. Le chiavi qui sotto servono <b>solo</b> se scegli un motore a consumo (Claude API, Gemini, OpenAI); restano salvate <b>solo nel tuo browser</b>, vengono inviate al server locale e non sono mai committate nel repository.</p>
       <div id="keyRows"></div>
     </div>
     <div class="dlg-foot">

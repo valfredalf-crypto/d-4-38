@@ -5,12 +5,16 @@ import { CATALOG } from './catalog.js';
 
 const ANTHROPIC_VERSION = '2023-06-01';
 
-// Info provider per il client: la chiave non è mai nell'ambiente (envKey = false).
+// Info provider per il client (sito statico): la chiave non è mai nell'ambiente
+// (envKey = false). I provider locali (abbonamento via CLI, Ollama) richiedono il
+// server locale e quindi NON sono disponibili nella modalità browser.
 export function browserInfo() {
-  return Object.fromEntries(Object.entries(CATALOG).map(([id, p]) => [id, {
-    label: p.label, keyUrl: p.keyUrl, supportsThinking: p.supportsThinking,
-    models: p.models, defaultModel: p.defaultModel, envKey: false,
-  }]));
+  return Object.fromEntries(Object.entries(CATALOG)
+    .filter(([, p]) => !p.local)
+    .map(([id, p]) => [id, {
+      label: p.label, keyUrl: p.keyUrl, supportsThinking: p.supportsThinking,
+      models: p.models, defaultModel: p.defaultModel, free: Boolean(p.free), local: false, envKey: false,
+    }]));
 }
 
 async function* sseLines(res) {

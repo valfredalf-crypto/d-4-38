@@ -2,8 +2,16 @@
 <html lang="it" data-theme="dark">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Codex Studio</title>
+  <meta name="description" content="Genera documenti tecnici e analizza codice e SQL con Claude, Gemini e OpenAI.">
+  <meta name="theme-color" content="#0e1116">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Codex Studio">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -30,9 +38,12 @@
     <!-- Main -->
     <section class="main">
       <header class="topbar">
+        <select id="mMode" class="mobile-only" title="Sezione"></select>
         <h1 id="title">Documenti tecnici</h1>
         <span class="sub" id="subtitle"></span>
         <div class="controls">
+          <button class="ghost mobile-only" id="mSettings" title="Impostazioni &amp; chiavi">⚙️</button>
+          <button class="ghost mobile-only" id="mTheme" title="Tema">🌓</button>
           <span class="pill demo" id="demoPill" hidden>● DEMO</span>
           <select id="provider" title="Provider AI"></select>
           <select id="model" title="Modello"></select>

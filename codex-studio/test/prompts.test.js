@@ -1,7 +1,7 @@
 // Test unitari (node:test) per la costruzione dei prompt e il catalogo provider.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildRequest, MODES } from '../lib/prompts.js';
+import { buildRequest, MODES } from '../public/js/prompts.js';
 import { PROVIDERS, providersInfo, resolveKey } from '../lib/providers.js';
 
 test('tutte le modalità producono system + messages validi', () => {

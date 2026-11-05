@@ -6,56 +6,19 @@
 // Gli errori vengono lanciati come eccezioni con .status quando possibile.
 //
 // Nessuna dipendenza esterna: usa la fetch globale di Node (>=18) e i Web Streams.
+import { CATALOG, ENV_KEYS } from '../public/js/catalog.js';
 
 const ANTHROPIC_VERSION = '2023-06-01';
 
-// --- Catalogo provider/modelli, esposto anche al frontend -------------------
-export const PROVIDERS = {
-  claude: {
-    label: 'Claude (Anthropic)',
-    env: 'ANTHROPIC_API_KEY',
-    keyUrl: 'https://console.anthropic.com/settings/keys',
-    supportsThinking: true,
-    models: [
-      { id: 'claude-opus-4-8', label: 'Opus 4.8 (consigliato)' },
-      { id: 'claude-opus-4-7', label: 'Opus 4.7' },
-      { id: 'claude-sonnet-4-6', label: 'Sonnet 4.6 (più veloce)' },
-    ],
-    defaultModel: 'claude-opus-4-8',
-  },
-  google: {
-    label: 'Google AI Studio (Gemini)',
-    env: 'GOOGLE_API_KEY',
-    keyUrl: 'https://aistudio.google.com/apikey',
-    supportsThinking: true,
-    models: [
-      { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-      { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (veloce)' },
-      { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-    ],
-    defaultModel: 'gemini-2.5-pro',
-  },
-  openai: {
-    label: 'OpenAI (ChatGPT / Codex)',
-    env: 'OPENAI_API_KEY',
-    keyUrl: 'https://platform.openai.com/api-keys',
-    supportsThinking: false,
-    models: [
-      { id: 'gpt-4o', label: 'GPT-4o' },
-      { id: 'gpt-4o-mini', label: 'GPT-4o mini (veloce)' },
-      { id: 'gpt-4.1', label: 'GPT-4.1' },
-      { id: 'o4-mini', label: 'o4-mini (reasoning)' },
-    ],
-    defaultModel: 'gpt-4o',
-  },
-};
+// Catalogo provider/modelli (metadati condivisi con il browser).
+export const PROVIDERS = CATALOG;
 
 export function providersInfo() {
   // Versione serializzabile per il frontend: indica anche se la chiave è presente nell'ambiente.
   return Object.fromEntries(
     Object.entries(PROVIDERS).map(([id, p]) => [id, {
       label: p.label, keyUrl: p.keyUrl, supportsThinking: p.supportsThinking,
-      models: p.models, defaultModel: p.defaultModel, envKey: Boolean(process.env[p.env]),
+      models: p.models, defaultModel: p.defaultModel, envKey: Boolean(process.env[ENV_KEYS[id]]),
     }]),
   );
 }
@@ -194,7 +157,7 @@ console.log("Codex Studio è pronto. Collega una chiave per iniziare.");
 
 // --- Dispatch ---------------------------------------------------------------
 export function resolveKey(provider, bodyKey) {
-  const env = PROVIDERS[provider] && process.env[PROVIDERS[provider].env];
+  const env = ENV_KEYS[provider] && process.env[ENV_KEYS[provider]];
   return (bodyKey && bodyKey.trim()) || env || null;
 }
 

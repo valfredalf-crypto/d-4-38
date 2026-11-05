@@ -5,13 +5,13 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildRequest } from './lib/prompts.js';
+import { buildRequest } from './public/js/prompts.js';
 import { stream, providersInfo, resolveKey, PROVIDERS } from './lib/providers.js';
 
 const PORT = Number(process.env.CODEX_PORT || process.env.PORT || 4100);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(HERE, 'public');
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json', '.ico': 'image/x-icon' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
 const EFFORTS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 
 function sendJson(res, status, body) {

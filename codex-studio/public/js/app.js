@@ -1,5 +1,7 @@
 // Codex Studio — logica dell'interfaccia.
 import { renderMarkdown } from './markdown.js';
+import { buildRequest } from './prompts.js';
+import { streamBrowser, browserInfo } from './providers-browser.js';
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const el = (tag, attrs = {}, html) => { const e = document.createElement(tag); Object.assign(e, attrs); if (html != null) e.innerHTML = html; return e; };
@@ -17,6 +19,7 @@ const state = {
   keys: LS.get('codex.keys', {}),
   chat: [], // storia della chat {role, content}
   running: null, // AbortController
+  serverMode: true, // false = sito statico, chiamate dirette dal browser
 };
 
 // --- Metadati delle modalità ------------------------------------------------
@@ -172,23 +175,36 @@ async function onRun() {
     const html = renderMarkdown(answerText);
     answerEl.innerHTML = (mode === 'chat' ? chatBase : '') + html + '<span class="cursor"></span>';
   };
+  const onEvent = (type, data) => {
+    if (type === 'thinking') { thinkingBox.hidden = false; thinkingBody.textContent += data.text; thinkingBox.open = true; }
+    else if (type === 'text') { answerText += data.text; paint(); }
+    else if (type === 'meta') { showMeta(data); }
+    else if (type === 'error') { throw new Error(data.message); }
+  };
 
   try {
-    const res = await fetch('/api/generate', {
-      method: 'POST', signal: ctrl.signal,
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(bodyData),
-    });
-    if (!res.ok || !res.body) {
-      const e = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-      throw new Error(e.error || `HTTP ${res.status}`);
+    if (state.serverMode) {
+      // Modalità server: il proxy locale contatta il provider e rilancia l'SSE.
+      const res = await fetch('/api/generate', {
+        method: 'POST', signal: ctrl.signal,
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(bodyData),
+      });
+      if (!res.ok || !res.body) {
+        const e = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        throw new Error(e.error || `HTTP ${res.status}`);
+      }
+      await readSSE(res.body, onEvent);
+    } else {
+      // Modalità client (sito statico): chiamata diretta al provider dal browser.
+      const key = state.keys[state.provider];
+      if (!key) throw new Error(`Chiave API mancante per ${state.providers[state.provider]?.label || state.provider}. Aprila da ⚙️ Impostazioni & chiavi.`);
+      const { system, messages } = buildRequest(mode, payload);
+      await streamBrowser(
+        { provider: state.provider, model: bodyData.model, system, messages, thinking: options.thinking && state.providers[state.provider]?.supportsThinking, effort: options.effort, maxTokens: options.maxTokens, apiKey: key, signal: ctrl.signal },
+        (ev) => onEvent(ev.type, ev),
+      );
     }
-    await readSSE(res.body, (type, data) => {
-      if (type === 'thinking') { thinkingBox.hidden = false; thinkingBody.textContent += data.text; thinkingBox.open = true; }
-      else if (type === 'text') { answerText += data.text; paint(); }
-      else if (type === 'meta') { showMeta(data); }
-      else if (type === 'error') { throw new Error(data.message); }
-    });
     // Finalizza
     answerEl.innerHTML = (mode === 'chat' ? chatBase : '') + renderMarkdown(answerText);
     if (mode === 'chat') { state.chat.push({ role: 'assistant', content: answerText }); renderChat(); }
@@ -308,6 +324,7 @@ function saveKeys() {
 function switchMode(mode) {
   state.mode = mode;
   for (const b of $('#nav').children) b.classList.toggle('active', b.dataset.mode === mode);
+  const mm = $('#mMode'); if (mm) mm.value = mode;
   $('#title').textContent = MODE_META[mode].title;
   $('#subtitle').textContent = MODE_META[mode].sub;
   $('#inputPanel').replaceChildren(buildForm(mode));
@@ -339,17 +356,31 @@ async function init() {
   const theme = LS.get('codex.theme', 'dark');
   document.documentElement.dataset.theme = theme;
 
+  // Rileva la modalità: con il proxy locale (npm run codex) usa il server;
+  // come sito statico (GitHub Pages) chiama i provider direttamente dal browser.
   try {
-    const res = await fetch('/api/providers');
+    const res = await fetch('/api/providers', { cache: 'no-store' });
+    if (!res.ok) throw new Error('no api');
     const data = await res.json();
-    state.providers = data.providers || {};
+    if (!data.providers) throw new Error('no providers');
+    state.serverMode = true;
+    state.providers = data.providers;
     $('#demoPill').hidden = !data.mock;
   } catch {
-    setAnswerNotice('Impossibile contattare il server locale. Avvia con "npm run codex".', true);
+    state.serverMode = false;
+    state.providers = browserInfo();
+    const pill = $('#demoPill');
+    pill.hidden = false; pill.textContent = '● modalità browser'; pill.classList.remove('demo');
+    pill.title = 'Sito statico: le chiamate partono dal tuo browser con la tua chiave API';
   }
 
   fillProviders();
   renderKeyRows();
+
+  // Service worker (PWA) — solo in produzione su HTTPS/localhost.
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* non bloccante */ });
+  }
 
   // Toggle pensiero
   const sw = $('#thinkSwitch');
@@ -362,6 +393,13 @@ async function init() {
 
   // Navigazione
   $('#nav').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) switchMode(b.dataset.mode); });
+
+  // Navigazione mobile
+  const mMode = $('#mMode');
+  for (const [id, m] of Object.entries(MODE_META)) mMode.appendChild(el('option', { value: id }, m.title));
+  mMode.onchange = (e) => switchMode(e.target.value);
+  $('#mSettings').onclick = () => { renderKeyRows(); $('#keyStatus').textContent = ''; $('#settings').showModal(); };
+  $('#mTheme').onclick = () => { const t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = t; LS.set('codex.theme', t); };
 
   // Impostazioni
   $('#openSettings').onclick = () => { renderKeyRows(); $('#keyStatus').textContent = ''; $('#settings').showModal(); };

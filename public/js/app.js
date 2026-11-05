@@ -28,7 +28,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'proj', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'proj', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -400,7 +400,7 @@ async function refreshQuotes(symbols) {
 
 // ---------- vista
 function filtered() {
-  const { type, q, onlyComputed, allEtf } = state.view;
+  const { type, q, onlyComputed, allEtf, distFilter } = state.view;
   const needle = q.trim().toLowerCase();
   const code = needle.replace(/[\s-]/g, ''); // ISIN o ticker anche scritti con spazi/trattini
   const active = activeFilters(state.view.filters);
@@ -413,6 +413,8 @@ function filtered() {
       if (i.type !== 'etf' || isBond(i)) return false; // i bond hanno la loro scheda, qui solo ETF non obbligazionari
     } else if (type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
+    if (distFilter && distFilter !== 'all' && distKind(i) !== distFilter) return false; // accumulazione / distribuzione
+
     // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
     // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta.
     // Chi cerca per nome/ISIN, o nella scheda Bond (obbligazionari, stima dal mercato), si mostrano comunque.
@@ -523,6 +525,21 @@ const eurAmt = (x, sign = true) => {
   return `<span class="eur">${sign && v > 0 ? '+' : ''}${Math.round(v).toLocaleString('it-IT')} €</span>`;
 };
 const hasHoldingsEstimate = (i) => state.results[i.symbol]?.forward?.growthSource === 'holdings';
+// Accumulazione o distribuzione: per gli ETF con stima si usa il dato del modello (distYield > 0 =
+// distribuisce), altrimenti il nome; le azioni distribuiscono (dividendi), le crypto nessuno.
+const DIST_RE = /\b(dist|distr|distributing|distribuzione|dis|income|inc|1d|2d|3d|4d|5d)\b|\(d(ist)?\)|[-\s]d$/i;
+const ACC_RE = /\b(acc|accumulating|accumulazione|thesaur|1c|2c|3c|4c|5c)\b|\(a?cc?\)|[-\s]c$/i;
+function distKind(i) {
+  // Il nome della classe di quote (Acc/Dist/C/D) è il segnale più affidabile; in mancanza si usa il dato
+  // del modello (distYield > 0 = distribuisce); le azioni distribuiscono, le crypto nessuno.
+  const name = i.name || '';
+  if (DIST_RE.test(name)) return 'dist';
+  if (ACC_RE.test(name)) return 'acc';
+  const r = state.results[i.symbol];
+  if (i.type === 'etf' && r && !r.error && r.sim) return r.sim.distYield > 0 ? 'dist' : 'acc';
+  if (i.type === 'stock') return 'dist';
+  return null;
+}
 // ETF obbligazionario (o monetario): riconosciuto dal nome. I bond ETF di solito non hanno una stima
 // dalla composizione (sono obbligazioni, non azioni), quindi la scheda Bond li mostra comunque.
 const BOND_RE = /\b(bond|bonds|obbligaz\w*|treasur\w*|govt|government bond|gilts?|bund|btp|oat|bonos|sovereign|aggregate|aggt|corporate|high[- ]yield|fixed income|reddito fisso|titoli di stato|inflation[- ]linked|tips|green bond|covered bond|money market|monetario|liquidity|ultrashort|senior loan|floating rate)\b/i;
@@ -2071,6 +2088,20 @@ function bind() {
       state.view.allEtf = e.target.checked;
       try {
         localStorage.setItem('trmc.allEtf', e.target.checked ? '1' : '0');
+      } catch {
+        /* niente */
+      }
+      render();
+    });
+  }
+  const df = $('#dist-filter');
+  if (df) {
+    df.value = state.view.distFilter || 'all';
+    df.addEventListener('change', (e) => {
+      state.view.distFilter = e.target.value;
+      state.view.limit = PAGE;
+      try {
+        localStorage.setItem('trmc.distFilter', e.target.value);
       } catch {
         /* niente */
       }

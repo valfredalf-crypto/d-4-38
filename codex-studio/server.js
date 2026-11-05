@@ -5,11 +5,38 @@ import http from 'node:http';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { buildRequest } from './public/js/prompts.js';
 import { stream, providersInfo, resolveKey, PROVIDERS } from './lib/providers.js';
 
 const PORT = Number(process.env.CODEX_PORT || process.env.PORT || 4100);
+
+// Protezione con password (HTTP Basic Auth). Attiva SOLO se è impostata
+// CODEX_PASSWORD: serve a proteggere il server quando lo esponi su internet
+// (tunnel) perché passa dal tuo abbonamento. In locale, senza password, nessun gate.
+const AUTH_USER = process.env.CODEX_USER || 'codex';
+const AUTH_PASS = process.env.CODEX_PASSWORD || '';
+
+function safeEq(a, b) {
+  const ab = Buffer.from(String(a));
+  const bb = Buffer.from(String(b));
+  return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
+}
+function checkAuth(req, res) {
+  if (!AUTH_PASS) return true; // nessuna password impostata => uso locale, nessun gate
+  const m = /^Basic\s+(.+)$/i.exec(req.headers.authorization || '');
+  if (m) {
+    const [u, ...rest] = Buffer.from(m[1], 'base64').toString('utf8').split(':');
+    if (safeEq(u, AUTH_USER) && safeEq(rest.join(':'), AUTH_PASS)) return true;
+  }
+  res.writeHead(401, {
+    'WWW-Authenticate': 'Basic realm="Codex Studio", charset="UTF-8"',
+    'Content-Type': 'text/plain; charset=utf-8',
+  });
+  res.end('Autenticazione richiesta.');
+  return false;
+}
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(HERE, 'public');
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.json': 'application/json', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.png': 'image/png' };
@@ -76,6 +103,7 @@ async function handleGenerate(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
+  if (!checkAuth(req, res)) return; // gate password (solo se CODEX_PASSWORD è impostata)
   const url = new URL(req.url, 'http://localhost');
 
   if (req.method === 'GET' && url.pathname === '/api/providers') {
@@ -125,6 +153,9 @@ server.listen(PORT, '0.0.0.0', () => {
   }
   if (process.env.MOCK !== '1') {
     console.log('  Motore predefinito: Claude · abbonamento (via Claude Code) — nessuna chiave, nessun credito API.');
+  }
+  if (AUTH_PASS) {
+    console.log(`  🔒 Protezione attiva — utente: "${AUTH_USER}", password impostata (richiesta all'apertura).`);
   }
   console.log('');
 });

@@ -90,6 +90,18 @@ Il server è raggiungibile anche dal telefono, **senza chiave**, perché è il c
 
 > È un uso in **rete locale**: quando spegni il PC o esci dalla Wi-Fi, l'app non è raggiungibile. Non è un sito pubblico sempre acceso (quello richiederebbe una chiave API e consumerebbe crediti). Su `http://<ip>` l'installazione come app (PWA) può essere limitata dal browser perché non è HTTPS: usala comunque dal browser del telefono.
 
+### Dal telefono OVUNQUE, col tuo account (tunnel sicuro)
+
+Per usare Codex dal telefono anche fuori casa (4G/altre reti) con le risposte
+generate da **Claude tramite il tuo abbonamento** sul computer:
+
+1. Installa [`cloudflared`](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/) (una volta sola; su macOS: `brew install cloudflared`).
+2. Avvia `codex-studio/avvia-codex-remoto.command` (macOS/Linux) o `avvia-codex-remoto.bat` (Windows).
+3. Lo script avvia Codex + un tunnel e stampa un link `https://….trycloudflare.com`, con **utente e password**.
+4. Apri quel link sul telefono e inserisci le credenziali. Le risposte arrivano da Claude sul tuo PC.
+
+> Il server è protetto da **password** (variabile `CODEX_PASSWORD`; se non la imposti, ne viene generata una casuale e mostrata all'avvio). Serve perché il link è pubblico e passa dal tuo abbonamento: **non condividere** link+password. Il PC deve restare acceso con lo script in esecuzione.
+
 ### Modello locale gratuito (Ollama)
 
 Scegli **Locale · Ollama** come motore. Richiede Ollama attivo:

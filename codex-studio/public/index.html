@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="it" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Codex Studio</title>
+  <meta name="description" content="Genera documenti tecnici e analizza codice e SQL con Claude, Gemini e OpenAI.">
+  <meta name="theme-color" content="#0e1116">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Codex Studio">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="side">
+      <div class="brand">
+        <div class="logo">&lt;/&gt;</div>
+        <div><b>Codex Studio</b><span>AI per codice &amp; docs</span></div>
+      </div>
+      <nav class="nav" id="nav">
+        <button data-mode="doc" class="active"><span class="ico">📄</span> Documenti tecnici</button>
+        <button data-mode="code"><span class="ico">🧭</span> Analisi codice</button>
+        <button data-mode="sql"><span class="ico">🗄️</span> Analisi SQL</button>
+        <button data-mode="app"><span class="ico">🚀</span> Generatore app</button>
+        <button data-mode="chat"><span class="ico">💬</span> Chat</button>
+      </nav>
+      <div class="foot">
+        <button class="ghost" id="openSettings">⚙️ Impostazioni &amp; chiavi</button>
+        <button class="ghost" id="toggleTheme">🌓 Tema</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <section class="main">
+      <header class="topbar">
+        <select id="mMode" class="mobile-only" title="Sezione"></select>
+        <h1 id="title">Documenti tecnici</h1>
+        <span class="sub" id="subtitle"></span>
+        <div class="controls">
+          <button class="ghost mobile-only" id="mSettings" title="Impostazioni &amp; chiavi">⚙️</button>
+          <button class="ghost mobile-only" id="mTheme" title="Tema">🌓</button>
+          <span class="pill demo" id="demoPill" hidden>● DEMO</span>
+          <select id="provider" title="Provider AI"></select>
+          <select id="model" title="Modello"></select>
+          <select id="effort" title="Livello di impegno (effort)">
+            <option value="low">Effort: basso</option>
+            <option value="medium">Effort: medio</option>
+            <option value="high" selected>Effort: alto</option>
+            <option value="xhigh">Effort: molto alto</option>
+            <option value="max">Effort: massimo</option>
+          </select>
+          <label class="inline" title="Mostra il ragionamento del modello (dove supportato)">
+            <span class="switch on" id="thinkSwitch"></span> Pensiero
+          </label>
+        </div>
+      </header>
+
+      <div class="work">
+        <!-- Pannello input: popolato dinamicamente per modalità -->
+        <div class="panel input" id="inputPanel"></div>
+
+        <!-- Pannello output -->
+        <div class="panel output">
+          <div class="out-head">
+            <strong>Risultato</strong>
+            <span class="pill" id="runMeta" hidden></span>
+            <span class="spacer"></span>
+            <button class="ghost" id="copyAll" hidden>Copia tutto</button>
+            <button class="ghost" id="stopBtn" hidden>■ Interrompi</button>
+          </div>
+          <details class="thinking" id="thinkingBox" hidden>
+            <summary>🧠 Ragionamento</summary>
+            <div class="body" id="thinkingBody"></div>
+          </details>
+          <div class="answer empty" id="answer">
+            <div>
+              <p style="font-size:28px;margin:0">&lt;/&gt;</p>
+              <p><b>Codex Studio</b> è pronto.<br>Compila i campi a sinistra e premi <b>Genera</b>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Dialog impostazioni -->
+  <dialog id="settings">
+    <div class="dlg-head"><h2>Impostazioni &amp; chiavi API</h2><button class="x" id="closeSettings">×</button></div>
+    <div class="dlg-body">
+      <p class="hint">Le chiavi restano salvate <b>solo nel tuo browser</b> e vengono inviate al server locale di Codex Studio per contattare il provider. Non vengono mai committate nel repository.</p>
+      <div id="keyRows"></div>
+    </div>
+    <div class="dlg-foot">
+      <span class="status" id="keyStatus"></span>
+      <button class="ghost" id="saveKeys">Salva</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

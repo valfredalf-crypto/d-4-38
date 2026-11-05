@@ -14,6 +14,13 @@ const MIN_SUCCESS = 0.5; // sotto questa quota di storici scaricati non si pubbl
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.cpSync('public', OUT, { recursive: true });
+// Codex Studio: pubblica l'app (modalità browser) nella sottocartella /codex del sito.
+try {
+  fs.cpSync('codex-studio/public', path.join(OUT, 'codex'), { recursive: true });
+  console.log('Codex Studio copiato in _site/codex/');
+} catch (e) {
+  console.warn('Codex Studio non copiato:', e.message);
+}
 fs.mkdirSync(path.join(OUT, 'data/history'), { recursive: true });
 fs.mkdirSync(path.join(OUT, 'data/outlook'), { recursive: true });
 const write = (rel, obj) => fs.writeFileSync(path.join(OUT, rel), JSON.stringify(obj));

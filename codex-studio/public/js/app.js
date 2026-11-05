@@ -179,6 +179,10 @@ async function onRun() {
     if (type === 'thinking') { thinkingBox.hidden = false; thinkingBody.textContent += data.text; thinkingBox.open = true; }
     else if (type === 'text') { answerText += data.text; paint(); }
     else if (type === 'meta') { showMeta(data); }
+    else if (type === 'status') {
+      // Avanzamento (es. download del modello WebLLM nel browser): mostrato finché non arriva testo.
+      if (!answerText) answerEl.innerHTML = (mode === 'chat' ? chatBase : '') + `<p class="hint">⏳ ${String(data.text || '').replace(/</g, '&lt;')}</p><span class="cursor"></span>`;
+    }
     else if (type === 'error') { throw new Error(data.message); }
   };
 
@@ -198,7 +202,8 @@ async function onRun() {
     } else {
       // Modalità client (sito statico): chiamata diretta al provider dal browser.
       const key = state.keys[state.provider];
-      if (!key) throw new Error(`Chiave API mancante per ${state.providers[state.provider]?.label || state.provider}. Aprila da ⚙️ Impostazioni & chiavi.`);
+      const isFree = state.providers[state.provider]?.free;
+      if (!key && !isFree) throw new Error(`Chiave API mancante per ${state.providers[state.provider]?.label || state.provider}. Aprila da ⚙️ Impostazioni & chiavi.`);
       const { system, messages } = buildRequest(mode, payload);
       await streamBrowser(
         { provider: state.provider, model: bodyData.model, system, messages, thinking: options.thinking && state.providers[state.provider]?.supportsThinking, effort: options.effort, maxTokens: options.maxTokens, apiKey: key, signal: ctrl.signal },

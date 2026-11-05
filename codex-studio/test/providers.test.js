@@ -26,6 +26,14 @@ test('i motori a consumo NON sono gratuiti', () => {
   }
 });
 
+test('webllm: motore browser gratuito, escluso dal lato server', () => {
+  assert.equal(CATALOG.webllm.free, true);
+  assert.equal(CATALOG.webllm.browserOnly, true);
+  assert.equal(ENV_KEYS.webllm, null);
+  // Il server non deve esporre un motore che funziona solo nel browser.
+  assert.ok(!('webllm' in providersInfo()), 'webllm non deve comparire in providersInfo (server)');
+});
+
 test('providersInfo espone free/local senza perdere i modelli', () => {
   const info = providersInfo();
   assert.equal(info.subscription.free, true);

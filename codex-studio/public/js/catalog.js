@@ -69,11 +69,26 @@ export const CATALOG = {
     ],
     defaultModel: 'gpt-4o',
   },
+  webllm: {
+    label: 'Nel browser · gratis (WebGPU, nessun credito)',
+    keyUrl: 'https://webgpureport.org/',
+    supportsThinking: false,
+    free: true,        // nessun credito: il modello gira nel browser
+    browserOnly: true, // funziona solo lato browser (sito statico), non sul server
+    models: [
+      { id: 'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 Coder 1.5B (codice/SQL)' },
+      { id: 'Llama-3.2-3B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 3B' },
+      { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', label: 'Llama 3.2 1B (leggero/mobile)' },
+      { id: 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC', label: 'Qwen2.5 1.5B' },
+      { id: 'Phi-3.5-mini-instruct-q4f16_1-MLC', label: 'Phi-3.5 mini' },
+    ],
+    defaultModel: 'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC',
+  },
 };
 
 // Nome della variabile d'ambiente lato server per ciascun provider.
-// `ollama` è locale e non usa chiavi (null).
-export const ENV_KEYS = { subscription: null, ollama: null, claude: 'ANTHROPIC_API_KEY', google: 'GOOGLE_API_KEY', openai: 'OPENAI_API_KEY' };
+// `ollama`, `subscription` e `webllm` non usano chiavi (null).
+export const ENV_KEYS = { subscription: null, ollama: null, claude: 'ANTHROPIC_API_KEY', google: 'GOOGLE_API_KEY', openai: 'OPENAI_API_KEY', webllm: null };
 
 // Provider gratuiti (nessun credito API). Utile ai frontend che vogliono restare "free".
 export const FREE_PROVIDERS = Object.keys(CATALOG).filter((id) => CATALOG[id].free);

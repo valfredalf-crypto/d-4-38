@@ -12,6 +12,7 @@ Zero dipendenze: solo Node.js (≥ 18). Le chiamate passano da un **proxy locale
 |--------|-------|--------|------|
 | **Claude · abbonamento** (default) | **0 crediti API** | nessuna | Via CLI `claude` (Claude Code) già connessa al tuo abbonamento. Richiede Claude Code installato e l'accesso eseguito. |
 | **Locale · Ollama** | **gratis** | nessuna | Gira in locale; richiede [Ollama](https://ollama.com/download) in esecuzione (`ollama serve`). |
+| **Nel browser · WebLLM** | **gratis** | nessuna | Modello eseguito nel browser (WebGPU): fa funzionare anche il **sito** senza chiave. Primo avvio scarica il modello; richiede un browser con WebGPU. |
 | Claude (Anthropic) API | consuma crediti | `ANTHROPIC_API_KEY` | Opzionale. |
 | Google AI Studio (Gemini) | consuma crediti | `GOOGLE_API_KEY` | Opzionale. |
 | OpenAI (ChatGPT / Codex) | consuma crediti | `OPENAI_API_KEY` | Opzionale. |
@@ -39,6 +40,21 @@ npm run codex          # avvia su http://localhost:4100
 # oppure, senza nulla, con risposte simulate (DEMO):
 npm run codex:demo
 ```
+
+**Avvio con doppio clic** (senza terminale): nella cartella `codex-studio/` trovi
+`avvia-codex.command` (macOS/Linux) e `avvia-codex.bat` (Windows). Un doppio clic
+avvia il server, apre il browser e avvisa se manca il login di Claude Code.
+Per una porta diversa dalla 4100: imposta la variabile `CODEX_PORT` (es.
+`CODEX_PORT=5000`).
+
+**Sito ospitato (senza chiave):** la versione pubblicata su GitHub Pages
+(sotto `…/codex/`) gira solo nel browser. Lì il motore **Nel browser · WebLLM**
+la fa funzionare **senza chiave e senza crediti** (modello eseguito sul
+dispositivo, serve WebGPU). I motori a consumo restano disponibili inserendo una
+chiave; i motori *abbonamento* e *Ollama* richiedono invece l'esecuzione locale.
+
+**App mobile (PWA):** apri il sito sul telefono e usa «Aggiungi a schermata
+Home»: Codex Studio si installa come app a sé (icona propria, a tutto schermo).
 
 Poi apri **http://localhost:4100**. Con il motore predefinito (**Claude · abbonamento**) sei già pronto: non serve alcuna chiave, basta avere **Claude Code** installato e aver fatto l'accesso (`claude` nel terminale). Scegli l'ambiente a sinistra e premi **Genera**.
 

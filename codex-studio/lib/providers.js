@@ -15,14 +15,17 @@ const ANTHROPIC_VERSION = '2023-06-01';
 export const PROVIDERS = CATALOG;
 
 export function providersInfo() {
-  // Versione serializzabile per il frontend: indica anche se la chiave è presente nell'ambiente.
+  // Versione serializzabile per il frontend (modalità server). Esclude i motori
+  // "browserOnly" (es. WebLLM) che funzionano solo lato browser sul sito statico.
   return Object.fromEntries(
-    Object.entries(PROVIDERS).map(([id, p]) => [id, {
-      label: p.label, keyUrl: p.keyUrl, supportsThinking: p.supportsThinking,
-      models: p.models, defaultModel: p.defaultModel,
-      free: Boolean(p.free), local: Boolean(p.local),
-      envKey: Boolean(ENV_KEYS[id] && process.env[ENV_KEYS[id]]),
-    }]),
+    Object.entries(PROVIDERS)
+      .filter(([, p]) => !p.browserOnly)
+      .map(([id, p]) => [id, {
+        label: p.label, keyUrl: p.keyUrl, supportsThinking: p.supportsThinking,
+        models: p.models, defaultModel: p.defaultModel,
+        free: Boolean(p.free), local: Boolean(p.local),
+        envKey: Boolean(ENV_KEYS[id] && process.env[ENV_KEYS[id]]),
+      }]),
   );
 }
 

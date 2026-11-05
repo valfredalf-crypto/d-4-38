@@ -10,10 +10,13 @@ const ANTHROPIC_VERSION = '2023-06-01';
 // server locale e quindi NON sono disponibili nella modalità browser.
 export function browserInfo() {
   return Object.fromEntries(Object.entries(CATALOG)
-    .filter(([, p]) => !p.local)
+    .filter(([, p]) => !p.local) // i motori che richiedono il server locale non valgono nel browser
+    // I motori gratuiti (WebLLM) vengono elencati per primi: così il sito funziona senza chiave.
+    .sort(([, a], [, b]) => (a.free ? 0 : 1) - (b.free ? 0 : 1))
     .map(([id, p]) => [id, {
       label: p.label, keyUrl: p.keyUrl, supportsThinking: p.supportsThinking,
-      models: p.models, defaultModel: p.defaultModel, free: Boolean(p.free), local: false, envKey: false,
+      models: p.models, defaultModel: p.defaultModel,
+      free: Boolean(p.free), local: false, browserOnly: Boolean(p.browserOnly), envKey: false,
     }]));
 }
 
@@ -104,8 +107,45 @@ async function openai({ model, system, messages, effort, maxTokens, apiKey, sign
   }
 }
 
+// --- WebLLM: modello eseguito NEL BROWSER (WebGPU), gratis, senza chiave ----
+// Nessun credito API, nessun dato inviato a server esterni: il modello viene
+// scaricato una volta e gira sul dispositivo. Richiede un browser con WebGPU.
+let _webllmEngine = null;
+let _webllmModel = null;
+
+async function webllm({ model, system, messages, maxTokens, signal }, onEvent) {
+  if (!('gpu' in navigator)) {
+    throw new Error('WebGPU non disponibile su questo browser/dispositivo. Usa Chrome o Edge aggiornati (anche su Android), oppure inserisci una chiave API da ⚙️ Impostazioni.');
+  }
+  const lib = await import('https://esm.run/@mlc-ai/web-llm@0.2.79');
+  const id = model || 'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC';
+  if (!_webllmEngine || _webllmModel !== id) {
+    onEvent({ type: 'status', text: `Preparo il modello «${id}» nel browser (scaricamento una tantum, può richiedere qualche minuto)…` });
+    _webllmEngine = await lib.CreateMLCEngine(id, {
+      initProgressCallback: (p) => onEvent({ type: 'status', text: p.text || `Caricamento modello… ${Math.round((p.progress || 0) * 100)}%` }),
+    });
+    _webllmModel = id;
+  }
+  onEvent({ type: 'status', text: 'Modello pronto, genero la risposta…' });
+  const msgs = system ? [{ role: 'system', content: system }, ...messages] : messages;
+  const stream = await _webllmEngine.chat.completions.create({
+    messages: msgs, stream: true, temperature: 0.7,
+    max_tokens: Math.min(Number(maxTokens) || 4096, 4096),
+  });
+  for await (const chunk of stream) {
+    if (signal?.aborted) break;
+    const t = chunk.choices?.[0]?.delta?.content;
+    if (t) onEvent({ type: 'text', text: t });
+  }
+  onEvent({ type: 'meta', model: id, stopReason: 'stop', usage: null });
+}
+
 export async function streamBrowser(opts, onEvent) {
-  if (!opts.apiKey) throw new Error(`Chiave API mancante per ${CATALOG[opts.provider]?.label || opts.provider}. Aprila da ⚙️ Impostazioni.`);
+  if (opts.provider === 'webllm') return webllm(opts, onEvent);
+  // I motori a consumo richiedono la chiave; quelli gratuiti no.
+  if (!opts.apiKey && !CATALOG[opts.provider]?.free) {
+    throw new Error(`Chiave API mancante per ${CATALOG[opts.provider]?.label || opts.provider}. Aprila da ⚙️ Impostazioni.`);
+  }
   if (opts.provider === 'claude') return claude(opts, onEvent);
   if (opts.provider === 'google') return gemini(opts, onEvent);
   if (opts.provider === 'openai') return openai(opts, onEvent);

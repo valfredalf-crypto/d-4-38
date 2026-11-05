@@ -12,6 +12,9 @@
     "demo": "MOCK=1 node server.js",
     "rank": "node scripts/rank.js",
     "test": "node --test test/*.test.js",
-    "verify": "node scripts/verify.js"
+    "verify": "node scripts/verify.js",
+    "codex": "node codex-studio/server.js",
+    "codex:demo": "MOCK=1 node codex-studio/server.js",
+    "codex:test": "node --test codex-studio/test/*.test.js"
   }
 }

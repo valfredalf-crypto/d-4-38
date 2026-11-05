@@ -12,10 +12,12 @@ import { analyze, BENCHMARK_SYMBOL, DEFAULT_SETTINGS } from '../public/js/analyz
 import { isLeveraged, mergeUnique, selectTop, isEuroListing, hasImplausibleJumps, growthScore } from '../lib/universe.js';
 
 const PER_GROUP = Number(process.env.PER_GROUP || 300);
+const ETF_PER_GROUP = Number(process.env.ETF_PER_GROUP || 800); // gli ETF sono un insieme più ristretto: se ne tengono di più per avere una lista completa
 const SHORTLIST = PER_GROUP * 2; // azioni per cui si scarica anche il consenso analisti
 const GROWTH_N = Number(process.env.GROWTH_N || 100); // azioni aggiunte per crescita attesa
 const GROWTH_MIN = Number(process.env.GROWTH_MIN || 0.15); // crescita attesa minima (15%)
 const RATIO_N = Number(process.env.RATIO_N || 150); // per gruppo: migliori per rapporto perdita/guadagno
+const ETF_RATIO_N = Number(process.env.ETF_RATIO_N || 400); // più ETF per rapporto (lista ETF più completa)
 const MAX_CANDIDATES = Number(process.env.MAX_CANDIDATES || Infinity); // per prove rapide
 const OUT = process.env.UNIVERSE || 'data/universe.json';
 const log = (...a) => console.log(...a);
@@ -151,7 +153,7 @@ if (outlookErrors.length) log(`  errori dati analisti: ${outlookErrors.length} (
 //        + le GROWTH_N azioni con la crescita attesa più alta secondo il consenso degli analisti
 const shortlisted = new Set(stocks.map((r) => r.inst.symbol));
 const eligible = rows.filter((r) => r.inst.type !== 'stock' || shortlisted.has(r.inst.symbol));
-const selected = selectTop(eligible, PER_GROUP);
+const selected = selectTop(eligible, { stock: PER_GROUP, etf: ETF_PER_GROUP });
 const growthPicks = stocks
   .filter((r) => r.growth != null && r.growth >= GROWTH_MIN)
   .sort((a, b) => b.growth - a.growth)
@@ -167,7 +169,7 @@ for (const type of ['stock', 'etf']) {
     ...eligible
       .filter((r) => r.inst.type === type && Number.isFinite(r.ratio) && r.ratio > 0)
       .sort((a, b) => a.ratio - b.ratio)
-      .slice(0, RATIO_N),
+      .slice(0, type === 'etf' ? ETF_RATIO_N : RATIO_N),
   );
 }
 log(`Migliori per rapporto: ${ratioPicks.length} (rapporti ${ratioPicks.map((r) => r.ratio).sort((a, b) => a - b)[0]?.toFixed(2)}–${ratioPicks.map((r) => r.ratio).sort((a, b) => b - a)[0]?.toFixed(2)})`);
@@ -194,7 +196,7 @@ log(`Selezionati: ${count('stock')} azioni (di cui ${growthPicks.length} per cre
 
 const meta = {
   ...base.meta,
-  description: `Le ${PER_GROUP} azioni e i ${PER_GROUP} ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra ${candidates.length} candidati negoziabili su Xetra/Trade Republic, più i ${RATIO_N} con il miglior rapporto perdita/guadagno per gruppo, la lista iniziale verificata, le ${growthPicks.length} azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.`,
+  description: `Le ${PER_GROUP} azioni e i ${ETF_PER_GROUP} ETF/ETC con il miglior guadagno netto previsto a 5 anni (Monte Carlo, parametri predefiniti) tra ${candidates.length} candidati negoziabili su Xetra/Trade Republic, più i ${RATIO_N} con il miglior rapporto perdita/guadagno per gruppo, la lista iniziale verificata, le ${growthPicks.length} azioni con la crescita attesa più alta secondo il consenso degli analisti (ricavi e utili dell'anno prossimo, almeno 3 analisti, capitalizzazione ≥ 2 mld) e tutte le crypto. Esclusi prodotti a leva e short.`,
   universeGeneratedAt: new Date().toISOString(),
   xetraUrl,
   candidates: candidates.length,

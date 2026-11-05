@@ -16,9 +16,9 @@ start "Codex" cmd /c "set CODEX_PORT=%CODEX_PORT%&& set CODEX_USER=%CODEX_USER%&
 timeout /t 3 >nul
 
 echo ============================================================
-echo   Apri sul telefono il link https://....trycloudflare.com qui sotto.
-echo   utente:   %CODEX_USER%
-echo   password: %CODEX_PASSWORD%
+echo   Qui sotto comparira' un link https://....trycloudflare.com
+echo   iPhone/iPad: apri   ^<link^>/?token=%CODEX_PASSWORD%
+echo   Oppure inserisci   utente: %CODEX_USER%   password: %CODEX_PASSWORD%
 echo   (Tieni il PC acceso con queste finestre aperte.)
 echo ============================================================
 cloudflared tunnel --url http://localhost:%CODEX_PORT%

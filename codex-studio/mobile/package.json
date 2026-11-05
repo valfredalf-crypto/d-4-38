@@ -1,0 +1,23 @@
+{
+  "name": "codex-studio-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App mobile (Android/iOS) di Codex Studio, basata su Capacitor: impacchetta l'interfaccia web in un'app installabile.",
+  "type": "module",
+  "scripts": {
+    "prepare-www": "node prepare.mjs",
+    "add:android": "npm run prepare-www && npx cap add android && npx cap sync android",
+    "add:ios": "npm run prepare-www && npx cap add ios && npx cap sync ios",
+    "sync": "npm run prepare-www && npx cap sync",
+    "open:android": "npx cap open android",
+    "open:ios": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "6.2.1",
+    "@capacitor/core": "6.2.1",
+    "@capacitor/ios": "6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "6.2.1"
+  }
+}

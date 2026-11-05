@@ -1,0 +1,10 @@
+{
+  "appId": "com.valfredalf.codexstudio",
+  "appName": "Codex Studio",
+  "webDir": "www",
+  "backgroundColor": "#0e1116",
+  "android": { "allowMixedContent": true },
+  "server": {
+    "androidScheme": "https"
+  }
+}

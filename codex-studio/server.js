@@ -23,8 +23,36 @@ function safeEq(a, b) {
   const bb = Buffer.from(String(b));
   return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
 }
-function checkAuth(req, res) {
-  if (!AUTH_PASS) return true; // nessuna password impostata => uso locale, nessun gate
+function parseCookies(h) {
+  const o = {};
+  (h || '').split(';').forEach((p) => {
+    const i = p.indexOf('=');
+    if (i > 0) o[p.slice(0, i).trim()] = decodeURIComponent(p.slice(i + 1).trim());
+  });
+  return o;
+}
+// Accetta: cookie (impostato dopo il primo accesso), token nel link (?token=… o
+// ?k=…, comodo per la PWA su iPhone) oppure HTTP Basic Auth. Attivo solo con CODEX_PASSWORD.
+function checkAuth(req, res, url) {
+  if (!AUTH_PASS) return true; // nessuna password => uso locale, nessun gate
+
+  const cookies = parseCookies(req.headers.cookie);
+  if (cookies.codex_token && safeEq(cookies.codex_token, AUTH_PASS)) return true;
+
+  const token = url.searchParams.get('token') || url.searchParams.get('k');
+  if (token && safeEq(token, AUTH_PASS)) {
+    const https = req.headers['x-forwarded-proto'] === 'https';
+    url.searchParams.delete('token');
+    url.searchParams.delete('k');
+    const clean = url.pathname + (url.search ? url.search : '');
+    res.writeHead(302, {
+      'Set-Cookie': `codex_token=${encodeURIComponent(AUTH_PASS)}; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax${https ? '; Secure' : ''}`,
+      Location: clean || '/',
+    });
+    res.end();
+    return false; // gestito con redirect "pulito" (senza token nell'URL)
+  }
+
   const m = /^Basic\s+(.+)$/i.exec(req.headers.authorization || '');
   if (m) {
     const [u, ...rest] = Buffer.from(m[1], 'base64').toString('utf8').split(':');
@@ -103,8 +131,8 @@ async function handleGenerate(req, res) {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (!checkAuth(req, res)) return; // gate password (solo se CODEX_PASSWORD è impostata)
   const url = new URL(req.url, 'http://localhost');
+  if (!checkAuth(req, res, url)) return; // gate password (solo se CODEX_PASSWORD è impostata)
 
   if (req.method === 'GET' && url.pathname === '/api/providers') {
     return sendJson(res, 200, { providers: providersInfo(), mock: process.env.MOCK === '1' });

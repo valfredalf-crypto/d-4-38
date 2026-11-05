@@ -55,6 +55,8 @@ chiave; i motori *abbonamento* e *Ollama* richiedono invece l'esecuzione locale.
 
 **App mobile (PWA):** apri il sito sul telefono e usa «Aggiungi a schermata
 Home»: Codex Studio si installa come app a sé (icona propria, a tutto schermo).
+Per avere un'app **collegata al tuo account Claude** (risposte generate dal tuo
+PC, 0 crediti) — anche su **iPhone, senza Mac** — vedi [`mobile/README.md`](mobile/README.md).
 
 Poi apri **http://localhost:4100**. Con il motore predefinito (**Claude · abbonamento**) sei già pronto: non serve alcuna chiave, basta avere **Claude Code** installato e aver fatto l'accesso (`claude` nel terminale). Scegli l'ambiente a sinistra e premi **Genera**.
 

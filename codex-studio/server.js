@@ -3,6 +3,7 @@
 // (Claude, Google AI Studio, OpenAI), così le chiavi restano lato server ed si evita la CORS.
 import http from 'node:http';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildRequest } from './public/js/prompts.js';
@@ -101,7 +102,29 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+// Indirizzi IPv4 della rete locale (per aprire l'app dal telefono sulla stessa Wi-Fi).
+function lanAddresses() {
+  const out = [];
+  for (const list of Object.values(os.networkInterfaces())) {
+    for (const ni of list || []) {
+      if (ni.family === 'IPv4' && !ni.internal) out.push(ni.address);
+    }
+  }
+  return out;
+}
+
+// Ascolta su tutte le interfacce (0.0.0.0) così è raggiungibile anche dal telefono in LAN.
+server.listen(PORT, '0.0.0.0', () => {
   const demo = process.env.MOCK === '1' ? '  (MODALITÀ DEMO: risposte simulate, nessuna chiave richiesta)' : '';
-  console.log(`Codex Studio in ascolto su http://localhost:${PORT}${demo}`);
+  console.log(`\nCodex Studio in ascolto${demo}`);
+  console.log(`  • Su questo computer:  http://localhost:${PORT}`);
+  const ips = lanAddresses();
+  if (ips.length) {
+    console.log('  • Dal telefono (stessa Wi-Fi), apri uno di questi:');
+    for (const ip of ips) console.log(`      http://${ip}:${PORT}`);
+  }
+  if (process.env.MOCK !== '1') {
+    console.log('  Motore predefinito: Claude · abbonamento (via Claude Code) — nessuna chiave, nessun credito API.');
+  }
+  console.log('');
 });

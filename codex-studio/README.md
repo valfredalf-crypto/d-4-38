@@ -57,6 +57,23 @@ claude -p --output-format stream-json --include-partial-messages --verbose \
 - Attivando **Pensiero** nella UI viene impostato `MAX_THINKING_TOKENS` per abilitare il ragionamento esteso.
 - Se il binario non è nel `PATH`, impostalo con `CLAUDE_CLI_BIN=/percorso/claude`.
 
+**Prerequisiti (una volta sola):**
+
+1. [Node.js](https://nodejs.org) ≥ 18.
+2. [Claude Code](https://www.anthropic.com/claude-code) installato e **accesso eseguito** (apri un terminale, lancia `claude` e fai il login con il tuo abbonamento).
+
+Poi, dalla radice del repository, `npm run codex`. Nessuna chiave, nessun credito API.
+
+### Dal telefono (stessa rete Wi-Fi)
+
+Il server è raggiungibile anche dal telefono, **senza chiave**, perché è il computer a eseguire Claude Code:
+
+1. Tieni il PC acceso con `npm run codex` in esecuzione.
+2. All'avvio il server stampa gli indirizzi da usare, es. `http://192.168.1.50:4100`.
+3. Sul telefono (connesso alla **stessa Wi-Fi**) apri quell'indirizzo nel browser.
+
+> È un uso in **rete locale**: quando spegni il PC o esci dalla Wi-Fi, l'app non è raggiungibile. Non è un sito pubblico sempre acceso (quello richiederebbe una chiave API e consumerebbe crediti). Su `http://<ip>` l'installazione come app (PWA) può essere limitata dal browser perché non è HTTPS: usala comunque dal browser del telefono.
+
 ### Modello locale gratuito (Ollama)
 
 Scegli **Locale · Ollama** come motore. Richiede Ollama attivo:

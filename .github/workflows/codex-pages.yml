@@ -4,11 +4,8 @@ name: Pubblica Codex Studio (Pages)
 # Si attiva solo per modifiche a codex-studio/** (o a comando) e non è bloccato
 # dai dati di mercato: usa la cache e ALLOW_PARTIAL per pubblicare in fretta.
 on:
-  push:
-    branches: [main, claude/trade-republic-monte-carlo-app-ysf7po]
-    paths:
-      - 'codex-studio/**'
-      - '.github/workflows/codex-pages.yml'
+  # Disattivato l'avvio automatico: così le modifiche a Codex NON ricostruiscono
+  # più Monte Carlo. Codex andrà in un repository dedicato. Avvio solo manuale.
   workflow_dispatch:
 
 permissions:

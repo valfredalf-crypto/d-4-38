@@ -3,6 +3,10 @@ name: Pubblica sito (GitHub Pages)
 on:
   push:
     branches: [main, claude/trade-republic-monte-carlo-app-ysf7po]
+    # Le modifiche a Codex Studio NON devono far ripartire la build di Monte Carlo.
+    paths-ignore:
+      - 'codex-studio/**'
+      - '.github/workflows/codex-pages.yml'
   schedule:
     # Ogni 2 ore: storici e analisti. Quotazioni e previsioni frequenti arrivano da live.yml
     - cron: '23 */2 * * *'

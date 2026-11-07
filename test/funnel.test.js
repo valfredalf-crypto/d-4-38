@@ -31,10 +31,19 @@ test('Max Growth Score: storico + prospettive, volatilità, concentrazione, valu
   const nasdaq = maxGrowthScore({ type: 'etf', name: 'iShares NASDAQ 100 UCITS ETF (Acc)' }, { cagrHist: 0.187 }, { expected: 0.098, vol: 0.21, top10: 0.5 }, 0.003);
   assert.ok(world.score > tech.score, `${world.score} vs ${tech.score}`);
   assert.ok(world.score > nasdaq.score, `${world.score} vs ${nasdaq.score}`);
-  const value = maxGrowthScore({ type: 'etf', name: 'HSBC MSCI World Value Screened UCITS ETF USD Acc' }, { cagrHist: 0.12 });
+  const value = maxGrowthScore({ type: 'etf', name: 'HSBC MSCI World Value Screened UCITS ETF USD Acc' }, { cagrHist: 0.12, cagr10: 0.1 }, null, null, { aum: { value: 5e9, currency: 'EUR' } });
   assert.ok(Math.abs(value.score - 0.102) < 1e-12);
   assert.equal(phase1Check({ type: 'etf' }, { aum: { value: 222e6, currency: 'EUR' } }, 'acc').pass, false);
   assert.equal(phase1Check({ type: 'etf' }, { ter: 0.004 }, 'acc').pass, false);
   assert.equal(phase1Check({ type: 'etf' }, {}, 'dist').pass, false);
   assert.equal(phase1Check({ type: 'etf' }, { aum: { value: 2e9, currency: 'EUR' }, ter: 0.002 }, 'acc').pass, true);
+});
+
+test('Max Growth Score: ETF piccoli, giovani o con strategie speciali sotto quelli puri', async () => {
+  const { maxGrowthScore } = await import('../public/js/funnel.js');
+  const fwd = { expected: 0.09, vol: 0.14, top10: 0.2 };
+  const pure = maxGrowthScore({ type: 'etf', name: 'iShares Core MSCI World UCITS ETF (Acc)' }, { cagrHist: 0.1, cagr10: 0.1 }, fwd, 0.002, { aum: { value: 100e9, currency: 'EUR' } });
+  const special = maxGrowthScore({ type: 'etf', name: 'Invesco Global Active ESG Equity UCITS ETF' }, { cagrHist: 0.12 }, fwd, 0.003, { aum: { value: 0.7e9, currency: 'EUR' } });
+  assert.ok(pure.score > special.score, `${pure.score} vs ${special.score}`);
+  assert.ok(special.special > 0 && special.small > 0 && special.young > 0);
 });

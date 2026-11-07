@@ -627,7 +627,7 @@ function rowValues(i) {
     proj019: r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null,
     histMdd: sim?.histMdd ?? null,
     // Max Growth Score (ETF): CAGR storico 10a (già netto di TER/TD) −15% Value/High Div/Min Vol, +0,5% indici globali
-    maxGrowth: (i.type === 'etf' || i.type === 'stock') && r && !r.error ? maxGrowthScore(i, sim, r.forward, r.fund?.ter)?.score ?? null : null,
+    maxGrowth: (i.type === 'etf' || i.type === 'stock') && r && !r.error ? maxGrowthScore(i, sim, r.forward, r.fund?.ter, r.fund)?.score ?? null : null,
     // CAGR netto atteso: netto 019 × (1 − MDD storico), es. 13.248 € × (1 − 96%) = 530 €
     proj: (() => {
       const g = r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null;
@@ -813,12 +813,15 @@ function render() {
         ${mgMode() ? (() => {
           const rr = state.results[i.symbol];
           const ter = rr?.fund?.ter;
-          const mg = maxGrowthScore(i, rr?.sim, rr?.forward, ter);
+          const mg = maxGrowthScore(i, rr?.sim, rr?.forward, ter, rr?.fund);
           if (!mg) return '<td class="num muted">–</td>';
           const parts = [`storico ${mg.years || 5}a ${pct(mg.hist, true)}${mg.cagr10 != null ? ` (10a ${pct(mg.cagr10, true)})` : ''}${mg.anomalous ? ' <span class="neg">eccezionale/anomalo: escluso</span>' : ''}`];
           if (mg.exp != null) parts.push(`atteso ${pct(mg.exp, true)}`);
           if (mg.growth != null) parts.push(`crescita utili ${pct(mg.growth, true)}`);
           if (mg.stagnation) parts.push(`<span class="neg">− ${pct(mg.stagnation, false)} stagnazione</span>`);
+          if (mg.special) parts.push(`<span class="neg">− ${pct(mg.special, false)} strategia speciale</span>`);
+          if (mg.small) parts.push(`<span class="neg">− 0,5% ${mg.aum == null ? 'patrimonio n.d.' : 'patrimonio < 1 mld'}</span>`);
+          if (mg.young) parts.push('<span class="neg">− 0,25% storia < 10 anni</span>');
           if (mg.boost) parts.push('<span class="pos">+ 0,5% mercato globale</span>');
           if (mg.risk) parts.push(`<span class="neg">− ${pct(mg.risk, false)} volatilità ${pct(mg.vol, false, 0)}</span>`);
           if (mg.conc) parts.push(`<span class="neg">− ${pct(mg.conc, false)} concentrazione/settore</span>`);

@@ -64,7 +64,9 @@ const STAGNATION_RE = /\b(value|high[- ]div(idend)?|min(imum)?[- ]?vol(atility)?
  *   volatilità perde ~6 punti, l'MSCI World al 13% meno di 2);
  * - − concentrazione: 0,1 × (peso dei primi 10 titoli − 30%) all'anno, almeno 3% per gli ETF di un solo settore.
  */
-export function maxGrowthScore(inst, sim, fwd = null, ter = null) {
+// Strategie «speciali» (non il mercato puro): gestione attiva, ESG/screening, fattori, enhanced…
+const SPECIAL_RE = /\b(quality|momentum|screened|sri|esg|socially|responsible|sustainab\w*|climate|paris|net[- ]zero|transition|equal[- ]weight\w*|factor|multi[- ]?factor|defensive|enhanced|select|leaders|islamic|shariah|catholic|active|alphadex|research|scored|universal|gender|governance|covered call|buffer|income)\b/i;
+export function maxGrowthScore(inst, sim, fwd = null, ter = null, fund = null) {
   const isEtf = inst?.type === 'etf';
   if (!(isEtf || inst?.type === 'stock') || !Number.isFinite(sim?.cagrHist)) return null;
   const hist = sim.cagrHist;
@@ -84,11 +86,17 @@ export function maxGrowthScore(inst, sim, fwd = null, ter = null) {
   const wsum = comps.reduce((a, [, w]) => a + w, 0);
   const base = comps.length ? comps.reduce((a, [v, w]) => a + v * w, 0) / wsum : hist;
   const stagnation = isEtf && STAGNATION_RE.test(inst.name || '') ? Math.abs(base) * 0.15 : 0;
+  // ETF con strategia speciale: −10% della base (se non già penalizzati come Value/High Dividend/Min Vol)
+  const special = isEtf && !stagnation && SPECIAL_RE.test(inst.name || '') ? Math.abs(base) * 0.1 : 0;
+  // Solidità: patrimonio sotto 1 miliardo o non noto −0,5%/anno; meno di 10 anni di storia −0,25%/anno
+  const aum = isEtf ? aumEur(fund) : null;
+  const small = isEtf && (aum == null || aum < 1e9) ? 0.005 : 0;
+  const young = isEtf && !Number.isFinite(sim.cagr10) ? 0.0025 : 0;
   const boost = isEtf && purityOk(inst.name) ? 0.005 : 0;
   const vol = Number.isFinite(fwd?.vol) ? fwd.vol : null;
   const risk = vol != null ? vol * vol * (isEtf ? 1 : 0.5) : 0;
   let conc = isEtf && Number.isFinite(fwd?.top10) && !fwd.fundOfFunds ? 0.1 * Math.max(0, fwd.top10 - 0.3) : 0;
   // ETF di un solo settore: rischio specifico non diversificabile → almeno 3% l'anno di penalità
   if (isEtf && SECTOR_RE.test(inst.name || '')) conc = Math.max(conc, 0.03);
-  return { score: base - stagnation + boost - risk - conc, hist, anomalous, exp, growth, base, stagnation, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
+  return { score: base - stagnation - special - small - young + boost - risk - conc, hist, anomalous, exp, growth, base, stagnation, special, small, young, aum, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
 }

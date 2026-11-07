@@ -29,6 +29,7 @@ if (process.env.SYMBOLS) {
           lt.holdings.push({ ...h, fundamentals: hf });
           console.log('  holding', h.symbol, (h.name || '').slice(0, 28), 'peso', (h.weight * 100).toFixed(1) + '%', 'eps+1', hf?.epsGrowthNext, 'ric+1', hf?.revenueGrowthNext, 'ricTTM', hf?.revenueGrowthTtm, 'LT', hf?.growthLongTerm, 'PE', hf?.forwardPE?.toFixed(1), 'analisti', hf?.analysts);
         }
+        console.log('  TER', comp.ter, 'AUM', comp.aum, comp.aumCurrency);
         console.log('  composizione: azioni', comp.stockPosition, 'obblig.', comp.bondPosition, 'P/E fondo', comp.pe, 'div', comp.dividendYield);
       }
     }

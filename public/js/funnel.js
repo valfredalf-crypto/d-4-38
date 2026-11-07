@@ -66,7 +66,7 @@ const STAGNATION_RE = /\b(value|high[- ]div(idend)?|min(imum)?[- ]?vol(atility)?
  */
 // Strategie «speciali» (non il mercato puro): gestione attiva, ESG/screening, fattori, enhanced…
 const SPECIAL_RE = /\b(quality|momentum|screened|sri|esg|socially|responsible|sustainab\w*|climate|paris|net[- ]zero|transition|equal[- ]weight\w*|factor|multi[- ]?factor|defensive|enhanced|select|leaders|islamic|shariah|catholic|active|alphadex|research|scored|universal|gender|governance|covered call|buffer|income)\b/i;
-export function maxGrowthScore(inst, sim, fwd = null, ter = null, fund = null) {
+export function maxGrowthScore(inst, sim, fwd = null, ter = null, fund = null, perf = null) {
   const isEtf = inst?.type === 'etf';
   if (!(isEtf || inst?.type === 'stock') || !Number.isFinite(sim?.cagrHist)) return null;
   const hist = sim.cagrHist;
@@ -98,5 +98,12 @@ export function maxGrowthScore(inst, sim, fwd = null, ter = null, fund = null) {
   let conc = isEtf && Number.isFinite(fwd?.top10) && !fwd.fundOfFunds ? 0.1 * Math.max(0, fwd.top10 - 0.3) : 0;
   // ETF di un solo settore: rischio specifico non diversificabile → almeno 3% l'anno di penalità
   if (isEtf && SECTOR_RE.test(inst.name || '')) conc = Math.max(conc, 0.03);
-  return { score: base - stagnation - special - small - young + boost - risk - conc, hist, anomalous, exp, growth, base, stagnation, special, small, young, aum, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
+  // Andamento recente del mercato (prezzi reali, aggiornati ogni ~5 minuti): un crollo fa scendere
+  // subito lo strumento in classifica. 0,1 × rendimento 3 mesi + 0,05 × (rendimento 12 mesi − 8%).
+  const m3 = Number.isFinite(perf?.m3) ? Math.max(-0.4, Math.min(0.4, perf.m3)) : null;
+  const y1 = Number.isFinite(perf?.y) ? Math.max(-0.5, Math.min(0.5, perf.y - 0.08)) : null;
+  // Asimmetrico: i cali pesano per intero (un crollo fa scendere subito), i rialzi al massimo +0,5%
+  // (un rally di breve periodo non porta in cima strategie speciali)
+  const trend = Math.min(0.005, (m3 != null ? 0.1 * m3 : 0) + (y1 != null ? 0.05 * y1 : 0));
+  return { score: base - stagnation - special - small - young + boost - risk - conc + trend, trend, m3: perf?.m3 ?? null, y: perf?.y ?? null, hist, anomalous, exp, growth, base, stagnation, special, small, young, aum, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
 }

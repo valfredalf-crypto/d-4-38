@@ -628,7 +628,7 @@ function rowValues(i) {
     proj019: r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null,
     histMdd: sim?.histMdd ?? null,
     // Max Growth Score (ETF): CAGR storico 10a (già netto di TER/TD) −15% Value/High Div/Min Vol, +0,5% indici globali
-    maxGrowth: (i.type === 'etf' || i.type === 'stock') && r && !r.error ? maxGrowthScore(i, sim, r.forward, r.fund?.ter, r.fund)?.score ?? null : null,
+    maxGrowth: (i.type === 'etf' || i.type === 'stock') && r && !r.error ? maxGrowthScore(i, sim, r.forward, r.fund?.ter, r.fund, q?.perf)?.score ?? null : null,
     // CAGR netto atteso: netto 019 × (1 − MDD storico), es. 13.248 € × (1 − 96%) = 530 €
     proj: (() => {
       const g = r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null;
@@ -814,7 +814,7 @@ function render() {
         ${mgMode() ? (() => {
           const rr = state.results[i.symbol];
           const ter = rr?.fund?.ter;
-          const mg = maxGrowthScore(i, rr?.sim, rr?.forward, ter, rr?.fund);
+          const mg = maxGrowthScore(i, rr?.sim, rr?.forward, ter, rr?.fund, state.quotes[i.symbol]?.perf);
           if (!mg) return '<td class="num muted">–</td>';
           const parts = [`storico ${mg.years || 5}a ${pct(mg.hist, true)}${mg.cagr10 != null ? ` (10a ${pct(mg.cagr10, true)})` : ''}${mg.anomalous ? ' <span class="neg">eccezionale/anomalo: escluso</span>' : ''}`];
           if (mg.exp != null) parts.push(`atteso ${pct(mg.exp, true)}`);
@@ -823,6 +823,7 @@ function render() {
           if (mg.special) parts.push(`<span class="neg">− ${pct(mg.special, false)} strategia speciale</span>`);
           if (mg.small) parts.push(`<span class="neg">− 0,5% ${mg.aum == null ? 'patrimonio n.d.' : 'patrimonio < 1 mld'}</span>`);
           if (mg.boost) parts.push('<span class="pos">+ 0,5% mercato globale</span>');
+          if (mg.trend) parts.push(`<span class="${mg.trend > 0 ? 'pos' : 'neg'}">${mg.trend > 0 ? '+' : '−'} ${pct(Math.abs(mg.trend), false)} andamento recente (3m ${mg.m3 != null ? pct(mg.m3, true) : 'n.d.'}, 12m ${mg.y != null ? pct(mg.y, true) : 'n.d.'})</span>`);
           if (mg.risk) parts.push(`<span class="neg">− ${pct(mg.risk, false)} volatilità ${pct(mg.vol, false, 0)}</span>`);
           if (mg.conc) parts.push(`<span class="neg">− ${pct(mg.conc, false)} concentrazione/settore</span>`);
           const amt = state.settings.mc.amount || 10000;
@@ -2098,7 +2099,7 @@ function openPortfolio() {
 function mgOf(inst, amount = 10000, years = 5) {
   const r = state.results[inst.symbol];
   if (!r || r.error) return null;
-  const mg = maxGrowthScore(inst, r.sim, r.forward, r.fund?.ter, r.fund);
+  const mg = maxGrowthScore(inst, r.sim, r.forward, r.fund?.ter, r.fund, state.quotes[inst.symbol]?.perf);
   const p1 = phase1Check(inst, r.fund, distKind(inst), r.forward);
   if (!mg) return { score: null, net: null, pass: false, reason: p1.reason || 'meno di 5 anni di storico: punteggio non calcolabile' };
   const tx = Number.isFinite(r.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;

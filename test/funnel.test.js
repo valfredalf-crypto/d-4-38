@@ -47,3 +47,14 @@ test('Max Growth Score: ETF piccoli, giovani o con strategie speciali sotto quel
   assert.ok(pure.score > special.score, `${pure.score} vs ${special.score}`);
   assert.ok(special.special > 0 && special.small > 0 && special.young === 0);
 });
+
+test('Max Growth Score: un crollo recente del mercato fa scendere il punteggio', async () => {
+  const { maxGrowthScore } = await import('../public/js/funnel.js');
+  const inst = { type: 'etf', name: 'iShares Core MSCI World UCITS ETF (Acc)' };
+  const sim = { cagrHist: 0.1, cagr10: 0.1 };
+  const fwd = { expected: 0.09, vol: 0.13, top10: 0.25, growth: 0.1 };
+  const fund = { aum: { value: 100e9, currency: 'EUR' } };
+  const calm = maxGrowthScore(inst, sim, fwd, 0.002, fund, { m3: 0.03, y: 0.1 });
+  const crash = maxGrowthScore(inst, sim, fwd, 0.002, fund, { m3: -0.3, y: -0.25 });
+  assert.ok(calm.score - crash.score > 0.04, `${calm.score} vs ${crash.score}`);
+});

@@ -585,7 +585,8 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   if (!Number.isFinite(cagr)) return null;
   const tax = Number.isFinite(r?.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
   const ter = DEFAULT_TER[i.type] ?? 0;
-  return { cagr, ter, tax, net: cagr - ter, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
+  const div = i.type === 'etf' && Number.isFinite(r?.sim?.distYield) && r.sim.distYield > 0 ? r.sim.distYield : 0; // ETF a distribuzione
+  return { cagr, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
 }
 const s_tax = (i) => {
   const t = state.results[i.symbol]?.sim?.taxRate;

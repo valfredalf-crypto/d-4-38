@@ -281,3 +281,15 @@ test('utili attesi negativi con ricavi in crescita: si usano i ricavi (artefatto
   const realDecline = fundamentalsReturn({ forwardPE: 20.8, analysts: 54, epsGrowthNext: -0.266, revenueGrowthNext: -0.05, dividendYield: 0, marketCap: 3.9e12 }, B, 5);
   assert.ok(realDecline.growthInput < 0, 'ricavi in calo: il calo degli utili è vero');
 });
+
+test('valutazione: rivalutazione dei titoli economici limitata, dividendo alto = crescita più bassa', async () => {
+  const { fundamentalsReturn } = await import('../public/js/outlook.js');
+  const cheap = fundamentalsReturn({ forwardPE: 8, epsGrowthNext: 0.05, dividendYield: 0.04, analysts: 10 }, BASE_OUTLOOK, 5);
+  assert.ok(cheap.valuation <= 0.015 + 1e-12, String(cheap.valuation));
+  const dear = fundamentalsReturn({ forwardPE: 40, epsGrowthNext: 0.05, dividendYield: 0.01, analysts: 10 }, BASE_OUTLOOK, 5);
+  assert.ok(dear.valuation < -0.03, String(dear.valuation));
+  const mk = (div) => ({ holdings: [{ symbol: 'A', weight: 0.2, fundamentals: { forwardPE: 15, growthLongTerm: 0.06, dividendYield: 0.03, analysts: 10 } }], stockPosition: 1, pe: 12, dividendYield: div });
+  const hiDiv = holdingsFundamentals(mk(0.045), {}, 0.07, 0.08);
+  const loDiv = holdingsFundamentals(mk(0.015), {}, 0.07, 0.08);
+  assert.ok(hiDiv.growth < loDiv.growth, 'più dividendo, meno crescita');
+});

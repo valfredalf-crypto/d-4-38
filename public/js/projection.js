@@ -30,11 +30,22 @@ export function weightedParams(rows) {
 
 /** Proiezione a `years` anni di `capital` con i parametri ponderati. */
 export function project(params, capital, years) {
-  const gross = capital * (1 + params.net) ** years;
+  // Strumenti a distribuzione (params.div = rendimento da dividendo annuo): il dividendo esce dal fondo
+  // ogni anno, è tassato subito e non viene reinvestito (Trade Republic non lo fa in automatico); il
+  // prezzo cresce quindi al tasso netto meno il dividendo. Senza dividendo la formula resta quella del
+  // documento: capitale × (1 + CAGR − TER)^anni, imposta sulla plusvalenza a fine periodo.
+  const div = Number.isFinite(params.div) && params.div > 0 ? params.div : 0;
+  const g = params.net - div;
+  const priceFinal = capital * (1 + g) ** years;
+  let divCash = 0;
+  for (let t = 0; t < years; t++) divCash += capital * (1 + g) ** t * div;
+  const priceGain = priceFinal - capital;
+  const priceTax = priceGain > 0 ? priceGain * params.tax : 0; // nessun credito d'imposta su una minusvalenza
+  const divTax = divCash * params.tax;
+  const gross = priceFinal + divCash;
   const gain = gross - capital;
-  const taxDue = gain > 0 ? gain * params.tax : 0; // nessun credito d'imposta su una minusvalenza
-  const netGain = gain - taxDue;
-  return { years, gross, gain, tax: taxDue, netGain, finalCapital: capital + netGain, netPct: netGain / capital };
+  const netGain = priceGain - priceTax + divCash - divTax;
+  return { years, gross, gain, tax: priceTax + divTax, netGain, finalCapital: capital + netGain, netPct: netGain / capital };
 }
 
 /** Proiezione completa del portafoglio sugli orizzonti indicati. */

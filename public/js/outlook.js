@@ -20,7 +20,9 @@ export const BASE_OUTLOOK = {
   longRunGrowth: 4.0,     // % annuo: crescita nominale di lungo periodo verso cui convergono gli utili
   fairPE: 18,             // P/E di lungo periodo del mercato azionario
   peReversion: 0.5,       // quota della distanza dal P/E di lungo periodo che si chiude in 5 anni
-  maxValuation: 0.04,     // limite annuo (±) del contributo della rivalutazione/svalutazione del P/E
+  maxValuation: 0.04,     // limite annuo della svalutazione del P/E (P/E alto che scende)
+  maxRerating: 0.015,     // limite annuo della rivalutazione del P/E: i titoli "economici" spesso restano economici (value trap)
+  marketDividend: 0.018,  // dividendo medio del mercato azionario: chi distribuisce di più reinveste meno e cresce meno
   analystHaircut: 0.5,    // quota del rialzo implicito nei target che viene creduta
   priorUncertainty: 5.0,  // % annuo: incertezza sul rendimento di equilibrio (governa la credibilità dello storico)
   minAnalysts: 3,
@@ -308,8 +310,8 @@ export function fundamentalsReturn(f, settings = {}, years = 5) {
   const pe = Math.max(5, Math.min(80, f.forwardPE));
   const peTarget = pe + s.peReversion * (s.fairPE - pe);
   // Un P/E molto basso (o alto) spesso riflette problemi (o qualità) strutturali: il ritorno verso il
-  // P/E di lungo periodo è limitato a ±maxValuation l'anno
-  const valuation = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
+  // P/E di lungo periodo è limitato a −maxValuation / +maxRerating l'anno
+  const valuation = Math.max(-s.maxValuation, Math.min(s.maxRerating, (peTarget / pe) ** (1 / years) - 1));
   const dividend = cleanDividend(f.dividendYield);
   const expected = (1 + growth) * (1 + valuation) - 1 + dividend;
   return { expected, growth, valuation, dividend, pe, peTarget, growthInput: g0, evidence: ev };
@@ -360,15 +362,19 @@ export function holdingsFundamentals(h, settings = {}, market = null, marketGrow
   const rest = stock - wc;
   const gM = Number.isFinite(marketGrowth) ? marketGrowth : s.longRunGrowth / 100;
   let restE = Number.isFinite(market) ? market : rf + 0.045;
+  let gRest = gM;
   if (h.pe > 0) {
     const pe = Math.max(5, Math.min(80, h.pe));
     const peTarget = pe + s.peReversion * (s.fairPE - pe);
     const div = cleanDividend(h.dividendYield);
-    const val = Math.max(-s.maxValuation, Math.min(s.maxValuation, (peTarget / pe) ** (1 / years) - 1));
-    restE = (1 + gM) * (1 + val) - 1 + div;
+    const val = Math.max(-s.maxValuation, Math.min(s.maxRerating, (peTarget / pe) ** (1 / years) - 1));
+    // Dividendo sopra la media del mercato = utili distribuiti invece che reinvestiti: la crescita della
+    // parte non coperta dalle stime è inferiore a quella del mercato (dividendo + crescita ≈ costante)
+    gRest = gM - Math.max(0, div - s.marketDividend);
+    restE = (1 + gRest) * (1 + val) - 1 + div;
   }
   const expected = sumE + rest * restE + (1 - stock) * rf;
-  const growth = (sumG + rest * gM) / stock;
+  const growth = (sumG + rest * gRest) / stock;
   return { expected, growth, source: 'holdings', coverage: wc, stock, pe: h.pe ?? null, top: used.slice(0, 10) };
 }
 

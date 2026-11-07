@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, stockScenarios, totalPortfolioStress } from '../public/js/projection.js';
+import { GEMINI_PORTFOLIO, projectPortfolio, weightedParams, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, stockScenarios, totalPortfolioStress, project } from '../public/js/projection.js';
 
 // Il documento arrotonda le potenze a mano (17.261,28 contro 17.259,63 esatti): tolleranza di pochi euro.
 test('proiezione deterministica: riproduce i numeri del documento PRJ-FIN-2026-018', () => {
@@ -99,4 +99,12 @@ test('totalPortfolioStress (doc 041): crash al picco, MDD ponderato, recovery', 
   assert.ok(s.recoveryMonths > 0);
   assert.equal(s.breakdown.length, 2);
   assert.equal(totalPortfolioStress({ items: [] }), null);
+});
+
+test('project: ETF a distribuzione, dividendo tassato ogni anno e non reinvestito', () => {
+  const acc = project({ net: 0.1, tax: 0.26 }, 10000, 5);
+  const dist = project({ net: 0.1, tax: 0.26, div: 0.04 }, 10000, 5);
+  assert.ok(dist.netGain < acc.netGain, `${dist.netGain} < ${acc.netGain}`);
+  // senza dividendo resta la formula del documento
+  assert.ok(Math.abs(project({ net: 0.084, tax: 0.26 }, 20000, 5).netGain - 7351.75) < 1);
 });

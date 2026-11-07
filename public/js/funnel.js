@@ -77,9 +77,9 @@ export function maxGrowthScore(inst, sim, fwd = null, ter = null) {
   const h = anomalous || exp == null ? null : hist;
   // Base: 40% storico 5 anni + 40% rendimento atteso + 20% crescita attesa degli utili (pesi ridistribuiti
   // sui dati disponibili)
-  // Azioni: più peso alla crescita (40%) e avversione al rischio dimezzata (la volatilità di un singolo
+  // Azioni: peso maggiore alla crescita attesa degli utili (50%) e avversione al rischio dimezzata (la volatilità di un singolo
   // titolo è in parte diversificabile nel portafoglio)
-  const W = isEtf ? [0.4, 0.4, 0.2] : [0.3, 0.3, 0.4];
+  const W = isEtf ? [0.4, 0.4, 0.2] : [0.25, 0.25, 0.5];
   const comps = [[h, W[0]], [exp, W[1]], [growth, W[2]]].filter(([v]) => v != null);
   const wsum = comps.reduce((a, [, w]) => a + w, 0);
   const base = comps.length ? comps.reduce((a, [v, w]) => a + v * w, 0) / wsum : hist;

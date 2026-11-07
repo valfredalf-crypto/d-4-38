@@ -78,6 +78,7 @@ export function tableResult(r) {
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
       ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
+      ...(Number.isFinite(s.cagrHist) ? { cagrHist: r4(s.cagrHist), cagrYears: Math.round(s.cagrYears * 10) / 10, ...(s.cagrBackfilled ? { cagrBf: true } : {}) } : {}),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };
@@ -227,6 +228,23 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     sim.historyYears = Math.min(realYears, o.lookbackYears);
     sim.backfilledYears = filled ? filled.backfilledWeeks / WEEKS_PER_YEAR : 0;
     sim.backfillProxy = filled ? (instrument.type === 'crypto' ? 'Bitcoin' : 'MSCI World') : null;
+    // CAGR storico (algoritmo «Max Growth Score»): prezzo in euro degli ultimi 10 anni (almeno 5). È il
+    // rendimento effettivo dell'ETF, quindi già al netto di TER e tracking difference reali. Se lo storico
+    // proprio è più corto di 5 anni si usa la serie ricostruita con l'indice di riferimento.
+    const cagrOf = (arr) => {
+      const n = Math.min(arr.length - 1, Math.round(10 * WEEKS_PER_YEAR));
+      if (n < 5 * WEEKS_PER_YEAR) return null;
+      const a = arr[arr.length - 1 - n];
+      const b = arr[arr.length - 1];
+      return a > 0 && b > 0 ? { cagr: (b / a) ** (WEEKS_PER_YEAR / n) - 1, years: n / WEEKS_PER_YEAR } : null;
+    };
+    const own = cagrOf(prices);
+    const ch = own || (filled ? cagrOf(filled.closesEur) : null);
+    if (ch) {
+      sim.cagrHist = ch.cagr;
+      sim.cagrYears = ch.years;
+      sim.cagrBackfilled = !own;
+    }
   }
   return { forward: fwd, sim };
 }

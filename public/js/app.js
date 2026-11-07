@@ -2,7 +2,7 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
-import { funnelCheck, aumEur } from './funnel.js';
+import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
@@ -29,7 +29,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: localStorage.getItem('trmc.funnel') || 'on', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: localStorage.getItem('trmc.funnel2') || 'maxgrowth', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -407,7 +407,9 @@ function filtered() {
   const code = needle.replace(/[\s-]/g, ''); // ISIN o ticker anche scritti con spazi/trattini
   const active = activeFilters(state.view.filters);
   // L'imbuto si applica solo quando i dati dei fondi (patrimonio) sono stati pubblicati
-  const funnelOn = state.view.funnel === 'on' && Object.values(state.results).some((r) => r?.fund?.aum);
+  const fundData = Object.values(state.results).some((r) => r?.fund?.aum);
+  const funnelOn = state.view.funnel === 'on' && fundData;
+  const phase1On = state.view.funnel === 'maxgrowth';
   return state.instruments.filter((i) => {
     if (type === 'growth') {
       if (i.growth == null) return false;
@@ -421,6 +423,8 @@ function filtered() {
     // Imbuto degli ETF globali (purezza, accumulazione, patrimonio ≥ 1 mld, TER ≤ 0,25%): gli ETF bocciati
     // escono dalla classifica (non nella scheda Bond e non quando si cerca per nome/ISIN)
     if (funnelOn && i.type === 'etf' && type !== 'bond' && !needle && !funnelOf(i).pass) return false;
+    // Algoritmo Max Growth, fase 1: fuori distribuzione, patrimonio < 500 mln, TER > 0,30%
+    if (phase1On && i.type === 'etf' && type !== 'bond' && !needle && !phase1Check(i, state.results[i.symbol]?.fund, distKind(i)).pass) return false;
 
     // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
     // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta.
@@ -622,6 +626,8 @@ function rowValues(i) {
     // Algoritmo 019: guadagno netto (moduli 1-3) e, come indicatore principale, netto − MDD storico (modulo 4)
     proj019: r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null,
     histMdd: sim?.histMdd ?? null,
+    // Max Growth Score (ETF): CAGR storico 10a (già netto di TER/TD) −15% Value/High Div/Min Vol, +0,5% indici globali
+    maxGrowth: i.type === 'etf' ? maxGrowthScore(i, sim)?.score ?? null : null,
     // CAGR netto atteso: netto 019 × (1 − MDD storico), es. 13.248 € × (1 − 96%) = 530 €
     proj: (() => {
       const g = r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null;
@@ -765,9 +771,11 @@ function sortRows(rows) {
   });
 }
 
+const mgMode = () => state.view.type === 'etf' && state.view.funnel === 'maxgrowth';
 function rankMap(rows) {
   // La posizione in classifica è sempre per guadagno netto 5a (algoritmo 019) decrescente, indipendentemente dall'ordinamento scelto.
-  const ranked = rows.filter((r) => r.projOpt != null && Number.isFinite(r.projOpt)).sort((a, b) => b.projOpt - a.projOpt);
+  const k = mgMode() ? 'maxGrowth' : 'projOpt'; // scheda ETF con l'algoritmo Max Growth: classifica per Max Growth Score
+  const ranked = rows.filter((r) => r[k] != null && Number.isFinite(r[k])).sort((a, b) => b[k] - a[k]);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
 
@@ -802,7 +810,12 @@ function render() {
           const fc = funnelOf(i);
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
-        <td class="num ${cls(r.projOpt)}"><b class="big">${r.projOpt == null ? '–' : `${r.projOpt > 0 ? '+' : ''}${Math.round(r.projOpt * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.projOpt == null ? '' : `<span class="eur">${pct(r.projOpt, true)}<span class="xl"> · rendimento netto atteso (3 scenari) meno penalità per la volatilità</span></span>`}</td>
+        ${mgMode() ? (() => {
+          const mg = maxGrowthScore(i, state.results[i.symbol]?.sim);
+          if (!mg) return '<td class="num muted">–</td>';
+          const ter = state.results[i.symbol]?.fund?.ter;
+          return `<td class="num ${cls(mg.score)}"><b class="big">${pct(mg.score, true)}/anno</b><span class="eur">CAGR storico ${mg.years ? nf1.format(mg.years) + 'a ' : ''}${pct(mg.base, true)}${mg.backfilled ? ' (storico ricostruito con l’indice)' : ''}${mg.stagnation ? ` <span class="neg">− ${pct(mg.stagnation, false)} penalità stagnazione</span>` : ''}${mg.boost ? ' <span class="pos">+ 0,5% boost mercato globale</span>' : ''}<span class="xl"> · già al netto di TER${Number.isFinite(ter) ? ' ' + pct(ter, false, 2) : ''} e tracking difference</span></span></td>`;
+        })() : `<td class="num ${cls(r.projOpt)}"><b class="big">${r.projOpt == null ? '–' : `${r.projOpt > 0 ? '+' : ''}${Math.round(r.projOpt * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.projOpt == null ? '' : `<span class="eur">${pct(r.projOpt, true)}<span class="xl"> · rendimento netto atteso (3 scenari) meno penalità per la volatilità</span></span>`}</td>`}
         <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(Number.isFinite(state.results[i.symbol]?.fund?.ter) ? state.results[i.symbol].fund.ter : DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
         <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)}<span class="xl"> · netto 019 ${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} € (${pct(r.proj019, true)})${r.histMdd != null ? ` × (1 − <span class="neg">MDD storico ${pct(r.histMdd, false, 0)}</span>)` : ''} · CAGR atteso ${pct(r.cagr, false)} = ${r.cagr > 0 ? '+' : ''}${Math.round(r.cagr * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €/anno</span></span>`}</td>
         <td class="num">${r.net019OverLoss == null ? '–' : r.net019OverLoss === Infinity || r.net019OverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.net019OverLoss >= 1 ? 'pos' : r.net019OverLoss < 0 ? 'neg' : ''}">${nf2.format(r.net019OverLoss)}</span>`}</td>
@@ -855,6 +868,15 @@ function render() {
     }).length;
   }
   if (state.instruments.length) try { updateNotifsBadge(); } catch { /* niente */ }
+  const th0 = $('#table th[data-sort="projOpt"], #table th[data-sort="maxGrowth"]');
+  if (th0) {
+    const mg = mgMode();
+    th0.dataset.sort = mg ? 'maxGrowth' : 'projOpt';
+    const l = th0.querySelector('.l');
+    const sh = th0.querySelector('.s');
+    if (l) l.textContent = mg ? 'Max Growth Score' : 'Rendimento netto corretto per il rischio';
+    if (sh) sh.textContent = mg ? 'Max Growth' : 'Rend. rischio';
+  }
   $$('#table th').forEach((th) => {
     const on = th.dataset.sort === state.view.sort.key;
     th.classList.toggle('sorted', on);
@@ -2176,6 +2198,8 @@ function bind() {
       state.view.type = t.dataset.type;
       state.view.limit = PAGE;
       // Nella scheda Crescita si ordina per crescita attesa; altrove torna la classifica per rapporto.
+      if (t.dataset.type === 'etf' && state.view.funnel === 'maxgrowth') state.view.sort = { key: 'maxGrowth', dir: -1 };
+      else if (state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       if (t.dataset.type === 'growth') state.view.sort = { key: 'growth', dir: -1 };
       else if (state.view.sort.key === 'growth') state.view.sort = { key: 'ratio', dir: 1 };
       render();
@@ -2223,12 +2247,14 @@ function bind() {
   }
   const fm = $('#funnel-mode');
   if (fm) {
-    fm.value = state.view.funnel || 'on';
+    fm.value = state.view.funnel || 'maxgrowth';
     fm.addEventListener('change', (e) => {
       state.view.funnel = e.target.value;
       state.view.limit = PAGE;
+      if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
+      else if (state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       try {
-        localStorage.setItem('trmc.funnel', e.target.value);
+        localStorage.setItem('trmc.funnel2', e.target.value);
       } catch {
         /* niente */
       }
@@ -2270,7 +2296,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),

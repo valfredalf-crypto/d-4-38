@@ -37,3 +37,27 @@ export function funnelCheck(inst, fund, distKind) {
   if (ter > 0.0025) return { pass: false, failed: 'cost', reason: `TER ${(ter * 100).toFixed(2)}% (> 0,25%)` };
   return { pass: true, failed: null, reason: `patrimonio ${(aum / 1e9).toFixed(1)} mld €, TER ${(ter * 100).toFixed(2)}%` };
 }
+
+// ---------- Algoritmo «Max Growth Score» (ETF)
+// Fase 1: scarta distribuzione, patrimonio < 500 mln €, TER > 0,30% (dati mancanti: non si scarta).
+export function phase1Check(inst, fund, distKind) {
+  if (inst?.type !== 'etf') return { pass: true };
+  if (distKind === 'dist') return { pass: false, reason: 'a distribuzione: le tasse frenano l’interesse composto' };
+  const aum = aumEur(fund);
+  if (aum != null && aum < 500e6) return { pass: false, reason: `patrimonio ${(aum / 1e6).toFixed(0)} mln € (< 500 mln): rischio chiusura` };
+  if (Number.isFinite(fund?.ter) && fund.ter > 0.003) return { pass: false, reason: `TER ${(fund.ter * 100).toFixed(2)}% (> 0,30%)` };
+  return { pass: true };
+}
+const STAGNATION_RE = /\b(value|high[- ]div(idend)?|min(imum)?[- ]?vol(atility)?)\b/i;
+/**
+ * Fasi 2–5: CAGR storico dell'ETF (10 anni, minimo 5; il prezzo dell'ETF è già al netto di TER e
+ * tracking difference effettivi, che quindi non si sottraggono una seconda volta), −15% del punteggio per
+ * Value / High Dividend / Minimum Volatility, +0,5% per gli indici globali ponderati per capitalizzazione.
+ */
+export function maxGrowthScore(inst, sim) {
+  if (inst?.type !== 'etf' || !Number.isFinite(sim?.cagrHist)) return null;
+  const base = sim.cagrHist;
+  const stagnation = STAGNATION_RE.test(inst.name || '') ? Math.abs(base) * 0.15 : 0;
+  const boost = purityOk(inst.name) ? 0.005 : 0;
+  return { score: base - stagnation + boost, base, stagnation, boost, years: sim.cagrYears ?? null, backfilled: !!sim.cagrBf };
+}

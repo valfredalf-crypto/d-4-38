@@ -23,3 +23,15 @@ test('imbuto: tasse, dimensioni, costo', () => {
   assert.equal(funnelCheck(eunl, { aum: { value: 5e9, currency: 'EUR' }, ter: 0.004 }, 'acc').failed, 'cost');
   assert.equal(funnelCheck(eunl, {}, 'acc').failed, 'size');
 });
+
+test('Max Growth Score: penalità value, boost indici globali, fase 1', async () => {
+  const { maxGrowthScore, phase1Check } = await import('../public/js/funnel.js');
+  const world = maxGrowthScore({ type: 'etf', name: 'iShares Core MSCI World UCITS ETF (Acc)' }, { cagrHist: 0.12, cagrYears: 10 });
+  assert.ok(Math.abs(world.score - 0.125) < 1e-12);
+  const value = maxGrowthScore({ type: 'etf', name: 'HSBC MSCI World Value Screened UCITS ETF USD Acc' }, { cagrHist: 0.12 });
+  assert.ok(Math.abs(value.score - 0.102) < 1e-12);
+  assert.equal(phase1Check({ type: 'etf' }, { aum: { value: 222e6, currency: 'EUR' } }, 'acc').pass, false);
+  assert.equal(phase1Check({ type: 'etf' }, { ter: 0.004 }, 'acc').pass, false);
+  assert.equal(phase1Check({ type: 'etf' }, {}, 'dist').pass, false);
+  assert.equal(phase1Check({ type: 'etf' }, { aum: { value: 2e9, currency: 'EUR' }, ter: 0.002 }, 'acc').pass, true);
+});

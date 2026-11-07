@@ -538,7 +538,7 @@ const eurAmt = (x, sign = true) => {
 const hasHoldingsEstimate = (i) => state.results[i.symbol]?.forward?.growthSource === 'holdings';
 // Accumulazione o distribuzione: per gli ETF con stima si usa il dato del modello (distYield > 0 =
 // distribuisce), altrimenti il nome; le azioni distribuiscono (dividendi), le crypto nessuno.
-const DIST_RE = /\b(dist|distr|distributing|distribuzione|dis|income|inc|1d|2d|3d|4d|5d)\b|\(d(ist)?\)|[-\s]d$/i;
+const DIST_RE = /\b(dist|distr|distributing|distribution|distribuzione|dis|income|inc|1d|2d|3d|4d|5d)\b|\(d(ist)?\)|[-\s]d$/i;
 const ACC_RE = /\b(acc|accumulating|accumulazione|thesaur|1c|2c|3c|4c|5c)\b|\(a?cc?\)|[-\s]c$/i;
 function distKind(i) {
   // Il nome della classe di quote (Acc/Dist/C/D) è il segnale più affidabile; in mancanza si usa il dato
@@ -815,7 +815,7 @@ function render() {
           const ter = rr?.fund?.ter;
           const mg = maxGrowthScore(i, rr?.sim, rr?.forward, ter);
           if (!mg) return '<td class="num muted">–</td>';
-          const parts = [`storico ${mg.years || 5}a ${pct(mg.hist, true)}${mg.cagr10 != null ? ` (10a ${pct(mg.cagr10, true)})` : ''}`];
+          const parts = [`storico ${mg.years || 5}a ${pct(mg.hist, true)}${mg.cagr10 != null ? ` (10a ${pct(mg.cagr10, true)})` : ''}${mg.anomalous ? ' <span class="neg">eccezionale/anomalo: escluso</span>' : ''}`];
           if (mg.exp != null) parts.push(`atteso ${pct(mg.exp, true)}`);
           if (mg.stagnation) parts.push(`<span class="neg">− ${pct(mg.stagnation, false)} stagnazione</span>`);
           if (mg.boost) parts.push('<span class="pos">+ 0,5% mercato globale</span>');

@@ -65,7 +65,10 @@ export function maxGrowthScore(inst, sim, fwd = null, ter = null) {
   if (inst?.type !== 'etf' || !Number.isFinite(sim?.cagrHist)) return null;
   const hist = sim.cagrHist;
   const exp = Number.isFinite(fwd?.expected) ? fwd.expected - (Number.isFinite(ter) ? ter : 0.002) : null;
-  const base = exp != null ? 0.5 * hist + 0.5 * exp : hist;
+  // Storico anomalo o eccezionale (oltre 8 punti l'anno sopra le prospettive del fondo: prezzi errati, cambi di
+  // valuta nella serie o un rally irripetibile): non è credibile per il futuro, si usano solo le prospettive
+  const anomalous = exp != null && hist - exp > 0.08;
+  const base = exp != null ? (anomalous ? exp : 0.5 * hist + 0.5 * exp) : hist;
   const stagnation = STAGNATION_RE.test(inst.name || '') ? Math.abs(base) * 0.15 : 0;
   const boost = purityOk(inst.name) ? 0.005 : 0;
   const vol = Number.isFinite(fwd?.vol) ? fwd.vol : null;
@@ -73,5 +76,5 @@ export function maxGrowthScore(inst, sim, fwd = null, ter = null) {
   let conc = Number.isFinite(fwd?.top10) && !fwd.fundOfFunds ? 0.1 * Math.max(0, fwd.top10 - 0.3) : 0;
   // ETF di un solo settore: rischio specifico non diversificabile → almeno 3% l'anno di penalità
   if (SECTOR_RE.test(inst.name || '')) conc = Math.max(conc, 0.03);
-  return { score: base - stagnation + boost - risk - conc, hist, exp, base, stagnation, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
+  return { score: base - stagnation + boost - risk - conc, hist, anomalous, exp, base, stagnation, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
 }

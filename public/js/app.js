@@ -606,6 +606,25 @@ function rowValues(i) {
       return sim?.histMdd != null ? g * (1 - Math.min(1, sim.histMdd)) : g;
     })(),
     cagr: (() => { const sc = scenarioCagr(); if (sc != null) return sc; return r && !r.error ? r.forward?.expected ?? null : null; })(),
+    // Guadagno finale ottimizzato: media dei 3 scenari (pessimistico 2%, moderato 7%, ottimistico 10%)
+    // pesata per probabilità di crescita/perdita e volatilità. Alta volatilità sposta il peso dal migliore
+    // al peggiore; più probabilità di perdita → più peso allo scenario pessimistico.
+    projOpt: (() => {
+      if (!r || r.error) return null;
+      const gp = projOf(i, r, 0.02)?.netPct;
+      const gm = projOf(i, r, 0.07)?.netPct;
+      const go = projOf(i, r, 0.1)?.netPct;
+      if (gp == null || gm == null || go == null) return null;
+      const pLoss = Number.isFinite(sim?.probLoss) ? sim.probLoss : 0.2;
+      const pGain = 1 - pLoss;
+      const vol = Number.isFinite(r.forward?.vol) ? r.forward.vol : 0.2;
+      const conf = Math.max(0, Math.min(1, 1 - vol)); // bassa volatilità = più fiducia nell'ottimistico
+      const wPess = pLoss;
+      const wOpt = pGain * conf;
+      const wMod = Math.max(0, 1 - wPess - wOpt);
+      const W = wPess + wMod + wOpt;
+      return W > 0 ? (wPess * gp + wMod * gm + wOpt * go) / W : gm;
+    })(),
     // Netto Reale 5A (NR5): la classifica predefinita
     overall: nr5Of(sim, i.type),
     es5: sim?.es5 ?? null,
@@ -738,6 +757,7 @@ function render() {
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
+        <td class="num ${cls(r.projOpt)}"><b class="big">${r.projOpt == null ? '–' : `${r.projOpt > 0 ? '+' : ''}${Math.round(r.projOpt * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.projOpt == null ? '' : `<span class="eur">${pct(r.projOpt, true)}<span class="xl"> · 3 scenari pesati per prob. crescita/perdita e volatilità</span></span>`}</td>
         <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)}<span class="xl"> · netto 019 ${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} € (${pct(r.proj019, true)})${r.histMdd != null ? ` × (1 − <span class="neg">MDD storico ${pct(r.histMdd, false, 0)}</span>)` : ''} · CAGR atteso ${pct(r.cagr, false)} = ${r.cagr > 0 ? '+' : ''}${Math.round(r.cagr * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €/anno</span></span>`}</td>
         <td class="num">${r.net019OverLoss == null ? '–' : r.net019OverLoss === Infinity || r.net019OverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.net019OverLoss >= 1 ? 'pos' : r.net019OverLoss < 0 ? 'neg' : ''}">${nf2.format(r.net019OverLoss)}</span>`}</td>
         <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
@@ -2190,7 +2210,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['proj', 'proj019', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),

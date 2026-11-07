@@ -288,8 +288,14 @@ test('valutazione: rivalutazione dei titoli economici limitata, dividendo alto =
   assert.ok(cheap.valuation <= 0.015 + 1e-12, String(cheap.valuation));
   const dear = fundamentalsReturn({ forwardPE: 40, epsGrowthNext: 0.05, dividendYield: 0.01, analysts: 10 }, BASE_OUTLOOK, 5);
   assert.ok(dear.valuation < -0.02, String(dear.valuation));
-  const mk = (div) => ({ holdings: [{ symbol: 'A', weight: 0.2, fundamentals: { forwardPE: 15, growthLongTerm: 0.06, dividendYield: 0.03, analysts: 10 } }], stockPosition: 1, pe: 12, dividendYield: div });
+  const mk = (div) => ({ holdings: [{ symbol: 'A', weight: 0.2, fundamentals: { forwardPE: 15, growthLongTerm: 0.2, dividendYield: 0.03, analysts: 10 } }], stockPosition: 1, pe: 12, dividendYield: div });
   const hiDiv = holdingsFundamentals(mk(0.045), {}, 0.07, 0.08);
   const loDiv = holdingsFundamentals(mk(0.015), {}, 0.07, 0.08);
   assert.ok(hiDiv.growth < loDiv.growth, 'più dividendo, meno crescita');
+});
+
+test('holdingsFundamentals: la parte non coperta non cresce più dei titoli principali del fondo', () => {
+  const slowTop = { holdings: [{ symbol: 'A', weight: 0.2, fundamentals: { forwardPE: 12, epsGrowthNext: 0.02, dividendYield: 0.05, analysts: 10 } }], stockPosition: 1, pe: 12, dividendYield: 0.02 };
+  const r = holdingsFundamentals(slowTop, {}, 0.07, 0.1);
+  assert.ok(r.growth < 0.05, String(r.growth));
 });

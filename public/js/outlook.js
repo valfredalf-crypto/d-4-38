@@ -356,21 +356,26 @@ export function holdingsFundamentals(h, settings = {}, market = null, marketGrow
     sumG += x.weight * g.growth;
     used.push({ symbol: x.symbol, weight: x.weight, growth: g.growth, expected: g.expected });
   }
+  // Crescita media delle partecipazioni coperte dalle stime (le più grandi del fondo): campione dello
+  // stile del fondo. La parte non coperta non può crescere più di così: un fondo dividendi/value i cui
+  // primi titoli crescono del 4% non ha il resto del portafoglio che cresce come il mercato (big tech).
+  const gCov = wc > 0 ? sumG / wc : null;
   wc = Math.min(wc, stock);
   if (wc < 0.1) return null;
   // Parte azionaria non coperta: crescita di mercato + rivalutazione/svalutazione verso il P/E equo
   const rest = stock - wc;
   const gM = Number.isFinite(marketGrowth) ? marketGrowth : s.longRunGrowth / 100;
   let restE = Number.isFinite(market) ? market : rf + 0.045;
-  let gRest = gM;
+  // Dividendo sopra la media del mercato = utili distribuiti invece che reinvestiti: la crescita della
+  // parte non coperta dalle stime è inferiore a quella del mercato (dividendo + crescita ≈ costante);
+  // e non supera la crescita dei titoli principali del fondo (stesso stile)
+  const div = cleanDividend(h.dividendYield);
+  let gRest = h.pe > 0 ? gM - Math.max(0, div - s.marketDividend) : gM;
+  if (Number.isFinite(gCov)) gRest = Math.min(gRest, gCov);
   if (h.pe > 0) {
     const pe = Math.max(5, Math.min(80, h.pe));
     const peTarget = pe + s.peReversion * (s.fairPE - pe);
-    const div = cleanDividend(h.dividendYield);
     const val = Math.max(-s.maxValuation, Math.min(s.maxRerating, (peTarget / pe) ** (1 / years) - 1));
-    // Dividendo sopra la media del mercato = utili distribuiti invece che reinvestiti: la crescita della
-    // parte non coperta dalle stime è inferiore a quella del mercato (dividendo + crescita ≈ costante)
-    gRest = gM - Math.max(0, div - s.marketDividend);
     restE = (1 + gRest) * (1 + val) - 1 + div;
   }
   const expected = sumE + rest * restE + (1 - stock) * rf;

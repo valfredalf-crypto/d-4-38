@@ -642,7 +642,11 @@ function rowValues(i) {
       const wM = Math.max(0, 1 - wP - wO);
       const egain = (wP * gp + wM * gm + wO * go) / (wP + wM + wO);
       const vol = Number.isFinite(r.forward?.vol) ? r.forward.vol : 0.2;
-      return egain - vol * vol * 5; // γ = 1: penalità per volatilità su 5 anni
+      // Penalità di concentrazione: un ETF con i primi 10 titoli sopra il 30% (single-country, settore,
+      // pochi titoli) è meno diversificato e più rischioso; gli indici ampi (World, All-World) non la subiscono.
+      const top10 = Number.isFinite(r.forward?.top10) ? r.forward.top10 : null;
+      const conc = top10 != null ? 0.5 * Math.max(0, top10 - 0.3) : 0;
+      return egain - vol * vol * 5 - conc; // equivalente certo: rendimento atteso − rischio (volatilità) − concentrazione
     })(),
     // Netto Reale 5A (NR5): la classifica predefinita
     overall: nr5Of(sim, i.type),

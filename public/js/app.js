@@ -1733,7 +1733,32 @@ function renderPortfolio() {
       nr5Cov += row.amount;
     }
   }
+  const mgCard = (() => {
+    const holds = [...(p.rows || []), ...(p.stocks || [])].filter((r) => r.isin && r.amount > 0);
+    const rowsMg = holds.map((h) => {
+      const inst = findByCode(h.isin);
+      const m = inst && (inst.type === 'etf' || inst.type === 'stock') ? mgOf(inst, h.amount, 5) : null;
+      return { h, inst, m };
+    }).filter((x) => x.m);
+    if (!rowsMg.length) return '';
+    const sc = rowsMg.filter((x) => x.m.score != null);
+    const tot = rowsMg.reduce((a, x) => a + x.h.amount, 0);
+    const totSc = sc.reduce((a, x) => a + x.h.amount, 0) || 1;
+    const wScore = sc.reduce((a, x) => a + x.m.score * x.h.amount, 0) / totSc;
+    const wNet = sc.reduce((a, x) => a + x.m.net, 0);
+    const bm = bestMaxGrowth();
+    const tr = rowsMg.map(({ h, inst, m }) => {
+      const top = (bm[inst.type] || []).find((x) => x.symbol !== inst.symbol);
+      const alt = top && (m.score == null || top.score >= m.score + 0.01) ? `${esc(top.name).slice(0, 36)} <span class="muted">${esc(top.isin || '')}</span> (${pct(top.score, true)})` : '<span class="pos">già tra i migliori</span>';
+      return `<tr><td>${esc(inst.name).slice(0, 44)}<div class="muted small-note">${esc(inst.isin || inst.symbol)}${m.pass ? '' : ` · <span class="neg">${esc(m.reason || 'non supera il filtro')}</span>`}</div></td><td class="num">${eur(Math.round(h.amount))}</td>${m.score == null ? '<td class="num muted">–</td><td class="num muted">–</td>' : `<td class="num ${cls(m.score)}"><b>${pct(m.score, true)}</b>/anno</td><td class="num ${cls(m.net)}">${m.net > 0 ? '+' : ''}${eur(m.net)}</td>`}<td>${alt}</td></tr>`;
+    }).join('');
+    return `<div class="card"><h3>Max Growth del portafoglio</h3>
+      <p class="muted small-note">Stesso punteggio della classifica (storico 5 anni, rendimento atteso, crescita degli utili, meno rischio e concentrazione), ricalcolato a ogni aggiornamento dei dati di mercato. Le notifiche 🔔 segnalano le riallocazioni suggerite.</p>
+      <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo</th><th class="num">Max Growth</th><th class="num">Guadagno netto 5a</th><th>Alternativa migliore</th></tr></thead><tbody>${tr}
+      <tr><th>Portafoglio (ETF e azioni)</th><th class="num">${eur(Math.round(tot))}</th><th class="num ${cls(wScore)}">${pct(wScore, true)}/anno</th><th class="num ${cls(wNet)}">${wNet > 0 ? '+' : ''}${eur(wNet)}</th><th></th></tr></tbody></table></div></div>`;
+  })();
   body.innerHTML = `
+    ${mgCard}
     <p class="muted">Algoritmo del documento PRJ-FIN-2026-019. Modulo 1: CAGR lordo, TER e aliquota ponderati per il peso, CAGR netto pre-tasse = CAGR − TER. Modulo 2: montante = capitale × (1 + CAGR netto)<sup>anni</sup>. Modulo 3: imposta sulla plusvalenza, guadagno netto = plusvalenza − imposta. Modulo 4: rischio = Σ peso × MDD storico e volatilità con covarianza. Nella sezione ETF si inserisce l'importo in euro di ogni strumento e la percentuale sul capitale è calcolata automaticamente.</p>
     <div class="row" style="flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0">
       <span>Capitale investito (ETF): <b>${eur(Math.round(wSum))}</b> <span class="muted">(somma degli importi)</span></span>
@@ -2068,6 +2093,33 @@ function openPortfolio() {
 // ---------- Notifiche: suggerimenti di riallocazione dai dati di mercato aggiornati
 // Miglior strumento per classe (ETF con stima dalla composizione, azioni, bond) per rapporto
 // rischio/rendimento (CAGR atteso × (1 − MDD)); in cache per versione dei dati.
+// Max Growth di uno strumento (ETF/azioni): punteggio, esito fase 1, guadagno netto su un importo
+function mgOf(inst, amount = 10000, years = 5) {
+  const r = state.results[inst.symbol];
+  if (!r || r.error) return null;
+  const mg = maxGrowthScore(inst, r.sim, r.forward, r.fund?.ter, r.fund);
+  const p1 = phase1Check(inst, r.fund, distKind(inst), r.forward);
+  if (!mg) return { score: null, net: null, pass: false, reason: p1.reason || 'meno di 5 anni di storico: punteggio non calcolabile' };
+  const tx = Number.isFinite(r.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
+  const g = amount * ((1 + mg.score) ** years - 1);
+  return { ...mg, pass: p1.pass, reason: p1.reason || null, net: Math.round(g > 0 ? g * (1 - tx) : g) };
+}
+// Migliori strumenti Max Growth per classe (ETF / azioni), con i dati più recenti
+function bestMaxGrowth() {
+  const ver = state.liveVersion || state.dataVersion || '';
+  if (state.bestMgCache?.v === ver) return state.bestMgCache.best;
+  const best = { etf: [], stock: [] };
+  for (const i of state.instruments) {
+    if (i.type !== 'etf' && i.type !== 'stock') continue;
+    if (i.type === 'etf' && (isBond(i) || state.results[i.symbol]?.forward?.growthSource !== 'holdings')) continue;
+    const m = mgOf(i);
+    if (!m || !m.pass || m.score == null) continue;
+    best[i.type].push({ symbol: i.symbol, name: i.name, isin: i.isin, score: m.score });
+  }
+  for (const k of Object.keys(best)) best[k] = best[k].sort((a, b) => b.score - a.score).slice(0, 5);
+  state.bestMgCache = { v: ver, best };
+  return best;
+}
 function bestByClass() {
   const ver = state.liveVersion || state.dataVersion || '';
   if (state.bestCache?.v === ver) return state.bestCache.best;
@@ -2129,8 +2181,26 @@ function buildNotifications(save = false) {
       out.push({ level: 'warn', icon: '🔻', title: `${nm}: rendimento atteso basso`, text: `Rendimento atteso ${pct(cagr, false)}, sotto quello di un'obbligazione. Valuta di sostituirlo con uno strumento a prospettive migliori.` });
     if (share > 0.4)
       out.push({ level: 'warn', icon: '🎯', title: `${nm}: concentrazione elevata`, text: `Pesa ${pct(share, false, 0)} del portafoglio: una quota così alta su un singolo strumento aumenta il rischio. Valuta di diversificare.` });
+    if (cls === 'etf' || cls === 'stock') {
+      const mg = mgOf(inst, h.amount, 5);
+      if (mg) {
+        newSnap[inst.symbol].mg = mg.score;
+        if (!mg.pass) out.push({ level: 'swap', icon: '🚫', title: `${nm}: non supera il filtro Max Growth`, text: `${esc(mg.reason || '')}. Valuta di spostare la quota su uno strumento promosso.` });
+        const top = (bestMaxGrowth()[cls] || []).find((x) => x.symbol !== inst.symbol);
+        if (top && (mg.score == null || top.score >= mg.score + 0.01)) {
+          const ti = state.instruments.find((x) => x.symbol === top.symbol);
+          const tm = ti ? mgOf(ti, h.amount, 5) : null;
+          const delta = tm && mg.net != null ? tm.net - mg.net : null;
+          out.push({ level: 'swap', icon: '🔄', title: `${nm}: riallocazione suggerita`, text: `${esc(top.name).slice(0, 44)}${top.isin ? ' (' + esc(top.isin) + ')' : ''} ha un Max Growth Score di ${pct(top.score, true)}/anno${mg.score != null ? ` contro ${pct(mg.score, true)}` : ''}${delta != null ? `: sui tuoi ${eur(Math.round(h.amount))} sono circa ${delta > 0 ? '+' : ''}${eur(delta)} di guadagno netto in più in 5 anni` : ''}. Valuta di spostare parte della quota.` });
+        }
+        if (mg.score != null && prev && Number.isFinite(prev.mg) && mg.score - prev.mg <= -0.015)
+          out.push({ level: 'warn', icon: '⚠️', title: `${nm}: Max Growth in calo`, text: `Il punteggio è sceso da ${pct(prev.mg, true)} a ${pct(mg.score, true)} con i dati di mercato più recenti. Valuta di ridurre la quota.` });
+        else if (mg.score != null && prev && Number.isFinite(prev.mg) && mg.score - prev.mg >= 0.015)
+          out.push({ level: 'good', icon: '✅', title: `${nm}: Max Growth in aumento`, text: `Il punteggio è salito da ${pct(prev.mg, true)} a ${pct(mg.score, true)}. Si potrebbe aumentare la quota.` });
+      }
+    }
     const b = best[cls];
-    if (b && b.symbol !== inst.symbol && Number.isFinite(cagr)) {
+    if (cls === 'bond' && b && b.symbol !== inst.symbol && Number.isFinite(cagr)) {
       const myScore = cagr * (1 - (Number.isFinite(mdd) ? Math.min(0.95, mdd) : 0.3));
       if (b.score >= myScore + 0.03)
         out.push({ level: 'swap', icon: '🔄', title: `${nm}: alternativa migliore`, text: `Nella stessa categoria ${esc(b.name).slice(0, 40)}${b.isin ? ' (' + esc(b.isin) + ')' : ''} ha un profilo rischio/rendimento migliore (atteso ${pct(b.cagr, false)}, MDD ${pct(b.mdd, false, 0)}). Valuta di spostare parte della quota.` });

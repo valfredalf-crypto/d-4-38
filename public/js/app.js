@@ -1749,14 +1749,17 @@ function renderPortfolio() {
     const wScore = sc.reduce((a, x) => a + x.m.score * x.h.amount, 0) / totSc;
     const wNet = sc.reduce((a, x) => a + x.m.net, 0);
     const bm = bestMaxGrowth();
+    let pfSnap = {};
+    try { pfSnap = JSON.parse(localStorage.getItem('trmc.pfSnap') || '{}'); } catch { pfSnap = {}; }
     const tr = rowsMg.map(({ h, inst, m }) => {
+      const adv = adviseHolding(inst, h.amount, h.amount / (tot || 1), pfSnap[inst.symbol]);
       const top = (bm[inst.type] || []).find((x) => x.symbol !== inst.symbol);
       const alt = top && (m.score == null || top.score >= m.score + 0.01) ? `${esc(top.name).slice(0, 36)} <span class="muted">${esc(top.isin || '')}</span> (${pct(top.score, true)})` : '<span class="pos">già tra i migliori</span>';
-      return `<tr><td>${esc(inst.name).slice(0, 44)}<div class="muted small-note">${esc(inst.isin || inst.symbol)}${m.pass ? '' : ` · <span class="neg">${esc(m.reason || 'non supera il filtro')}</span>`}</div></td><td class="num">${eur(Math.round(h.amount))}</td>${m.score == null ? '<td class="num muted">–</td><td class="num muted">–</td>' : `<td class="num ${cls(m.score)}"><b>${pct(m.score, true)}</b>/anno</td><td class="num ${cls(m.net)}">${m.net > 0 ? '+' : ''}${eur(m.net)}</td>`}<td>${alt}</td></tr>`;
+      return `<tr><td>${esc(inst.name).slice(0, 44)}<div class="muted small-note">${esc(inst.isin || inst.symbol)}${m.pass ? '' : ` · <span class="neg">${esc(m.reason || 'non supera il filtro')}</span>`}</div></td><td class="num">${eur(Math.round(h.amount))}</td>${m.score == null ? '<td class="num muted">–</td><td class="num muted">–</td>' : `<td class="num ${cls(m.score)}"><b>${pct(m.score, true)}</b>/anno</td><td class="num ${cls(m.net)}">${m.net > 0 ? '+' : ''}${eur(m.net)}</td>`}<td>${adv ? `<b>${ADVICE_LABEL[adv.action]}</b><div class="muted small-note">${adviceText(adv)}</div>` : alt}</td></tr>`;
     }).join('');
     return `<div class="card"><h3>Max Growth del portafoglio</h3>
-      <p class="muted small-note">Stesso punteggio della classifica (storico 5 anni, rendimento atteso, crescita degli utili, meno rischio e concentrazione), ricalcolato a ogni aggiornamento dei dati di mercato. Le notifiche 🔔 segnalano le riallocazioni suggerite.</p>
-      <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo</th><th class="num">Max Growth</th><th class="num">Guadagno netto 5a</th><th>Alternativa migliore</th></tr></thead><tbody>${tr}
+      <p class="muted small-note">Stesso punteggio della classifica (storico 5 anni, rendimento atteso, crescita degli utili, meno rischio e concentrazione), ricalcolato a ogni aggiornamento dei dati di mercato. Azione suggerita per ogni strumento (vendi tutto, vendi una quota, rialloca verso uno strumento con trend positivo e alta crescita, aumenta, mantieni), ricalcolata a ogni aggiornamento; le notifiche 🔔 la segnalano. Indicazioni del modello, non consigli di investimento.</p>
+      <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo</th><th class="num">Max Growth</th><th class="num">Guadagno netto 5a</th><th>Azione suggerita</th></tr></thead><tbody>${tr}
       <tr><th>Portafoglio (ETF e azioni)</th><th class="num">${eur(Math.round(tot))}</th><th class="num ${cls(wScore)}">${pct(wScore, true)}/anno</th><th class="num ${cls(wNet)}">${wNet > 0 ? '+' : ''}${eur(wNet)}</th><th></th></tr></tbody></table></div></div>`;
   })();
   body.innerHTML = `
@@ -2116,11 +2119,56 @@ function bestMaxGrowth() {
     if (i.type === 'etf' && (isBond(i) || state.results[i.symbol]?.forward?.growthSource !== 'holdings')) continue;
     const m = mgOf(i);
     if (!m || !m.pass || m.score == null) continue;
-    best[i.type].push({ symbol: i.symbol, name: i.name, isin: i.isin, score: m.score });
+    best[i.type].push({ symbol: i.symbol, name: i.name, isin: i.isin, score: m.score, m3: m.m3, growth: m.growth });
   }
-  for (const k of Object.keys(best)) best[k] = best[k].sort((a, b) => b.score - a.score).slice(0, 5);
+  for (const k of Object.keys(best)) best[k] = best[k].sort((a, b) => b.score - a.score).slice(0, 30);
   state.bestMgCache = { v: ver, best };
   return best;
+}
+// Azione suggerita per uno strumento del portafoglio (dati di mercato validati, ricalcolata a ogni
+// aggiornamento): vendi tutto / vendi una quota / rialloca una quota / aumenta / mantieni.
+function adviseHolding(inst, amount, share, prevSnap) {
+  const m = mgOf(inst, amount, 5);
+  if (!m) return null;
+  const cls = inst.type;
+  const r = state.results[inst.symbol];
+  const growth = Number.isFinite(r?.forward?.growth) ? r.forward.growth : null;
+  const growthCut = prevSnap && Number.isFinite(prevSnap.growth) && growth != null && growth - prevSnap.growth <= -0.02;
+  // destinazione: tra i migliori della stessa classe, con trend recente positivo e alta crescita attesa
+  const gMin = cls === 'stock' ? 0.12 : 0.08;
+  const cands = (bestMaxGrowth()[cls] || []).filter((x) => x.symbol !== inst.symbol);
+  const target = cands.find((x) => (x.m3 == null || x.m3 >= 0) && (x.growth == null || x.growth >= gMin)) || cands[0] || null;
+  const tInst = target ? state.instruments.find((x) => x.symbol === target.symbol) : null;
+  const gainIf = (frac) => {
+    if (!tInst || m.score == null) return null;
+    const tm = mgOf(tInst, amount * frac, 5);
+    const mine = mgOf(inst, amount * frac, 5);
+    return tm && mine ? tm.net - mine.net : null;
+  };
+  const out = (action, frac, why) => ({ action, frac, eur: Math.round(amount * frac), target: frac > 0 && action !== 'buy' ? target : null, extra: frac > 0 && action !== 'buy' ? gainIf(frac) : null, why, m });
+  const m3 = m.m3;
+  if (!m.pass) return out('sell', 1, m.reason || 'non supera il filtro Max Growth');
+  if (m.score != null && m.score < 0.03) return out('sell', 1, `Max Growth ${pct(m.score, true)}/anno: sotto il rendimento di un'obbligazione`);
+  if (m3 != null && m3 <= -0.25 && (growthCut || (growth != null && growth < 0.03))) return out('sell', 1, `crollo di ${pct(m3, true)} in 3 mesi con prospettive di crescita in calo`);
+  if (m3 != null && m3 <= -0.15) return out('trim', 0.5, `calo di ${pct(m3, true)} in 3 mesi: riduci il rischio`);
+  if (growthCut && m3 != null && m3 < 0) return out('trim', 0.3, `stime degli analisti tagliate e prezzo in calo (${pct(m3, true)} in 3 mesi)`);
+  if (share > 0.4) return out('trim', Math.min(0.5, (share - 0.4) / share + 0.0001), `pesa ${pct(share, false, 0)} del portafoglio: riduci la concentrazione sotto il 40%`);
+  if (target && m.score != null && target.score >= m.score + 0.02) return out('move', 0.5, `${esc(target.name).slice(0, 40)} ha un Max Growth di ${pct(target.score, true)} contro ${pct(m.score, true)}`);
+  if (target && m.score != null && target.score >= m.score + 0.01) return out('move', 0.3, `${esc(target.name).slice(0, 40)} ha un Max Growth di ${pct(target.score, true)} contro ${pct(m.score, true)}`);
+  const topScore = cands[0]?.score ?? -Infinity;
+  if (m.score != null && m.score >= topScore - 0.005 && (m3 == null || m3 >= 0) && (growth == null || growth >= gMin) && share < 0.35)
+    return out('buy', 0.2, `tra i migliori della categoria (${pct(m.score, true)}/anno), trend positivo e crescita attesa ${growth != null ? pct(growth, true) : 'n.d.'}`);
+  return out('hold', 0, `Max Growth ${pct(m.score, true)}/anno in linea con le alternative`);
+}
+const ADVICE_LABEL = { sell: '🔴 Vendi 100%', trim: '🟠 Vendi una quota', move: '🔄 Rialloca una quota', buy: '🟢 Aumenta', hold: '⚪ Mantieni' };
+function adviceText(a) {
+  const pctTxt = a.action === 'sell' ? '100%' : `${Math.round(a.frac * 100)}%`;
+  const amt = eur(a.eur);
+  const dest = a.target ? ` e compra ${esc(a.target.name).slice(0, 40)}${a.target.isin ? ' (' + esc(a.target.isin) + ')' : ''}${Number.isFinite(a.target.score) ? ` (Max Growth ${pct(a.target.score, true)}/anno${Number.isFinite(a.target.m3) ? `, trend 3m ${pct(a.target.m3, true)}` : ''}${Number.isFinite(a.target.growth) ? `, crescita utili ${pct(a.target.growth, true)}` : ''})` : ''}` : '';
+  const extra = a.extra != null && a.extra > 0 ? ` · +${eur(a.extra)} di guadagno netto in più in 5 anni` : '';
+  if (a.action === 'hold') return `${a.why}.`;
+  if (a.action === 'buy') return `Aumenta la quota di circa ${pctTxt} (${amt}): ${a.why}.`;
+  return `Vendi ${pctTxt} (${amt})${dest}. Motivo: ${a.why}${extra}.`;
 }
 function bestByClass() {
   const ver = state.liveVersion || state.dataVersion || '';
@@ -2195,9 +2243,10 @@ function buildNotifications(save = false) {
           if (dg <= -0.02) out.push({ level: 'warn', icon: '📉', title: `${nm}: stime degli analisti tagliate`, text: `La crescita attesa degli utili è scesa da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
           else if (dg >= 0.02) out.push({ level: 'good', icon: '📈', title: `${nm}: stime degli analisti alzate`, text: `La crescita attesa degli utili è salita da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
         }
-        if (!mg.pass) out.push({ level: 'swap', icon: '🚫', title: `${nm}: non supera il filtro Max Growth`, text: `${esc(mg.reason || '')}. Valuta di spostare la quota su uno strumento promosso.` });
-        const top = (bestMaxGrowth()[cls] || []).find((x) => x.symbol !== inst.symbol);
-        if (top && (mg.score == null || top.score >= mg.score + 0.01)) {
+        const adv = adviseHolding(inst, h.amount, share, prev);
+        if (adv && adv.action !== 'hold') out.push({ level: adv.action === 'sell' ? 'warn' : adv.action === 'buy' ? 'good' : 'swap', icon: ADVICE_LABEL[adv.action].split(' ')[0], title: `${nm}: ${ADVICE_LABEL[adv.action].slice(2).trim()}`, text: adviceText(adv) });
+        const top = null;
+        if (top) {
           const ti = state.instruments.find((x) => x.symbol === top.symbol);
           const tm = ti ? mgOf(ti, h.amount, 5) : null;
           const delta = tm && mg.net != null ? tm.net - mg.net : null;

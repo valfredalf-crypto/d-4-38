@@ -88,10 +88,10 @@ export function maxGrowthScore(inst, sim, fwd = null, ter = null, fund = null) {
   const stagnation = isEtf && STAGNATION_RE.test(inst.name || '') ? Math.abs(base) * 0.15 : 0;
   // ETF con strategia speciale: −10% della base (se non già penalizzati come Value/High Dividend/Min Vol)
   const special = isEtf && !stagnation && SPECIAL_RE.test(inst.name || '') ? Math.abs(base) * 0.1 : 0;
-  // Solidità: patrimonio sotto 1 miliardo o non noto −0,5%/anno; meno di 10 anni di storia −0,25%/anno
+  // Solidità: patrimonio sotto 1 miliardo o non noto −0,5%/anno (bastano 5 anni di storia, già richiesti)
   const aum = isEtf ? aumEur(fund) : null;
   const small = isEtf && (aum == null || aum < 1e9) ? 0.005 : 0;
-  const young = isEtf && !Number.isFinite(sim.cagr10) ? 0.0025 : 0;
+  const young = 0;
   const boost = isEtf && purityOk(inst.name) ? 0.005 : 0;
   const vol = Number.isFinite(fwd?.vol) ? fwd.vol : null;
   const risk = vol != null ? vol * vol * (isEtf ? 1 : 0.5) : 0;

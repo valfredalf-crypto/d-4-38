@@ -45,5 +45,5 @@ test('Max Growth Score: ETF piccoli, giovani o con strategie speciali sotto quel
   const pure = maxGrowthScore({ type: 'etf', name: 'iShares Core MSCI World UCITS ETF (Acc)' }, { cagrHist: 0.1, cagr10: 0.1 }, fwd, 0.002, { aum: { value: 100e9, currency: 'EUR' } });
   const special = maxGrowthScore({ type: 'etf', name: 'Invesco Global Active ESG Equity UCITS ETF' }, { cagrHist: 0.12 }, fwd, 0.003, { aum: { value: 0.7e9, currency: 'EUR' } });
   assert.ok(pure.score > special.score, `${pure.score} vs ${special.score}`);
-  assert.ok(special.special > 0 && special.small > 0 && special.young > 0);
+  assert.ok(special.special > 0 && special.small > 0 && special.young === 0);
 });

@@ -1,187 +1,187 @@
-﻿#;ETF;ISIN;Ticker;Max Growth Score;CAGR 5a;CAGR 10a;Rendimento atteso;Crescita utili attesa;Volatilità;Penalità rischio;Penalità concentrazione/settore;Penalità Value;Penalità strategia speciale;Penalità dimensione;Penalità storia breve;Boost globale;TER;Patrimonio (mld €)
-1;"HSBC MSCI World UCITS ETF";IE00B4X9L533;H4ZJ.DE;8,4%;10,1%;12,2%;8,7%;10,6%;13%;1,7%;0,0%;0,0%;0,0%;;;+0,5%;0,15%;14,4
-2;"Xtrackers MSCI World UCITS ETF 1C";IE00BJ0KDQ92;XDWD.DE;8,4%;10,1%;12,0%;8,7%;10,7%;13%;1,7%;0,0%;0,0%;0,0%;;;+0,5%;0,12%;22,0
-3;"iShares Core MSCI World UCITS ETF (Acc)";IE00B4L5Y983;EUNL.DE;8,4%;10,1%;12,0%;8,6%;10,7%;13%;1,7%;0,0%;0,0%;0,0%;;;+0,5%;0,20%;131,8
-4;"State Street SPDR MSCI All Country World UCITS ETF";IE00B44Z5B48;SPYY.DE;8,3%;9,7%;11,4%;8,8%;10,5%;13%;1,7%;0,0%;0,0%;0,0%;;;+0,5%;0,12%;18,4
-5;"Vanguard FTSE Developed World UCITS ETF USD Accumulation";IE00BK5BQV03;VGVF.DE;8,2%;10,3%;;8,7%;10,6%;13%;1,7%;0,0%;0,0%;0,0%;;0,25%;+0,5%;0,12%;6,2
-6;"iShares MSCI ACWI UCITS ETF (Acc)";IE00B6R52259;IUSQ.DE;8,2%;9,7%;11,4%;8,6%;10,5%;13%;1,7%;0,0%;0,0%;0,0%;;;+0,5%;0,20%;31,5
-7;"SPDR MSCI World UCITS ETF";IE00BFY0GT14;SPPW.DE;8,1%;10,2%;;8,7%;10,7%;13%;1,8%;0,0%;0,0%;0,0%;;0,25%;+0,5%;0,12%;18,8
-8;"State Street SPDR MSCI All Country World Investable Market UCITS ETF";IE00B3YLTY66;SPYI.DE;8,1%;9,4%;11,0%;8,6%;10,4%;13%;1,7%;0,0%;0,0%;0,0%;;;+0,5%;0,17%;8,5
-9;"Vanguard FTSE All-World UCITS ETF (Acc)";IE00BK5BQT80;VWCE.DE;8,1%;9,7%;;8,8%;10,5%;13%;1,7%;0,0%;0,0%;0,0%;;0,25%;+0,5%;0,14%;56,3
-10;"iShares Edge MSCI World Value Factor UCITS ETF USD (Acc)";IE00BP3QZB59;IS3S.DE;7,8%;15,8%;10,8%;9,1%;9,6%;15%;2,3%;0,1%;1,8%;0,0%;;;;0,25%;6,3
-11;"Invesco Global Active ESG Equity UCITS ETF USD Acc";IE00BJQRDN15;IQSA.DE;7,7%;13,0%;;9,0%;10,5%;14%;1,9%;0,0%;0,0%;1,1%;;0,25%;;0,30%;2,6
-12;"L&G Global Equity UCITS ETF";IE00BFXR5S54;ETLQ.DE;7,7%;10,3%;;8,8%;10,7%;14%;1,8%;0,0%;0,0%;0,0%;;0,25%;;0,10%;2,0
-13;"iShares MSCI World Value Factor Advaced UCITS ETF USD (Acc)";IE000H1H16W5;CBUI.DE;7,6%;14,3%;;8,8%;9,5%;13%;1,6%;0,0%;1,7%;0,0%;;0,25%;;0,25%;1,5
-14;"iShares Core S&P 500 UCITS ETF (Acc)";IE00B5BMR087;SXR8.DE;7,5%;11,1%;13,8%;9,2%;11,3%;14%;2,0%;0,9%;0,0%;0,0%;;;;0,07%;138,5
-15;"HSBC S&P 500 UCITS ETF";IE00B5KQNG97;H4ZF.DE;7,5%;11,1%;13,8%;9,2%;11,3%;14%;2,0%;0,9%;0,0%;0,0%;;;;0,09%;9,0
-16;"Xtrackers MSCI USA UCITS ETF 1C";IE00BJ0KDR00;XD9U.DE;7,3%;10,7%;13,8%;9,2%;11,2%;14%;2,0%;0,8%;0,0%;0,0%;;;;0,03%;12,6
-17;"iShares VII PLC - iShares MSCI USA ETF USD Acc";IE00B52SFT06;SXR4.DE;7,3%;10,6%;13,6%;9,2%;11,2%;14%;2,1%;0,8%;0,0%;0,0%;;;;0,03%;4,7
-18;"Vanguard FTSE North America UCITS ETF USD Accumulation";IE00BK5BQW10;VNRA.DE;7,3%;10,8%;;9,1%;11,2%;14%;2,0%;0,7%;0,0%;0,0%;;0,25%;;0,08%;3,1
-19;"Vanguard FTSE North America UCITS ETF";IE00BKX55R35;VNRT.DE;7,3%;10,8%;;9,1%;11,2%;14%;2,0%;0,7%;0,0%;0,0%;;0,25%;;0,08%;3,1
-20;"UBS Core MSCI World UCITS ETF USD acc";IE00BD4TXV59;UETW.DE;7,1%;10,1%;;8,7%;10,7%;17%;2,8%;0,0%;0,0%;0,0%;;0,25%;+0,5%;0,06%;12,0
-21;"State Street SPDR MSCI All Country World EUR Hdg UCITS ETF (Acc)";IE00BF1B7389;SPP1.DE;7,1%;8,4%;;8,0%;10,5%;13%;1,8%;0,0%;0,0%;0,0%;;0,25%;+0,5%;0,17%;1,8
-22;"Xtrackers MSCI World Value UCITS ETF 1C";IE00BL25JM42;XDEV.DE;7,0%;16,0%;10,9%;9,1%;9,6%;18%;3,1%;0,1%;1,8%;0,0%;;;;0,25%;3,8
-23;"iShares Core MSCI Europe UCITS ETF EUR (Acc)";IE00B4K48X80;EUNK.DE;6,9%;9,2%;9,5%;8,2%;9,4%;14%;1,9%;0,0%;0,0%;0,0%;;;;0,12%;16,4
-24;"MSCI USA Min TE EUR (Acc)";LU1291104575;ENAM.PA;6,8%;9,5%;12,8%;9,0%;11,2%;14%;2,0%;0,8%;0,0%;0,0%;;;;0,15%;1,3
-25;"Xtrackers Stoxx Europe 600 UCITS ETF 1C";LU0328475792;XSX6.DE;6,8%;8,9%;9,5%;8,3%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;;;;0,20%;4,4
-26;"iShares VII PLC -iShares Core MSCI EMU UCITS ETF EUR (Acc)";IE00B53QG562;SXR7.DE;6,7%;9,4%;9,9%;8,8%;10,2%;16%;2,5%;0,1%;0,0%;0,0%;;;;0,12%;6,1
-27;"Xtrackers MSCI Europe UCITS ETF 2C USD Hedged";LU1184092051;XEOU.SW;6,7%;11,6%;10,7%;7,4%;9,4%;15%;2,3%;0,0%;0,0%;0,0%;0,5%;;;0,30%;n.d.
-28;"Vanguard LifeStrategy 80% Equity UCITS ETF (EUR) Accumulating";IE00BMVB5R75;V80A.DE;6,6%;7,4%;;7,3%;10,6%;11%;1,1%;0,0%;0,0%;0,0%;;0,25%;;0,25%;1,3
-29;"Vanguard FTSE Developed Europe UCITS ETF";IE00B945VV12;VGEU.DE;6,6%;9,2%;;8,2%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;;0,25%;;0,10%;4,9
-30;"Xtrackers MSCI AC World Screened UCITS ETF 1C";IE00BGHQ0G80;XMAW.DE;6,6%;9,4%;11,3%;8,7%;10,7%;13%;1,8%;0,0%;0,0%;0,9%;;;;0,25%;6,5
-31;"Vanguard FTSE Developed Europe UCITS ETF EUR Accumulation";IE00BK5BQX27;VWCG.DE;6,6%;9,2%;;8,5%;9,4%;14%;2,1%;0,0%;0,0%;0,0%;;0,25%;;0,10%;3,3
-32;"JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF - USD (acc)";IE00BF4G6Y48;JREG.DE;6,6%;10,2%;;8,5%;10,7%;14%;1,9%;0,0%;0,0%;1,0%;;0,25%;;0,25%;5,9
-33;"MSCI EMU Min TE EUR (Acc)";LU1291098827;EEMU.PA;6,5%;8,9%;9,6%;8,9%;10,1%;16%;2,5%;0,1%;0,0%;0,0%;;;;0,15%;1,3
-34;"State Street SPDR S&P 500 Leaders UCITS ETF";IE00BH4GPZ28;SPPY.DE;6,5%;12,0%;;9,6%;11,6%;14%;1,9%;1,2%;0,0%;1,1%;;0,25%;;0,03%;4,4
-35;"iShares Edge MSCI Europe Value Factor UCITS ETF EUR (Acc)";IE00BQN1K901;CEMS.DE;6,4%;13,9%;10,4%;8,4%;8,1%;16%;2,6%;0,0%;1,6%;0,0%;;;;0,25%;2,6
-36;"iShares STOXX Europe Equity Multifactor UCITS ETF EUR (Acc)";IE00BZ0PKV06;IBC0.DE;6,4%;10,8%;10,5%;9,1%;9,5%;14%;2,0%;0,0%;0,0%;1,0%;0,5%;;;0,25%;0,7
-37;"ISHARES IV PLC ISHS EDGE MSCI USA MULTIFAC ETF USD ACC";IE00BZ0PKS76;IFSU.L;6,3%;10,6%;11,2%;8,5%;10,7%;15%;2,2%;0,8%;0,0%;0,0%;0,5%;;;0,20%;n.d.
-38;"iShares Core MSCI EMU UCITS ETF USD Hedged (Acc)";IE00BKBF6616;CEUU.AS;6,3%;12,5%;;8,1%;10,2%;18%;3,2%;0,1%;0,0%;0,0%;0,5%;0,25%;;0,15%;n.d.
-39;"Invesco MSCI USA Universal Screened UCITS ETF";IE00BJQRDM08;ESGU.DE;6,3%;9,7%;;9,0%;11,0%;14%;1,9%;0,4%;0,0%;1,0%;;0,25%;;0,09%;2,7
-40;"Amundi MSCI Europe UCITS ETF Acc";FR0010261198;LYY5.DE;6,2%;9,0%;8,0%;8,0%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;0,5%;;;0,25%;0,6
-41;"Vanguard FTSE Developed Europe ex UK UCITS ETF Accuimulation";IE00BK5BQY34;VERE.DE;6,2%;8,2%;;8,6%;9,6%;15%;2,2%;0,0%;0,0%;0,0%;;0,25%;;0,10%;1,7
-42;"Core MSCI EMU EUR (Acc)";LU1646361276;LU1646361276.LU;6,2%;9,5%;;9,0%;10,2%;15%;2,4%;0,1%;0,0%;0,0%;0,5%;0,25%;;0,12%;0,6
-43;"iShares MSCI World CTB Enhanced ESG UCITS ETF USD Acc";IE00BHZPJ569;EDMW.DE;6,1%;8,7%;;8,6%;10,5%;13%;1,7%;0,0%;0,0%;0,9%;;0,25%;;0,20%;4,6
-44;"UBS S&P 500 Scored & Screened UCITS ETF USD acc";IE00BHXMHL11;4UBQ.DE;6,1%;11,2%;;9,7%;11,8%;14%;2,0%;1,3%;0,0%;1,1%;;0,25%;;0,10%;2,1
-45;"BNP Paribas Easy MSCI Europe Min TE UCITS ETF";LU1291099718;EEUE.PA;6,1%;8,5%;9,1%;8,3%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;0,5%;;;0,15%;n.d.
-46;"JPMorgan ETFs (Ireland) ICAV - US Research Enhanced Index Equity Active UCITS ETF - USD (acc)";IE00BF4G7076;JREU.DE;6,1%;10,9%;;9,1%;11,3%;14%;1,9%;0,9%;0,0%;1,0%;;0,25%;;0,20%;11,3
-47;"iShares Edge MSCI World Quality Factor UCITS ETF";IE00BP3QZ601;IS3Q.DE;6,1%;9,0%;11,9%;8,7%;11,2%;13%;1,6%;0,7%;0,0%;0,9%;;;;0,25%;6,0
-48;"iShares S&P 500 EUR Hedged UCITS ETF (Acc)";IE00B3ZW0K18;IBCF.DE;6,1%;8,2%;11,7%;8,9%;11,3%;15%;2,1%;0,9%;0,0%;0,0%;;;;0,20%;9,3
-49;"HSBC EURO STOXX 50 UCITS ETF";IE00B4K6B022;H4ZA.DE;6,0%;10,9%;10,7%;9,2%;10,3%;16%;2,7%;1,3%;0,0%;0,0%;;;;0,05%;1,5
-50;"State Street SPDR MSCI Japan UCITS ETF";IE00BZ0G8B96;ZPDJ.DE;6,0%;8,0%;7,8%;8,7%;9,7%;16%;2,6%;0,0%;0,0%;0,0%;;;;0,12%;1,1
-51;"Xtrackers MSCI Europe UCITS ETF 1C";LU0274209237;XMEU.DE;6,0%;9,2%;9,5%;8,2%;9,4%;17%;2,9%;0,0%;0,0%;0,0%;;;;0,12%;8,0
-52;"iShares Core MSCI Japan IMI UCITS ETF USD (Acc)";IE00B4L5YX21;EUNN.DE;6,0%;8,1%;7,8%;8,5%;9,5%;16%;2,6%;0,0%;0,0%;0,0%;;;;0,12%;7,0
-53;"Vanguard ESG Global All Cap UCITS ETF (USD) Accumulating";IE00BNG8L278;V3AA.DE;5,9%;8,4%;;8,7%;10,7%;14%;1,9%;0,0%;0,0%;0,9%;;0,25%;;0,24%;1,1
-54;"State Street SPDR MSCI Europe Value UCITS ETF";IE00BSPLC306;ZPRW.DE;5,9%;14,2%;10,7%;8,8%;8,0%;16%;2,7%;0,1%;1,6%;0,0%;0,5%;;;0,20%;n.d.
-55;"iShares VII PLC - iShares MSCI Japan ETF USD Acc";IE00B53QDK08;SXR5.DE;5,8%;8,0%;7,7%;8,6%;9,6%;16%;2,7%;0,0%;0,0%;0,0%;;;;0,12%;1,5
-56;"Xtrackers Euro Stoxx 50 UCITS ETF 1C";LU0380865021;XESC.DE;5,8%;10,3%;10,4%;9,2%;10,3%;17%;2,7%;1,4%;0,0%;0,0%;;;;0,09%;6,4
-57;"Vanguard FTSE All-World High Dividend Yield UCITS ETF USD Accumulation";IE00BK5BR626;VGWE.DE;5,8%;11,7%;;6,6%;5,9%;11%;1,2%;0,0%;1,3%;0,0%;;0,25%;;0,29%;3,3
-58;"iShares VII PLC - iShares Core EURO STOXX 50 ETF EUR Acc";IE00B53L3W79;SXRT.DE;5,8%;10,3%;10,4%;9,1%;10,3%;16%;2,7%;1,3%;0,0%;0,0%;;;;0,10%;7,7
-59;"iShares STOXX World Equity Multifactor UCITS ETF USD (Acc)";IE00BZ0PKT83;IBCZ.DE;5,7%;10,7%;10,8%;8,8%;10,4%;16%;2,7%;0,0%;0,0%;1,0%;0,5%;;;0,30%;0,8
-60;"L&G Europe ex UK Equity UCITS ETF";IE00BFXR5V83;ETLN.DE;5,6%;8,3%;;8,5%;9,6%;15%;2,3%;0,0%;0,0%;0,0%;0,5%;0,25%;;0,10%;0,5
-61;"Amundi EURO STOXX 50 II UCITS ETF Acc";FR0007054358;LYSX.DE;5,6%;10,3%;8,9%;8,9%;10,3%;17%;2,8%;1,4%;0,0%;0,0%;;;;0,20%;4,5
-62;"Vanguard FTSE All-World High Dividend Yield UCITS ETF";IE00B8GKDB10;VGWD.DE;5,6%;11,7%;;6,4%;5,9%;12%;1,3%;0,0%;1,3%;0,0%;;0,25%;;0,29%;10,4
-63;"Fidelity US Equity Research Enhanced UCITS ETF USD Acc";IE00BKSBGS44;FUSR.DE;5,6%;10,9%;;9,1%;11,3%;14%;2,1%;1,3%;0,0%;1,0%;;0,25%;;0,20%;1,5
-64;"Vanguard LifeStrategy 60% Equity UCITS ETF (EUR) Accumulating";IE00BMVB5P51;V60A.DE;5,6%;4,9%;;6,1%;10,6%;8%;0,7%;0,0%;0,0%;0,0%;;0,25%;;0,25%;1,0
-65;"iShares Edge MSCI USA Quality Factor UCITS ETF USD (Acc)";IE00BD1F4L37;QDVB.DE;5,6%;10,0%;13,1%;9,2%;11,8%;14%;1,9%;1,6%;0,0%;1,0%;;;;0,20%;1,8
-66;"Amundi MSCI Europe ESG Broad Transition - UCITS ETF DR - EUR (C)";LU1681042609;CEUG.DE;5,5%;8,6%;;8,3%;9,7%;14%;2,0%;0,0%;0,0%;0,9%;;0,25%;;0,12%;2,4
-67;"iShares MSCI Europe Screened UCITS ETF EUR (Acc)";IE00BFNM3D14;SLMC.DE;5,5%;8,7%;;8,7%;9,8%;15%;2,2%;0,0%;0,0%;0,9%;;0,25%;;0,12%;5,1
-68;"State Street SPDR S&P 500 UCITS ETF EUR Accumulation Hedged";IE00BYYW2V44;SPPE.DE;5,5%;8,3%;;8,3%;11,3%;15%;2,2%;0,9%;0,0%;0,0%;;0,25%;;0,05%;2,7
-69;"iShares MSCI USA Value Factor Advanced UCITS ETF USD (Acc)";IE000OKVTDF7;IUVE.AS;5,5%;12,9%;;9,0%;9,9%;16%;2,6%;0,3%;1,6%;0,0%;0,5%;0,25%;;0,20%;n.d.
-70;"L&G US Equity UCITS ETF";IE00BFXR5Q31;ETLS.DE;5,5%;18,1% (escluso);;8,8%;11,3%;17%;2,9%;1,0%;0,0%;0,0%;;0,25%;;0,05%;1,8
-71;"Vanguard FTSE Japan UCITS ETF USD Accumulation";IE00BFMXYX26;VJPA.DE;5,5%;8,1%;;8,6%;9,5%;17%;2,8%;0,0%;0,0%;0,0%;;0,25%;;0,10%;1,5
-72;"JPMorgan ETFs (Ireland) ICAV - Europe Research Enhanced Index Equity Active UCITS ETF - EUR (acc)";IE00BF4G7183;JREE.DE;5,5%;9,1%;;8,1%;9,2%;15%;2,1%;0,0%;0,0%;0,9%;;0,25%;;0,23%;2,9
-73;"iShares MSCI World SRI UCITS ETF EUR (Acc)";IE00BYX2JD69;2B7K.DE;5,4%;7,0%;;8,9%;11,0%;14%;1,8%;0,2%;0,0%;0,9%;;0,25%;;0,20%;7,3
-74;"UBS Core MSCI USA hEUR UCITS ETF EUR acc";IE00BD4TYG73;UBUJ.DE;5,4%;7,8%;11,7%;9,0%;11,3%;15%;2,2%;0,9%;0,0%;0,0%;0,5%;;;0,06%;0,6
-75;"iShares MSCI USA CTB Enhanced ESG UCITS ETF USD Acc";IE00BHZPJ908;EDMU.DE;5,4%;9,1%;;9,2%;11,1%;14%;2,0%;0,9%;0,0%;1,0%;;0,25%;;0,07%;8,4
-76;"L&G Japan Equity UCITS ETF";IE00BFXR5T61;ETLR.DE;5,4%;8,2%;;8,7%;9,6%;16%;2,6%;0,0%;0,0%;0,0%;0,5%;0,25%;;0,10%;0,9
-77;"JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF - EUR Hedged (";IE0000UW95D6;JRGE.DE;5,4%;8,9%;;7,5%;10,7%;13%;1,7%;0,0%;0,0%;0,9%;0,5%;0,25%;;0,25%;1,0
-78;"iShares MSCI Europe CTB Enhanced ESG UCITS ETF EUR Acc";IE00BHZPJ783;EDM6.DE;5,4%;8,0%;;8,6%;9,8%;15%;2,1%;0,0%;0,0%;0,9%;;0,25%;;0,12%;2,4
-79;"iShares MSCI World Screened UCITS ETF USD (Acc)";IE00BFNM3J75;SNAW.DE;5,4%;10,2%;;8,7%;10,8%;18%;3,1%;0,0%;0,0%;1,0%;;0,25%;;0,20%;5,2
-80;"Amundi Index Solutions - AMUNDI STOXX EUROPE 600 ESG - UCITS ETF DR - EUR (C)";LU1681040223;AME6.DE;5,3%;8,2%;;8,3%;9,7%;14%;2,1%;0,0%;0,0%;0,9%;;0,25%;;0,18%;1,8
-81;"BNP Paribas Easy Euro Stoxx 50 UCITS ETF EUR C";FR0012739431;ETDD.DE;5,3%;10,3%;10,3%;9,1%;10,3%;16%;2,7%;1,3%;0,0%;0,0%;0,5%;;;0,10%;0,8
-82;"iShares NASDAQ 100 UCITS ETF (Acc)";IE00B53SZB19;SXRV.DE;5,3%;11,1%;18,7%;9,5%;11,7%;19%;3,6%;1,7%;0,0%;0,0%;;;;0,30%;25,0
-83;"Xtrackers MSCI World Quality UCITS ETF 1C";IE00BL25JL35;XDEQ.DE;5,2%;9,1%;12,0%;8,7%;11,2%;16%;2,5%;0,7%;0,0%;0,9%;;;;0,25%;2,7
-84;"iShares MSCI EMU Screened UCITS ETF EUR (Acc)";IE00BFNM3B99;SLMA.DE;5,2%;8,8%;;9,0%;10,2%;16%;2,5%;0,4%;0,0%;0,9%;;0,25%;;0,12%;1,5
-85;"iShares Core MSCI EM IMI UCITS ETF (Acc)";IE00BKM4GZ66;IS3N.DE;5,1%;6,4%;7,8%;9,3%;10,7%;17%;2,9%;0,4%;0,0%;0,0%;;;;0,18%;36,9
-86;"UBS MSCI World Socially Responsible UCITS ETF USD acc";IE00BK72HJ67;4UBH.DE;5,1%;7,2%;;8,9%;11,6%;15%;2,2%;0,3%;0,0%;0,9%;;0,25%;;0,19%;1,2
-87;"HSBC MSCI WORLD CLIMATE PARIS ALIGNED UCITS ETF";IE00BP2C1V62;HPAW.DE;5,1%;8,1%;;8,6%;11,1%;14%;1,9%;0,3%;0,0%;0,9%;0,5%;0,25%;;0,18%;0,5
-88;"iShares Edge MSCI USA Value Factor UCITS ETF USD (Acc)";IE00BD1F4M44;QDVI.DE;5,0%;14,5%;12,1%;9,7%;10,1%;18%;3,3%;1,6%;1,8%;0,0%;;;;0,20%;3,1
-89;"iShares MSCI USA SRI UCITS ETF USD (Acc)";IE00BYVJRR92;QDVR.DE;5,0%;8,1%;13,7%;9,3%;11,4%;15%;2,2%;1,1%;0,0%;0,9%;;;;0,20%;3,0
-90;"iShares MSCI EMU CTB Enhanced ESG UCITS ETF EUR Acc";IE00BHZPJ015;EDM4.DE;5,0%;8,5%;;9,1%;10,3%;16%;2,6%;0,4%;0,0%;0,9%;;0,25%;;0,12%;3,6
-91;"iShares VII PLC - iShares Core FTSE 100 ETF GBP Acc";IE00B53HP851;SXRW.DE;4,9%;12,1%;8,6%;7,1%;5,9%;14%;2,0%;1,9%;0,0%;0,0%;;;;0,07%;4,0
-92;"Amundi MSCI Europe ESG Selection UCITS ETF Acc";LU1940199711;LEAD.DE;4,9%;7,4%;;8,3%;9,7%;14%;1,8%;0,4%;0,0%;0,8%;;0,25%;;0,20%;1,2
-93;"ISHARES VI PLC ISHARES EUROPE MC UCITS ETF EUR ACC";IE00BF20LF40;EUMD.L;4,9%;7,9%;;7,9%;9,1%;16%;2,5%;0,0%;0,0%;0,0%;0,5%;0,25%;;0,15%;n.d.
-94;"Xtrackers MSCI USA ESG UCITS ETF 1C";IE00BFMNPS42;XZMU.DE;4,8%;10,2%;;9,9%;12,4%;15%;2,3%;2,1%;0,0%;1,1%;;0,25%;;0,15%;8,2
-95;"Xtrackers MSCI USA UCITS ETF 2C - EUR Hedged";IE00BG04M077;XD9E.DE;4,8%;7,6%;;8,2%;11,2%;15%;2,2%;0,8%;0,0%;0,0%;0,5%;0,25%;;0,08%;0,7
-96;"State Street SPDR EURO STOXX Low Volatility UCITS ETF (Acc)";IE00BFTWP510;ZPRL.DE;4,8%;6,7%;7,6%;6,9%;7,1%;13%;1,6%;0,0%;0,0%;0,0%;0,5%;;;0,30%;n.d.
-97;"iShares S&P 500 Information Technology Sector UCITS ETF";IE00B3WJKG14;QDVE.DE;4,7%;17,2%;23,2%;11,5%;14,1%;22%;5,0%;4,6%;0,0%;0,0%;;;;0,15%;16,8
-98;"iShares MSCI USA Screened UCITS ETF USD Accumulation";IE00BFNM3G45;SGAS.DE;4,7%;11,0%;;9,2%;11,3%;18%;3,3%;1,1%;0,0%;1,0%;;0,25%;;0,07%;16,7
-99;"UBS MSCI ACWI Socially Responsible UCITS ETF hEUR acc";IE00BDR55927;AW1R.DE;4,7%;7,0%;;9,2%;11,9%;15%;2,2%;0,3%;0,0%;0,9%;0,5%;0,25%;;0,28%;0,7
-100;"iShares Edge MSCI World Momentum Factor UCITS ETF";IE00BP3QZ825;IS3R.DE;4,6%;8,2%;13,0%;8,7%;10,4%;18%;3,3%;0,0%;0,0%;0,9%;;;;0,25%;5,2
-101;"Vanguard FTSE 100 UCITS ETF";IE00B810Q511;VUKE.DE;4,6%;12,0%;;7,1%;5,9%;14%;2,0%;1,9%;0,0%;0,0%;;0,25%;;0,09%;5,6
-102;"iShares Edge S&P 500 Minimum Volatility UCITS ETF USD (Acc)";IE00B6SPMN59;IBCK.DE;4,5%;8,3%;10,2%;7,5%;9,2%;16%;2,4%;0,0%;1,2%;0,0%;;;;0,20%;1,9
-103;"Xtrackers NASDAQ 100 UCITS ETF 1C";IE00BMFKG444;XNAS.DE;4,5%;11,2%;;9,4%;11,7%;20%;4,2%;1,7%;0,0%;0,0%;;0,25%;;0,20%;2,7
-104;"Xtrackers MSCI World Financials UCITS ETF 1C";IE00BM67HL84;XDWF.DE;4,5%;13,7%;;8,1%;7,8%;16%;2,6%;3,0%;0,0%;0,0%;;0,25%;;0,25%;1,4
-105;"Hsbc Europe Screened Equity Ucits Etf";IE00BKY55W78;HSEU.L;4,4%;8,9%;;8,9%;9,7%;13%;1,8%;1,1%;0,0%;0,9%;0,5%;0,25%;;0,15%;n.d.
-106;"Xtrackers MSCI World ESG UCITS ETF 1C";IE00BZ02LR44;XZW0.DE;4,4%;9,1%;;9,3%;11,7%;17%;3,0%;1,1%;0,0%;1,0%;;0,25%;;0,20%;5,1
-107;"Core MSCI Emerging Markets USD (Acc)";LU1437017350;AEME.PA;4,4%;6,5%;;9,7%;10,9%;17%;3,0%;0,9%;0,0%;0,0%;;0,25%;;0,18%;3,9
-108;"State Street SPDR STOXX Europe 600 SRI UCITS ETF EUR Acc";IE00BK5H8015;ZPDX.DE;4,4%;8,2%;;9,0%;10,3%;15%;2,2%;0,7%;0,0%;0,9%;0,5%;0,25%;;0,12%;0,7
-109;"HSBC S&P 500 UCITS ETF USD (Acc)";IE000JZ473P7;H4ZN.DE;4,4%;30,0% (escluso);14,0%;8,7%;11,3%;19%;3,7%;0,9%;0,0%;0,0%;0,5%;;;0,09%;0,6
-110;"iShares NASDAQ-100 UCITS ETF (DE)";DE000A0F5UF5;EXXT.DE;4,3%;10,9%;18,5%;9,5%;11,7%;21%;4,5%;1,7%;0,0%;0,0%;;;;0,30%;5,5
-111;"Xtrackers MSCI World ESG UCITS ETF 2C - EUR Hedged";IE00BMY76136;XZWE.DE;4,3%;7,5%;;8,4%;11,7%;15%;2,2%;1,1%;0,0%;0,9%;;0,25%;;0,25%;1,1
-112;"iShares MSCI EM UCITS ETF (Acc)";IE00B4L5YC18;EUNM.DE;4,3%;6,5%;7,6%;9,4%;10,8%;17%;3,0%;1,2%;0,0%;0,0%;;;;0,18%;8,8
-113;"Amundi S&P Eurozone Climate Paris Aligned UCITS ETF Acc";LU2195226068;ZPAB.DE;4,3%;8,5%;;9,0%;10,5%;16%;2,6%;1,1%;0,0%;0,9%;;0,25%;;0,20%;2,8
-114;"Xtrackers MSCI USA Screened UCITS ETF 1C";IE00BJZ2DC62;XRSM.DE;4,2%;10,7%;12,2%;9,2%;11,4%;18%;3,4%;1,1%;0,0%;1,0%;0,5%;;;0,07%;0,9
-115;"UBS S&P 500 Scored & Screened UCITS ETF hEUR acc";IE00BHXMHQ65;S5SG.DE;4,2%;8,3%;;8,8%;11,8%;14%;2,0%;1,3%;0,0%;0,9%;0,5%;0,25%;;0,13%;0,8
-116;"Franklin FTSE Asia ex China ex Japan Acc";IE00BFWXDV39;FVSJ.DE;4,2%;11,5%;;9,4%;11,4%;20%;4,0%;1,7%;0,0%;0,0%;0,5%;0,25%;;0,14%;n.d.
-117;"Xtrackers MSCI World Information Technology UCITS ETF";IE00BM67HT60;XDWT.DE;4,1%;14,5%;21,2%;11,1%;13,6%;22%;5,0%;3,8%;0,0%;0,0%;;;;0,25%;5,6
-118;"Amundi MSCI EMU ESG Selection - UCITS ETF DR - EUR (C)";LU1602144575;AMED.DE;4,1%;9,5%;;8,9%;10,1%;16%;2,5%;1,6%;0,0%;0,9%;;0,25%;;0,25%;1,4
-119;"Xtrackers MSCI Europe ESG UCITS ETF 1C";IE00BFMNHK08;XZEU.DE;4,0%;6,5%;;8,5%;10,2%;14%;2,0%;0,9%;0,0%;0,8%;;0,25%;;0,20%;1,2
-120;"Ishares Msci Emu Paris-Aligned Climate Ucits Etf Eur (Acc)";IE00BL6K8D99;EMPA.AS;4,0%;6,5%;;8,9%;10,5%;15%;2,3%;0,4%;0,0%;0,8%;0,5%;0,25%;;0,15%;n.d.
-121;"UBS S&P 500 ESG Elite UCITS ETF USD acc";IE00BLSN7P11;AW1C.DE;4,0%;12,2%;;9,1%;11,1%;18%;3,3%;1,6%;0,0%;1,1%;0,5%;0,25%;;0,15%;0,6
-122;"UBS MSCI World Socially Responsible UCITS ETF USD acc";LU0950674332;SEAC.DE;4,0%;7,0%;;8,9%;11,6%;18%;3,3%;0,3%;0,0%;0,9%;;0,25%;;0,22%;1,9
-123;"Xtrackers MSCI World Momentum UCITS ETF 1C";IE00BL25JP72;XDEM.DE;3,9%;8,3%;13,2%;8,7%;10,4%;20%;4,1%;0,0%;0,0%;0,9%;;;;0,25%;1,9
-124;"iShares Edge MSCI Europe Momentum Factor UCITS ETF EUR (Acc)";IE00BQN1K786;CEMR.DE;3,8%;8,8%;11,0%;8,5%;8,4%;15%;2,3%;1,1%;0,0%;0,9%;0,5%;;;0,25%;0,7
-125;"iShares MSCI Europe SRI UCITS ETF EUR (Acc)";IE00B52VJ196;IUSK.DE;3,8%;4,3%;8,6%;8,5%;10,2%;14%;2,0%;0,7%;0,0%;0,7%;;;;0,20%;3,1
-126;"Amundi MSCI World Climate Paris Aligned Umweltzeichen UCITS ETF";FR0014003FW1;PABV.DE;3,8%;10,4%;;8,7%;11,6%;19%;3,7%;0,7%;0,0%;1,0%;0,5%;0,25%;;0,25%;0,5
-127;"L&G MSCI Europe Select UCITS ETF - EUR Accumulating ETF";IE00BKLTRN76;DELF.DE;3,8%;7,1%;;8,2%;9,6%;18%;3,2%;0,0%;0,0%;0,8%;;0,25%;;0,10%;1,5
-128;"Amundi Msci Emu Climate Paris Aligned Ucits Etf Acc";LU2182388582;PABZ.PA;3,7%;6,1%;;9,0%;10,4%;15%;2,3%;0,5%;0,0%;0,8%;0,5%;0,25%;;0,15%;n.d.
-129;"iShares MSCI USA CTB Enhanced ESG UCITS ETF EUR Hedged Acc";IE000U7L59A3;CBUC.DE;3,7%;6,1%;;8,0%;11,1%;15%;2,2%;0,9%;0,0%;0,8%;;0,25%;;0,10%;1,6
-130;"HSBC USA Screened Equity UCITS ETF";IE00BKY40J65;H412.DE;3,6%;11,2%;;9,0%;10,8%;14%;1,9%;3,0%;0,0%;1,0%;0,5%;0,25%;;0,12%;0,8
-131;"Core Msci Em Usd (Acc)";LU0950674175;EMMUSC.SW;3,5%;6,9%;;9,6%;10,9%;20%;4,1%;0,9%;0,0%;0,0%;;0,25%;;0,15%;7,5
-132;"Amundi UK Equity All Cap UCITS ETF";LU1781541096;LCUK.DE;3,5%;11,1%;;7,2%;5,9%;17%;3,0%;1,7%;0,0%;0,0%;;0,25%;;0,04%;1,2
-133;"Xtrackers MSCI Emerging Markets UCITS ETF 1C";IE00BTJRMP35;XMME.DE;3,5%;6,4%;;9,4%;10,9%;20%;3,9%;0,9%;0,0%;0,0%;;0,25%;;0,18%;11,6
-134;"iShares Edge MSCI Europe Quality Factor UCITS ETF EUR (Acc)";IE00BQN1K562;CEMQ.DE;3,4%;5,2%;8,8%;8,4%;9,8%;13%;1,8%;0,9%;0,0%;0,7%;0,5%;;;0,25%;0,6
-135;"Xtrackers MSCI World Industrials UCITS ETF 1C";IE00BM67HV82;XDWI.DE;3,4%;9,8%;10,4%;7,6%;9,6%;16%;2,5%;3,0%;0,0%;0,0%;;;;0,25%;1,2
-136;"MSCI United Kingdom EUR Hedged (Acc)";LU1169821292;UFMB.DE;3,3%;10,5%;;6,6%;5,9%;13%;1,6%;2,4%;0,0%;0,0%;0,5%;0,25%;;0,23%;0,6
-137;"State Street SPDR MSCI Europe Industrials UCITS ETF";IE00BKWQ0J47;SPYQ.DE;3,2%;10,2%;11,7%;9,0%;11,0%;19%;3,6%;3,0%;0,0%;0,0%;;;;0,18%;1,3
-138;"Invesco Markets II plc - Invesco NASDAQ-100 ESG UCITS ETF USD Acc";IE000COQKPO9;N1ES.DE;3,1%;12,0%;;9,5%;12,1%;21%;4,4%;2,1%;0,0%;1,1%;;0,25%;;0,25%;2,6
-139;"Ishares Msci Emu Sri Ucits Etf Eur (Acc)";IE00BJLKK341;SMUA.AS;3,1%;6,9%;;9,2%;10,6%;15%;2,3%;1,5%;0,0%;0,9%;0,5%;0,25%;;0,20%;n.d.
-140;"iShares MSCI Japan Screened UCITS ETF USD (Acc)";IE00BFNM3L97;SGAJ.DE;3,1%;7,8%;;8,6%;9,7%;19%;3,6%;0,2%;0,0%;0,9%;0,5%;0,25%;;0,15%;n.d.
-141;"Deka DAX UCITS ETF";DE000ETFL011;EL4A.DE;3,1%;9,2%;8,7%;9,5%;10,5%;17%;2,9%;3,5%;0,0%;0,0%;;;;0,15%;1,9
-142;"iShares Core DAX UCITS ETF (DE)";DE0005933931;EXS1.DE;3,1%;9,2%;8,5%;9,5%;10,5%;17%;2,9%;3,5%;0,0%;0,0%;;;;0,16%;8,9
-143;"JPM Global Emerging Markets Research Enhanced Index Equity Active UCITS ETF – USD (acc)";IE00BF4G6Z54;JREM.DE;3,1%;6,4%;;9,1%;10,4%;18%;3,2%;0,4%;0,0%;0,8%;0,5%;0,25%;;0,30%;n.d.
-144;"Amundi MSCI Europe SRI Climate Paris Aligned - UCITS ETF DR (C)";LU1861137484;MIVB.DE;3,0%;3,9%;;8,5%;10,4%;14%;2,1%;0,5%;0,0%;0,7%;0,5%;0,25%;;0,18%;1,0
-145;"Amundi Dax UCITS ETF";FR0010655712;CG1G.DE;3,0%;9,2%;8,7%;9,3%;10,5%;17%;3,0%;3,5%;0,0%;0,0%;;;;0,10%;1,4
-146;"iShares MSCI Europe Industrials Sector UCITS ETF EUR Acc";IE00BMW42520;ESIN.DE;3,0%;10,1%;;8,7%;11,0%;19%;3,5%;3,0%;0,0%;0,0%;;0,25%;;0,18%;1,0
-147;"UBS MSCI USA Socially Responsible UCITS ETF USD acc";IE00BJXT3C94;4UBI.DE;2,9%;8,0%;;9,3%;12,0%;19%;3,6%;1,1%;0,0%;0,9%;0,5%;0,25%;;0,19%;0,7
-148;"iShares S&P 500 Health Care Sector UCITS ETF USD (Acc)";IE00B43HR379;QDVG.DE;2,9%;8,5%;11,3%;7,8%;9,8%;16%;2,6%;3,1%;0,0%;0,0%;;;;0,15%;3,3
-149;"iShares MSCI Europe Financials Sector UCITS ETF";IE00BMW42306;ESIF.DE;2,8%;20,1% (escluso);;10,0%;9,3%;18%;3,2%;3,0%;0,0%;0,0%;0,5%;0,25%;;0,18%;0,7
-150;"iShares VII PLC - iShares Core MSCI Pac ex-Jpn ETF USD Acc";IE00B52MJY50;SXR1.DE;2,7%;7,2%;6,9%;6,4%;4,9%;14%;1,9%;1,8%;0,0%;0,0%;;;;0,20%;3,7
-151;"iShares S&P 500 Financials Sector UCITS ETF USD (Acc)";IE00B4JNQZ49;QDVH.DE;2,7%;9,9%;11,0%;8,1%;7,7%;17%;3,0%;3,0%;0,0%;0,0%;;;;0,15%;2,2
-152;"Invesco S&P500 High Div L Vol Ucits Etf";IE00BWTN6Y99;HDLV.DE;2,7%;8,1%;6,3%;6,0%;4,2%;15%;2,3%;0,0%;1,0%;0,0%;0,5%;;;;n.d.
-153;"Amundi Cac 40 Ucits Etf Acc";FR0013380607;CACC.PA;2,6%;5,8%;;9,0%;9,1%;17%;2,8%;2,1%;0,0%;0,0%;;0,25%;;0,25%;1,5
-154;"State Street Spdr Msci World Industrials Ucits Etf";IE00BYTRRC02;WNDU.L;2,6%;9,7%;10,4%;7,0%;9,6%;16%;2,5%;3,0%;0,0%;0,0%;0,5%;;;0,30%;n.d.
-155;"State Street SPDR S&P U.S. Technology Select Sector UCITS ETF";IE00BWBXM948;ZPDT.DE;2,3%;14,4%;21,4%;11,5%;14,1%;22%;4,9%;4,6%;0,0%;1,3%;;;;0,15%;1,9
-156;"iShares MSCI EM IMI Screened UCITS ETF USD (Acc)";IE00BFNM3P36;AYEM.DE;2,3%;6,2%;;9,3%;10,7%;20%;3,9%;0,6%;0,0%;0,8%;0,5%;0,25%;;0,18%;n.d.
-157;"MSCI EM Socially Responsible (Acc)";LU1048313974;UETE.DE;2,2%;7,7%;;9,3%;11,0%;22%;4,7%;0,4%;0,0%;0,9%;0,5%;0,25%;;0,24%;0,7
-158;"Xtrackers MSCI World Health Care UCITS ETF";IE00BM67HK77;XDWH.DE;2,2%;6,7%;9,9%;7,5%;9,7%;15%;2,4%;3,0%;0,0%;0,0%;;;;0,25%;4,2
-159;"Ishares Msci Japan Esg Enhanced Ctb Ucits Etf";IE00BHZPJ452;EDMJ.DE;2,2%;7,6%;;8,0%;8,6%;20%;3,9%;0,3%;0,0%;0,8%;0,5%;0,25%;;0,20%;n.d.
-160;"BNP Paribas Easy MSCI Pacific ex Japan Min TE UCITS ETF - C";LU1291106356;EPEJ.PA;2,2%;7,4%;7,0%;6,5%;5,0%;14%;1,9%;2,0%;0,0%;0,0%;0,5%;;;;n.d.
-161;"L&G Asia Pacific ex Japan Equity UCITS ETF";IE00BFXR5W90;ETLK.DE;2,1%;6,8%;;6,4%;4,9%;15%;2,1%;1,3%;0,0%;0,0%;0,5%;0,25%;;0,10%;0,7
-162;"MSCI Europe SRI USD (Acc)";IE00BMDBMG37;IDSE.AS;2,1%;4,5%;;8,5%;10,2%;17%;3,0%;0,7%;0,0%;0,7%;0,5%;0,25%;;0,20%;n.d.
-163;"Vanguard FTSE 100 UCITS ETF (GBP) Accumulating";IE00BFMXYP42;VUKG.DE;2,0%;16,3% (escluso);;7,0%;5,9%;14%;1,9%;1,9%;0,0%;0,0%;0,5%;0,25%;;;n.d.
-164;"State Street SPDR S&P U.S. Industrials Select Sector UCITS ETF";IE00BWBXM724;ZPDI.DE;1,8%;10,7%;11,0%;7,9%;10,0%;18%;3,2%;3,0%;0,0%;0,9%;0,5%;;;0,15%;0,9
-165;"iShares S&P 500 Industrials Sector UCITS ETF USD (Acc)";IE00B4LN9N13;2B7C.DE;1,8%;10,7%;;7,9%;10,0%;20%;3,9%;3,0%;0,0%;0,0%;0,5%;0,25%;;0,15%;0,6
-166;"State Street SPDR S&P U.S. Health Care Select Sector UCITS ETF";IE00BWBXM617;ZPDH.DE;1,5%;8,5%;11,2%;7,8%;9,8%;16%;2,6%;3,1%;0,0%;0,9%;0,5%;;;0,15%;0,6
-167;"iShares Edge MSCI USA Momentum Factor UCITS ETF USD (Acc)";IE00BD1F4N50;QDVA.DE;1,5%;7,0%;12,9%;8,9%;10,7%;22%;4,6%;1,0%;0,0%;0,8%;0,5%;;;0,20%;0,5
-168;"Ishares Msci Em Esg Enhanced Ctb Ucits Etf";IE00BHZPJ239;EDM2.DE;1,5%;5,6%;;9,4%;10,8%;20%;4,2%;0,9%;0,0%;0,8%;0,5%;0,25%;;0,18%;n.d.
-169;"State Street SPDR S&P U.S. Financials Select Sector UCITS ETF";IE00BWBXM500;ZPDF.DE;1,4%;10,0%;11,0%;8,1%;7,7%;17%;3,0%;3,0%;0,0%;0,9%;0,5%;;;0,15%;0,7
-170;"State Street SPDR MSCI Europe Utilities UCITS ETF";IE00BKWQ0P07;SPYU.DE;1,3%;12,7%;12,5%;7,7%;6,5%;17%;2,7%;4,9%;0,0%;0,0%;0,5%;;;0,18%;n.d.
-171;"Ishares Msci World Health Care Sector Advanced Ucits Etf";IE00BJ5JNZ06;CBUF.DE;1,2%;5,9%;;7,6%;9,8%;16%;2,4%;3,0%;0,0%;0,0%;0,5%;0,25%;;0,18%;0,8
-172;"Xtrackers MSCI Emerging Markets ESG UCITS ETF 1C";IE00BG370F43;XZEM.DE;0,9%;2,3%;;9,7%;11,3%;17%;3,0%;2,2%;0,0%;0,7%;;0,25%;;0,25%;1,1
-173;"State Street Spdr Msci World Consumer Staples Ucits Etf";IE00BYTRR756;WCOS.L;0,7%;6,3%;7,0%;5,7%;6,2%;14%;1,8%;3,0%;0,0%;0,0%;0,5%;;;0,30%;n.d.
-174;"Xtrackers Msci Japan Esg Ucits Etf";IE00BG36TC12;XZMJ.DE;0,7%;6,6%;;8,5%;10,0%;20%;4,0%;1,8%;0,0%;0,8%;0,5%;0,25%;;0,20%;n.d.
-175;"Xtrackers MSCI World Materials UCITS ETF 1C";IE00BM67HS53;XDWM.DE;0,5%;7,3%;9,2%;7,0%;6,9%;18%;3,1%;3,0%;0,0%;0,0%;0,5%;;;0,25%;0,7
-176;"MSCI Pacific Ex Japan ESG Screened USD (Acc)";LU0322252338;DXS6.DE;0,0%;5,8%;6,1%;6,3%;4,9%;17%;2,9%;1,8%;0,0%;0,6%;0,5%;;;0,25%;0,7
-177;"iShares S&P 500 Communication Sector UCITS ETF USD Acc";IE00BDDRF478;IU5C.DE;-0,2%;8,3%;;9,7%;10,3%;18%;3,2%;6,0%;0,0%;0,0%;;0,25%;;0,15%;1,0
-178;"Hsbc Msci China A Ucits Etf";IE00BF4NQ904;H41K.DE;-0,8%;-3,4%;;7,7%;9,5%;19%;3,7%;0,0%;0,0%;0,0%;0,5%;0,25%;;0,30%;n.d.
-179;"State Street Spdr Msci Europe Health Care Ucits Etf";IE00BKWQ0H23;SPYH.DE;-1,4%;5,9%;8,5%;7,6%;7,3%;18%;3,1%;4,6%;0,0%;0,0%;0,5%;;;0,18%;n.d.
-180;"iShares S&P 500 Consumer Discretionary Sector UCITS ETF USD (Acc)";IE00B4MCHD36;QDVK.DE;-1,4%;4,3%;11,9%;8,6%;10,4%;19%;3,8%;4,4%;0,0%;0,0%;0,5%;;;0,15%;0,7
-181;"Invesco MDAX UCITS ETF";IE00BHJYDV33;DEAM.DE;-1,5%;-3,5%;;8,4%;8,9%;19%;3,5%;0,9%;0,0%;0,0%;0,5%;0,25%;;0,19%;n.d.
-182;"iShares MSCI Europe Health Care Sector UCITS ETF EUR (Acc)";IE00BMW42181;ESIH.DE;-1,5%;5,9%;;7,8%;7,3%;18%;3,1%;4,6%;0,0%;0,0%;0,5%;0,25%;;0,18%;1,0
-183;"State Street Spdr S&P U.S. Consumer Staples Select Sector Ucits Etf (Acc)";IE00BWBXM385;ZPDS.DE;-1,6%;8,0%;8,1%;5,8%;6,2%;15%;2,1%;5,1%;0,0%;0,7%;0,5%;;;0,15%;n.d.
-184;"iShares S&P 500 Consumer Staples Sector UCITS ETF";IE00B40B8R38;2B7D.DE;-1,8%;8,7%;;5,8%;6,2%;17%;3,0%;5,1%;0,0%;0,0%;0,5%;0,25%;;0,15%;0,5
-185;"Franklin FTSE China UCITS ETF";IE00BHZRR147;FLXC.DE;-1,9%;-2,6%;;8,6%;9,7%;22%;4,6%;0,8%;0,0%;0,0%;0,5%;0,25%;;0,19%;n.d.
-186;"Franklin Ftse Brazil Ucits Etf";IE00BHZRQY00;FLXB.DE;-6,3%;11,1%;;7,5%;6,0%;36%;12,9%;1,4%;0,0%;0,0%;0,5%;0,25%;;0,19%;n.d.
+﻿#;ETF;ISIN;Ticker;Max Growth Score;CAGR 5a;CAGR 10a;Rendimento atteso;Crescita utili attesa;Volatilità;Penalità rischio;Penalità concentrazione/settore;Penalità Value;Penalità strategia speciale;Penalità dimensione;Boost globale;TER;Patrimonio (mld €)
+1;"Vanguard FTSE Developed World UCITS ETF USD Accumulation";IE00BK5BQV03;VGVF.DE;8,5%;10,3%;;8,7%;10,6%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,12%;6,2
+2;"HSBC MSCI World UCITS ETF";IE00B4X9L533;H4ZJ.DE;8,4%;10,1%;12,2%;8,7%;10,6%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,15%;14,4
+3;"Xtrackers MSCI World UCITS ETF 1C";IE00BJ0KDQ92;XDWD.DE;8,4%;10,1%;12,0%;8,7%;10,7%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,12%;22,0
+4;"iShares Core MSCI World UCITS ETF (Acc)";IE00B4L5Y983;EUNL.DE;8,4%;10,1%;12,0%;8,6%;10,7%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,20%;131,8
+5;"SPDR MSCI World UCITS ETF";IE00BFY0GT14;SPPW.DE;8,4%;10,2%;;8,7%;10,7%;13%;1,8%;0,0%;0,0%;0,0%;;+0,5%;0,12%;18,8
+6;"Vanguard FTSE All-World UCITS ETF (Acc)";IE00BK5BQT80;VWCE.DE;8,3%;9,7%;;8,8%;10,5%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,14%;56,3
+7;"State Street SPDR MSCI All Country World UCITS ETF";IE00B44Z5B48;SPYY.DE;8,3%;9,7%;11,4%;8,8%;10,5%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,12%;18,4
+8;"iShares MSCI ACWI UCITS ETF (Acc)";IE00B6R52259;IUSQ.DE;8,2%;9,7%;11,4%;8,6%;10,5%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,20%;31,5
+9;"State Street SPDR MSCI All Country World Investable Market UCITS ETF";IE00B3YLTY66;SPYI.DE;8,1%;9,4%;11,0%;8,6%;10,4%;13%;1,7%;0,0%;0,0%;0,0%;;+0,5%;0,17%;8,5
+10;"Invesco Global Active ESG Equity UCITS ETF USD Acc";IE00BJQRDN15;IQSA.DE;8,0%;13,0%;;9,0%;10,5%;14%;1,9%;0,0%;0,0%;1,1%;;;0,30%;2,6
+11;"L&G Global Equity UCITS ETF";IE00BFXR5S54;ETLQ.DE;7,9%;10,3%;;8,8%;10,7%;14%;1,8%;0,0%;0,0%;0,0%;;;0,10%;2,0
+12;"iShares MSCI World Value Factor Advaced UCITS ETF USD (Acc)";IE000H1H16W5;CBUI.DE;7,9%;14,3%;;8,8%;9,5%;13%;1,6%;0,0%;1,7%;0,0%;;;0,25%;1,5
+13;"iShares Edge MSCI World Value Factor UCITS ETF USD (Acc)";IE00BP3QZB59;IS3S.DE;7,8%;15,8%;10,8%;9,1%;9,6%;15%;2,3%;0,1%;1,8%;0,0%;;;0,25%;6,3
+14;"Vanguard FTSE North America UCITS ETF USD Accumulation";IE00BK5BQW10;VNRA.DE;7,5%;10,8%;;9,1%;11,2%;14%;2,0%;0,7%;0,0%;0,0%;;;0,08%;3,1
+15;"Vanguard FTSE North America UCITS ETF";IE00BKX55R35;VNRT.DE;7,5%;10,8%;;9,1%;11,2%;14%;2,0%;0,7%;0,0%;0,0%;;;0,08%;3,1
+16;"iShares Core S&P 500 UCITS ETF (Acc)";IE00B5BMR087;SXR8.DE;7,5%;11,1%;13,8%;9,2%;11,3%;14%;2,0%;0,9%;0,0%;0,0%;;;0,07%;138,5
+17;"HSBC S&P 500 UCITS ETF";IE00B5KQNG97;H4ZF.DE;7,5%;11,1%;13,8%;9,2%;11,3%;14%;2,0%;0,9%;0,0%;0,0%;;;0,09%;9,0
+18;"UBS Core MSCI World UCITS ETF USD acc";IE00BD4TXV59;UETW.DE;7,4%;10,1%;;8,7%;10,7%;17%;2,8%;0,0%;0,0%;0,0%;;+0,5%;0,06%;12,0
+19;"State Street SPDR MSCI All Country World EUR Hdg UCITS ETF (Acc)";IE00BF1B7389;SPP1.DE;7,4%;8,4%;;8,0%;10,5%;13%;1,8%;0,0%;0,0%;0,0%;;+0,5%;0,17%;1,8
+20;"Xtrackers MSCI USA UCITS ETF 1C";IE00BJ0KDR00;XD9U.DE;7,3%;10,7%;13,8%;9,2%;11,2%;14%;2,0%;0,8%;0,0%;0,0%;;;0,03%;12,6
+21;"iShares VII PLC - iShares MSCI USA ETF USD Acc";IE00B52SFT06;SXR4.DE;7,3%;10,6%;13,6%;9,2%;11,2%;14%;2,1%;0,8%;0,0%;0,0%;;;0,03%;4,7
+22;"Xtrackers MSCI World Value UCITS ETF 1C";IE00BL25JM42;XDEV.DE;7,0%;16,0%;10,9%;9,1%;9,6%;18%;3,1%;0,1%;1,8%;0,0%;;;0,25%;3,8
+23;"iShares Core MSCI Europe UCITS ETF EUR (Acc)";IE00B4K48X80;EUNK.DE;6,9%;9,2%;9,5%;8,2%;9,4%;14%;1,9%;0,0%;0,0%;0,0%;;;0,12%;16,4
+24;"Vanguard LifeStrategy 80% Equity UCITS ETF (EUR) Accumulating";IE00BMVB5R75;V80A.DE;6,9%;7,4%;;7,3%;10,6%;11%;1,1%;0,0%;0,0%;0,0%;;;0,25%;1,3
+25;"Vanguard FTSE Developed Europe UCITS ETF";IE00B945VV12;VGEU.DE;6,9%;9,2%;;8,2%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;;;0,10%;4,9
+26;"Vanguard FTSE Developed Europe UCITS ETF EUR Accumulation";IE00BK5BQX27;VWCG.DE;6,9%;9,2%;;8,5%;9,4%;14%;2,1%;0,0%;0,0%;0,0%;;;0,10%;3,3
+27;"JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF - USD (acc)";IE00BF4G6Y48;JREG.DE;6,8%;10,2%;;8,5%;10,7%;14%;1,9%;0,0%;0,0%;1,0%;;;0,25%;5,9
+28;"MSCI USA Min TE EUR (Acc)";LU1291104575;ENAM.PA;6,8%;9,5%;12,8%;9,0%;11,2%;14%;2,0%;0,8%;0,0%;0,0%;;;0,15%;1,3
+29;"Xtrackers Stoxx Europe 600 UCITS ETF 1C";LU0328475792;XSX6.DE;6,8%;8,9%;9,5%;8,3%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;;;0,20%;4,4
+30;"iShares VII PLC -iShares Core MSCI EMU UCITS ETF EUR (Acc)";IE00B53QG562;SXR7.DE;6,7%;9,4%;9,9%;8,8%;10,2%;16%;2,5%;0,1%;0,0%;0,0%;;;0,12%;6,1
+31;"State Street SPDR S&P 500 Leaders UCITS ETF";IE00BH4GPZ28;SPPY.DE;6,7%;12,0%;;9,6%;11,6%;14%;1,9%;1,2%;0,0%;1,1%;;;0,03%;4,4
+32;"Xtrackers MSCI Europe UCITS ETF 2C USD Hedged";LU1184092051;XEOU.SW;6,7%;11,6%;10,7%;7,4%;9,4%;15%;2,3%;0,0%;0,0%;0,0%;0,5%;;0,30%;n.d.
+33;"Xtrackers MSCI AC World Screened UCITS ETF 1C";IE00BGHQ0G80;XMAW.DE;6,6%;9,4%;11,3%;8,7%;10,7%;13%;1,8%;0,0%;0,0%;0,9%;;;0,25%;6,5
+34;"MSCI EMU Min TE EUR (Acc)";LU1291098827;EEMU.PA;6,5%;8,9%;9,6%;8,9%;10,1%;16%;2,5%;0,1%;0,0%;0,0%;;;0,15%;1,3
+35;"iShares Core MSCI EMU UCITS ETF USD Hedged (Acc)";IE00BKBF6616;CEUU.AS;6,5%;12,5%;;8,1%;10,2%;18%;3,2%;0,1%;0,0%;0,0%;0,5%;;0,15%;n.d.
+36;"Invesco MSCI USA Universal Screened UCITS ETF";IE00BJQRDM08;ESGU.DE;6,5%;9,7%;;9,0%;11,0%;14%;1,9%;0,4%;0,0%;1,0%;;;0,09%;2,7
+37;"Vanguard FTSE Developed Europe ex UK UCITS ETF Accuimulation";IE00BK5BQY34;VERE.DE;6,4%;8,2%;;8,6%;9,6%;15%;2,2%;0,0%;0,0%;0,0%;;;0,10%;1,7
+38;"Core MSCI EMU EUR (Acc)";LU1646361276;LU1646361276.LU;6,4%;9,5%;;9,0%;10,2%;15%;2,4%;0,1%;0,0%;0,0%;0,5%;;0,12%;0,6
+39;"iShares Edge MSCI Europe Value Factor UCITS ETF EUR (Acc)";IE00BQN1K901;CEMS.DE;6,4%;13,9%;10,4%;8,4%;8,1%;16%;2,6%;0,0%;1,6%;0,0%;;;0,25%;2,6
+40;"iShares MSCI World CTB Enhanced ESG UCITS ETF USD Acc";IE00BHZPJ569;EDMW.DE;6,4%;8,7%;;8,6%;10,5%;13%;1,7%;0,0%;0,0%;0,9%;;;0,20%;4,6
+41;"UBS S&P 500 Scored & Screened UCITS ETF USD acc";IE00BHXMHL11;4UBQ.DE;6,4%;11,2%;;9,7%;11,8%;14%;2,0%;1,3%;0,0%;1,1%;;;0,10%;2,1
+42;"iShares STOXX Europe Equity Multifactor UCITS ETF EUR (Acc)";IE00BZ0PKV06;IBC0.DE;6,4%;10,8%;10,5%;9,1%;9,5%;14%;2,0%;0,0%;0,0%;1,0%;0,5%;;0,25%;0,7
+43;"JPMorgan ETFs (Ireland) ICAV - US Research Enhanced Index Equity Active UCITS ETF - USD (acc)";IE00BF4G7076;JREU.DE;6,4%;10,9%;;9,1%;11,3%;14%;1,9%;0,9%;0,0%;1,0%;;;0,20%;11,3
+44;"ISHARES IV PLC ISHS EDGE MSCI USA MULTIFAC ETF USD ACC";IE00BZ0PKS76;IFSU.L;6,3%;10,6%;11,2%;8,5%;10,7%;15%;2,2%;0,8%;0,0%;0,0%;0,5%;;0,20%;n.d.
+45;"Amundi MSCI Europe UCITS ETF Acc";FR0010261198;LYY5.DE;6,2%;9,0%;8,0%;8,0%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;0,5%;;0,25%;0,6
+46;"Vanguard ESG Global All Cap UCITS ETF (USD) Accumulating";IE00BNG8L278;V3AA.DE;6,2%;8,4%;;8,7%;10,7%;14%;1,9%;0,0%;0,0%;0,9%;;;0,24%;1,1
+47;"BNP Paribas Easy MSCI Europe Min TE UCITS ETF";LU1291099718;EEUE.PA;6,1%;8,5%;9,1%;8,3%;9,4%;14%;2,0%;0,0%;0,0%;0,0%;0,5%;;0,15%;n.d.
+48;"iShares Edge MSCI World Quality Factor UCITS ETF";IE00BP3QZ601;IS3Q.DE;6,1%;9,0%;11,9%;8,7%;11,2%;13%;1,6%;0,7%;0,0%;0,9%;;;0,25%;6,0
+49;"iShares S&P 500 EUR Hedged UCITS ETF (Acc)";IE00B3ZW0K18;IBCF.DE;6,1%;8,2%;11,7%;8,9%;11,3%;15%;2,1%;0,9%;0,0%;0,0%;;;0,20%;9,3
+50;"HSBC EURO STOXX 50 UCITS ETF";IE00B4K6B022;H4ZA.DE;6,0%;10,9%;10,7%;9,2%;10,3%;16%;2,7%;1,3%;0,0%;0,0%;;;0,05%;1,5
+51;"Vanguard FTSE All-World High Dividend Yield UCITS ETF USD Accumulation";IE00BK5BR626;VGWE.DE;6,0%;11,7%;;6,6%;5,9%;11%;1,2%;0,0%;1,3%;0,0%;;;0,29%;3,3
+52;"State Street SPDR MSCI Japan UCITS ETF";IE00BZ0G8B96;ZPDJ.DE;6,0%;8,0%;7,8%;8,7%;9,7%;16%;2,6%;0,0%;0,0%;0,0%;;;0,12%;1,1
+53;"Xtrackers MSCI Europe UCITS ETF 1C";LU0274209237;XMEU.DE;6,0%;9,2%;9,5%;8,2%;9,4%;17%;2,9%;0,0%;0,0%;0,0%;;;0,12%;8,0
+54;"iShares Core MSCI Japan IMI UCITS ETF USD (Acc)";IE00B4L5YX21;EUNN.DE;6,0%;8,1%;7,8%;8,5%;9,5%;16%;2,6%;0,0%;0,0%;0,0%;;;0,12%;7,0
+55;"State Street SPDR MSCI Europe Value UCITS ETF";IE00BSPLC306;ZPRW.DE;5,9%;14,2%;10,7%;8,8%;8,0%;16%;2,7%;0,1%;1,6%;0,0%;0,5%;;0,20%;n.d.
+56;"L&G Europe ex UK Equity UCITS ETF";IE00BFXR5V83;ETLN.DE;5,9%;8,3%;;8,5%;9,6%;15%;2,3%;0,0%;0,0%;0,0%;0,5%;;0,10%;0,5
+57;"iShares VII PLC - iShares MSCI Japan ETF USD Acc";IE00B53QDK08;SXR5.DE;5,8%;8,0%;7,7%;8,6%;9,6%;16%;2,7%;0,0%;0,0%;0,0%;;;0,12%;1,5
+58;"Vanguard FTSE All-World High Dividend Yield UCITS ETF";IE00B8GKDB10;VGWD.DE;5,8%;11,7%;;6,4%;5,9%;12%;1,3%;0,0%;1,3%;0,0%;;;0,29%;10,4
+59;"Fidelity US Equity Research Enhanced UCITS ETF USD Acc";IE00BKSBGS44;FUSR.DE;5,8%;10,9%;;9,1%;11,3%;14%;2,1%;1,3%;0,0%;1,0%;;;0,20%;1,5
+60;"Vanguard LifeStrategy 60% Equity UCITS ETF (EUR) Accumulating";IE00BMVB5P51;V60A.DE;5,8%;4,9%;;6,1%;10,6%;8%;0,7%;0,0%;0,0%;0,0%;;;0,25%;1,0
+61;"Amundi MSCI Europe ESG Broad Transition - UCITS ETF DR - EUR (C)";LU1681042609;CEUG.DE;5,8%;8,6%;;8,3%;9,7%;14%;2,0%;0,0%;0,0%;0,9%;;;0,12%;2,4
+62;"iShares MSCI Europe Screened UCITS ETF EUR (Acc)";IE00BFNM3D14;SLMC.DE;5,8%;8,7%;;8,7%;9,8%;15%;2,2%;0,0%;0,0%;0,9%;;;0,12%;5,1
+63;"Xtrackers Euro Stoxx 50 UCITS ETF 1C";LU0380865021;XESC.DE;5,8%;10,3%;10,4%;9,2%;10,3%;17%;2,7%;1,4%;0,0%;0,0%;;;0,09%;6,4
+64;"State Street SPDR S&P 500 UCITS ETF EUR Accumulation Hedged";IE00BYYW2V44;SPPE.DE;5,8%;8,3%;;8,3%;11,3%;15%;2,2%;0,9%;0,0%;0,0%;;;0,05%;2,7
+65;"iShares MSCI USA Value Factor Advanced UCITS ETF USD (Acc)";IE000OKVTDF7;IUVE.AS;5,8%;12,9%;;9,0%;9,9%;16%;2,6%;0,3%;1,6%;0,0%;0,5%;;0,20%;n.d.
+66;"iShares VII PLC - iShares Core EURO STOXX 50 ETF EUR Acc";IE00B53L3W79;SXRT.DE;5,8%;10,3%;10,4%;9,1%;10,3%;16%;2,7%;1,3%;0,0%;0,0%;;;0,10%;7,7
+67;"L&G US Equity UCITS ETF";IE00BFXR5Q31;ETLS.DE;5,8%;18,1% (escluso);;8,8%;11,3%;17%;2,9%;1,0%;0,0%;0,0%;;;0,05%;1,8
+68;"Vanguard FTSE Japan UCITS ETF USD Accumulation";IE00BFMXYX26;VJPA.DE;5,7%;8,1%;;8,6%;9,5%;17%;2,8%;0,0%;0,0%;0,0%;;;0,10%;1,5
+69;"JPMorgan ETFs (Ireland) ICAV - Europe Research Enhanced Index Equity Active UCITS ETF - EUR (acc)";IE00BF4G7183;JREE.DE;5,7%;9,1%;;8,1%;9,2%;15%;2,1%;0,0%;0,0%;0,9%;;;0,23%;2,9
+70;"iShares STOXX World Equity Multifactor UCITS ETF USD (Acc)";IE00BZ0PKT83;IBCZ.DE;5,7%;10,7%;10,8%;8,8%;10,4%;16%;2,7%;0,0%;0,0%;1,0%;0,5%;;0,30%;0,8
+71;"iShares MSCI World SRI UCITS ETF EUR (Acc)";IE00BYX2JD69;2B7K.DE;5,6%;7,0%;;8,9%;11,0%;14%;1,8%;0,2%;0,0%;0,9%;;;0,20%;7,3
+72;"iShares MSCI USA CTB Enhanced ESG UCITS ETF USD Acc";IE00BHZPJ908;EDMU.DE;5,6%;9,1%;;9,2%;11,1%;14%;2,0%;0,9%;0,0%;1,0%;;;0,07%;8,4
+73;"L&G Japan Equity UCITS ETF";IE00BFXR5T61;ETLR.DE;5,6%;8,2%;;8,7%;9,6%;16%;2,6%;0,0%;0,0%;0,0%;0,5%;;0,10%;0,9
+74;"JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF - EUR Hedged (";IE0000UW95D6;JRGE.DE;5,6%;8,9%;;7,5%;10,7%;13%;1,7%;0,0%;0,0%;0,9%;0,5%;;0,25%;1,0
+75;"iShares MSCI Europe CTB Enhanced ESG UCITS ETF EUR Acc";IE00BHZPJ783;EDM6.DE;5,6%;8,0%;;8,6%;9,8%;15%;2,1%;0,0%;0,0%;0,9%;;;0,12%;2,4
+76;"Amundi EURO STOXX 50 II UCITS ETF Acc";FR0007054358;LYSX.DE;5,6%;10,3%;8,9%;8,9%;10,3%;17%;2,8%;1,4%;0,0%;0,0%;;;0,20%;4,5
+77;"iShares MSCI World Screened UCITS ETF USD (Acc)";IE00BFNM3J75;SNAW.DE;5,6%;10,2%;;8,7%;10,8%;18%;3,1%;0,0%;0,0%;1,0%;;;0,20%;5,2
+78;"Amundi Index Solutions - AMUNDI STOXX EUROPE 600 ESG - UCITS ETF DR - EUR (C)";LU1681040223;AME6.DE;5,6%;8,2%;;8,3%;9,7%;14%;2,1%;0,0%;0,0%;0,9%;;;0,18%;1,8
+79;"iShares Edge MSCI USA Quality Factor UCITS ETF USD (Acc)";IE00BD1F4L37;QDVB.DE;5,6%;10,0%;13,1%;9,2%;11,8%;14%;1,9%;1,6%;0,0%;1,0%;;;0,20%;1,8
+80;"iShares MSCI EMU Screened UCITS ETF EUR (Acc)";IE00BFNM3B99;SLMA.DE;5,4%;8,8%;;9,0%;10,2%;16%;2,5%;0,4%;0,0%;0,9%;;;0,12%;1,5
+81;"UBS Core MSCI USA hEUR UCITS ETF EUR acc";IE00BD4TYG73;UBUJ.DE;5,4%;7,8%;11,7%;9,0%;11,3%;15%;2,2%;0,9%;0,0%;0,0%;0,5%;;0,06%;0,6
+82;"UBS MSCI World Socially Responsible UCITS ETF USD acc";IE00BK72HJ67;4UBH.DE;5,4%;7,2%;;8,9%;11,6%;15%;2,2%;0,3%;0,0%;0,9%;;;0,19%;1,2
+83;"HSBC MSCI WORLD CLIMATE PARIS ALIGNED UCITS ETF";IE00BP2C1V62;HPAW.DE;5,4%;8,1%;;8,6%;11,1%;14%;1,9%;0,3%;0,0%;0,9%;0,5%;;0,18%;0,5
+84;"BNP Paribas Easy Euro Stoxx 50 UCITS ETF EUR C";FR0012739431;ETDD.DE;5,3%;10,3%;10,3%;9,1%;10,3%;16%;2,7%;1,3%;0,0%;0,0%;0,5%;;0,10%;0,8
+85;"iShares NASDAQ 100 UCITS ETF (Acc)";IE00B53SZB19;SXRV.DE;5,3%;11,1%;18,7%;9,5%;11,7%;19%;3,6%;1,7%;0,0%;0,0%;;;0,30%;25,0
+86;"iShares MSCI EMU CTB Enhanced ESG UCITS ETF EUR Acc";IE00BHZPJ015;EDM4.DE;5,2%;8,5%;;9,1%;10,3%;16%;2,6%;0,4%;0,0%;0,9%;;;0,12%;3,6
+87;"Amundi MSCI Europe ESG Selection UCITS ETF Acc";LU1940199711;LEAD.DE;5,2%;7,4%;;8,3%;9,7%;14%;1,8%;0,4%;0,0%;0,8%;;;0,20%;1,2
+88;"Xtrackers MSCI World Quality UCITS ETF 1C";IE00BL25JL35;XDEQ.DE;5,2%;9,1%;12,0%;8,7%;11,2%;16%;2,5%;0,7%;0,0%;0,9%;;;0,25%;2,7
+89;"iShares Core MSCI EM IMI UCITS ETF (Acc)";IE00BKM4GZ66;IS3N.DE;5,1%;6,4%;7,8%;9,3%;10,7%;17%;2,9%;0,4%;0,0%;0,0%;;;0,18%;36,9
+90;"ISHARES VI PLC ISHARES EUROPE MC UCITS ETF EUR ACC";IE00BF20LF40;EUMD.L;5,1%;7,9%;;7,9%;9,1%;16%;2,5%;0,0%;0,0%;0,0%;0,5%;;0,15%;n.d.
+91;"Xtrackers MSCI USA ESG UCITS ETF 1C";IE00BFMNPS42;XZMU.DE;5,0%;10,2%;;9,9%;12,4%;15%;2,3%;2,1%;0,0%;1,1%;;;0,15%;8,2
+92;"Xtrackers MSCI USA UCITS ETF 2C - EUR Hedged";IE00BG04M077;XD9E.DE;5,0%;7,6%;;8,2%;11,2%;15%;2,2%;0,8%;0,0%;0,0%;0,5%;;0,08%;0,7
+93;"iShares Edge MSCI USA Value Factor UCITS ETF USD (Acc)";IE00BD1F4M44;QDVI.DE;5,0%;14,5%;12,1%;9,7%;10,1%;18%;3,3%;1,6%;1,8%;0,0%;;;0,20%;3,1
+94;"iShares MSCI USA SRI UCITS ETF USD (Acc)";IE00BYVJRR92;QDVR.DE;5,0%;8,1%;13,7%;9,3%;11,4%;15%;2,2%;1,1%;0,0%;0,9%;;;0,20%;3,0
+95;"iShares MSCI USA Screened UCITS ETF USD Accumulation";IE00BFNM3G45;SGAS.DE;5,0%;11,0%;;9,2%;11,3%;18%;3,3%;1,1%;0,0%;1,0%;;;0,07%;16,7
+96;"iShares VII PLC - iShares Core FTSE 100 ETF GBP Acc";IE00B53HP851;SXRW.DE;4,9%;12,1%;8,6%;7,1%;5,9%;14%;2,0%;1,9%;0,0%;0,0%;;;0,07%;4,0
+97;"UBS MSCI ACWI Socially Responsible UCITS ETF hEUR acc";IE00BDR55927;AW1R.DE;4,9%;7,0%;;9,2%;11,9%;15%;2,2%;0,3%;0,0%;0,9%;0,5%;;0,28%;0,7
+98;"Vanguard FTSE 100 UCITS ETF";IE00B810Q511;VUKE.DE;4,9%;12,0%;;7,1%;5,9%;14%;2,0%;1,9%;0,0%;0,0%;;;0,09%;5,6
+99;"State Street SPDR EURO STOXX Low Volatility UCITS ETF (Acc)";IE00BFTWP510;ZPRL.DE;4,8%;6,7%;7,6%;6,9%;7,1%;13%;1,6%;0,0%;0,0%;0,0%;0,5%;;0,30%;n.d.
+100;"iShares S&P 500 Information Technology Sector UCITS ETF";IE00B3WJKG14;QDVE.DE;4,7%;17,2%;23,2%;11,5%;14,1%;22%;5,0%;4,6%;0,0%;0,0%;;;0,15%;16,8
+101;"Xtrackers NASDAQ 100 UCITS ETF 1C";IE00BMFKG444;XNAS.DE;4,7%;11,2%;;9,4%;11,7%;20%;4,2%;1,7%;0,0%;0,0%;;;0,20%;2,7
+102;"Xtrackers MSCI World Financials UCITS ETF 1C";IE00BM67HL84;XDWF.DE;4,7%;13,7%;;8,1%;7,8%;16%;2,6%;3,0%;0,0%;0,0%;;;0,25%;1,4
+103;"Hsbc Europe Screened Equity Ucits Etf";IE00BKY55W78;HSEU.L;4,7%;8,9%;;8,9%;9,7%;13%;1,8%;1,1%;0,0%;0,9%;0,5%;;0,15%;n.d.
+104;"Xtrackers MSCI World ESG UCITS ETF 1C";IE00BZ02LR44;XZW0.DE;4,7%;9,1%;;9,3%;11,7%;17%;3,0%;1,1%;0,0%;1,0%;;;0,20%;5,1
+105;"Core MSCI Emerging Markets USD (Acc)";LU1437017350;AEME.PA;4,7%;6,5%;;9,7%;10,9%;17%;3,0%;0,9%;0,0%;0,0%;;;0,18%;3,9
+106;"State Street SPDR STOXX Europe 600 SRI UCITS ETF EUR Acc";IE00BK5H8015;ZPDX.DE;4,7%;8,2%;;9,0%;10,3%;15%;2,2%;0,7%;0,0%;0,9%;0,5%;;0,12%;0,7
+107;"iShares Edge MSCI World Momentum Factor UCITS ETF";IE00BP3QZ825;IS3R.DE;4,6%;8,2%;13,0%;8,7%;10,4%;18%;3,3%;0,0%;0,0%;0,9%;;;0,25%;5,2
+108;"Xtrackers MSCI World ESG UCITS ETF 2C - EUR Hedged";IE00BMY76136;XZWE.DE;4,6%;7,5%;;8,4%;11,7%;15%;2,2%;1,1%;0,0%;0,9%;;;0,25%;1,1
+109;"Amundi S&P Eurozone Climate Paris Aligned UCITS ETF Acc";LU2195226068;ZPAB.DE;4,5%;8,5%;;9,0%;10,5%;16%;2,6%;1,1%;0,0%;0,9%;;;0,20%;2,8
+110;"iShares Edge S&P 500 Minimum Volatility UCITS ETF USD (Acc)";IE00B6SPMN59;IBCK.DE;4,5%;8,3%;10,2%;7,5%;9,2%;16%;2,4%;0,0%;1,2%;0,0%;;;0,20%;1,9
+111;"UBS S&P 500 Scored & Screened UCITS ETF hEUR acc";IE00BHXMHQ65;S5SG.DE;4,5%;8,3%;;8,8%;11,8%;14%;2,0%;1,3%;0,0%;0,9%;0,5%;;0,13%;0,8
+112;"Franklin FTSE Asia ex China ex Japan Acc";IE00BFWXDV39;FVSJ.DE;4,5%;11,5%;;9,4%;11,4%;20%;4,0%;1,7%;0,0%;0,0%;0,5%;;0,14%;n.d.
+113;"HSBC S&P 500 UCITS ETF USD (Acc)";IE000JZ473P7;H4ZN.DE;4,4%;30,0% (escluso);14,0%;8,7%;11,3%;19%;3,7%;0,9%;0,0%;0,0%;0,5%;;0,09%;0,6
+114;"iShares NASDAQ-100 UCITS ETF (DE)";DE000A0F5UF5;EXXT.DE;4,3%;10,9%;18,5%;9,5%;11,7%;21%;4,5%;1,7%;0,0%;0,0%;;;0,30%;5,5
+115;"Amundi MSCI EMU ESG Selection - UCITS ETF DR - EUR (C)";LU1602144575;AMED.DE;4,3%;9,5%;;8,9%;10,1%;16%;2,5%;1,6%;0,0%;0,9%;;;0,25%;1,4
+116;"iShares MSCI EM UCITS ETF (Acc)";IE00B4L5YC18;EUNM.DE;4,3%;6,5%;7,6%;9,4%;10,8%;17%;3,0%;1,2%;0,0%;0,0%;;;0,18%;8,8
+117;"Xtrackers MSCI Europe ESG UCITS ETF 1C";IE00BFMNHK08;XZEU.DE;4,3%;6,5%;;8,5%;10,2%;14%;2,0%;0,9%;0,0%;0,8%;;;0,20%;1,2
+118;"Ishares Msci Emu Paris-Aligned Climate Ucits Etf Eur (Acc)";IE00BL6K8D99;EMPA.AS;4,3%;6,5%;;8,9%;10,5%;15%;2,3%;0,4%;0,0%;0,8%;0,5%;;0,15%;n.d.
+119;"UBS S&P 500 ESG Elite UCITS ETF USD acc";IE00BLSN7P11;AW1C.DE;4,3%;12,2%;;9,1%;11,1%;18%;3,3%;1,6%;0,0%;1,1%;0,5%;;0,15%;0,6
+120;"Xtrackers MSCI USA Screened UCITS ETF 1C";IE00BJZ2DC62;XRSM.DE;4,2%;10,7%;12,2%;9,2%;11,4%;18%;3,4%;1,1%;0,0%;1,0%;0,5%;;0,07%;0,9
+121;"UBS MSCI World Socially Responsible UCITS ETF USD acc";LU0950674332;SEAC.DE;4,2%;7,0%;;8,9%;11,6%;18%;3,3%;0,3%;0,0%;0,9%;;;0,22%;1,9
+122;"Xtrackers MSCI World Information Technology UCITS ETF";IE00BM67HT60;XDWT.DE;4,1%;14,5%;21,2%;11,1%;13,6%;22%;5,0%;3,8%;0,0%;0,0%;;;0,25%;5,6
+123;"Amundi MSCI World Climate Paris Aligned Umweltzeichen UCITS ETF";FR0014003FW1;PABV.DE;4,0%;10,4%;;8,7%;11,6%;19%;3,7%;0,7%;0,0%;1,0%;0,5%;;0,25%;0,5
+124;"L&G MSCI Europe Select UCITS ETF - EUR Accumulating ETF";IE00BKLTRN76;DELF.DE;4,0%;7,1%;;8,2%;9,6%;18%;3,2%;0,0%;0,0%;0,8%;;;0,10%;1,5
+125;"Amundi Msci Emu Climate Paris Aligned Ucits Etf Acc";LU2182388582;PABZ.PA;4,0%;6,1%;;9,0%;10,4%;15%;2,3%;0,5%;0,0%;0,8%;0,5%;;0,15%;n.d.
+126;"iShares MSCI USA CTB Enhanced ESG UCITS ETF EUR Hedged Acc";IE000U7L59A3;CBUC.DE;3,9%;6,1%;;8,0%;11,1%;15%;2,2%;0,9%;0,0%;0,8%;;;0,10%;1,6
+127;"Xtrackers MSCI World Momentum UCITS ETF 1C";IE00BL25JP72;XDEM.DE;3,9%;8,3%;13,2%;8,7%;10,4%;20%;4,1%;0,0%;0,0%;0,9%;;;0,25%;1,9
+128;"iShares Edge MSCI Europe Momentum Factor UCITS ETF EUR (Acc)";IE00BQN1K786;CEMR.DE;3,8%;8,8%;11,0%;8,5%;8,4%;15%;2,3%;1,1%;0,0%;0,9%;0,5%;;0,25%;0,7
+129;"HSBC USA Screened Equity UCITS ETF";IE00BKY40J65;H412.DE;3,8%;11,2%;;9,0%;10,8%;14%;1,9%;3,0%;0,0%;1,0%;0,5%;;0,12%;0,8
+130;"iShares MSCI Europe SRI UCITS ETF EUR (Acc)";IE00B52VJ196;IUSK.DE;3,8%;4,3%;8,6%;8,5%;10,2%;14%;2,0%;0,7%;0,0%;0,7%;;;0,20%;3,1
+131;"Core Msci Em Usd (Acc)";LU0950674175;EMMUSC.SW;3,8%;6,9%;;9,6%;10,9%;20%;4,1%;0,9%;0,0%;0,0%;;;0,15%;7,5
+132;"Amundi UK Equity All Cap UCITS ETF";LU1781541096;LCUK.DE;3,8%;11,1%;;7,2%;5,9%;17%;3,0%;1,7%;0,0%;0,0%;;;0,04%;1,2
+133;"Xtrackers MSCI Emerging Markets UCITS ETF 1C";IE00BTJRMP35;XMME.DE;3,8%;6,4%;;9,4%;10,9%;20%;3,9%;0,9%;0,0%;0,0%;;;0,18%;11,6
+134;"MSCI United Kingdom EUR Hedged (Acc)";LU1169821292;UFMB.DE;3,5%;10,5%;;6,6%;5,9%;13%;1,6%;2,4%;0,0%;0,0%;0,5%;;0,23%;0,6
+135;"iShares Edge MSCI Europe Quality Factor UCITS ETF EUR (Acc)";IE00BQN1K562;CEMQ.DE;3,4%;5,2%;8,8%;8,4%;9,8%;13%;1,8%;0,9%;0,0%;0,7%;0,5%;;0,25%;0,6
+136;"Xtrackers MSCI World Industrials UCITS ETF 1C";IE00BM67HV82;XDWI.DE;3,4%;9,8%;10,4%;7,6%;9,6%;16%;2,5%;3,0%;0,0%;0,0%;;;0,25%;1,2
+137;"Invesco Markets II plc - Invesco NASDAQ-100 ESG UCITS ETF USD Acc";IE000COQKPO9;N1ES.DE;3,4%;12,0%;;9,5%;12,1%;21%;4,4%;2,1%;0,0%;1,1%;;;0,25%;2,6
+138;"Ishares Msci Emu Sri Ucits Etf Eur (Acc)";IE00BJLKK341;SMUA.AS;3,4%;6,9%;;9,2%;10,6%;15%;2,3%;1,5%;0,0%;0,9%;0,5%;;0,20%;n.d.
+139;"iShares MSCI Japan Screened UCITS ETF USD (Acc)";IE00BFNM3L97;SGAJ.DE;3,4%;7,8%;;8,6%;9,7%;19%;3,6%;0,2%;0,0%;0,9%;0,5%;;0,15%;n.d.
+140;"JPM Global Emerging Markets Research Enhanced Index Equity Active UCITS ETF – USD (acc)";IE00BF4G6Z54;JREM.DE;3,3%;6,4%;;9,1%;10,4%;18%;3,2%;0,4%;0,0%;0,8%;0,5%;;0,30%;n.d.
+141;"Amundi MSCI Europe SRI Climate Paris Aligned - UCITS ETF DR (C)";LU1861137484;MIVB.DE;3,3%;3,9%;;8,5%;10,4%;14%;2,1%;0,5%;0,0%;0,7%;0,5%;;0,18%;1,0
+142;"iShares MSCI Europe Industrials Sector UCITS ETF EUR Acc";IE00BMW42520;ESIN.DE;3,3%;10,1%;;8,7%;11,0%;19%;3,5%;3,0%;0,0%;0,0%;;;0,18%;1,0
+143;"State Street SPDR MSCI Europe Industrials UCITS ETF";IE00BKWQ0J47;SPYQ.DE;3,2%;10,2%;11,7%;9,0%;11,0%;19%;3,6%;3,0%;0,0%;0,0%;;;0,18%;1,3
+144;"UBS MSCI USA Socially Responsible UCITS ETF USD acc";IE00BJXT3C94;4UBI.DE;3,2%;8,0%;;9,3%;12,0%;19%;3,6%;1,1%;0,0%;0,9%;0,5%;;0,19%;0,7
+145;"Deka DAX UCITS ETF";DE000ETFL011;EL4A.DE;3,1%;9,2%;8,7%;9,5%;10,5%;17%;2,9%;3,5%;0,0%;0,0%;;;0,15%;1,9
+146;"iShares Core DAX UCITS ETF (DE)";DE0005933931;EXS1.DE;3,1%;9,2%;8,5%;9,5%;10,5%;17%;2,9%;3,5%;0,0%;0,0%;;;0,16%;8,9
+147;"iShares MSCI Europe Financials Sector UCITS ETF";IE00BMW42306;ESIF.DE;3,1%;20,1% (escluso);;10,0%;9,3%;18%;3,2%;3,0%;0,0%;0,0%;0,5%;;0,18%;0,7
+148;"Amundi Dax UCITS ETF";FR0010655712;CG1G.DE;3,0%;9,2%;8,7%;9,3%;10,5%;17%;3,0%;3,5%;0,0%;0,0%;;;0,10%;1,4
+149;"Amundi Cac 40 Ucits Etf Acc";FR0013380607;CACC.PA;2,9%;5,8%;;9,0%;9,1%;17%;2,8%;2,1%;0,0%;0,0%;;;0,25%;1,5
+150;"iShares S&P 500 Health Care Sector UCITS ETF USD (Acc)";IE00B43HR379;QDVG.DE;2,9%;8,5%;11,3%;7,8%;9,8%;16%;2,6%;3,1%;0,0%;0,0%;;;0,15%;3,3
+151;"iShares VII PLC - iShares Core MSCI Pac ex-Jpn ETF USD Acc";IE00B52MJY50;SXR1.DE;2,7%;7,2%;6,9%;6,4%;4,9%;14%;1,9%;1,8%;0,0%;0,0%;;;0,20%;3,7
+152;"iShares S&P 500 Financials Sector UCITS ETF USD (Acc)";IE00B4JNQZ49;QDVH.DE;2,7%;9,9%;11,0%;8,1%;7,7%;17%;3,0%;3,0%;0,0%;0,0%;;;0,15%;2,2
+153;"Invesco S&P500 High Div L Vol Ucits Etf";IE00BWTN6Y99;HDLV.DE;2,7%;8,1%;6,3%;6,0%;4,2%;15%;2,3%;0,0%;1,0%;0,0%;0,5%;;;n.d.
+154;"State Street Spdr Msci World Industrials Ucits Etf";IE00BYTRRC02;WNDU.L;2,6%;9,7%;10,4%;7,0%;9,6%;16%;2,5%;3,0%;0,0%;0,0%;0,5%;;0,30%;n.d.
+155;"iShares MSCI EM IMI Screened UCITS ETF USD (Acc)";IE00BFNM3P36;AYEM.DE;2,5%;6,2%;;9,3%;10,7%;20%;3,9%;0,6%;0,0%;0,8%;0,5%;;0,18%;n.d.
+156;"MSCI EM Socially Responsible (Acc)";LU1048313974;UETE.DE;2,5%;7,7%;;9,3%;11,0%;22%;4,7%;0,4%;0,0%;0,9%;0,5%;;0,24%;0,7
+157;"Ishares Msci Japan Esg Enhanced Ctb Ucits Etf";IE00BHZPJ452;EDMJ.DE;2,5%;7,6%;;8,0%;8,6%;20%;3,9%;0,3%;0,0%;0,8%;0,5%;;0,20%;n.d.
+158;"L&G Asia Pacific ex Japan Equity UCITS ETF";IE00BFXR5W90;ETLK.DE;2,4%;6,8%;;6,4%;4,9%;15%;2,1%;1,3%;0,0%;0,0%;0,5%;;0,10%;0,7
+159;"State Street SPDR S&P U.S. Technology Select Sector UCITS ETF";IE00BWBXM948;ZPDT.DE;2,3%;14,4%;21,4%;11,5%;14,1%;22%;4,9%;4,6%;0,0%;1,3%;;;0,15%;1,9
+160;"MSCI Europe SRI USD (Acc)";IE00BMDBMG37;IDSE.AS;2,3%;4,5%;;8,5%;10,2%;17%;3,0%;0,7%;0,0%;0,7%;0,5%;;0,20%;n.d.
+161;"Vanguard FTSE 100 UCITS ETF (GBP) Accumulating";IE00BFMXYP42;VUKG.DE;2,3%;16,3% (escluso);;7,0%;5,9%;14%;1,9%;1,9%;0,0%;0,0%;0,5%;;;n.d.
+162;"Xtrackers MSCI World Health Care UCITS ETF";IE00BM67HK77;XDWH.DE;2,2%;6,7%;9,9%;7,5%;9,7%;15%;2,4%;3,0%;0,0%;0,0%;;;0,25%;4,2
+163;"BNP Paribas Easy MSCI Pacific ex Japan Min TE UCITS ETF - C";LU1291106356;EPEJ.PA;2,2%;7,4%;7,0%;6,5%;5,0%;14%;1,9%;2,0%;0,0%;0,0%;0,5%;;;n.d.
+164;"iShares S&P 500 Industrials Sector UCITS ETF USD (Acc)";IE00B4LN9N13;2B7C.DE;2,0%;10,7%;;7,9%;10,0%;20%;3,9%;3,0%;0,0%;0,0%;0,5%;;0,15%;0,6
+165;"State Street SPDR S&P U.S. Industrials Select Sector UCITS ETF";IE00BWBXM724;ZPDI.DE;1,8%;10,7%;11,0%;7,9%;10,0%;18%;3,2%;3,0%;0,0%;0,9%;0,5%;;0,15%;0,9
+166;"Ishares Msci Em Esg Enhanced Ctb Ucits Etf";IE00BHZPJ239;EDM2.DE;1,7%;5,6%;;9,4%;10,8%;20%;4,2%;0,9%;0,0%;0,8%;0,5%;;0,18%;n.d.
+167;"State Street SPDR S&P U.S. Health Care Select Sector UCITS ETF";IE00BWBXM617;ZPDH.DE;1,5%;8,5%;11,2%;7,8%;9,8%;16%;2,6%;3,1%;0,0%;0,9%;0,5%;;0,15%;0,6
+168;"iShares Edge MSCI USA Momentum Factor UCITS ETF USD (Acc)";IE00BD1F4N50;QDVA.DE;1,5%;7,0%;12,9%;8,9%;10,7%;22%;4,6%;1,0%;0,0%;0,8%;0,5%;;0,20%;0,5
+169;"Ishares Msci World Health Care Sector Advanced Ucits Etf";IE00BJ5JNZ06;CBUF.DE;1,4%;5,9%;;7,6%;9,8%;16%;2,4%;3,0%;0,0%;0,0%;0,5%;;0,18%;0,8
+170;"State Street SPDR S&P U.S. Financials Select Sector UCITS ETF";IE00BWBXM500;ZPDF.DE;1,4%;10,0%;11,0%;8,1%;7,7%;17%;3,0%;3,0%;0,0%;0,9%;0,5%;;0,15%;0,7
+171;"State Street SPDR MSCI Europe Utilities UCITS ETF";IE00BKWQ0P07;SPYU.DE;1,3%;12,7%;12,5%;7,7%;6,5%;17%;2,7%;4,9%;0,0%;0,0%;0,5%;;0,18%;n.d.
+172;"Xtrackers MSCI Emerging Markets ESG UCITS ETF 1C";IE00BG370F43;XZEM.DE;1,2%;2,3%;;9,7%;11,3%;17%;3,0%;2,2%;0,0%;0,7%;;;0,25%;1,1
+173;"Xtrackers Msci Japan Esg Ucits Etf";IE00BG36TC12;XZMJ.DE;0,9%;6,6%;;8,5%;10,0%;20%;4,0%;1,8%;0,0%;0,8%;0,5%;;0,20%;n.d.
+174;"State Street Spdr Msci World Consumer Staples Ucits Etf";IE00BYTRR756;WCOS.L;0,7%;6,3%;7,0%;5,7%;6,2%;14%;1,8%;3,0%;0,0%;0,0%;0,5%;;0,30%;n.d.
+175;"Xtrackers MSCI World Materials UCITS ETF 1C";IE00BM67HS53;XDWM.DE;0,5%;7,3%;9,2%;7,0%;6,9%;18%;3,1%;3,0%;0,0%;0,0%;0,5%;;0,25%;0,7
+176;"MSCI Pacific Ex Japan ESG Screened USD (Acc)";LU0322252338;DXS6.DE;0,0%;5,8%;6,1%;6,3%;4,9%;17%;2,9%;1,8%;0,0%;0,6%;0,5%;;0,25%;0,7
+177;"iShares S&P 500 Communication Sector UCITS ETF USD Acc";IE00BDDRF478;IU5C.DE;0,0%;8,3%;;9,7%;10,3%;18%;3,2%;6,0%;0,0%;0,0%;;;0,15%;1,0
+178;"Hsbc Msci China A Ucits Etf";IE00BF4NQ904;H41K.DE;-0,6%;-3,4%;;7,7%;9,5%;19%;3,7%;0,0%;0,0%;0,0%;0,5%;;0,30%;n.d.
+179;"Invesco MDAX UCITS ETF";IE00BHJYDV33;DEAM.DE;-1,2%;-3,5%;;8,4%;8,9%;19%;3,5%;0,9%;0,0%;0,0%;0,5%;;0,19%;n.d.
+180;"iShares MSCI Europe Health Care Sector UCITS ETF EUR (Acc)";IE00BMW42181;ESIH.DE;-1,3%;5,9%;;7,8%;7,3%;18%;3,1%;4,6%;0,0%;0,0%;0,5%;;0,18%;1,0
+181;"State Street Spdr Msci Europe Health Care Ucits Etf";IE00BKWQ0H23;SPYH.DE;-1,4%;5,9%;8,5%;7,6%;7,3%;18%;3,1%;4,6%;0,0%;0,0%;0,5%;;0,18%;n.d.
+182;"iShares S&P 500 Consumer Discretionary Sector UCITS ETF USD (Acc)";IE00B4MCHD36;QDVK.DE;-1,4%;4,3%;11,9%;8,6%;10,4%;19%;3,8%;4,4%;0,0%;0,0%;0,5%;;0,15%;0,7
+183;"iShares S&P 500 Consumer Staples Sector UCITS ETF";IE00B40B8R38;2B7D.DE;-1,6%;8,7%;;5,8%;6,2%;17%;3,0%;5,1%;0,0%;0,0%;0,5%;;0,15%;0,5
+184;"State Street Spdr S&P U.S. Consumer Staples Select Sector Ucits Etf (Acc)";IE00BWBXM385;ZPDS.DE;-1,6%;8,0%;8,1%;5,8%;6,2%;15%;2,1%;5,1%;0,0%;0,7%;0,5%;;0,15%;n.d.
+185;"Franklin FTSE China UCITS ETF";IE00BHZRR147;FLXC.DE;-1,7%;-2,6%;;8,6%;9,7%;22%;4,6%;0,8%;0,0%;0,0%;0,5%;;0,19%;n.d.
+186;"Franklin Ftse Brazil Ucits Etf";IE00BHZRQY00;FLXB.DE;-6,1%;11,1%;;7,5%;6,0%;36%;12,9%;1,4%;0,0%;0,0%;0,5%;;0,19%;n.d.

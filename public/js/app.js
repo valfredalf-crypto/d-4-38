@@ -821,7 +821,6 @@ function render() {
           if (mg.stagnation) parts.push(`<span class="neg">− ${pct(mg.stagnation, false)} stagnazione</span>`);
           if (mg.special) parts.push(`<span class="neg">− ${pct(mg.special, false)} strategia speciale</span>`);
           if (mg.small) parts.push(`<span class="neg">− 0,5% ${mg.aum == null ? 'patrimonio n.d.' : 'patrimonio < 1 mld'}</span>`);
-          if (mg.young) parts.push('<span class="neg">− 0,25% storia < 10 anni</span>');
           if (mg.boost) parts.push('<span class="pos">+ 0,5% mercato globale</span>');
           if (mg.risk) parts.push(`<span class="neg">− ${pct(mg.risk, false)} volatilità ${pct(mg.vol, false, 0)}</span>`);
           if (mg.conc) parts.push(`<span class="neg">− ${pct(mg.conc, false)} concentrazione/settore</span>`);

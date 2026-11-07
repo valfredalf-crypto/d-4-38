@@ -24,10 +24,13 @@ test('imbuto: tasse, dimensioni, costo', () => {
   assert.equal(funnelCheck(eunl, {}, 'acc').failed, 'size');
 });
 
-test('Max Growth Score: penalità value, boost indici globali, fase 1', async () => {
+test('Max Growth Score: storico + prospettive, volatilità, concentrazione, value, boost globale', async () => {
   const { maxGrowthScore, phase1Check } = await import('../public/js/funnel.js');
-  const world = maxGrowthScore({ type: 'etf', name: 'iShares Core MSCI World UCITS ETF (Acc)' }, { cagrHist: 0.12, cagrYears: 10 });
-  assert.ok(Math.abs(world.score - 0.125) < 1e-12);
+  const world = maxGrowthScore({ type: 'etf', name: 'iShares Core MSCI World UCITS ETF (Acc)' }, { cagrHist: 0.12 }, { expected: 0.088, vol: 0.13, top10: 0.28 }, 0.002);
+  const tech = maxGrowthScore({ type: 'etf', name: 'iShares S&P 500 Information Technology Sector UCITS ETF' }, { cagrHist: 0.232 }, { expected: 0.117, vol: 0.25, top10: 0.7 }, 0.0015);
+  const nasdaq = maxGrowthScore({ type: 'etf', name: 'iShares NASDAQ 100 UCITS ETF (Acc)' }, { cagrHist: 0.187 }, { expected: 0.098, vol: 0.21, top10: 0.5 }, 0.003);
+  assert.ok(world.score > tech.score, `${world.score} vs ${tech.score}`);
+  assert.ok(world.score > nasdaq.score, `${world.score} vs ${nasdaq.score}`);
   const value = maxGrowthScore({ type: 'etf', name: 'HSBC MSCI World Value Screened UCITS ETF USD Acc' }, { cagrHist: 0.12 });
   assert.ok(Math.abs(value.score - 0.102) < 1e-12);
   assert.equal(phase1Check({ type: 'etf' }, { aum: { value: 222e6, currency: 'EUR' } }, 'acc').pass, false);

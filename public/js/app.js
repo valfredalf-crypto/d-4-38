@@ -627,7 +627,7 @@ function rowValues(i) {
     proj019: r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null,
     histMdd: sim?.histMdd ?? null,
     // Max Growth Score (ETF): CAGR storico 10a (già netto di TER/TD) −15% Value/High Div/Min Vol, +0,5% indici globali
-    maxGrowth: i.type === 'etf' ? maxGrowthScore(i, sim)?.score ?? null : null,
+    maxGrowth: i.type === 'etf' && r && !r.error ? maxGrowthScore(i, sim, r.forward, r.fund?.ter)?.score ?? null : null,
     // CAGR netto atteso: netto 019 × (1 − MDD storico), es. 13.248 € × (1 − 96%) = 530 €
     proj: (() => {
       const g = r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null;
@@ -811,10 +811,17 @@ function render() {
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         ${mgMode() ? (() => {
-          const mg = maxGrowthScore(i, state.results[i.symbol]?.sim);
+          const rr = state.results[i.symbol];
+          const ter = rr?.fund?.ter;
+          const mg = maxGrowthScore(i, rr?.sim, rr?.forward, ter);
           if (!mg) return '<td class="num muted">–</td>';
-          const ter = state.results[i.symbol]?.fund?.ter;
-          return `<td class="num ${cls(mg.score)}"><b class="big">${pct(mg.score, true)}/anno</b><span class="eur">CAGR storico ${mg.years ? nf1.format(mg.years) + 'a ' : ''}${pct(mg.base, true)}${mg.cagr10 != null ? ` (10a ${pct(mg.cagr10, true)})` : ''}${mg.stagnation ? ` <span class="neg">− ${pct(mg.stagnation, false)} penalità stagnazione</span>` : ''}${mg.boost ? ' <span class="pos">+ 0,5% boost mercato globale</span>' : ''}<span class="xl"> · già al netto di TER${Number.isFinite(ter) ? ' ' + pct(ter, false, 2) : ''} e tracking difference</span></span></td>`;
+          const parts = [`storico ${mg.years || 5}a ${pct(mg.hist, true)}${mg.cagr10 != null ? ` (10a ${pct(mg.cagr10, true)})` : ''}`];
+          if (mg.exp != null) parts.push(`atteso ${pct(mg.exp, true)}`);
+          if (mg.stagnation) parts.push(`<span class="neg">− ${pct(mg.stagnation, false)} stagnazione</span>`);
+          if (mg.boost) parts.push('<span class="pos">+ 0,5% mercato globale</span>');
+          if (mg.risk) parts.push(`<span class="neg">− ${pct(mg.risk, false)} volatilità ${pct(mg.vol, false, 0)}</span>`);
+          if (mg.conc) parts.push(`<span class="neg">− ${pct(mg.conc, false)} concentrazione/settore</span>`);
+          return `<td class="num ${cls(mg.score)}"><b class="big">${pct(mg.score, true)}/anno</b><span class="eur">${parts.join(' · ')}<span class="xl"> · TER${Number.isFinite(ter) ? ' ' + pct(ter, false, 2) : ''} già nel prezzo</span></span></td>`;
         })() : `<td class="num ${cls(r.projOpt)}"><b class="big">${r.projOpt == null ? '–' : `${r.projOpt > 0 ? '+' : ''}${Math.round(r.projOpt * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.projOpt == null ? '' : `<span class="eur">${pct(r.projOpt, true)}<span class="xl"> · rendimento netto atteso (3 scenari) meno penalità per la volatilità</span></span>`}</td>`}
         <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(Number.isFinite(state.results[i.symbol]?.fund?.ter) ? state.results[i.symbol].fund.ter : DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
         <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)}<span class="xl"> · netto 019 ${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} € (${pct(r.proj019, true)})${r.histMdd != null ? ` × (1 − <span class="neg">MDD storico ${pct(r.histMdd, false, 0)}</span>)` : ''} · CAGR atteso ${pct(r.cagr, false)} = ${r.cagr > 0 ? '+' : ''}${Math.round(r.cagr * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €/anno</span></span>`}</td>

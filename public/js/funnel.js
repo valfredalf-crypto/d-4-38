@@ -48,16 +48,30 @@ export function phase1Check(inst, fund, distKind) {
   if (Number.isFinite(fund?.ter) && fund.ter > 0.003) return { pass: false, reason: `TER ${(fund.ter * 100).toFixed(2)}% (> 0,30%)` };
   return { pass: true };
 }
+const SECTOR_RE = /\b(financials?|banks?|insurance|information technology|technology|tech|semiconductors?|health\s?care|healthcare|biotech\w*|pharma\w*|energy|oil|gas|utilities|materials|mining|miners|industrials|consumer (discretionary|staples)|real estate|reit|telecom\w*|communication services?|media|infrastructure|clean|water|robotics|cyber\w*|artificial intelligence|ai\b|blockchain|defen[cs]e|aerospace|gold|silver)\b/i;
 const STAGNATION_RE = /\b(value|high[- ]div(idend)?|min(imum)?[- ]?vol(atility)?)\b/i;
 /**
- * Fasi 2–5: CAGR storico dell'ETF (ultimi 5 anni, stesso periodo per tutti; il prezzo dell'ETF è già al netto di TER e
- * tracking difference effettivi, che quindi non si sottraggono una seconda volta), −15% del punteggio per
- * Value / High Dividend / Minimum Volatility, +0,5% per gli indici globali ponderati per capitalizzazione.
+ * Max Growth Score (rendimento annuo corretto):
+ * - base = ½ CAGR storico 5 anni (prezzo dell'ETF, già al netto di TER e tracking difference)
+ *        + ½ rendimento atteso dal modello meno il TER (prospettive di crescita degli utili, valutazioni
+ *          e dati di mercato attuali delle partecipazioni);
+ * - −15% della base per Value / High Dividend / Minimum Volatility;
+ * - +0,5% per gli indici globali ponderati per capitalizzazione (World, All-World, ACWI);
+ * - − volatilità² (rischio: a parità di rendimento vince chi oscilla meno; un ETF tech al 25% di
+ *   volatilità perde ~6 punti, l'MSCI World al 13% meno di 2);
+ * - − concentrazione: 0,1 × (peso dei primi 10 titoli − 30%) all'anno, almeno 3% per gli ETF di un solo settore.
  */
-export function maxGrowthScore(inst, sim) {
+export function maxGrowthScore(inst, sim, fwd = null, ter = null) {
   if (inst?.type !== 'etf' || !Number.isFinite(sim?.cagrHist)) return null;
-  const base = sim.cagrHist;
+  const hist = sim.cagrHist;
+  const exp = Number.isFinite(fwd?.expected) ? fwd.expected - (Number.isFinite(ter) ? ter : 0.002) : null;
+  const base = exp != null ? 0.5 * hist + 0.5 * exp : hist;
   const stagnation = STAGNATION_RE.test(inst.name || '') ? Math.abs(base) * 0.15 : 0;
   const boost = purityOk(inst.name) ? 0.005 : 0;
-  return { score: base - stagnation + boost, base, stagnation, boost, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
+  const vol = Number.isFinite(fwd?.vol) ? fwd.vol : null;
+  const risk = vol != null ? vol * vol : 0;
+  let conc = Number.isFinite(fwd?.top10) && !fwd.fundOfFunds ? 0.1 * Math.max(0, fwd.top10 - 0.3) : 0;
+  // ETF di un solo settore: rischio specifico non diversificabile → almeno 3% l'anno di penalità
+  if (SECTOR_RE.test(inst.name || '')) conc = Math.max(conc, 0.03);
+  return { score: base - stagnation + boost - risk - conc, hist, exp, base, stagnation, boost, risk, vol, conc, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
 }

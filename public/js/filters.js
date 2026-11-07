@@ -3,7 +3,7 @@
 export const INDICATORS = [
   { key: 'proj', label: 'CAGR netto atteso 5a: netto 019 × (1 − MDD storico)', pct: true },
   { key: 'proj019', label: 'Guadagno finale 5a (CAGR − TER, montante composto, imposta)', pct: true },
-  { key: 'projOpt', label: 'Guadagno finale ottimizzato (3 scenari, prob. e volatilità)', pct: true },
+  { key: 'projOpt', label: 'Rendimento netto corretto per il rischio (classifica principale)', pct: true },
   { key: 'cagr', label: 'CAGR atteso annuo (modulo 1)', pct: true },
   { key: 'histMdd', label: 'MDD storico (modulo 4)', pct: true },
   { key: 'overall', label: 'Netto Reale 5A (NR5)', pct: true },

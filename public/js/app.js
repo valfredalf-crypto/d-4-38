@@ -28,7 +28,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'proj', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'proj019', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -558,11 +558,16 @@ const fracLabel = (k) => ({ 0.5: '½', 0.25: '¼', 1: '1', 2: '2' })[k] || (Math
 // aliquota effettiva dello strumento (12,5% sulla quota di titoli di Stato, 26% il resto). Modulo 2:
 // montante composto. Modulo 3: imposta sulla plusvalenza. Modulo 4 (rischio): MDD storico dello strumento.
 const DEFAULT_TER = { etf: 0.002, stock: 0, crypto: 0 };
-function projParams(i, r, growthForward = false) {
+// Scenari storici a CAGR lordo fisso per la classifica (selettore in alto): null = stima del modello.
+const SCENARIO_CAGR = { pess: 0.02, base: 0.07, opt: 0.1 };
+const scenarioCagr = () => SCENARIO_CAGR[state.view.scenario] ?? null;
+function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
   // + dividendo + valutazione: prospettive di crescita aggiornate, come nel metodo Gemini) invece del
-  // rendimento atteso prudenziale mescolato con l'equilibrio CAPM.
-  const cagr = growthForward && Number.isFinite(r?.forward?.fundExpected) ? r.forward.fundExpected : r?.forward?.expected;
+  // rendimento atteso prudenziale mescolato con l'equilibrio CAPM. Con uno scenario selezionato si usa il
+  // CAGR fisso dello scenario per tutti gli strumenti.
+  let cagr = growthForward && Number.isFinite(r?.forward?.fundExpected) ? r.forward.fundExpected : r?.forward?.expected;
+  if (Number.isFinite(cagrOverride)) cagr = cagrOverride;
   if (!Number.isFinite(cagr)) return null;
   const tax = Number.isFinite(r?.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
   const ter = DEFAULT_TER[i.type] ?? 0;
@@ -572,8 +577,8 @@ const s_tax = (i) => {
   const t = state.results[i.symbol]?.sim?.taxRate;
   return `imposta ${Number.isFinite(t) ? nf1.format(t) : '26'}%`;
 };
-function projOf(i, r) {
-  const pp = projParams(i, r);
+function projOf(i, r, cagrOverride = null) {
+  const pp = projParams(i, r, false, cagrOverride);
   if (!pp) return null;
   return project(pp, state.settings.mc.amount || 10000, state.settings.mc.years || 5);
 }
@@ -592,15 +597,15 @@ function rowValues(i) {
     plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
     // Proiezione deterministica netta (CAGR composto − TER, imposta sulla plusvalenza), in frazione del capitale
     // Algoritmo 019: guadagno netto (moduli 1-3) e, come indicatore principale, netto − MDD storico (modulo 4)
-    proj019: r && !r.error ? projOf(i, r)?.netPct ?? null : null,
+    proj019: r && !r.error ? projOf(i, r, scenarioCagr())?.netPct ?? null : null,
     histMdd: sim?.histMdd ?? null,
     // CAGR netto atteso: netto 019 × (1 − MDD storico), es. 13.248 € × (1 − 96%) = 530 €
     proj: (() => {
-      const g = r && !r.error ? projOf(i, r)?.netPct ?? null : null;
+      const g = r && !r.error ? projOf(i, r, scenarioCagr())?.netPct ?? null : null;
       if (g == null) return null;
       return sim?.histMdd != null ? g * (1 - Math.min(1, sim.histMdd)) : g;
     })(),
-    cagr: r && !r.error ? r.forward?.expected ?? null : null,
+    cagr: (() => { const sc = scenarioCagr(); if (sc != null) return sc; return r && !r.error ? r.forward?.expected ?? null : null; })(),
     // Netto Reale 5A (NR5): la classifica predefinita
     overall: nr5Of(sim, i.type),
     es5: sim?.es5 ?? null,
@@ -630,7 +635,7 @@ function rowValues(i) {
     balancedOverLoss: sim && sim.balanced != null && sim.maxLoss != null ? (sim.maxLoss > 0 ? sim.balanced / sim.maxLoss : sim.balanced > 0 ? Infinity : 0) : null,
     // Guadagno netto 019 (CAGR − TER, imposta) ÷ perdita max 5a: più alto è meglio
     net019OverLoss: (() => {
-      const g = r && !r.error ? projOf(i, r)?.netPct ?? null : null;
+      const g = r && !r.error ? projOf(i, r, scenarioCagr())?.netPct ?? null : null;
       if (g == null || sim?.maxLoss == null) return null;
       return sim.maxLoss > 0 ? g / sim.maxLoss : g > 0 ? Infinity : 0;
     })(),
@@ -684,7 +689,7 @@ function rowValues(i) {
 
 function sortRows(rows) {
   const { key, dir } = state.view.sort;
-  const k = key === 'rank' ? 'proj' : key;
+  const k = key === 'rank' ? 'proj019' : key;
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -701,7 +706,7 @@ function sortRows(rows) {
 
 function rankMap(rows) {
   // La posizione in classifica è sempre per guadagno netto 5a (algoritmo 019) decrescente, indipendentemente dall'ordinamento scelto.
-  const ranked = rows.filter((r) => r.proj != null && Number.isFinite(r.proj)).sort((a, b) => b.proj - a.proj);
+  const ranked = rows.filter((r) => r.proj019 != null && Number.isFinite(r.proj019)).sort((a, b) => b.proj019 - a.proj019);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
 
@@ -732,9 +737,9 @@ function render() {
           if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
+        <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
         <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)}<span class="xl"> · netto 019 ${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} € (${pct(r.proj019, true)})${r.histMdd != null ? ` × (1 − <span class="neg">MDD storico ${pct(r.histMdd, false, 0)}</span>)` : ''} · CAGR atteso ${pct(r.cagr, false)} = ${r.cagr > 0 ? '+' : ''}${Math.round(r.cagr * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €/anno</span></span>`}</td>
         <td class="num">${r.net019OverLoss == null ? '–' : r.net019OverLoss === Infinity || r.net019OverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.net019OverLoss >= 1 ? 'pos' : r.net019OverLoss < 0 ? 'neg' : ''}">${nf2.format(r.net019OverLoss)}</span>`}</td>
-        <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
         <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
         <td class="num ${cls(r.riskAdj)}"><b class="big">${r.riskAdj == null ? '–' : `${r.riskAdj > 0 ? '+' : ''}${Math.round(r.riskAdj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.riskAdj == null ? '' : `<span class="eur">${pct(r.riskAdj, true)}</span>`}</td>
         <td class="num ${cls(r.overall)}"><b class="big">${r.overall == null ? '–' : `${r.overall > 0 ? '+' : ''}${Math.round(r.overall * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.overall == null ? '' : `<span class="eur">${pct(r.overall, true)} · media ${pct(r.netMean, true)} − ${fracLabel(nr5Weight(r.inst.type))} × ${pct(r.es5)} (estremi attenuati)</span>`}</td>
@@ -2130,6 +2135,20 @@ function bind() {
       state.view.allEtf = e.target.checked;
       try {
         localStorage.setItem('trmc.allEtf', e.target.checked ? '1' : '0');
+      } catch {
+        /* niente */
+      }
+      render();
+    });
+  }
+  const scn = $('#scenario-mode');
+  if (scn) {
+    scn.value = state.view.scenario || '';
+    scn.addEventListener('change', (e) => {
+      state.view.scenario = e.target.value;
+      state.view.limit = PAGE;
+      try {
+        localStorage.setItem('trmc.scenario', e.target.value);
       } catch {
         /* niente */
       }

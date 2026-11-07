@@ -50,6 +50,7 @@ export function tableResult(r) {
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
       ...(r.forward?.fundamentalsDetail?.evidence != null ? { evidence: r4(r.forward.fundamentalsDetail.evidence) } : {}),
       ...(r.forward?.fundamentalsDetail?.expected != null ? { fundExpected: r4(r.forward.fundamentalsDetail.expected) } : {}), // CAGR forward dai fondamentali (crescita utili + dividendo + valutazione): prospettive di crescita aggiornate
+      ...(Number.isFinite(r.forward?.mcap) ? { mcap: Math.round(r.forward.mcap / 1e6) * 1e6 } : {}),
       ...(r.forward?.top10 != null ? { top10: r4(r.forward.top10), ...(r.forward.fundOfFunds ? { fundOfFunds: true } : {}) } : {}),
     },
     sim: {
@@ -203,6 +204,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   o.cashTax = o.taxRate;
   o.riskFree = settings.outlook?.riskFree ?? 2;
   // Concentrazione: peso delle prime 10 partecipazioni (dalla composizione del fondo); per la diversificazione
+  // Capitalizzazione (azioni): per il filtro dimensioni dell'algoritmo Max Growth
+  if (fwd && Number.isFinite(fundamentals?.marketCap) && fundamentals.marketCap > 0) fwd.mcap = fundamentals.marketCap;
   if (fwd && holdings?.holdings?.length) {
     const funds = holdings.holdings.filter((h) => isFundHolding(h)).length;
     fwd.fundOfFunds = holdings.fundOfFunds === true || funds * 2 >= holdings.holdings.length; // le partecipazioni sono a loro volta fondi: diversificato

@@ -637,10 +637,20 @@ function rowValues(i) {
       if (gp == null || gm == null || go == null) return null;
       const pLoss = Number.isFinite(sim.probLoss) ? sim.probLoss : 0.2;
       const pGain = 1 - pLoss;
-      const wP = pLoss;
-      const wO = pGain * 0.5;
-      const wM = Math.max(0, 1 - wP - wO);
-      const egain = (wP * gp + wM * gm + wO * go) / (wP + wM + wO);
+      // Con uno scenario selezionato l'indicatore usa il guadagno netto di quello scenario; con «Modello»
+      // la media dei 3 scenari pesata per probabilità di perdita/crescita. In entrambi i casi poi si
+      // sottraggono le penalità di volatilità e concentrazione.
+      let egain;
+      const scSel = scenarioCagr(r);
+      if (scSel != null) {
+        egain = projOf(i, r, scSel)?.netPct;
+        if (egain == null) return null;
+      } else {
+        const wP = pLoss;
+        const wO = pGain * 0.5;
+        const wM = Math.max(0, 1 - wP - wO);
+        egain = (wP * gp + wM * gm + wO * go) / (wP + wM + wO);
+      }
       const vol = Number.isFinite(r.forward?.vol) ? r.forward.vol : 0.2;
       // Penalità di concentrazione: un ETF con i primi 10 titoli sopra il 30% (single-country, settore,
       // pochi titoli) è meno diversificato e più rischioso; gli indici ampi (World, All-World) non la subiscono.

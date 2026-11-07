@@ -229,8 +229,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     sim.backfilledYears = filled ? filled.backfilledWeeks / WEEKS_PER_YEAR : 0;
     sim.backfillProxy = filled ? (instrument.type === 'crypto' ? 'Bitcoin' : 'MSCI World') : null;
     // CAGR storico (algoritmo «Max Growth Score»): prezzo in euro degli ultimi 10 anni (almeno 5). È il
-    // rendimento effettivo dell'ETF, quindi già al netto di TER e tracking difference reali. Se lo storico
-    // proprio è più corto di 5 anni si usa la serie ricostruita con l'indice di riferimento.
+    // rendimento effettivo dell'ETF, quindi già al netto di TER e tracking difference reali. Con meno di 5
+    // anni di storico reale il punteggio non è calcolabile.
     const cagrOf = (arr) => {
       const n = Math.min(arr.length - 1, Math.round(10 * WEEKS_PER_YEAR));
       if (n < 5 * WEEKS_PER_YEAR) return null;
@@ -238,12 +238,11 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
       const b = arr[arr.length - 1];
       return a > 0 && b > 0 ? { cagr: (b / a) ** (WEEKS_PER_YEAR / n) - 1, years: n / WEEKS_PER_YEAR } : null;
     };
-    const own = cagrOf(prices);
-    const ch = own || (filled ? cagrOf(filled.closesEur) : null);
+    // Solo storico reale: la serie ricostruita per il rischio è simulata (ricampionata), non un rendimento vero
+    const ch = cagrOf(prices);
     if (ch) {
       sim.cagrHist = ch.cagr;
       sim.cagrYears = ch.years;
-      sim.cagrBackfilled = !own;
     }
   }
   return { forward: fwd, sim };

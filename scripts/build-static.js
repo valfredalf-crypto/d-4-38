@@ -60,6 +60,25 @@ write('data/quotes.json', quotes);
 write('data/results.json', { key, results });
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
+// Notizie recenti per le azioni (solo informative, mostrate nelle notifiche del portafoglio)
+{
+  const { newsFor } = await import('../lib/market.js');
+  const stocks = instruments.filter((i) => i.type === 'stock' && results[i.symbol] && !results[i.symbol].error);
+  const out = {};
+  let k = 0;
+  await Promise.all(
+    Array.from({ length: 4 }, async () => {
+      while (k < stocks.length) {
+        const s = stocks[k++];
+        const n = await newsFor(s.symbol).catch(() => null);
+        if (Array.isArray(n) && n.length) out[s.symbol] = n;
+      }
+    }),
+  );
+  write('data/news.json', { generatedAt, news: out });
+  console.log(`Notizie: ${Object.keys(out).length} azioni.`);
+}
+
 // Backtest: previsioni fatte con i dati di 5 anni fa confrontate con l'esito reale.
 const benchmark = histories.find((h) => h.instrument.symbol === BENCHMARK_SYMBOL)?.history;
 const cryptoBenchmark = histories.find((h) => h.instrument.symbol === CRYPTO_BENCHMARK_SYMBOL)?.history;

@@ -110,6 +110,7 @@ function staticPath(path) {
     '/api/quotes': 'data/quotes.json',
     '/api/results': 'data/results.json',
     '/api/backtest': 'data/backtest.json',
+    '/api/news': 'data/news.json',
     '/api/history': `data/history/${fileKey(sym)}.json`,
     '/api/outlook': `data/outlook/${fileKey(sym)}.json`,
   };
@@ -2185,6 +2186,14 @@ function buildNotifications(save = false) {
       const mg = mgOf(inst, h.amount, 5);
       if (mg) {
         newSnap[inst.symbol].mg = mg.score;
+        // Revisione delle stime degli analisti: crescita attesa degli utili cambiata dall'ultimo controllo
+        const gNow = Number.isFinite(r.forward?.growth) ? r.forward.growth : null;
+        newSnap[inst.symbol].growth = gNow;
+        if (gNow != null && prev && Number.isFinite(prev.growth)) {
+          const dg = gNow - prev.growth;
+          if (dg <= -0.02) out.push({ level: 'warn', icon: '📉', title: `${nm}: stime degli analisti tagliate`, text: `La crescita attesa degli utili è scesa da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
+          else if (dg >= 0.02) out.push({ level: 'good', icon: '📈', title: `${nm}: stime degli analisti alzate`, text: `La crescita attesa degli utili è salita da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
+        }
         if (!mg.pass) out.push({ level: 'swap', icon: '🚫', title: `${nm}: non supera il filtro Max Growth`, text: `${esc(mg.reason || '')}. Valuta di spostare la quota su uno strumento promosso.` });
         const top = (bestMaxGrowth()[cls] || []).find((x) => x.symbol !== inst.symbol);
         if (top && (mg.score == null || top.score >= mg.score + 0.01)) {
@@ -2237,6 +2246,18 @@ function openNotifications() {
       : '<p class="pos">Nessun suggerimento: il portafoglio è in linea con i dati di mercato aggiornati.</p>';
   $('#notifs').showModal();
   updateNotifsBadge();
+  // Notizie recenti sugli strumenti del portafoglio: solo informative, non cambiano punteggi e classifiche
+  if (hasHold) {
+    (state.newsData ? Promise.resolve(state.newsData) : api('/api/news').then((d) => (state.newsData = d)).catch(() => null)).then((d) => {
+      const items = [];
+      for (const h of [...(p.rows || []), ...(p.stocks || [])].filter((r) => r.isin && r.amount > 0)) {
+        const inst = findByCode(h.isin);
+        const list = inst ? d?.news?.[inst.symbol] : null;
+        if (list?.length) items.push(`<div class="notif"><div class="notif-t"><span class="notif-ic">📰</span> <b>${esc(inst.name).slice(0, 44)}</b></div>${list.map((n) => `<div class="muted small-note"><a href="${esc(n.link)}" target="_blank" rel="noopener noreferrer">${esc(n.title)}</a>${n.publisher ? ' · ' + esc(n.publisher) : ''}${n.time ? ' · ' + new Date(n.time).toLocaleDateString('it-IT') : ''}</div>`).join('')}</div>`);
+      }
+      if (items.length && $('#notifs')?.open) body.insertAdjacentHTML('beforeend', `<h3>Ultime notizie sui tuoi strumenti</h3><p class="muted small-note">Solo informative: punteggi e classifiche si basano esclusivamente su dati di mercato validati (prezzi, stime degli analisti, bilanci, composizione dei fondi).</p>${items.join('')}`);
+    });
+  }
 }
 
 // ---------- avvio

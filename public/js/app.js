@@ -2138,6 +2138,7 @@ function adviseHolding(inst, amount, share, prevSnap) {
   const gMin = cls === 'stock' ? 0.12 : 0.08;
   const cands = (bestMaxGrowth()[cls] || []).filter((x) => x.symbol !== inst.symbol);
   const target = cands.find((x) => (x.m3 == null || x.m3 >= 0) && (x.growth == null || x.growth >= gMin)) || cands[0] || null;
+  const tNet = (yrs) => { const ti = target ? state.instruments.find((x) => x.symbol === target.symbol) : null; return ti ? mgOf(ti, amount, yrs)?.net ?? null : null; };
   const tInst = target ? state.instruments.find((x) => x.symbol === target.symbol) : null;
   const gainIf = (frac) => {
     if (!tInst || m.score == null) return null;
@@ -2145,10 +2146,29 @@ function adviseHolding(inst, amount, share, prevSnap) {
     const mine = mgOf(inst, amount * frac, 5);
     return tm && mine ? tm.net - mine.net : null;
   };
-  const out = (action, frac, why) => ({ action, frac, eur: Math.round(amount * frac), target: frac > 0 && action !== 'buy' ? target : null, extra: frac > 0 && action !== 'buy' ? gainIf(frac) : null, why, m });
+  const out = (action, frac, why) => {
+    const t = frac > 0 && action !== 'buy' ? target : null;
+    const ti = t ? state.instruments.find((x) => x.symbol === t.symbol) : null;
+    const amt = amount * frac;
+    return { action, frac, eur: Math.round(amt), target: t, extra: t ? gainIf(frac) : null, why, m,
+      tNet3: ti ? mgOf(ti, amt, 3)?.net ?? null : null, tNet5: ti ? mgOf(ti, amt, 5)?.net ?? null : null };
+  };
   const m3 = m.m3;
   if (!m.pass) return out('sell', 1, m.reason || 'non supera il filtro Max Growth');
   if (m.score != null && m.score < 0.03) return out('sell', 1, `Max Growth ${pct(m.score, true)}/anno: sotto il rendimento di un'obbligazione`);
+  // Perdita in corso con evidenze che continuerà (dati reali: prezzi, stime degli analisti, punteggio)
+  const m1 = state.quotes[inst.symbol]?.perf?.m;
+  const losing = m3 != null && m3 <= -0.05 && (m1 == null || m1 < 0);
+  if (losing) {
+    const ev = [];
+    if (growthCut) ev.push('stime degli analisti tagliate');
+    if (growth != null && growth < 0.03) ev.push(`crescita attesa degli utili solo ${pct(growth, true)}`);
+    if (prevSnap && Number.isFinite(prevSnap.mg) && m.score != null && m.score - prevSnap.mg <= -0.01) ev.push(`Max Growth sceso da ${pct(prevSnap.mg, true)} a ${pct(m.score, true)}`);
+    if (Number.isFinite(m.y) && m.y < 0) ev.push(`${pct(m.y, true)} negli ultimi 12 mesi`);
+    const lossTxt = `in perdita (${pct(m3, true)} in 3 mesi${m1 != null ? `, ${pct(m1, true)} nell'ultimo mese` : ''})`;
+    if (ev.length >= 2) return out('sell', 1, `${lossTxt} con evidenze che il calo continui: ${ev.join(', ')}`);
+    if (ev.length === 1) return out('trim', 0.5, `${lossTxt}; segnale di debolezza: ${ev[0]}`);
+  }
   if (m3 != null && m3 <= -0.25 && (growthCut || (growth != null && growth < 0.03))) return out('sell', 1, `crollo di ${pct(m3, true)} in 3 mesi con prospettive di crescita in calo`);
   if (m3 != null && m3 <= -0.15) return out('trim', 0.5, `calo di ${pct(m3, true)} in 3 mesi: riduci il rischio`);
   if (growthCut && m3 != null && m3 < 0) return out('trim', 0.3, `stime degli analisti tagliate e prezzo in calo (${pct(m3, true)} in 3 mesi)`);
@@ -2168,7 +2188,8 @@ function adviceText(a) {
   const extra = a.extra != null && a.extra > 0 ? ` · +${eur(a.extra)} di guadagno netto in più in 5 anni` : '';
   if (a.action === 'hold') return `${a.why}.`;
   if (a.action === 'buy') return `Aumenta la quota di circa ${pctTxt} (${amt}): ${a.why}.`;
-  return `Vendi ${pctTxt} (${amt})${dest}. Motivo: ${a.why}${extra}.`;
+  const gains = a.tNet3 != null && a.tNet5 != null ? ` Guadagno netto atteso sull'importo spostato: ${a.tNet3 > 0 ? '+' : ''}${eur(a.tNet3)} a 3 anni, ${a.tNet5 > 0 ? '+' : ''}${eur(a.tNet5)} a 5 anni.` : '';
+  return `Vendi ${pctTxt} (${amt})${dest}. Motivo: ${a.why}${extra}.${gains}`;
 }
 function bestByClass() {
   const ver = state.liveVersion || state.dataVersion || '';

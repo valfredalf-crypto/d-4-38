@@ -2,6 +2,7 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
+import { funnelCheck, aumEur } from './funnel.js';
 import { project, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
@@ -28,7 +29,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: localStorage.getItem('trmc.funnel') || 'on', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -203,7 +204,8 @@ async function analyzeOne(inst) {
   }
   const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
   const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, holdings: d.fundamentals?.lookThrough, market: state.market?.expected, marketGrowth: state.market?.growth, settings: state.settings });
-  state.results[inst.symbol] = r.sim.ok ? r : { error: r.sim.reason };
+  const fund = state.results[inst.symbol]?.fund; // dati del fondo (patrimonio, TER) dal server
+  state.results[inst.symbol] = r.sim.ok ? (fund ? { ...r, fund } : r) : { error: r.sim.reason };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
 }
@@ -404,6 +406,8 @@ function filtered() {
   const needle = q.trim().toLowerCase();
   const code = needle.replace(/[\s-]/g, ''); // ISIN o ticker anche scritti con spazi/trattini
   const active = activeFilters(state.view.filters);
+  // L'imbuto si applica solo quando i dati dei fondi (patrimonio) sono stati pubblicati
+  const funnelOn = state.view.funnel === 'on' && Object.values(state.results).some((r) => r?.fund?.aum);
   return state.instruments.filter((i) => {
     if (type === 'growth') {
       if (i.growth == null) return false;
@@ -414,6 +418,9 @@ function filtered() {
     } else if (type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
     if (distFilter && distFilter !== 'all' && distKind(i) !== distFilter) return false; // accumulazione / distribuzione
+    // Imbuto degli ETF globali (purezza, accumulazione, patrimonio ≥ 1 mld, TER ≤ 0,25%): gli ETF bocciati
+    // escono dalla classifica (non nella scheda Bond e non quando si cerca per nome/ISIN)
+    if (funnelOn && i.type === 'etf' && type !== 'bond' && !needle && !funnelOf(i).pass) return false;
 
     // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
     // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta.
@@ -540,6 +547,7 @@ function distKind(i) {
   if (i.type === 'stock') return 'dist';
   return null;
 }
+const funnelOf = (i) => funnelCheck(i, state.results[i.symbol]?.fund, distKind(i));
 // ETF obbligazionario (o monetario): riconosciuto dal nome. I bond ETF di solito non hanno una stima
 // dalla composizione (sono obbligazioni, non azioni), quindi la scheda Bond li mostra comunque.
 const BOND_RE = /\b(bond|bonds|obbligaz\w*|treasur\w*|govt|government bond|gilts?|bund|btp|oat|bonos|sovereign|aggregate|aggt|corporate|high[- ]yield|fixed income|reddito fisso|titoli di stato|inflation[- ]linked|tips|green bond|covered bond|money market|monetario|liquidity|ultrashort|senior loan|floating rate)\b/i;
@@ -584,7 +592,7 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   if (Number.isFinite(cagrOverride)) cagr = cagrOverride;
   if (!Number.isFinite(cagr)) return null;
   const tax = Number.isFinite(r?.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
-  const ter = DEFAULT_TER[i.type] ?? 0;
+  const ter = Number.isFinite(r?.fund?.ter) ? r.fund.ter : DEFAULT_TER[i.type] ?? 0; // TER reale del fondo se noto
   const div = i.type === 'etf' && Number.isFinite(r?.sim?.distYield) && r.sim.distYield > 0 ? r.sim.distYield : 0; // ETF a distribuzione
   return { cagr, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
 }
@@ -789,9 +797,13 @@ function render() {
           const ge = g ? g.growth ?? g.expectedGrowth : null;
           if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
           return ge != null ? `<span class="growth-tag soft" title="Crescita annua degli utili attesa nei prossimi 5 anni">📈 ${pct(ge, true, 0)}</span> · ` : '';
+        })()}${(() => {
+          if (i.type !== 'etf') return '';
+          const fc = funnelOf(i);
+          return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         <td class="num ${cls(r.projOpt)}"><b class="big">${r.projOpt == null ? '–' : `${r.projOpt > 0 ? '+' : ''}${Math.round(r.projOpt * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.projOpt == null ? '' : `<span class="eur">${pct(r.projOpt, true)}<span class="xl"> · rendimento netto atteso (3 scenari) meno penalità per la volatilità</span></span>`}</td>
-        <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
+        <td class="num ${cls(r.proj019)}"><b class="big">${r.proj019 == null ? '–' : `${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj019 == null ? '' : `<span class="eur">${pct(r.proj019, true)}<span class="xl"> · CAGR ${pct(r.cagr, false)} − TER ${pct(Number.isFinite(state.results[i.symbol]?.fund?.ter) ? state.results[i.symbol].fund.ter : DEFAULT_TER[i.type] ?? 0, false, 2)}, ${s_tax(i)}</span></span>`}</td>
         <td class="num ${cls(r.proj)}"><b class="big">${r.proj == null ? '–' : `${r.proj > 0 ? '+' : ''}${Math.round(r.proj * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €`}</b>${r.proj == null ? '' : `<span class="eur">${pct(r.proj, true)}<span class="xl"> · netto 019 ${r.proj019 > 0 ? '+' : ''}${Math.round(r.proj019 * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} € (${pct(r.proj019, true)})${r.histMdd != null ? ` × (1 − <span class="neg">MDD storico ${pct(r.histMdd, false, 0)}</span>)` : ''} · CAGR atteso ${pct(r.cagr, false)} = ${r.cagr > 0 ? '+' : ''}${Math.round(r.cagr * (state.settings.mc.amount || 10000)).toLocaleString('it-IT')} €/anno</span></span>`}</td>
         <td class="num">${r.net019OverLoss == null ? '–' : r.net019OverLoss === Infinity || r.net019OverLoss > 99 ? '<span class="pos" title="Perdita massima quasi nulla (monetari, obbligazionari brevissimi): valore altissimo, ma il guadagno è piccolo">&gt;99</span>' : `<span class="${r.net019OverLoss >= 1 ? 'pos' : r.net019OverLoss < 0 ? 'neg' : ''}">${nf2.format(r.net019OverLoss)}</span>`}</td>
         <td class="num ${cls(r.growthExp)}">${pct(r.growthExp, true)}</td>
@@ -2203,6 +2215,20 @@ function bind() {
       state.view.limit = PAGE;
       try {
         localStorage.setItem('trmc.scenario', e.target.value);
+      } catch {
+        /* niente */
+      }
+      render();
+    });
+  }
+  const fm = $('#funnel-mode');
+  if (fm) {
+    fm.value = state.view.funnel || 'on';
+    fm.addEventListener('change', (e) => {
+      state.view.funnel = e.target.value;
+      state.view.limit = PAGE;
+      try {
+        localStorage.setItem('trmc.funnel', e.target.value);
       } catch {
         /* niente */
       }

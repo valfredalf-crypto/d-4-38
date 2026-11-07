@@ -112,6 +112,7 @@ test('project: ETF a distribuzione, dividendo tassato ogni anno e non reinvestit
 test('justETF: estrae patrimonio e TER dalla pagina profilo', async () => {
   const { parseJustEtf } = await import('../lib/justetf.js');
   const r = parseJustEtf('<div class="val">EUR 105,187 m</div><div class="vallabel">Fund size</div><div>0.20% p.a.</div><div>Total expense ratio</div>');
+  assert.equal(parseJustEtf('<span>4 ETF 0.04%</span> TER <b>0.22% p.a.</b>').ter, 0.0022);
   assert.equal(r.aum.value, 105187e6);
   assert.equal(r.aum.currency, 'EUR');
   assert.ok(Math.abs(r.ter - 0.002) < 1e-12);

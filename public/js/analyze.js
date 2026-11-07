@@ -31,7 +31,7 @@ export function applyLivePrice(history, priceEur) {
 // Risultato senza i dati dei grafici, per salvarlo/pubblicarlo in forma compatta.
 export function compactResult(r) {
   if (r.error) return { error: r.error };
-  return { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined } };
+  return { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined }, ...(r.fund ? { fund: r.fund } : {}) };
 }
 
 // Solo i numeri della tabella (per pubblicare migliaia di strumenti ogni pochi minuti):

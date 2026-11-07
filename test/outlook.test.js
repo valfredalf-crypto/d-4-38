@@ -137,7 +137,7 @@ test('crescita e valutazione (Grinold-Kroner)', async () => {
   const denied = fundamentalsReturn({ forwardPE: 35, growthLongTerm: 0.25, dividendYield: 0.006, analysts: 20, revenueGrowthTtm: -0.05 }, B, 5);
   assert.ok(denied.growth < confirmed.growth);
   assert.ok(lly.valuation < 0); // il P/E tende a scendere verso 18
-  assert.ok(lly.expected > 0.03 && lly.expected < 0.08, String(lly.expected));
+  assert.ok(lly.expected > 0.03 && lly.expected < 0.09, String(lly.expected));
   // Titolo a sconto con crescita modesta: la valutazione aiuta
   const cheap = fundamentalsReturn({ forwardPE: 9, epsGrowthNext: 0.05, dividendYield: 0.04, analysts: 10 }, B, 5);
   assert.ok(cheap.valuation > 0 && cheap.expected > 0.09, String(cheap.expected));
@@ -287,7 +287,7 @@ test('valutazione: rivalutazione dei titoli economici limitata, dividendo alto =
   const cheap = fundamentalsReturn({ forwardPE: 8, epsGrowthNext: 0.05, dividendYield: 0.04, analysts: 10 }, BASE_OUTLOOK, 5);
   assert.ok(cheap.valuation <= 0.015 + 1e-12, String(cheap.valuation));
   const dear = fundamentalsReturn({ forwardPE: 40, epsGrowthNext: 0.05, dividendYield: 0.01, analysts: 10 }, BASE_OUTLOOK, 5);
-  assert.ok(dear.valuation < -0.03, String(dear.valuation));
+  assert.ok(dear.valuation < -0.02, String(dear.valuation));
   const mk = (div) => ({ holdings: [{ symbol: 'A', weight: 0.2, fundamentals: { forwardPE: 15, growthLongTerm: 0.06, dividendYield: 0.03, analysts: 10 } }], stockPosition: 1, pe: 12, dividendYield: div });
   const hiDiv = holdingsFundamentals(mk(0.045), {}, 0.07, 0.08);
   const loDiv = holdingsFundamentals(mk(0.015), {}, 0.07, 0.08);

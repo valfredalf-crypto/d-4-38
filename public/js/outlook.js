@@ -19,7 +19,7 @@ export const BASE_OUTLOOK = {
   growthHaircut: 0.6,     // quota creduta della crescita attesa dagli analisti oltre quella di lungo periodo
   longRunGrowth: 4.0,     // % annuo: crescita nominale di lungo periodo verso cui convergono gli utili
   fairPE: 18,             // P/E di lungo periodo del mercato azionario
-  peReversion: 0.5,       // quota della distanza dal P/E di lungo periodo che si chiude in 5 anni
+  peReversion: 0.25,      // quota della distanza dal P/E di lungo periodo che si chiude in 5 anni (su 5 anni il ritorno alla media è debole: World/growth non penalizzati troppo, value non premiati troppo)
   maxValuation: 0.04,     // limite annuo della svalutazione del P/E (P/E alto che scende)
   maxRerating: 0.015,     // limite annuo della rivalutazione del P/E: i titoli "economici" spesso restano economici (value trap)
   marketDividend: 0.018,  // dividendo medio del mercato azionario: chi distribuisce di più reinveste meno e cresce meno

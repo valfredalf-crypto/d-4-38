@@ -30,6 +30,10 @@ if (process.env.SYMBOLS) {
           console.log('  holding', h.symbol, (h.name || '').slice(0, 28), 'peso', (h.weight * 100).toFixed(1) + '%', 'eps+1', hf?.epsGrowthNext, 'ric+1', hf?.revenueGrowthNext, 'ricTTM', hf?.revenueGrowthTtm, 'LT', hf?.growthLongTerm, 'PE', hf?.forwardPE?.toFixed(1), 'analisti', hf?.analysts);
         }
         console.log('  TER', comp.ter, 'AUM', comp.aum, comp.aumCurrency);
+        if (inst.isin) {
+          const { justEtf } = await import('../lib/justetf.js');
+          console.log('  justETF', JSON.stringify(await justEtf(inst.isin).catch((e) => ({ error: e.message }))));
+        }
         console.log('  composizione: azioni', comp.stockPosition, 'obblig.', comp.bondPosition, 'P/E fondo', comp.pe, 'div', comp.dividendYield);
       }
     }

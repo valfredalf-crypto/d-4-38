@@ -108,3 +108,11 @@ test('project: ETF a distribuzione, dividendo tassato ogni anno e non reinvestit
   // senza dividendo resta la formula del documento
   assert.ok(Math.abs(project({ net: 0.084, tax: 0.26 }, 20000, 5).netGain - 7351.75) < 1);
 });
+
+test('justETF: estrae patrimonio e TER dalla pagina profilo', async () => {
+  const { parseJustEtf } = await import('../lib/justetf.js');
+  const r = parseJustEtf('<div class="val">EUR 105,187 m</div><div class="vallabel">Fund size</div><div>0.20% p.a.</div><div>Total expense ratio</div>');
+  assert.equal(r.aum.value, 105187e6);
+  assert.equal(r.aum.currency, 'EUR');
+  assert.ok(Math.abs(r.ter - 0.002) < 1e-12);
+});

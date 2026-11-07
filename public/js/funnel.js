@@ -50,7 +50,7 @@ export function phase1Check(inst, fund, distKind) {
 }
 const STAGNATION_RE = /\b(value|high[- ]div(idend)?|min(imum)?[- ]?vol(atility)?)\b/i;
 /**
- * Fasi 2–5: CAGR storico dell'ETF (10 anni, minimo 5; il prezzo dell'ETF è già al netto di TER e
+ * Fasi 2–5: CAGR storico dell'ETF (ultimi 5 anni, stesso periodo per tutti; il prezzo dell'ETF è già al netto di TER e
  * tracking difference effettivi, che quindi non si sottraggono una seconda volta), −15% del punteggio per
  * Value / High Dividend / Minimum Volatility, +0,5% per gli indici globali ponderati per capitalizzazione.
  */
@@ -59,5 +59,5 @@ export function maxGrowthScore(inst, sim) {
   const base = sim.cagrHist;
   const stagnation = STAGNATION_RE.test(inst.name || '') ? Math.abs(base) * 0.15 : 0;
   const boost = purityOk(inst.name) ? 0.005 : 0;
-  return { score: base - stagnation + boost, base, stagnation, boost, years: sim.cagrYears ?? null, backfilled: !!sim.cagrBf };
+  return { score: base - stagnation + boost, base, stagnation, boost, years: sim.cagrYears ?? null, cagr10: Number.isFinite(sim.cagr10) ? sim.cagr10 : null };
 }

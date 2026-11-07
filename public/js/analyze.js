@@ -78,7 +78,7 @@ export function tableResult(r) {
       ...(s.distYield > 0 ? { distYield: r4(s.distYield), distDrag: r4(s.distDrag) } : {}),
       ...(s.divYield > 0 ? { divYield: r4(s.divYield) } : {}),
       ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
-      ...(Number.isFinite(s.cagrHist) ? { cagrHist: r4(s.cagrHist), cagrYears: Math.round(s.cagrYears * 10) / 10, ...(s.cagrBackfilled ? { cagrBf: true } : {}) } : {}),
+      ...(Number.isFinite(s.cagrHist) ? { cagrHist: r4(s.cagrHist), cagrYears: s.cagrYears, ...(Number.isFinite(s.cagr10) ? { cagr10: r4(s.cagr10) } : {}) } : {}),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
     },
   };
@@ -231,18 +231,22 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     // CAGR storico (algoritmo «Max Growth Score»): prezzo in euro degli ultimi 10 anni (almeno 5). È il
     // rendimento effettivo dell'ETF, quindi già al netto di TER e tracking difference reali. Con meno di 5
     // anni di storico reale il punteggio non è calcolabile.
-    const cagrOf = (arr) => {
-      const n = Math.min(arr.length - 1, Math.round(10 * WEEKS_PER_YEAR));
-      if (n < 5 * WEEKS_PER_YEAR) return null;
+    const cagrOf = (arr, yrs) => {
+      let n = Math.round(yrs * WEEKS_PER_YEAR);
+      if (arr.length - 1 < n - 4) return null; // tolleranza di un mese
+      n = Math.min(n, arr.length - 1);
       const a = arr[arr.length - 1 - n];
       const b = arr[arr.length - 1];
-      return a > 0 && b > 0 ? { cagr: (b / a) ** (WEEKS_PER_YEAR / n) - 1, years: n / WEEKS_PER_YEAR } : null;
+      return a > 0 && b > 0 ? (b / a) ** (WEEKS_PER_YEAR / n) - 1 : null;
     };
-    // Solo storico reale: la serie ricostruita per il rischio è simulata (ricampionata), non un rendimento vero
-    const ch = cagrOf(prices);
-    if (ch) {
-      sim.cagrHist = ch.cagr;
-      sim.cagrYears = ch.years;
+    // Stesso periodo per tutti (ultimi 5 anni, l'orizzonte dell'app): CAGR su finestre diverse non sono
+    // confrontabili. Il CAGR a 10 anni, se disponibile, è solo informativo.
+    const c5 = cagrOf(prices, 5);
+    if (c5 != null) {
+      sim.cagrHist = c5;
+      sim.cagrYears = 5;
+      const c10 = cagrOf(prices, 10);
+      if (c10 != null) sim.cagr10 = c10;
     }
   }
   return { forward: fwd, sim };

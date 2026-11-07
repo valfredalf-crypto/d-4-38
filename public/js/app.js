@@ -559,8 +559,22 @@ const fracLabel = (k) => ({ 0.5: '½', 0.25: '¼', 1: '1', 2: '2' })[k] || (Math
 // montante composto. Modulo 3: imposta sulla plusvalenza. Modulo 4 (rischio): MDD storico dello strumento.
 const DEFAULT_TER = { etf: 0.002, stock: 0, crypto: 0 };
 // Scenari storici a CAGR lordo fisso per la classifica (selettore in alto): null = stima del modello.
-const SCENARIO_CAGR = { pess: 0.02, base: 0.07, opt: 0.1 };
-const scenarioCagr = () => SCENARIO_CAGR[state.view.scenario] ?? null;
+// Scenari: miscela tra il rendimento di mercato dello scenario (pessimistico 2%, base 7%, ottimistico 10%)
+// e il CAGR atteso del singolo strumento. Negli scenari base e ottimistico il CAGR dello strumento pesa di
+// più, così le prospettive di crescita restano rilevanti: uno strumento più promettente resta sopra.
+const SCENARIO_MARKET = { pess: 0.02, base: 0.07, opt: 0.1 };
+const SCENARIO_WGROWTH = { pess: 0.35, base: 0.6, opt: 0.7 }; // peso del CAGR atteso dello strumento
+function blendCagr(scKey, exp) {
+  const m = SCENARIO_MARKET[scKey];
+  if (!Number.isFinite(exp)) return m;
+  const w = SCENARIO_WGROWTH[scKey];
+  return Math.max(-0.1, Math.min(0.6, w * exp + (1 - w) * m));
+}
+function scenarioCagr(r) {
+  const sc = state.view.scenario;
+  if (SCENARIO_MARKET[sc] == null) return null; // Modello
+  return blendCagr(sc, r?.forward?.expected);
+}
 function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
   // + dividendo + valutazione: prospettive di crescita aggiornate, come nel metodo Gemini) invece del
@@ -597,23 +611,24 @@ function rowValues(i) {
     plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
     // Proiezione deterministica netta (CAGR composto − TER, imposta sulla plusvalenza), in frazione del capitale
     // Algoritmo 019: guadagno netto (moduli 1-3) e, come indicatore principale, netto − MDD storico (modulo 4)
-    proj019: r && !r.error ? projOf(i, r, scenarioCagr())?.netPct ?? null : null,
+    proj019: r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null,
     histMdd: sim?.histMdd ?? null,
     // CAGR netto atteso: netto 019 × (1 − MDD storico), es. 13.248 € × (1 − 96%) = 530 €
     proj: (() => {
-      const g = r && !r.error ? projOf(i, r, scenarioCagr())?.netPct ?? null : null;
+      const g = r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null;
       if (g == null) return null;
       return sim?.histMdd != null ? g * (1 - Math.min(1, sim.histMdd)) : g;
     })(),
-    cagr: (() => { const sc = scenarioCagr(); if (sc != null) return sc; return r && !r.error ? r.forward?.expected ?? null : null; })(),
+    cagr: (() => { const sc = r && !r.error ? scenarioCagr(r) : null; if (sc != null) return sc; return r && !r.error ? r.forward?.expected ?? null : null; })(),
     // Guadagno finale ottimizzato: media dei 3 scenari (pessimistico 2%, moderato 7%, ottimistico 10%)
     // pesata per probabilità di crescita/perdita e volatilità. Alta volatilità sposta il peso dal migliore
     // al peggiore; più probabilità di perdita → più peso allo scenario pessimistico.
     projOpt: (() => {
       if (!r || r.error) return null;
-      const gp = projOf(i, r, 0.02)?.netPct;
-      const gm = projOf(i, r, 0.07)?.netPct;
-      const go = projOf(i, r, 0.1)?.netPct;
+      const exp = r.forward?.expected;
+      const gp = projOf(i, r, blendCagr('pess', exp))?.netPct;
+      const gm = projOf(i, r, blendCagr('base', exp))?.netPct;
+      const go = projOf(i, r, blendCagr('opt', exp))?.netPct;
       if (gp == null || gm == null || go == null) return null;
       const pLoss = Number.isFinite(sim?.probLoss) ? sim.probLoss : 0.2;
       const pGain = 1 - pLoss;
@@ -654,7 +669,7 @@ function rowValues(i) {
     balancedOverLoss: sim && sim.balanced != null && sim.maxLoss != null ? (sim.maxLoss > 0 ? sim.balanced / sim.maxLoss : sim.balanced > 0 ? Infinity : 0) : null,
     // Guadagno netto 019 (CAGR − TER, imposta) ÷ perdita max 5a: più alto è meglio
     net019OverLoss: (() => {
-      const g = r && !r.error ? projOf(i, r, scenarioCagr())?.netPct ?? null : null;
+      const g = r && !r.error ? projOf(i, r, scenarioCagr(r))?.netPct ?? null : null;
       if (g == null || sim?.maxLoss == null) return null;
       return sim.maxLoss > 0 ? g / sim.maxLoss : g > 0 ? Infinity : 0;
     })(),

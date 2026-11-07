@@ -1369,6 +1369,30 @@ function exportCsv() {
 }
 
 /** Tabella «Valutazione del rischio»: stress test e tempo di recupero (sezione 5 del documento). */
+// Scenari storici (CAGR lordo fisso 2% / 7% / 10%) su una lista di strumenti [{amount, ter, tax}], per
+// orizzonte: stesso algoritmo 019 (CAGR − TER, montante composto, imposta), i totali sono la somma.
+const HIST_SCEN = [
+  { label: 'Pessimistico (mercato laterale / crisi)', cagr: 0.02, note: 'CAGR lordo 2%: se i prossimi anni vanno male' },
+  { label: 'Base (media storica reale)', cagr: 0.07, note: 'CAGR lordo 7%: rendimento storico netto dell\'azionario globale' },
+  { label: 'Ottimistico (massimo guadagno)', cagr: 0.1, note: 'CAGR lordo 10%: scenario favorevole' },
+];
+function histScenariosHtml(items, years) {
+  const valid = (items || []).filter((i) => i.amount > 0);
+  const cap = valid.reduce((a, i) => a + i.amount, 0);
+  if (!(cap > 0)) return '';
+  const fmt2 = (x) => eur(Math.round(x * 100) / 100);
+  const netOf = (cg, y) => valid.reduce((a, i) => a + project({ cagr: cg, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: Number.isFinite(i.tax) ? i.tax : 0.26, net: cg - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y).netGain, 0);
+  return `<h4 class="pf-h4" style="margin-top:14px">Scenari storici (pessimistico 2% · base 7% · ottimistico 10%)</h4>
+    <p class="muted small-note">Stesso algoritmo (CAGR lordo − TER, montante composto, imposta sulla plusvalenza) con un rendimento di mercato fisso uguale per tutti, mantenendo TER e aliquota di ciascuno. Il 7% è il rendimento reale storico netto dell'azionario globale.</p>
+    ${years
+      .map(
+        (y) => `<p class="muted small-note" style="margin:10px 0 4px"><b>A ${y} anni</b> (${eur(Math.round(cap))} investiti)</p>
+    <table class="mini"><thead><tr><th>Scenario</th><th class="num">CAGR lordo</th><th class="num">Guadagno netto</th><th class="num">Capitale finale</th></tr></thead><tbody>${HIST_SCEN
+      .map((sc) => { const g = netOf(sc.cagr, y); return `<tr><td>${sc.label}<div class="muted small-note">${sc.note}</div></td><td class="num">${pct(sc.cagr, false, 0)}</td><td class="num ${cls(g)}"><b>${g > 0 ? '+' : ''}${fmt2(g)}</b> (${pct(g / cap, true)})</td><td class="num">${fmt2(cap + g)}</td></tr>`; })
+      .join('')}</tbody></table>`,
+      )
+      .join('')}`;
+}
 function stressTable({ beta, netCagr, capital, betaNote = '', profile = null }) {
   const rows = stressTest({ beta, netCagr, capital });
   const months = (m) => (m == null ? '<span class="neg">nessun recupero con questo CAGR</span>' : m === 0 ? '–' : `≈ ${Math.round(m)} mesi`);
@@ -1581,11 +1605,13 @@ function renderPortfolio() {
       summary = `<p class="muted">Inserisci almeno uno strumento con importo e CAGR.</p>`;
     }
     const terCol = isStock ? '' : '<th class="num">TER</th>';
+    const histItems = arr.map((r) => ({ amount: r.amount || 0, ter: isStock ? 0 : r.ter, tax: r.tax }));
     return `<h3 style="margin-top:24px">${title}</h3>
       <p class="muted small-note">${note} Qui l'importo da investire si indica in euro, non in percentuale. Totale investito: <b>${eur(Math.round(cap))}</b>.</p>
       <div style="margin:8px 0"><button class="ghost small" data-addbucket="${bucket}">+ Strumento</button></div>
       <div class="table-wrap"><table class="mini"><thead><tr><th>Strumento</th><th class="num">Importo €</th>${terCol}<th class="num">CAGR lordo</th><th class="num">Aliquota</th><th class="num">MDD storico</th><th class="num">Guadagno netto ${isStock ? 'per azione' : 'atteso'}</th><th></th></tr></thead><tbody>${rowsH}</tbody></table></div>
-      ${summary}`;
+      ${summary}
+      ${cap > 0 ? histScenariosHtml(histItems, years) : ''}`;
   };
   // Confronto: NR5 del modello, ponderato con gli stessi pesi (solo righe presenti in elenco con stima)
   let nr5W = 0;
@@ -1633,6 +1659,7 @@ function renderPortfolio() {
     </tbody></table>`,
       )
       .join('')}
+    ${out ? histScenariosHtml(p.rows.map((r) => ({ amount: r.amount || 0, ter: r.ter, tax: r.tax })), years) : ''}
     ${(() => {
       // Proiezioni separate per classe di strumento (azioni, ETF, bond), stesso algoritmo 019
       const CLASSES = [
@@ -1737,9 +1764,24 @@ function renderPortfolio() {
           <tr><th>CAGR netto atteso: guadagno netto × (1 − MDD<sub>p</sub> ${pct(mdd, false, 1)})</th><th class="num ${cls(adj)}">${adj > 0 ? '+' : ''}${fmt2(adj)} (${pct(adj / totCap, true)})</th></tr>
         </tbody></table>`;
       };
+      // Scenari storici: stesso algoritmo 019 ma con un CAGR lordo fisso uguale per tutti (ipotesi di
+      // rendimento del mercato), mantenendo il TER e l'aliquota di ogni strumento; i totali sono la somma.
+      const SCEN = [
+        { key: 'pess', label: 'Pessimistico (mercato laterale / crisi)', cagr: 0.02, note: 'CAGR lordo 2%: cosa succede se i prossimi 5 anni vanno male' },
+        { key: 'base', label: 'Base (media storica reale)', cagr: 0.07, note: 'CAGR lordo 7%: rendimento storico netto dell\'azionario globale' },
+        { key: 'opt', label: 'Ottimistico (massimo guadagno)', cagr: 0.1, note: 'CAGR lordo 10%: scenario favorevole' },
+      ];
+      const histNet = (fixedCagr, y) => valid.reduce((a, i) => a + project({ cagr: fixedCagr, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: Number.isFinite(i.tax) ? i.tax : 0.26, net: fixedCagr - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y).netGain, 0);
+      const histBlock = (y) => `<p class="muted small-note" style="margin:12px 0 4px"><b>Scenari storici a ${y} anni</b> (${eur(Math.round(totCap))} investiti) — ipotesi di rendimento del mercato</p>
+        <table class="mini"><thead><tr><th>Scenario</th><th class="num">CAGR lordo</th><th class="num">Guadagno netto totale</th><th class="num">Capitale finale</th></tr></thead><tbody>${SCEN
+          .map((sc) => { const net = histNet(sc.cagr, y); return `<tr><td>${sc.label}<div class="muted small-note">${sc.note}</div></td><td class="num">${pct(sc.cagr, false, 0)}</td><td class="num ${cls(net)}"><b>${net > 0 ? '+' : ''}${fmt2(net)}</b> (${pct(net / totCap, true)})</td><td class="num">${fmt2(totCap + net)}</td></tr>`; })
+          .join('')}</tbody></table>`;
       return `<h3 style="margin-top:26px">Scenario dell'intero portafoglio (ETF + Azioni + Bond)</h3>
       <p class="muted small-note">Tutte e tre le sezioni insieme, capitale totale <b>${eur(Math.round(totCap))}</b>. Ogni strumento è proiettato col suo CAGR, TER e aliquota (algoritmo 019); i totali sono la somma. Il CAGR netto atteso applica l'MDD storico ponderato del portafoglio.</p>
-      ${years.map(scenario).join('')}`;
+      ${years.map(scenario).join('')}
+      <h4 class="pf-h4" style="margin-top:16px">Scenari storici (pessimistico 2% · base 7% · ottimistico 10%)</h4>
+      <p class="muted small-note">Stesso algoritmo (CAGR lordo − TER, montante composto, imposta sulla plusvalenza), ma con un rendimento di mercato fisso uguale per tutti gli strumenti, mantenendo TER e aliquota di ciascuno. Il 7% è il rendimento reale storico netto dell'azionario globale degli ultimi 100 anni.</p>
+      ${years.map(histBlock).join('')}`;
     })()}
     ${(() => {
       // Stress test TOTALE di tutto il portafoglio (ETF + Azioni + Bond), metodo del documento 041

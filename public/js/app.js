@@ -29,7 +29,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: localStorage.getItem('trmc.funnel2') || 'maxgrowth', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: localStorage.getItem('trmc.funnel2') || 'maxgrowth', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: (localStorage.getItem('trmc.funnel2') || 'maxgrowth') === 'maxgrowth' ? 'maxGrowth' : 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -772,7 +772,7 @@ function sortRows(rows) {
   });
 }
 
-const mgMode = () => (state.view.type === 'etf' || state.view.type === 'stock') && state.view.funnel === 'maxgrowth';
+const mgMode = () => state.view.funnel === 'maxgrowth' && state.view.type !== 'bond' && state.view.type !== 'crypto';
 function rankMap(rows) {
   // La posizione in classifica è sempre per guadagno netto 5a (algoritmo 019) decrescente, indipendentemente dall'ordinamento scelto.
   const k = mgMode() ? 'maxGrowth' : 'projOpt'; // scheda ETF con l'algoritmo Max Growth: classifica per Max Growth Score
@@ -2375,7 +2375,7 @@ function bind() {
       state.view.type = t.dataset.type;
       state.view.limit = PAGE;
       // Nella scheda Crescita si ordina per crescita attesa; altrove torna la classifica per rapporto.
-      if ((t.dataset.type === 'etf' || t.dataset.type === 'stock') && state.view.funnel === 'maxgrowth') state.view.sort = { key: 'maxGrowth', dir: -1 };
+      if (state.view.funnel === 'maxgrowth' && !['bond', 'crypto', 'growth'].includes(t.dataset.type)) state.view.sort = { key: 'maxGrowth', dir: -1 };
       else if (state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       if (t.dataset.type === 'growth') state.view.sort = { key: 'growth', dir: -1 };
       else if (state.view.sort.key === 'growth') state.view.sort = { key: 'ratio', dir: 1 };

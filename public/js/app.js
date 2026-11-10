@@ -2147,7 +2147,8 @@ function adviseHolding(inst, amount, share, prevSnap) {
     return tm && mine ? tm.net - mine.net : null;
   };
   const out = (action, frac, why) => {
-    const t = frac > 0 && action !== 'buy' ? target : null;
+    // si propone di comprare un altro strumento solo se ha un punteggio più alto
+    const t = frac > 0 && action !== 'buy' && target && (m.score == null || target.score > m.score) ? target : null;
     const ti = t ? state.instruments.find((x) => x.symbol === t.symbol) : null;
     const amt = amount * frac;
     return { action, frac, eur: Math.round(amt), target: t, extra: t ? gainIf(frac) : null, why, m,
@@ -2172,7 +2173,10 @@ function adviseHolding(inst, amount, share, prevSnap) {
   if (m3 != null && m3 <= -0.25 && (growthCut || (growth != null && growth < 0.03))) return out('sell', 1, `crollo di ${pct(m3, true)} in 3 mesi con prospettive di crescita in calo`);
   if (m3 != null && m3 <= -0.15) return out('trim', 0.5, `calo di ${pct(m3, true)} in 3 mesi: riduci il rischio`);
   if (growthCut && m3 != null && m3 < 0) return out('trim', 0.3, `stime degli analisti tagliate e prezzo in calo (${pct(m3, true)} in 3 mesi)`);
-  if (share > 0.4) return out('trim', Math.min(0.5, (share - 0.4) / share + 0.0001), `pesa ${pct(share, false, 0)} del portafoglio: riduci la concentrazione sotto il 40%`);
+  // Concentrazione: solo per azioni singole ed ETF poco diversificati (un indice globale con migliaia di
+  // titoli può pesare anche il 100% del portafoglio senza rischio di concentrazione)
+  const diversifiedEtf = cls === 'etf' && !(m.conc > 0);
+  if (share > 0.4 && !diversifiedEtf) return out('trim', Math.min(0.5, (share - 0.4) / share + 0.0001), `pesa ${pct(share, false, 0)} del portafoglio: riduci la concentrazione sotto il 40%`);
   if (target && m.score != null && target.score >= m.score + 0.02) return out('move', 0.5, `${esc(target.name).slice(0, 40)} ha un Max Growth di ${pct(target.score, true)} contro ${pct(m.score, true)}`);
   if (target && m.score != null && target.score >= m.score + 0.01) return out('move', 0.3, `${esc(target.name).slice(0, 40)} ha un Max Growth di ${pct(target.score, true)} contro ${pct(m.score, true)}`);
   const topScore = cands[0]?.score ?? -Infinity;

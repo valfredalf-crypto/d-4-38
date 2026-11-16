@@ -2555,19 +2555,28 @@ function bind() {
 async function main() {
   bind();
   buildFiltersPanel();
-  // Portafoglio condiviso via link (#pf=...): lo importa e pulisce l'indirizzo
-  if (location.hash.includes('pf=')) {
+  // Portafoglio condiviso via link (#pf=...): lo importa e pulisce l'indirizzo. Anche quando il sito è già
+  // aperto e cambia solo l'indirizzo dopo «#» (nessun ricaricamento): evento hashchange.
+  const importFromHash = () => {
+    if (!location.hash.includes('pf=')) return false;
     const imp = decodePortfolio(location.hash);
-    if (imp) {
-      state.portfolio = imp;
-      savePortfolio(imp);
-      try {
-        history.replaceState(null, '', location.pathname + location.search);
-      } catch {
-        /* niente */
-      }
+    if (!imp) return false;
+    state.portfolio = imp;
+    savePortfolio(imp);
+    try {
+      history.replaceState(null, '', location.pathname + location.search);
+    } catch {
+      /* niente */
     }
-  }
+    return true;
+  };
+  const importedAtStart = importFromHash();
+  window.addEventListener('hashchange', () => {
+    if (!importFromHash()) return;
+    if ($('#portfolio')?.open) renderPortfolio();
+    else $('#btn-portfolio')?.click();
+    try { updateNotifsBadge(); } catch { /* niente */ }
+  });
   try {
     const meta = STATIC ? await fetch(`data/meta.json?t=${Date.now()}`).then((r) => r.json()) : await api('/api/meta');
     if (STATIC && reloadIfNewBuild(meta)) return;
@@ -2591,6 +2600,8 @@ async function main() {
       state.priced = Object.fromEntries(Object.entries(state.quotes).map(([k, q]) => [k, q?.priceEur]));
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
     }
+    // Portafoglio appena importato da un link: lo si mostra subito
+    if (importedAtStart) $('#btn-portfolio')?.click();
   } catch (e) {
     $('#table tbody').innerHTML = `<tr><td colspan="28" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }

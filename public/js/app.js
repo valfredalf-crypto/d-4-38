@@ -420,7 +420,10 @@ function filtered() {
       if (i.type !== 'etf' || isBond(i)) return false; // i bond hanno la loro scheda, qui solo ETF non obbligazionari
     } else if (type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
-    if (distFilter && distFilter !== 'all' && distKind(i) !== distFilter) return false; // accumulazione / distribuzione
+    // Accumulazione / distribuzione: è una caratteristica dei fondi (ETF), non delle azioni singole. Il filtro
+    // si applica quindi solo agli ETF (bond compresi); le azioni e le crypto non vengono mai escluse da qui,
+    // altrimenti «Accumulazione» svuoterebbe la scheda Azioni (le azioni distribuiscono tutte dividendi).
+    if (distFilter && distFilter !== 'all' && i.type === 'etf' && distKind(i) !== distFilter) return false;
     // Imbuto degli ETF globali (purezza, accumulazione, patrimonio ≥ 1 mld, TER ≤ 0,25%): gli ETF bocciati
     // escono dalla classifica (non nella scheda Bond e non quando si cerca per nome/ISIN)
     if (funnelOn && i.type === 'etf' && type !== 'bond' && !needle && !funnelOf(i).pass) return false;

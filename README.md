@@ -6,6 +6,11 @@ simulazioni **Monte Carlo** su parametri **prospettici** (non solo proiezione de
 
 Nessuna dipendenza esterna: serve solo Node.js ≥ 18.
 
+**Sessione Windows SYSTEM:** [`avvia-system.cmd`](WINDOWS-SYSTEM.md) verifica
+l'identità `NT AUTHORITY\SYSTEM` e avvia Copilot con `--allow-all`, Claude
+Code con `bypassPermissions` oppure PowerShell con ExecutionPolicy Bypass.
+La guida include l'avvio da amministratore e la verifica senza avviare agenti.
+
 **Versione online (GitHub Pages):** https://valfredalf-crypto.github.io/d-4-38/ — sito statico rigenerato
 ogni ~15 minuti da `.github/workflows/pages.yml` (quotazioni, previsioni, classifica). La pagina controlla ogni
 60 s se ci sono dati nuovi e li carica da sola; i prezzi crypto arrivano in tempo reale da Coinbase e le

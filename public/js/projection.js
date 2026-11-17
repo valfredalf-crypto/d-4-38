@@ -14,18 +14,6 @@ export const GEMINI_PORTFOLIO = {
     { isin: 'IE00BMFKG444', name: 'Nasdaq 100', weight: 0.2, ter: 0.002, cagr: 0.1, tax: 0.26, mdd: 0.5 },
     { isin: 'IE00BWBXM617', name: 'US Health Care', weight: 0.2, ter: 0.0015, cagr: 0.09, tax: 0.26, mdd: 0.2 },
   ],
-  // Esempi di partenza per le sezioni a importo in euro: azioni singole e bond. CAGR, TER, aliquota e MDD
-  // restano vuoti qui e vengono riempiti automaticamente dal modello (syncRow) all'apertura, come per gli ETF.
-  // Sono strumenti presenti nell'universo pubblicato, modificabili o rimovibili dall'utente.
-  stocks: [
-    { isin: 'NL0010273215', name: 'ASML Holding', amount: 2000, tax: 0.26 },
-    { isin: 'US5949181045', name: 'Microsoft', amount: 2000, tax: 0.26 },
-    { isin: 'FR0000121014', name: 'LVMH', amount: 1500, tax: 0.26 },
-  ],
-  bonds: [
-    { isin: 'LU2641054122', name: 'Xtrackers II Eurozone Government Bond 0-1', amount: 1500, ter: 0.001, tax: 0.26 },
-    { isin: 'LU2300294316', name: 'Amundi EUR Corporate Bond 0-1Y ESG', amount: 1500, ter: 0.0012, tax: 0.26 },
-  ],
 };
 
 /** Medie ponderate dei parametri (pesi normalizzati). */

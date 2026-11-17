@@ -1542,21 +1542,18 @@ function decodePortfolio(str) {
 }
 
 function loadPortfolio() {
-  const def = JSON.parse(JSON.stringify(GEMINI_PORTFOLIO));
   try {
     const p = JSON.parse(localStorage.getItem('trmc.portfolio') || 'null');
     if (p && (p.rows?.length || p.stocks?.length || p.bonds?.length)) {
       p.rows = Array.isArray(p.rows) ? p.rows : [];
-      // Se i blocchi Azioni/Bond salvati sono vuoti (portafogli delle versioni precedenti), li si riempie
-      // con gli esempi di default, così le sezioni non restano vuote; l'utente può sempre modificarli o rimuoverli.
-      p.stocks = Array.isArray(p.stocks) && p.stocks.length ? p.stocks : def.stocks || [];
-      p.bonds = Array.isArray(p.bonds) && p.bonds.length ? p.bonds : def.bonds || [];
+      p.stocks = Array.isArray(p.stocks) ? p.stocks : [];
+      p.bonds = Array.isArray(p.bonds) ? p.bonds : [];
       return p;
     }
   } catch {
     /* niente */
   }
-  return def;
+  return { ...JSON.parse(JSON.stringify(GEMINI_PORTFOLIO)), stocks: [], bonds: [] };
 }
 function savePortfolio(p) {
   try {

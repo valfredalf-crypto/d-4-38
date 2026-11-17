@@ -41,6 +41,7 @@ export function funnelCheck(inst, fund, distKind) {
 // ---------- Algoritmo «Max Growth Score» (ETF)
 // Fase 1: scarta distribuzione, patrimonio < 500 mln €, TER > 0,30% (dati mancanti: non si scarta).
 export function phase1Check(inst, fund, distKind, fwd = null) {
+  if (!inst?.isin) return { pass: false, reason: 'senza ISIN: non su Trade Republic' };
   // Azioni: capitalizzazione almeno 2 miliardi (titoli piccoli e poco scambiati: prezzi fermi, volatilità
   // apparente bassa, spread alti)
   if (inst?.type === 'stock') return Number.isFinite(fwd?.mcap) && fwd.mcap < 2e9 ? { pass: false, reason: 'capitalizzazione < 2 mld' } : { pass: true };
@@ -67,6 +68,8 @@ const STAGNATION_RE = /\b(value|high[- ]div(idend)?|min(imum)?[- ]?vol(atility)?
 // Strategie «speciali» (non il mercato puro): gestione attiva, ESG/screening, fattori, enhanced…
 const SPECIAL_RE = /\b(quality|momentum|screened|sri|esg|socially|responsible|sustainab\w*|climate|paris|net[- ]zero|transition|equal[- ]weight\w*|factor|multi[- ]?factor|defensive|enhanced|select|leaders|islamic|shariah|catholic|active|alphadex|research|scored|universal|gender|governance|covered call|buffer|income)\b/i;
 export function maxGrowthScore(inst, sim, fwd = null, ter = null, fund = null, perf = null) {
+  // Solo strumenti con ISIN: identificabili e acquistabili su Trade Republic
+  if (!inst?.isin) return null;
   const isEtf = inst?.type === 'etf';
   if (!(isEtf || inst?.type === 'stock') || !Number.isFinite(sim?.cagrHist)) return null;
   const hist = sim.cagrHist;

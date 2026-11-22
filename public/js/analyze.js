@@ -141,7 +141,7 @@ export const UNDERLYINGS = [
   { key: 'nasdaq', label: 'Nasdaq 100', re: /nasdaq|qs100|\bndx\b/i, proxy: /nasdaq[- ]?100/i },
   { key: 'sp500', label: 'S&P 500', re: /s&p ?500|\bspx\b/i, proxy: /s&p ?500/i },
   { key: 'semis', label: 'semiconduttori', re: /semiconductor|phlx/i, proxy: /semiconductor/i },
-  { key: 'dax', label: 'DAX', re: /\bdax\b/i, proxy: /\bdax\b/i },
+  { key: 'dax', label: 'DAX', re: /dax\b/i, proxy: /\bdax\b/i },
   { key: 'estx50', label: 'Euro Stoxx 50', re: /euro ?stoxx ?50/i, proxy: /euro ?stoxx ?50/i },
   { key: 'ftsemib', label: 'FTSE MIB', re: /ftse ?mib/i, proxy: /ftse ?mib/i },
   { key: 'cac40', label: 'CAC 40', re: /cac ?40/i, proxy: /cac ?40/i },

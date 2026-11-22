@@ -47,5 +47,12 @@
   "name": "Capricor Therapeutics, Inc.",
   "type": "stock",
   "addedAt": "2026-11-22T21:01:46.072Z"
+ },
+ {
+  "symbol": "XERS",
+  "isin": "US98422E1038",
+  "name": "Xeris Biopharma Holdings, Inc.",
+  "type": "stock",
+  "addedAt": "2026-11-22T21:37:30.833Z"
  }
 ]

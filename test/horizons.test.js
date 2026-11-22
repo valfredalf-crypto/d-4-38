@@ -371,3 +371,14 @@ test('prezzo obiettivo implicito degli ETF dai titoli in portafoglio', async () 
   assert.equal(holdingsUpside({ holdings: [h(0.3, 120, 100), h(0.7, 0, 100)] }), null); // copertura < 50%
   assert.ok(Math.abs(holdingsUpside({ holdings: [h(1, 500, 100)] }).upside - 0.5) < 1e-12); // limite +50%
 });
+
+test('stima provvisoria: evidenze degli analisti solo con almeno 3 analisti', async () => {
+  const { provisionalEstimate, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
+  const ts = Array.from({ length: 20 }, (_, i) => 1_700_000_000 + i * 604800);
+  const hist = { timestamps: ts, closesEur: ts.map((_, i) => 100 * (1 + 0.01 * Math.sin(i))) };
+  const base = provisionalEstimate({ instrument: { name: 'X', type: 'stock' }, history: hist, market: 0.103, settings: DEFAULT_SETTINGS });
+  const junk = provisionalEstimate({ instrument: { name: 'X', type: 'stock' }, history: hist, market: 0.103, settings: DEFAULT_SETTINGS, fundamentals: { revenueGrowthNext: 18.75, analysts: null } });
+  assert.equal(junk.cagr, base.cagr); // ricavi +1.875% senza analisti: ignorati
+  const ok = provisionalEstimate({ instrument: { name: 'X', type: 'stock' }, history: hist, market: 0.103, settings: DEFAULT_SETTINGS, fundamentals: { revenueGrowthNext: 0.2, analysts: 5 } });
+  assert.ok(ok.cagr > base.cagr);
+});

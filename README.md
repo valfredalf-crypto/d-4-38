@@ -122,9 +122,12 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
    con il sottostante fermo il prodotto perde (decadimento).
 5c. **Limite del trend**: il trend confermato prosegue, ma il movimento nel periodo non supera il rendimento annuo previsto
    per lo strumento (evita di proiettare salti una tantum come offerte di acquisto o trimestrali).
-5d. **Classifica «Breve termine»** (selettore Classifica): tutti gli strumenti, azioni comprese, ordinati in modo decrescente
-   per guadagno netto PIÙ PROBABILE a 7/14/30/60 giorni sul capitale impostato (colonne ordinabili, scheda «Breve» sul
-   telefono, CSV), con lo stesso algoritmo del Portafoglio.
+5d. **Classifica «Netto più probabile»** (selettore Classifica → sezione con i periodi 7/14/30/60/90 gg, 1/3/5 anni):
+   tutti gli strumenti, azioni ed ETF compresi, in ordine decrescente di guadagno netto PIÙ PROBABILE (mediano) sul capitale
+   impostato. Previsione: media tra prezzo obiettivo degli analisti (ETF: media ponderata sui titoli) e crescita dei
+   fondamentali, previsioni verificate, sottostante dei leva; fino a 90 gg anche il trend se confermato. Oltre l'anno il
+   prezzo obiettivo (12 mesi) vale solo per il primo anno, poi la crescita di lungo periodo. Evidenze degli analisti solo
+   con almeno 3 analisti.
 6. **Imposta**: aliquota × guadagno atteso (perdite compensabili tra le posizioni, mai negativa); dividendi tassati a parte.
    Opzione «imposta prudente»: perdite non compensate (imposta sui soli scenari in guadagno).
 7. **Costi**: 1 € per ordine (acquisto + vendita) per posizione; la probabilità di guadagno è calcolata al netto dei costi.

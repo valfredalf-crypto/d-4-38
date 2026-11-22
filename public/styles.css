@@ -255,6 +255,7 @@ table.mini .num { white-space: nowrap; }
   body.mview-short #table th:nth-child(n+33):nth-child(-n+36), body.mview-short #table td:nth-child(n+33):nth-child(-n+36) { display: table-cell; }
   body.mview-short #table th:nth-child(n+3):nth-child(-n+7), body.mview-short #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
   th, td { padding: 8px 3px; }
+  .np-bar { margin: 0 16px 10px; }
   #table td { font-size: 12.5px; }
   th .l { display: none; }
   th .s { display: inline; }
@@ -294,3 +295,7 @@ table.mini .num { white-space: nowrap; }
 .notif-swap { border-left-color: #2b7de0; }
 .notif-trim { border-left-color: #c2a000; }
 .notif-warn { border-left-color: #d33; }
+
+.np-bar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 24px 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.np-bar[hidden] { display: none; }
+.np-bar .small-note { flex-basis: 100%; }

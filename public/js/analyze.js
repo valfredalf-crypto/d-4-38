@@ -307,10 +307,12 @@ function buildEstimate({ name, vol, mdd, beta, betaR2 = null, betaN = 0, m, rf, 
     basis = `Rendimento atteso del mercato (${(m * 100).toFixed(1)}%) con beta ${b.toFixed(2)}${bNote}.`;
     // Evidenze di mercato e prospettive di crescita (analisti), quando disponibili: media con il rendimento di mercato
     const f = fundamentals;
-    if (f && type === 'stock') {
+    // solo con copertura degli analisti affidabile (≥ 3, come il modello principale): senza analisti i dati di crescita di
+    // Yahoo possono essere errati (es. ricavi +1.875%)
+    if (f && type === 'stock' && (f.analysts || 0) >= 3) {
       const ev = [];
       const div = Number.isFinite(f.dividendYield) ? Math.max(0, f.dividendYield) : 0;
-      if (f.targetMean > 0 && f.price > 0 && (f.analysts || 0) >= 1) ev.push(['prezzo obiettivo degli analisti', Math.max(-0.5, Math.min(0.5, f.targetMean / f.price - 1)) + div]);
+      if (f.targetMean > 0 && f.price > 0) ev.push(['prezzo obiettivo degli analisti', Math.max(-0.5, Math.min(0.5, f.targetMean / f.price - 1)) + div]);
       const g = Number.isFinite(f.epsGrowthNext) ? Math.min(1, f.epsGrowthNext) : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
       if (g != null) ev.push(['crescita attesa di utili/ricavi', Math.max(-0.5, Math.min(0.5, g)) + div]);
       if (ev.length) {

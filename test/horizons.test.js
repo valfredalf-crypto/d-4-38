@@ -231,8 +231,9 @@ test('tendenza recente: momentumStats, finestra e limite di momentumTilt', async
   const flat = momentumTilt({ net: 0.07, vol: 0.15, mom: { w4: 0 }, years: 30 / 365, rho: 0.25 });
   assert.ok(flat.net < 0.07); // tendenza nulla sotto il CAGR atteso: lo abbassa un po'
   assert.deepEqual(momentumTilt({ net: 0.07, vol: 0.15, mom: null, years: 0.1 }), { net: 0.07, tilt: 0, window: null, rho: 0 });
-  // default 0 (calibrato sui dati): la tendenza non sposta la previsione
-  assert.ok(Math.abs(momentumTilt({ net: 0.07, vol: 0.15, mom, years: 0.1 }).net - 0.07) < 1e-12);
+  // persistenza 100%: la mediana segue il trend attuale (finestra 13 sett. per 30 gg)
+  const full = momentumTilt({ net: 0.07, vol: 0.3, mom: { w4: -0.1, w13: -0.3 }, years: 30 / 365, rho: 1 });
+  assert.ok(Math.abs(Math.log(1 + full.net) - ((Math.log(0.7) / 13) * 52 + 0.045)) < 1e-9);
   // projectShort: con tendenza e ρ più alta il guadagno atteso aumenta; senza momentum è invariato
   const base = { cagr: -0.6, ter: 0.006, tax: 0.26 };
   const y = 14 / 365;
@@ -292,4 +293,28 @@ test('leva/short: rendimento aritmetico dal sottostante senza doppio decadimento
   assert.equal(underlyingOf('Qs100 5X Daily Short USD').key, 'nasdaq');
   assert.equal(underlyingOf('Euro Stoxx 50 5X Daily Short').key, 'estx50');
   assert.ok(underlyingOf('Physical Silver USD (Acc)').proxy.test('Physical Silver USD (Acc)'));
+});
+
+test('persistenza automatica e previsioni di mercato verificate', async () => {
+  const { autoRho } = await import('../public/js/projection.js');
+  const { viewFor, MARKET_VIEWS } = await import('../public/js/market-views.js');
+  const { leveragedArith } = await import('../public/js/analyze.js');
+  // il trend prosegue solo se concorde con la previsione
+  assert.equal(autoRho(0.05, 0.4), 1);
+  assert.equal(autoRho(-0.2, -1.5), 1);
+  assert.equal(autoRho(0.05, -1.5), 0);
+  assert.equal(autoRho(-0.1, 0.8), 0);
+  assert.equal(autoRho(NaN, 0.8), 0);
+  // previsione argento: ribassista, valida entro la scadenza, scaduta dopo
+  const asOf = Date.parse(MARKET_VIEWS.silver.asOf);
+  const v = viewFor('silver', asOf + 5 * 864e5);
+  assert.ok(v && v.move < 0 && v.geo < 0);
+  assert.equal(viewFor('silver', asOf + 60 * 864e5), null);
+  assert.equal(viewFor('inesistente'), null);
+  // argento in calo → 3x short positivo, 3x long negativo, in proporzione alla leva
+  const mu = v.geo + 0.37 ** 2 / 2;
+  const sh = leveragedArith({ name: 'WisdomTree Silver 3x Daily Short', mu, rf: 0.02 });
+  const lg = leveragedArith({ name: 'WisdomTree Silver 3x Daily Leveraged', mu, rf: 0.02 });
+  const sh1 = leveragedArith({ name: 'Silver Short USD', mu, rf: 0.02 });
+  assert.ok(sh > 0 && lg < 0 && sh > sh1 && sh1 > 0);
 });

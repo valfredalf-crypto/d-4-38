@@ -1,9 +1,10 @@
 import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats, leveragedArith, underlyingOf } from './analyze.js';
+import { viewFor } from './market-views.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
-import { project, projectAny, portfolioTax, momentumTilt, MOMENTUM_RHO, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
+import { project, projectAny, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -605,18 +606,47 @@ function underlyingView(inst) {
   if (_undCache.has(key)) return _undCache.get(key);
   const med = (a) => { const s = a.slice().sort((x, y) => x - y); return s.length ? s[Math.floor(s.length / 2)] : null; };
   const c = state.instruments.filter((x) => !x.leveraged && x.type === 'etf' && u.proxy.test(x.name) && !/miner/i.test(x.name)).map((x) => state.results[x.symbol]).filter((r) => r && !r.error && Number.isFinite(r.forward?.expected));
-  const out = c.length ? { label: u.label, mu: med(c.map((r) => r.forward.expected)), vol: med(c.map((r) => r.forward.vol).filter(Number.isFinite)), n: c.length } : null;
+  // previsione specifica (analisti sui titoli dell'ETF) se almeno metà degli ETF sul sottostante ce l'ha
+  const ev = c.filter((r) => ['own', 'holdings'].includes(r.forward?.growthSource)).length * 2 >= c.length;
+  const out = c.length ? { label: u.label, mu: med(c.map((r) => r.forward.expected)), vol: med(c.map((r) => r.forward.vol).filter(Number.isFinite)), n: c.length, ev } : null;
   _undCache.set(key, out);
   return out;
 }
 /** Rendimento atteso aritmetico per gli orizzonti brevi: per leva/short dal sottostante reale (vedi leveragedArith). */
 function shortPrior(inst, cagr) {
+  const rf = (state.settings.outlook?.riskFree ?? 2) / 100;
+  // Previsione di mercato verificata per il sottostante (fonte e data): vale per i prodotti a leva/short e per gli ETF/ETC
+  // che replicano direttamente il sottostante (es. argento fisico), non per le società minerarie.
+  const und = underlyingOf(inst?.name);
+  const direct = und && !inst?.leveraged && inst?.type === 'etf' && und.proxy && und.proxy.test(inst.name) && !/miner/i.test(inst.name);
+  const view = und && (inst?.leveraged || direct) ? viewFor(und.key) : null;
+  if (view) {
+    const uv = underlyingView(inst);
+    const muU = view.geo + ((uv?.vol ?? 0) ** 2) / 2; // rendimento medio coerente con la previsione centrale
+    const a = inst?.leveraged ? leveragedArith({ name: inst.name, mu: muU, rf }) : muU;
+    if (a != null) return { cagr: a, view: true, src: `previsione di mercato ${und.label}: ${pct(view.move, true, 1)} al ${view.targetDate.split('-').reverse().join('/')} (${view.source})` };
+  }
   if (!inst?.leveraged) return { cagr, src: null };
   const u = underlyingView(inst);
-  const rf = (state.settings.outlook?.riskFree ?? 2) / 100;
   const mu = u?.mu ?? state.market?.expected ?? rf + 0.045;
   const a = leveragedArith({ name: inst.name, mu, rf });
   return a == null ? { cagr, src: null } : { cagr: a, src: u ? `sottostante ${u.label}: rendimento atteso ${pct(u.mu, true, 1)} (mediana di ${u.n} ETF/ETC)` : `sottostante non riconosciuto: mercato azionario ${pct(mu, true, 1)}` };
+}
+/**
+ * CAGR per gli orizzonti brevi: previsione (verificata o del modello) e, con persistenza automatica, trend di mercato attuale
+ * solo se confermato dalla previsione. `rho` impostato a mano (numero) forza la persistenza.
+ */
+function autoShort({ base, ter = 0, vol, mom, years, view = false, rho = null, evidence = true }) {
+  const baseNet = base - ter;
+  if (view || !mom) return { net: baseNet, window: null, rho: null, view };
+  if (Number.isFinite(rho)) {
+    const t = momentumTilt({ net: baseNet, vol, mom, years, rho });
+    return { net: t.net, window: t.window, rho, view: false };
+  }
+  const full = momentumTilt({ net: baseNet, vol, mom, years, rho: 1 });
+  // conferma solo da previsioni specifiche dello strumento; senza, il trend non viene esteso
+  const r = evidence ? autoRho(baseNet, full.net) : 0;
+  return { net: r ? full.net : baseNet, window: full.window, rho: r, view: false, auto: true, noEvidence: !evidence };
 }
 function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
@@ -630,7 +660,10 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   const ter = Number.isFinite(r?.fund?.ter) ? r.fund.ter : DEFAULT_TER[i.type] ?? 0; // TER reale del fondo se noto
   const div = i.type === 'etf' && Number.isFinite(r?.sim?.distYield) && r.sim.distYield > 0 ? r.sim.distYield : 0; // ETF a distribuzione
   const sp = shortPrior(i, cagr);
-  return { cagr, cagrShort: sp.cagr, shortSrc: sp.src, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
+  // previsione SPECIFICA dello strumento (consenso analisti / stime sui titoli dell'ETF), non il solo rendimento di mercato
+  const gs = r?.forward?.growthSource;
+  const evidence = i.leveraged ? !!underlyingView(i)?.ev : !r?.estimated && (gs === 'own' || gs === 'holdings'); // leva: previsioni del sottostante
+  return { cagr, cagrShort: sp.cagr, shortSrc: sp.src, shortView: !!sp.view, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
 }
 const s_tax = (i) => {
   const t = state.results[i.symbol]?.sim?.taxRate;
@@ -644,7 +677,7 @@ function projOf(i, r, cagrOverride = null) {
 /** NR5 ricalcolato secondo il profilo scelto: guadagno netto medio (estremi attenuati) − k × perdita media nel 5% peggiore. */
 function estimateHtml(e, inst = null) {
   if (!e) return '';
-  if (inst?.leveraged) { const sp = shortPrior(inst, e.cagrShort ?? e.cagr); e = { ...e, cagrShortUsed: sp.cagr, shortSrc: sp.src }; }
+  if (inst) { const sp = shortPrior(inst, e.cagrShort ?? e.cagr); e = { ...e, cagrShortUsed: sp.cagr, shortSrc: sp.src, shortView2: !!sp.view }; }
   return `<div class="card"><h3>Stima provvisoria${e.weeks ? ` (${e.weeks} settimane di storico)` : e.source === 'prior' ? ' (valori tipici della categoria)' : ' (dal dataset radar)'}</h3>
     <p class="muted small-note">${esc(e.basis || '')}</p>
     <table class="mini"><tbody>
@@ -660,7 +693,9 @@ function estimateHtml(e, inst = null) {
       const base = Number.isFinite(e.cagrShortUsed) ? e.cagrShortUsed : Number.isFinite(e.cagrShort) ? e.cagrShort : e.cagr;
       const prm = { cagr: base, ter: e.ter || 0, tax: 0.26, net: base - (e.ter || 0) };
       const rows = [7, 14, 30, 90].map((d) => {
-        const h = projectH(prm, 1000, d / 365, e.vol, 1, e.mom, !!e.leverage || !!e.inverse);
+        const t = autoShort({ base, ter: e.ter || 0, vol: e.vol, mom: e.mom, years: d / 365, view: !!e.shortView2, evidence: false, rho: Number.isFinite(state.portfolio?.momRho) ? state.portfolio.momRho : null });
+        const c = t.net + (e.ter || 0);
+        const h = projectH({ cagr: c, ter: e.ter || 0, tax: 0.26, net: t.net }, 1000, d / 365, e.vol, 1, null, !!e.leverage || !!e.inverse);
         return `<tr><td>${d} giorni</td><td class="num ${cls(h.mu)}">${pct(h.mu, true, 1)}</td><td class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</td><td class="num">${h.pProfit != null ? pct(h.pProfit, false, 0) : '–'}</td></tr>`;
       });
       return `<h4 class="pf-h4" style="margin-top:12px">Orizzonti brevi (su 1.000 €)</h4>${e.shortSrc ? `<p class="muted small-note">Rendimento atteso medio dal ${esc(e.shortSrc)}: ${pct(base, true, 1)}/anno con la leva.</p>` : ''}
@@ -1703,8 +1738,11 @@ function renderPortfolio() {
     let auto = pp.cagr;
     let trendOn = false;
     if (refShort > 0 && !man.includes('cagr')) {
-      const base = Number.isFinite(pp.cagrShort) ? pp.cagrShort : pp.cagr; // per leva/short: dal sottostante reale
-      const t = r?.mom ? momentumTilt({ net: base - (pp.ter || 0), vol: pp.vol, mom: r.mom, years: refShort, rho: p.momRho ?? MOMENTUM_RHO }) : { net: base - (pp.ter || 0), window: null };
+      const base = Number.isFinite(pp.cagrShort) ? pp.cagrShort : pp.cagr; // previsione (verificata, sottostante o modello)
+      const t = autoShort({ base, ter: pp.ter || 0, vol: pp.vol, mom: r?.mom, years: refShort, view: pp.shortView, evidence: pp.evidence, rho: Number.isFinite(p.momRho) ? p.momRho : null });
+      row.cagrNoEv = !!t.noEvidence;
+      row.cagrRho = t.rho;
+      row.cagrView = !!t.view;
       auto = Math.round((t.net + (pp.ter || 0)) * 1e4) / 1e4;
       trendOn = true;
       row.cagrWindow = t.window;
@@ -1737,7 +1775,7 @@ function renderPortfolio() {
         <td><input data-bucket="rows" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) + (!pp ? ` <span class="neg">· ${r?.error ? esc(r.error) : 'nessuna stima del modello'}: inserisci CAGR, TER, aliquota e MDD a mano</span>` : r?.estimated ? ' <span class="muted" title="Previsione a 5 anni non disponibile: CAGR, volatilità e MDD sono una stima provvisoria (storico, dataset o valore tipico della categoria)">· stima provvisoria</span>' : '') : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €<div class="muted small-note">${wSum > 0 && Number.isFinite(row.amount) ? pct(row.amount / wSum, false, 1) + ' del capitale' : '% automatica'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
-        <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello (lungo periodo): ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}${row.cagrTrend ? `<div class="small-note pos" title="Valore calcolato automaticamente: CAGR del modello corretto con la tendenza recente (persistenza ${Math.round((p.momRho ?? MOMENTUM_RHO) * 100)}%). Usato per gli orizzonti brevi; per quelli ≥ 1 anno vale il CAGR di lungo periodo.">⚙ automatico per gli orizzonti brevi${row.cagrWindow && (p.momRho ?? MOMENTUM_RHO) ? ` · tendenza ultime ${row.cagrWindow} sett. (persistenza ${Math.round((p.momRho ?? MOMENTUM_RHO) * 100)}%)` : ''}${row.cagrSrc ? ` · ${esc(row.cagrSrc)}` : ''}</div>` : ''}${shortNote}</td>
+        <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello (lungo periodo): ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}${row.cagrTrend ? `<div class="small-note pos" title="Valore calcolato automaticamente: CAGR del modello corretto con la tendenza recente (persistenza ${Math.round((p.momRho ?? MOMENTUM_RHO) * 100)}%). Usato per gli orizzonti brevi; per quelli ≥ 1 anno vale il CAGR di lungo periodo.">⚙ automatico per gli orizzonti brevi${row.cagrView ? '' : row.cagrWindow ? (row.cagrRho === 1 ? ` · trend attuale (ultime ${row.cagrWindow} sett.) confermato dalle previsioni` : row.cagrRho === 0 ? (row.cagrNoEv ? ` · trend attuale (ultime ${row.cagrWindow} sett.) non esteso: nessuna previsione specifica (analisti) per questo strumento` : ` · trend attuale (ultime ${row.cagrWindow} sett.) non confermato dalle previsioni: ignorato`) : ` · trend ultime ${row.cagrWindow} sett. con persistenza ${Math.round(row.cagrRho * 100)}%`) : ''}${row.cagrSrc ? ` · ${esc(row.cagrSrc)}` : ''}</div>` : ''}${shortNote}</td>
         <td class="num"><input data-bucket="rows" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-bucket="rows" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
         <td class="num"><input data-bucket="rows" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="rows" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
         ${(() => {
@@ -1908,9 +1946,9 @@ function renderPortfolio() {
       <span>Capitale investito (ETF): <b>${eur(Math.round(wSum))}</b> <span class="muted">(somma degli importi)</span></span>
       <span class="row" style="flex-wrap:wrap;gap:4px;align-items:center" title="Scegli uno o più orizzonti: giorni (algoritmo breve con volatilità e costi) o anni (algoritmo 019)"><b>Orizzonti</b>
         ${[...HORIZON_PRESETS, ...years.filter((y) => !HORIZON_PRESETS.some((h) => Math.abs(h - y) < 1e-9))].sort((a, b) => a - b).map((y) => { const on = years.some((v) => Math.abs(v - y) < 1e-9); return `<button class="tab small${on ? ' active' : ''}" data-h="${y}" aria-pressed="${on}" title="${on ? 'Togli' : 'Aggiungi'} l'orizzonte di ${horizonLong(y)}">${horizonShort(y)}</button>`; }).join('')}
-        <input id="pf-hn" type="number" min="1" max="3650" step="1" placeholder="n" style="width:4.5em" aria-label="Orizzonte personalizzato"> <select id="pf-hu" aria-label="Unità"><option value="d">giorni</option><option value="y">anni</option></select> <button id="pf-hadd" class="ghost small">+ Orizzonte</button> <label class="muted small-note" title="Quanta parte della tendenza recente si assume che continui. Default 0: sui dati storici la tendenza di 4-26 settimane non ha continuato (leggera inversione). Valori positivi = il trend prosegue, negativi = si inverte">persistenza tendenza <input id="pf-mrho" type="number" min="-50" max="100" step="5" value="${Math.round((p.momRho ?? MOMENTUM_RHO) * 100)}" style="width:4em"> %</label> <label class="muted small-note" title="Spuntato: le perdite non si compensano (imposta solo sugli scenari in guadagno, più alta con strumenti volatili). Non spuntato: imposta = aliquota × guadagno atteso (minusvalenze compensabili)"><input id="pf-taxp" type="checkbox"${p.taxPrudent ? ' checked' : ''}> imposta prudente</label>
+        <input id="pf-hn" type="number" min="1" max="3650" step="1" placeholder="n" style="width:4.5em" aria-label="Orizzonte personalizzato"> <select id="pf-hu" aria-label="Unità"><option value="d">giorni</option><option value="y">anni</option></select> <button id="pf-hadd" class="ghost small">+ Orizzonte</button> <label class="muted small-note" title="Vuoto = automatica: il trend di mercato attuale prosegue solo se le previsioni (di mercato verificate o del modello con analisti) vanno nella stessa direzione, altrimenti prevale la previsione. Un numero forza la persistenza per tutti">persistenza tendenza <input id="pf-mrho" type="number" min="-50" max="100" step="5" placeholder="auto" value="${Number.isFinite(p.momRho) ? Math.round(p.momRho * 100) : ''}" style="width:4em"> %</label> <label class="muted small-note" title="Spuntato: le perdite non si compensano (imposta solo sugli scenari in guadagno, più alta con strumenti volatili). Non spuntato: imposta = aliquota × guadagno atteso (minusvalenze compensabili)"><input id="pf-taxp" type="checkbox"${p.taxPrudent ? ' checked' : ''}> imposta prudente</label>
       </span>
-      ${years.some(isShortHorizon) ? `<span class="muted small-note" style="flex-basis:100%">Orizzonti brevi: guadagno netto atteso = capitale × rendimento atteso del periodo (CAGR del modello corretto con la tendenza recente dello strumento, entro ±0,5 σ del periodo) − imposta attesa − costi degli ordini. Imposta: aliquota × guadagno atteso (perdite compensabili con altre plusvalenze). Con «imposta prudente» per gli ETF UCITS si assume che le perdite non si compensino: l'imposta si calcola solo sugli scenari in guadagno ed è più alta con strumenti volatili. In pochi giorni il risultato reale oscilla molto più dell'atteso: guarda l'intervallo e la probabilità di guadagno. Per leva/short il rischio è ancora più alto.</span>` : ''}
+      ${years.some(isShortHorizon) ? `<span class="muted small-note" style="flex-basis:100%">Orizzonti brevi: guadagno netto atteso = capitale × rendimento atteso del periodo (previsioni di mercato verificate dove disponibili; altrimenti modello con analisti, più il trend attuale solo se le previsioni lo confermano) − imposta attesa − costi degli ordini. Imposta: aliquota × guadagno atteso (perdite compensabili con altre plusvalenze). Con «imposta prudente» per gli ETF UCITS si assume che le perdite non si compensino: l'imposta si calcola solo sugli scenari in guadagno ed è più alta con strumenti volatili. In pochi giorni il risultato reale oscilla molto più dell'atteso: guarda l'intervallo e la probabilità di guadagno. Per leva/short il rischio è ancora più alto.</span>` : ''}
       <button class="ghost small" data-addbucket="rows">+ Strumento (ETF)</button>
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
@@ -2257,7 +2295,7 @@ function renderPortfolio() {
   });
   $('#pf-mrho')?.addEventListener('change', (e) => {
     const v = parseFloat(String(e.target.value).replace(',', '.'));
-    p.momRho = Number.isFinite(v) ? Math.max(-0.5, Math.min(1, v / 100)) : MOMENTUM_RHO;
+    p.momRho = Number.isFinite(v) ? Math.max(-0.5, Math.min(1, v / 100)) : null; // vuoto = automatica (previsioni)
     savePortfolio(p);
     renderPortfolio();
   });
@@ -2269,6 +2307,7 @@ function renderPortfolio() {
 }
 function openPortfolio() {
   if (!state.portfolio) state.portfolio = loadPortfolio();
+  if (state.portfolio.rhoMode !== 2) { state.portfolio.momRho = null; state.portfolio.rhoMode = 2; savePortfolio(state.portfolio); } // nuova regola: persistenza automatica
   renderPortfolio();
   $('#portfolio').showModal();
 }

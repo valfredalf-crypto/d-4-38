@@ -106,13 +106,19 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
 3. **Leva/short**: rendimento atteso aritmetico dal **sottostante reale** (mediana degli ETF/ETC non a leva sullo stesso
    sottostante: argento, oro, Nasdaq 100, S&P 500, DAX…): long `L·μ − (L−1)·rf`, short `−L·μ + (L+1)·rf`. Il decadimento da
    ribilanciamento NON si sottrae di nuovo: lo applica già la distribuzione lognormale (−σ²/2).
-4. **Tendenza recente**: entra con la «persistenza» scelta dall'utente (default **0%**: sui dati storici di 388 strumenti la
-   tendenza di 4-26 settimane non è proseguita, leggera inversione). La deriva osservata si confronta col rendimento medio
-   aggiungendo σ²/2; effetto limitato a ±0,5 σ·√T.
-5. **Imposta**: aliquota × guadagno atteso (perdite compensabili tra le posizioni, mai negativa); dividendi tassati a parte.
+4. **Previsioni e mercato attuale decidono la direzione** (persistenza automatica, default): il trend di mercato attuale
+   prosegue al 100% per l'orizzonte solo se una previsione SPECIFICA dello strumento va nella stessa direzione (consenso
+   analisti, stime sui titoli dell'ETF, previsioni del sottostante per i leva); se la contraddice o manca, prevale la
+   previsione e il trend non viene esteso. La persistenza si può forzare a mano (−50%…100%).
+5. **Previsioni di mercato verificate** (`public/js/market-views.js`, con fonte e data, scadenza 45 giorni): per materie
+   prime e sottostanti senza analisti (argento, petrolio…) fissano direzione ed entità a breve; i prodotti short guadagnano
+   in proporzione alla discesa prevista (con la leva), i long perdono, e viceversa. Vanno aggiornate quando scadono; inserire
+   solo previsioni attuali e coerenti col prezzo del giorno (niente dati vecchi o sondaggi).
+   La deriva osservata si confronta col rendimento medio aggiungendo σ²/2; limite di sicurezza ±2 σ·√T.
+6. **Imposta**: aliquota × guadagno atteso (perdite compensabili tra le posizioni, mai negativa); dividendi tassati a parte.
    Opzione «imposta prudente»: perdite non compensate (imposta sui soli scenari in guadagno).
-6. **Costi**: 1 € per ordine (acquisto + vendita) per posizione; la probabilità di guadagno è calcolata al netto dei costi.
-7. Orizzonti ≥ 1 anno: algoritmo 019 con il CAGR di lungo periodo (`cagrLong`); il campo CAGR del portafoglio si compila da
+7. **Costi**: 1 € per ordine (acquisto + vendita) per posizione; la probabilità di guadagno è calcolata al netto dei costi.
+8. Orizzonti ≥ 1 anno: algoritmo 019 con il CAGR di lungo periodo (`cagrLong`); il campo CAGR del portafoglio si compila da
    solo con il valore per gli orizzonti brevi quando questi sono selezionati.
 
 ## Struttura

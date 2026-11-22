@@ -98,9 +98,18 @@ export function normalizeHorizons(list, fallback = [5, 7]) {
  * periodo non può superare ±0,5 σ·√T, così uno strappo non produce stime irrealistiche.
  * Restituisce { net: CAGR netto equivalente per l'orizzonte, tilt: effetto (log) sul periodo, window, rho }.
  */
-// Persistenza di default 0: sui dati storici (388 strumenti, 110 a leva) la tendenza delle ultime 4-26 settimane NON continua
-// (pendenza da −0,02 a −0,17 a 1-13 settimane, senza informazioni future). L'utente può comunque impostarla (anche negativa).
+// Persistenza usata quando NON è automatica (CAGR inserito a mano): 0 = il valore dell'utente vale così com'è.
+// Nel portafoglio il default è automatico (autoRho): il trend prosegue solo se le previsioni lo confermano.
 export const MOMENTUM_RHO = 0;
+
+/**
+ * Persistenza automatica: il trend di mercato attuale prosegue (100%) se va nella stessa direzione della previsione
+ * (modello con analisti/fondamentali o previsione di mercato verificata), altrimenti si ignora (0%).
+ */
+export function autoRho(forecastNet, trendNet) {
+  if (!Number.isFinite(forecastNet) || !Number.isFinite(trendNet)) return 0;
+  return Math.sign(forecastNet) !== 0 && Math.sign(forecastNet) === Math.sign(trendNet) ? 1 : 0;
+}
 export function momentumTilt({ net, vol, mom, years, rho = MOMENTUM_RHO }) {
   rho = Number.isFinite(rho) ? rho : MOMENTUM_RHO;
   if (!mom || !(years > 0)) return { net, tilt: 0, window: null, rho };
@@ -112,7 +121,7 @@ export function momentumTilt({ net, vol, mom, years, rho = MOMENTUM_RHO }) {
   const prior = Math.log(1 + Math.max(net, -0.99));
   let adj = rho * (trend - prior);
   if (Number.isFinite(vol) && vol > 0) {
-    const cap = (0.5 * vol) / Math.sqrt(years); // ±0,5 σ·√T sul periodo, in termini annui
+    const cap = (2 * vol) / Math.sqrt(years); // limite di sicurezza ±2 σ·√T sul periodo (solo contro dati anomali)
     adj = Math.max(-cap, Math.min(cap, adj));
   }
   return { net: Math.exp(prior + adj) - 1, tilt: adj * years, window: k, rho };

@@ -189,19 +189,24 @@ export function projectAny(params, capital, years, opts = {}) {
 
 /** Proiezione completa del portafoglio sugli orizzonti indicati (`rows[].vol` opzionale: σ annua per gli orizzonti brevi). */
 export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost = 1, momRho }) {
-  const params = weightedParams(rows);
+  // Righe con CAGR automatico già corretto dalla tendenza (`cagrTrend`): per gli orizzonti ≥ 1 anno si usa il CAGR di
+  // lungo periodo (`cagrLong`), per quelli brevi il valore del campo, senza aggiungere di nuovo la tendenza (mom = null).
+  const longRows = rows.map((r) => (r && r.cagrTrend && Number.isFinite(r.cagrLong) ? { ...r, cagr: r.cagrLong } : r));
+  const params = weightedParams(longRows);
   if (!params) return null;
   const used = rows.filter((r) => r && r.weight > 0 && Number.isFinite(r.cagr));
+  const paramsShort = weightedParams(used);
   const vol = portfolioRisk(used.map((r) => ({ weight: r.weight, vol: r.vol })), rho)?.vol ?? null;
   const wSum = used.reduce((a, r) => a + r.weight, 0) || 1;
   return {
     params,
+    paramsShort,
     horizons: years.map((y) => {
       if (!isShortHorizon(y)) return project(params, capital, y);
       // breve termine: CAGR di ogni strumento corretto con la sua tendenza recente, poi media ponderata
       let tilt = 0;
       const tilted = used.map((r) => {
-        const t = momentumTilt({ net: r.cagr - (r.ter || 0), vol: r.vol, mom: r.mom, years: y });
+        const t = momentumTilt({ net: r.cagr - (r.ter || 0), vol: r.vol, mom: r.mom, years: y, rho: momRho });
         tilt += (r.weight / wSum) * t.tilt;
         return { ...r, cagr: t.net + (r.ter || 0) };
       });

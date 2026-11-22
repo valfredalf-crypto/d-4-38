@@ -5,7 +5,7 @@ import { listInstruments, loadExtra, saveExtra } from '../lib/store.js';
 import { search } from '../lib/yahoo.js';
 import { historyEur } from '../lib/market.js';
 import { isValidIsin } from '../public/js/isin.js';
-import { isEuroListing } from '../lib/universe.js';
+import { isEuroListing, isLeveraged } from '../lib/universe.js';
 import { downloadXetraCsv } from '../lib/xetra.js';
 import { parseInstrumentCsv } from '../lib/importer.js';
 
@@ -44,7 +44,9 @@ async function add(isin) {
     try {
       const h = await historyEur(hit.symbol);
       if (h.closesEur.length < 10) continue;
-      const inst = { symbol: hit.symbol, isin, name: h.name || hit.name, type: hit.type, addedAt: new Date().toISOString() };
+      const name = h.name || hit.name;
+      const type = hit.type === 'stock' && isLeveraged(name) ? 'etf' : hit.type; // ETC/ETP a leva: Yahoo li vede spesso come «stock»
+      const inst = { symbol: hit.symbol, isin, name, type, addedAt: new Date().toISOString() };
       saveExtra([...loadExtra().filter((i) => i.isin !== isin), inst]);
       const years = (h.closesEur.length / 52).toFixed(1);
       const warn = h.closesEur.length < 104 ? ` ⚠️ Solo ${years} anni di storico: serve almeno 2 anni per la previsione.` : '';

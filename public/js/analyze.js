@@ -151,9 +151,10 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   // Controllo qualità: per azioni ed ETF un movimento ×3 o ÷3 in una settimana indica dati errati
   // (tipico di quotazioni secondarie poco scambiate): meglio "n.d." che previsioni inventate.
   if (instrument.type !== 'crypto') {
+    const maxJump = Math.log(instrument.leveraged ? 12 : 3); // i prodotti a leva si muovono davvero di molto
     const lb = prices.slice(-(Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1));
     for (let i = 1; i < lb.length; i++) {
-      if (lb[i - 1] > 0 && lb[i] > 0 && Math.abs(Math.log(lb[i] / lb[i - 1])) > Math.log(3)) {
+      if (lb[i - 1] > 0 && lb[i] > 0 && Math.abs(Math.log(lb[i] / lb[i - 1])) > maxJump) {
         return { forward: null, sim: { ok: false, reason: 'Dati di prezzo non affidabili (salti anomali nello storico)', historyYears: realYears } };
       }
     }

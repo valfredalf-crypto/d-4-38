@@ -1539,6 +1539,20 @@ function volOfCode(code) {
   const r = inst ? resOf(inst) : null;
   return inst && r && !r.error && Number.isFinite(r.forward?.vol) ? r.forward.vol : null;
 }
+// Rendimento lordo atteso per gli orizzonti brevi con la tendenza recente (il CAGR dell'input è quello di lungo periodo)
+const rowPrm = (row, noTer = false) => {
+  if (!Number.isFinite(row.cagr)) return null;
+  const ter = noTer ? 0 : Number.isFinite(row.ter) ? row.ter : 0;
+  return { cagr: row.cagr, ter, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - ter };
+};
+function shortNoteHtml(prm, quota, vol, mom, isin, years) {
+  if (!prm || !(quota > 0)) return '';
+  const parts = years.filter(isShortHorizon).map((y) => {
+    const h = projectH(prm, quota, y, vol, 1, mom, symTaxOf(isin));
+    return `${horizonShort(y)} <b class="${cls(h.mu)}">${pct(h.mu, true, 1)}</b> <span class="muted">(≈ ${pct((h.netUsed ?? 0) + (prm.ter || 0), true, 0)}/anno)</span>`;
+  });
+  return parts.length ? `<div class="muted small-note" title="Rendimento lordo atteso nel periodo: CAGR del modello corretto con la tendenza recente dello strumento (prima di imposta e costi). Il CAGR nel campo è quello di lungo periodo.">con tendenza recente: ${parts.join(' · ')}</div>` : '';
+}
 function histScenariosHtml(items, years) {
   const valid = (items || []).filter((i) => i.amount > 0);
   const cap = valid.reduce((a, i) => a + i.amount, 0);
@@ -1653,11 +1667,12 @@ function renderPortfolio() {
       const r = inst ? resOf(inst) : null;
       const pp = inst && r && !r.error ? projParams(inst, r) : null;
       const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
+      const shortNote = shortNoteHtml(rowPrm(row), row.amount || 0, pp?.vol, r?.mom, row.isin, years);
       return `<tr data-k="${k}">
         <td><input data-bucket="rows" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) + (!pp ? ` <span class="neg">· ${r?.error ? esc(r.error) : 'nessuna stima del modello'}: inserisci CAGR, TER, aliquota e MDD a mano</span>` : r?.estimated ? ' <span class="muted" title="Previsione a 5 anni non disponibile: CAGR, volatilità e MDD sono una stima provvisoria (storico, dataset o valore tipico della categoria)">· stima provvisoria</span>' : '') : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €<div class="muted small-note">${wSum > 0 && Number.isFinite(row.amount) ? pct(row.amount / wSum, false, 1) + ' del capitale' : '% automatica'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
-        <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
+        <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello (lungo periodo): ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}${shortNote}</td>
         <td class="num"><input data-bucket="rows" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %${pp ? `<div class="muted small-note">effettiva: ${pct(pp.tax, false, 1)} <button class="ghost small" data-bucket="rows" data-use="tax" data-k="${k}" data-v="${pp.tax}">usa</button></div>` : ''}</td>
         <td class="num"><input data-bucket="rows" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="rows" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
         ${(() => {
@@ -1702,6 +1717,7 @@ function renderPortfolio() {
         const r = inst ? resOf(inst) : null;
         const pp = inst && r && !r.error ? projParams(inst, r, isStock) : null;
         const prm = paramsOf(row);
+        const shortNote = shortNoteHtml(prm, row.amount || 0, pp?.vol, r?.mom, row.isin, years);
         // Guadagno netto atteso per ogni strumento, per orizzonte (azioni: base; bond: × (1 − MDD))
         const gain = row.amount > 0 && prm
           ? years.map((y) => {
@@ -1715,7 +1731,7 @@ function renderPortfolio() {
           <td><input data-bucket="${bucket}" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 46) + (!pp ? ` <span class="neg">· ${r?.error ? esc(r.error) : 'nessuna stima'}: parametri a mano</span>` : r?.estimated ? ' <span class="muted">· stima provvisoria</span>' : '') : row.isin ? '<span class="neg">non in elenco: parametri a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
           <td class="num"><input data-bucket="${bucket}" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €</td>
           ${terCell}
-          <td class="num"><input data-bucket="${bucket}" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="${bucket}" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
+          <td class="num"><input data-bucket="${bucket}" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="${bucket}" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}${shortNote}</td>
           <td class="num"><input data-bucket="${bucket}" data-f="tax" type="number" step="0.1" min="0" value="${pcIn(row.tax, 1)}" size="4"> %</td>
           <td class="num"><input data-bucket="${bucket}" data-f="mdd" type="number" step="1" min="0" value="${pcIn(row.mdd, 0)}" size="4"> %${pp?.mdd != null ? `<div class="muted small-note">storico: ${pct(pp.mdd, false, 0)} <button class="ghost small" data-bucket="${bucket}" data-use="mdd" data-k="${k}" data-v="${pp.mdd}">usa</button></div>` : ''}</td>
           <td class="num">${gain}</td>
@@ -1836,7 +1852,7 @@ function renderPortfolio() {
     ${out ? `
     <h3>Parametri ponderati</h3>
     <table class="mini"><tbody>
-      <tr><td>CAGR lordo atteso</td><td class="num">${pct(out.params.cagr, false, 2)}</td></tr>
+      <tr><td>CAGR lordo atteso (lungo periodo)</td><td class="num">${pct(out.params.cagr, false, 2)}</td></tr>
       <tr><td>TER</td><td class="num">${pct(out.params.ter, false, 2)}</td></tr>
       <tr><td>CAGR netto pre-tasse (CAGR − TER)</td><td class="num"><b>${pct(out.params.net, false, 2)}</b></td></tr>
       <tr><td>Aliquota fiscale</td><td class="num">${pct(out.params.tax, false, 2)}</td></tr>
@@ -1846,7 +1862,7 @@ function renderPortfolio() {
         (h) => `
     <h3>Scenario a ${horizonLong(h.years)}${h.short ? ' <span class="muted small-note">· algoritmo breve: volatilità, imposta attesa e costi degli ordini</span>' : ''}</h3>
     <table class="mini"><tbody>
-      <tr><td>Montante lordo: ${eur(p.capital)} × (1 + ${pct(out.params.net, false, 2)})<sup>${horizonExp(h.years)}</sup></td><td class="num">${fmt(h.gross)}</td></tr>
+      <tr><td>${h.short ? `Rendimento lordo atteso a ${horizonShort(h.years)} <span class="muted small-note">(CAGR del modello + tendenza recente, non il solo CAGR di lungo periodo)</span>` : `Montante lordo: ${eur(p.capital)} × (1 + ${pct(out.params.net, false, 2)})<sup>${horizonExp(h.years)}</sup>`}</td><td class="num">${fmt(h.gross)}${h.short ? ` <span class="muted small-note">(${pct(h.mu, true, 2)})</span>` : ''}</td></tr>
       <tr><td>Plusvalenza lorda</td><td class="num">${fmt(h.gain)}</td></tr>
       <tr><td>Imposta sostitutiva${h.short ? ' attesa' : ''} (${pct(out.params.tax, false, 2)})</td><td class="num neg">− ${fmt(h.tax)}</td></tr>
       ${h.short ? `<tr><td>Costi ordini (acquisto + vendita, ${eur(state.settings.mc.orderCost ?? 1)} ciascuno)</td><td class="num neg">− ${fmt(h.costs)}</td></tr>` : ''}

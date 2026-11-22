@@ -172,6 +172,8 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     finalCapital: capital + netGain,
     netPct: capital > 0 ? netGain / capital : 0,
     short: true,
+    mu, // rendimento lordo atteso nel periodo (con la tendenza recente)
+    netUsed: net, // CAGR netto equivalente usato per l'orizzonte (annuo)
     trend: tr && tr.window ? { tilt: tr.tilt, window: tr.window, rho: tr.rho } : null,
     sigma,
     pProfit,
@@ -210,7 +212,7 @@ export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost =
       const tax = per.reduce((a, x) => a + x.tax, 0);
       const costs = per.reduce((a, x) => a + x.costs, 0);
       const netGain = gain - tax - costs;
-      return { ...agg, gross: capital + gain, gain, tax, costs, netGain, finalCapital: capital + netGain, netPct: capital > 0 ? netGain / capital : 0, trend: used.some((r) => r.mom) ? { tilt, window: null, rho: momRho ?? MOMENTUM_RHO } : null };
+      return { ...agg, mu: capital > 0 ? gain / capital : 0, gross: capital + gain, gain, tax, costs, netGain, finalCapital: capital + netGain, netPct: capital > 0 ? netGain / capital : 0, trend: used.some((r) => r.mom) ? { tilt, window: null, rho: momRho ?? MOMENTUM_RHO } : null };
     }),
   };
 }

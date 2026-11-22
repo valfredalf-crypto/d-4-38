@@ -40,5 +40,12 @@
   "name": "Path2 Hydrogen AG",
   "type": "stock",
   "addedAt": "2026-11-22T15:23:18.767Z"
+ },
+ {
+  "symbol": "CAPR",
+  "isin": "US14070B3096",
+  "name": "Capricor Therapeutics, Inc.",
+  "type": "stock",
+  "addedAt": "2026-11-22T21:01:46.072Z"
  }
 ]

@@ -251,9 +251,10 @@ table.mini .num { white-space: nowrap; }
   body.mview-prob #table th:nth-child(22), body.mview-prob #table td:nth-child(22),
   body.mview-prob #table th:nth-child(n+29):nth-child(-n+30), body.mview-prob #table td:nth-child(n+29):nth-child(-n+30) { display: table-cell; }
   body.mview-prob #table th:nth-child(n+3):nth-child(-n+9), body.mview-prob #table td:nth-child(n+3):nth-child(-n+9) { display: none; }
-  /* Vista "Breve": guadagno netto più probabile a 7/14/30/60 giorni (33–36) */
-  body.mview-short #table th:nth-child(n+33):nth-child(-n+36), body.mview-short #table td:nth-child(n+33):nth-child(-n+36) { display: table-cell; }
-  body.mview-short #table th:nth-child(n+3):nth-child(-n+7), body.mview-short #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
+  /* Sezione «Netto più probabile»: #, Strumento e le 8 colonne dei periodi (3–10), il resto nascosto */
+  body.np-mode #table th:nth-child(n+3):nth-child(-n+10), body.np-mode #table td:nth-child(n+3):nth-child(-n+10) { display: table-cell !important; }
+  body.np-mode #table th:nth-child(n+11), body.np-mode #table td:nth-child(n+11) { display: none !important; }
+  body.np-mode .mobile-view { display: none; }
   th, td { padding: 8px 3px; }
   .np-bar { margin: 0 16px 10px; }
   #table td { font-size: 12.5px; }

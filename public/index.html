@@ -59,7 +59,7 @@
   <section id="np-bar" class="np-bar" hidden aria-label="Periodo della classifica netto più probabile">
     <b>Classifica netto più probabile</b> <span class="muted">periodo:</span>
     <span class="tabs" role="tablist"><button class="tab small" data-np="7">7 gg</button><button class="tab small" data-np="14">14 gg</button><button class="tab small" data-np="30">30 gg</button><button class="tab small" data-np="60">60 gg</button><button class="tab small" data-np="90">90 gg</button><button class="tab small" data-np="365">1 anno</button><button class="tab small" data-np="1095">3 anni</button><button class="tab small" data-np="1825">5 anni</button></span>
-    <span class="muted small-note">Tutti gli strumenti in ordine decrescente di guadagno netto più probabile sul capitale impostato. Per tutti i periodi: previsione degli analisti (media tra prezzo obiettivo e crescita dei fondamentali; per gli ETF media ponderata sui titoli), previsioni verificate per materie prime e VIX, sottostante per i leva. Fino a 90 gg anche il trend se confermato. Il valore più probabile tiene conto della volatilità del periodo.</span>
+    <span class="muted small-note">Colonne «Netto più probabile» per ogni periodo subito dopo il nome; il periodo scelto ordina la classifica (o tocca l'intestazione di una colonna). Valori sul capitale impostato. Per tutti i periodi: previsione degli analisti (media tra prezzo obiettivo e crescita dei fondamentali; per gli ETF media ponderata sui titoli), previsioni verificate per materie prime e VIX, sottostante per i leva. Fino a 90 gg anche il trend se confermato. Il valore più probabile tiene conto della volatilità del periodo.</span>
   </section>
 
   <section id="filters-panel" class="filters" hidden>
@@ -114,10 +114,6 @@
             <th data-sort="prob50" class="num" title="Probabilità di ottenere almeno +50% netto in 5 anni (dopo costi e tasse), su tutti gli scenari simulati"><span class="l">P(netto ≥ +50%)</span><span class="s">P(≥+50%)</span></th>
             <th data-sort="sharpe" class="num" title="Indice di Sharpe: (rendimento atteso annuo − tasso privo di rischio) ÷ volatilità annua della simulazione. Più alto è meglio">Sharpe</th>
             <th data-sort="sortino" class="num" title="Indice di Sortino: (rendimento atteso annuo − tasso privo di rischio) ÷ deviazione negativa (solo le settimane in perdita). Più alto è meglio">Sortino</th>
-            <th data-sort="np" class="num np-h" title="Guadagno netto PIÙ PROBABILE nel periodo scelto (esito mediano: metà dei casi meglio, metà peggio), sul capitale impostato, dopo imposta e costi"><span class="l">Netto più probabile</span><span class="s">Più prob.</span></th>
-            <th data-sort="npMean" class="num" title="Guadagno netto atteso (media di tutti i casi) nel periodo scelto"><span class="l">Netto atteso (media)</span><span class="s">Atteso</span></th>
-            <th data-sort="npP" class="num" title="Probabilità di chiudere il periodo in guadagno, dopo i costi">P(guadagno)</th>
-            <th data-sort="npRate" class="num" title="Previsione di rendimento annuo usata: analisti (prezzo obiettivo e fondamentali), previsioni verificate o sottostante; fino a 90 gg anche il trend se confermato"><span class="l">Previsione annua</span><span class="s">Prev./anno</span></th>
           </tr>
         </thead>
         <tbody></tbody>

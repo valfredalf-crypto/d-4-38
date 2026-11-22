@@ -621,7 +621,7 @@ function shortPrior(inst, cagr) {
   const rf = (state.settings.outlook?.riskFree ?? 2) / 100;
   // 1) previsione verificata per il singolo strumento (comportamento misurato nello scenario attuale)
   const pv = productViewFor(inst?.isin);
-  if (pv) return { cagr: Math.max(-0.995, pv.annual), netOfTer: true, view: true, src: `previsione per lo strumento: ${pct(pv.returns[30], true, 0)} a 30 gg, ${pct(pv.returns[60], true, 0)} a 60 gg (${pv.source})` };
+  if (pv) return { cagr: Math.max(-0.995, pv.annual), netOfTer: true, view: true, viewYears: Math.max(...Object.keys(pv.returns).map(Number)) / 365, src: `previsione per lo strumento: ${pct(pv.returns[30], true, 0)} a 30 gg, ${pct(pv.returns[60], true, 0)} a 60 gg (${pv.source})` };
   // Previsione di mercato verificata per il sottostante (fonte e data): vale per i prodotti a leva/short e per gli ETF/ETC
   // che replicano direttamente il sottostante (es. argento fisico), non per le società minerarie.
   const und = underlyingOf(inst?.name);
@@ -631,7 +631,7 @@ function shortPrior(inst, cagr) {
     const uv = underlyingView(inst);
     const muU = view.geo + ((uv?.vol ?? 0) ** 2) / 2; // rendimento medio coerente con la previsione centrale
     const a = inst?.leveraged ? leveragedArith({ name: inst.name, mu: muU, rf }) : muU;
-    if (a != null) return { cagr: a, view: true, src: `previsione di mercato ${und.label}: ${pct(view.move, true, 1)} al ${view.targetDate.split('-').reverse().join('/')} (${view.source})` };
+    if (a != null) return { cagr: a, view: true, viewYears: view.years, src: `previsione di mercato ${und.label}: ${pct(view.move, true, 1)} al ${view.targetDate.split('-').reverse().join('/')} (${view.source})` };
   }
   if (!inst?.leveraged) return { cagr, src: null };
   // sottostanti che non seguono la borsa (es. VIX): niente stima dal mercato azionario
@@ -707,7 +707,9 @@ function npStats(inst, days) {
     net = autoShort({ base, ter, vol: pp.vol, mom: r.mom, years: y, view: pp.shortView, evidence: pp.evidence, rho }).net;
   } else {
     // il prezzo obiettivo degli analisti è a 12 mesi: vale per il primo anno; dopo, crescita di lungo periodo (fondamentali/modello)
-    const g = (1 + base - ter) * (1 + pp.cagr - ter) ** (y - 1);
+    // ogni previsione vale per il suo orizzonte: prezzo obiettivo 12 mesi, previsioni verificate fino alla loro data
+    const vy = Math.min(y, pp.shortView && Number.isFinite(pp.shortViewYears) ? pp.shortViewYears : 1);
+    const g = (1 + base - ter) ** vy * (1 + pp.cagr - ter) ** (y - vy);
     net = g > 0 ? g ** (1 / y) - 1 : -0.99;
   }
   const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOf(inst.isin || inst.symbol), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
@@ -734,7 +736,7 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   const gs = r?.forward?.growthSource;
   const evidence = i.leveraged ? !!underlyingView(i)?.ev : !r?.estimated && (gs === 'own' || gs === 'holdings'); // leva: previsioni del sottostante
   // rendimenti misurati sui prezzi reali del prodotto: TER già incluso, si somma per non toglierlo due volte
-  return { cagr, cagrShort: sp.netOfTer ? sp.cagr + ter : sp.cagr, shortSrc: sp.src, shortView: !!sp.view, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
+  return { cagr, cagrShort: sp.netOfTer ? sp.cagr + ter : sp.cagr, shortSrc: sp.src, shortView: !!sp.view, shortViewYears: sp.viewYears ?? null, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
 }
 const s_tax = (i) => {
   const t = state.results[i.symbol]?.sim?.taxRate;

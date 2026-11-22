@@ -26,5 +26,12 @@
   "name": "Vanguard FTSE All-World High Dividend Yield UCITS ETF USD Accumulation",
   "type": "etf",
   "addedAt": "2026-11-01T21:34:28.797Z"
+ },
+ {
+  "symbol": "3SIS.L",
+  "isin": "XS3306517924",
+  "name": "WisdomTree Silver 3x Daily Short",
+  "type": "stock",
+  "addedAt": "2026-11-22T11:03:24.687Z"
  }
 ]

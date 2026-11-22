@@ -30,7 +30,7 @@ export function applyLivePrice(history, priceEur) {
 
 // Risultato senza i dati dei grafici, per salvarlo/pubblicarlo in forma compatta.
 export function compactResult(r) {
-  if (r.error) return { error: r.error };
+  if (r.error) return { error: r.error, ...(r.estimate ? { estimate: r.estimate } : {}) };
   return { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined }, ...(r.fund ? { fund: r.fund } : {}) };
 }
 
@@ -38,7 +38,7 @@ export function compactResult(r) {
 // il dettaglio di uno strumento viene comunque ricalcolato nel browser quando lo si apre.
 const r4 = (x) => (Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : x === Infinity ? null : x ?? null);
 export function tableResult(r) {
-  if (r.error) return { error: r.error };
+  if (r.error) return { error: r.error, ...(r.estimate ? { estimate: r.estimate } : {}) };
   const s = r.sim;
   return {
     forward: {
@@ -97,6 +97,89 @@ export function leverageOf(name = '') {
   return /leverag|lev\.|a leva/i.test(name) ? 2 : 1;
 }
 
+// ---------- stima provvisoria per strumenti con storico breve (< minYears) ----------
+// La previsione completa richiede almeno 1 anno di storico. Con 8+ settimane si calcolano comunque i fattori
+// base (volatilità e drawdown dai dati disponibili, CAGR atteso dal modello di mercato) così il portafoglio
+// si compila da solo e gli orizzonti brevi hanno la σ. NON entra in classifica: è una stima prudente.
+export const PROVISIONAL_MIN_WEEKS = 8;
+const INVERSE = /\b(short(?!\s*(duration|dur|term|maturity|dated|-term))|inverse|bear)\b|\(-\d|-\d\s?x\b/i;
+export const isInverseProduct = (name = '') => INVERSE.test(String(name));
+const weekKey = (ts) => Math.round(ts / 604800);
+
+export function provisionalEstimate({ instrument, history, benchmark, market, settings } = {}) {
+  const prices = history?.closesEur;
+  if (!Array.isArray(prices) || prices.length < PROVISIONAL_MIN_WEEKS) return null;
+  const rets = [];
+  const idx = [];
+  for (let i = 1; i < prices.length; i++) {
+    if (prices[i - 1] > 0 && prices[i] > 0) {
+      rets.push(Math.log(prices[i] / prices[i - 1]));
+      idx.push(i);
+    }
+  }
+  if (rets.length < PROVISIONAL_MIN_WEEKS - 1) return null;
+  const mean = rets.reduce((a, x) => a + x, 0) / rets.length;
+  const vol = Math.sqrt(rets.reduce((a, x) => a + (x - mean) ** 2, 0) / (rets.length - 1)) * Math.sqrt(WEEKS_PER_YEAR);
+  if (!(vol > 0)) return null;
+  const mdd = historicalMaxDrawdown(prices);
+  const rf = (settings?.outlook?.riskFree ?? DEFAULT_OUTLOOK.riskFree) / 100;
+  const m = Number.isFinite(market) ? market : rf + 0.045;
+  const name = instrument?.name || '';
+  const L = Math.max(1, leverageOf(name));
+  const inverse = isInverseProduct(name);
+  // beta verso il benchmark azionario sulle settimane in comune
+  let beta = null;
+  if (benchmark?.closesEur?.length && benchmark?.timestamps && history.timestamps) {
+    const bIdx = new Map();
+    benchmark.timestamps.forEach((t, i) => bIdx.set(weekKey(t), i));
+    const xs = [];
+    const ys = [];
+    for (const i of idx) {
+      const b1 = bIdx.get(weekKey(history.timestamps[i]));
+      const b0 = bIdx.get(weekKey(history.timestamps[i - 1]));
+      if (b1 != null && b0 != null && b1 === b0 + 1 && benchmark.closesEur[b0] > 0 && benchmark.closesEur[b1] > 0) {
+        xs.push(Math.log(benchmark.closesEur[b1] / benchmark.closesEur[b0]));
+        ys.push(Math.log(prices[i] / prices[i - 1]));
+      }
+    }
+    if (xs.length >= PROVISIONAL_MIN_WEEKS - 1) {
+      const mx = xs.reduce((a, x) => a + x, 0) / xs.length;
+      const my = ys.reduce((a, x) => a + x, 0) / ys.length;
+      const vx = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
+      if (vx > 0) beta = xs.reduce((a, x, k) => a + (x - mx) * (ys[k] - my), 0) / vx;
+    }
+  }
+  let cagr;
+  let ter = null;
+  let basis;
+  if (L > 1 || inverse) {
+    // Prodotti a leva giornaliera: L × mercato − finanziamento − decadimento da ribilanciamento, come il limite
+    // del modello (outlook.js); per gli short/inverse il segno è opposto e la liquidità frutta il tasso privo di rischio.
+    const sigU = vol / L;
+    cagr = inverse ? -L * m + (L + 1) * rf - ((L * L + L) / 2) * sigU ** 2 : L * m - (L - 1) * rf - ((L * L - L) / 2) * sigU ** 2;
+    const raw = cagr;
+    cagr = Math.min(0.5, Math.max(-0.6, cagr));
+    ter = 0.006;
+    basis = `Prodotto a leva ${inverse ? 'inversa ' : ''}${L}x: rendimento atteso = ${inverse ? '−' : ''}${L} × rendimento del mercato (${(m * 100).toFixed(1)}%) con costo di finanziamento e decadimento da ribilanciamento giornaliero (σ del sottostante ≈ ${((vol / L) * 100).toFixed(0)}%), ${raw < -0.6 ? 'Limite prudenziale −60%/anno (la formula darebbe ' + (raw * 100).toFixed(0) + '%). ' : ''}TER stimato ${(ter * 100).toFixed(2)}%. Lo storico è troppo breve per usare quello dello strumento.`;
+  } else {
+    const b = Math.min(2, Math.max(0, beta ?? 1));
+    cagr = rf + b * (m - rf);
+    basis = `Rendimento atteso del mercato (${(m * 100).toFixed(1)}%) con beta ${b.toFixed(2)}${beta == null ? ' (non misurabile, assunto 1)' : ' misurato sulle settimane disponibili'}: lo storico è troppo breve per usare quello dello strumento.`;
+  }
+  return {
+    cagr: r4(cagr),
+    vol: r4(vol),
+    mdd: r4(mdd),
+    beta: beta == null ? null : r4(beta),
+    ter,
+    weeks: prices.length,
+    ...(L > 1 ? { leverage: L } : {}),
+    ...(inverse ? { inverse: true } : {}),
+    basis,
+    provisional: true,
+  };
+}
+
 /**
  * Strumento che paga i dividendi all'investitore: azioni, ed ETF a distribuzione. Per gli ETF il dato
  * decisivo è il rendimento da dividendo riportato da Yahoo (gli ETF ad accumulazione non ne hanno);
@@ -146,7 +229,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   const prices = history.closesEur;
   const realYears = (prices.length - 1) / WEEKS_PER_YEAR;
   if (realYears < o.minYears) {
-    return { forward: null, sim: { ok: false, reason: `Storico insufficiente (${realYears.toFixed(1)} anni, minimo ${o.minYears})`, historyYears: realYears } };
+    const estimate = provisionalEstimate({ instrument, history, benchmark, market, settings });
+    return { forward: null, sim: { ok: false, reason: `Storico insufficiente (${realYears.toFixed(1)} anni, minimo ${o.minYears})`, historyYears: realYears }, ...(estimate ? { estimate } : {}) };
   }
   // Controllo qualità: per azioni ed ETF un movimento ×3 o ÷3 in una settimana indica dati errati
   // (tipico di quotazioni secondarie poco scambiate): meglio "n.d." che previsioni inventate.

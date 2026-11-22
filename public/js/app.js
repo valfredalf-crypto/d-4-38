@@ -206,7 +206,7 @@ async function analyzeOne(inst) {
   const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
   const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, holdings: d.fundamentals?.lookThrough, market: state.market?.expected, marketGrowth: state.market?.growth, settings: state.settings });
   const fund = state.results[inst.symbol]?.fund; // dati del fondo (patrimonio, TER) dal server
-  state.results[inst.symbol] = r.sim.ok ? (fund ? { ...r, fund } : r) : { error: r.sim.reason };
+  state.results[inst.symbol] = r.sim.ok ? (fund ? { ...r, fund } : r) : { error: r.sim.reason, ...(r.estimate ? { estimate: r.estimate } : {}) };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
 }
@@ -617,8 +617,21 @@ function projOf(i, r, cagrOverride = null) {
   return project(pp, state.settings.mc.amount || 10000, state.settings.mc.years || 5);
 }
 /** NR5 ricalcolato secondo il profilo scelto: guadagno netto medio (estremi attenuati) − k × perdita media nel 5% peggiore. */
+function estimateHtml(e) {
+  if (!e) return '';
+  return `<div class="card"><h3>Stima provvisoria (${e.weeks} settimane di storico)</h3>
+    <p class="muted small-note">${esc(e.basis || '')}</p>
+    <table class="mini"><tbody>
+      <tr><td>CAGR atteso (lordo)</td><td class="num ${cls(e.cagr)}"><b>${pct(e.cagr, true, 2)}</b></td></tr>
+      <tr><td>Volatilità annua σ</td><td class="num">${pct(e.vol, false, 1)}</td></tr>
+      <tr><td>Drawdown massimo osservato</td><td class="num neg">−${pct(e.mdd, false, 1)}</td></tr>
+      ${e.beta != null ? `<tr><td>Beta verso il mercato azionario</td><td class="num">${nf2.format(e.beta)}</td></tr>` : ''}
+      ${Number.isFinite(e.ter) ? `<tr><td>TER stimato</td><td class="num">${pct(e.ter, false, 2)}</td></tr>` : ''}
+    </tbody></table>
+    <p class="muted small-note">Il Portafoglio usa questi valori (anche per gli orizzonti brevi) al posto della previsione a 5 anni, che richiede almeno 1 anno di storico. È una stima prudente: non entra in classifica.</p></div>`;
+}
 function nr5Of(sim, type) {
-  if (!sim) return null;
+  if (!sim || sim.estimated) return null; // stima provvisoria: niente simulazione, niente NR5
   if (sim.expGain == null || sim.expLoss == null || sim.es5 == null) return sim.nr5 ?? null;
   return sim.expGain - sim.expLoss - nr5Weight(type) * sim.es5;
 }
@@ -928,7 +941,7 @@ async function openDetail(symbol) {
     saveResults();
     render();
     if (r.error) {
-      $('#d-body').innerHTML = `<p class="neg">${esc(r.error)}</p>${removeButton(inst)}`;
+      $('#d-body').innerHTML = `<p class="neg">${esc(r.error)}</p>${estimateHtml(r.estimate)}${removeButton(inst)}`;
       bindRemove(inst);
       return;
     }
@@ -1496,9 +1509,17 @@ const HIST_SCEN = [
 // Orizzonti brevi (giorni): algoritmo con volatilità del modello e costi degli ordini (projection.js);
 // da 1 anno in su resta l'algoritmo 019. `vol` = σ annua dello strumento (null se ignota).
 const projectH = (prm, cap, y, vol = null, positions = 1) => projectAny(prm, cap, y, { vol, orderCost: state.settings.mc.orderCost ?? 1, positions });
+// Risultato utilizzabile dal portafoglio: la previsione completa oppure, con storico < 1 anno, la stima provvisoria
+// (CAGR, volatilità, MDD calcolati sui dati disponibili). Altrimenti l'oggetto con l'errore (o null).
+function resOf(inst) {
+  const r = state.results[inst.symbol];
+  const e = r?.error ? r.estimate : null;
+  if (!e) return r ?? null;
+  return { estimated: true, forward: { expected: e.cagr, vol: e.vol, beta: e.beta }, sim: { estimated: true, histMdd: e.mdd, taxRate: 26 }, ...(Number.isFinite(e.ter) ? { fund: { ter: e.ter } } : {}) };
+}
 function volOfCode(code) {
   const inst = findByCode(code);
-  const r = inst ? state.results[inst.symbol] : null;
+  const r = inst ? resOf(inst) : null;
   return inst && r && !r.error && Number.isFinite(r.forward?.vol) ? r.forward.vol : null;
 }
 function histScenariosHtml(items, years) {
@@ -1590,7 +1611,7 @@ function renderPortfolio() {
   const syncRow = (row, isStock) => {
     if (!row || !row.isin) return;
     const inst = findByCode(row.isin);
-    const r = inst ? state.results[inst.symbol] : null;
+    const r = inst ? resOf(inst) : null;
     const pp = inst && r && !r.error ? projParams(inst, r, isStock) : null;
     if (!pp) return;
     const man = row.manual || [];
@@ -1612,7 +1633,7 @@ function renderPortfolio() {
   const rowsHtml = p.rows
     .map((row, k) => {
       const inst = findByCode(row.isin);
-      const r = inst ? state.results[inst.symbol] : null;
+      const r = inst ? resOf(inst) : null;
       const pp = inst && r && !r.error ? projParams(inst, r) : null;
       const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
       return `<tr data-k="${k}">
@@ -1646,7 +1667,7 @@ function renderPortfolio() {
   const rk = portfolioRisk(
     p.rows.map((row) => {
       const inst = findByCode(row.isin);
-      const r = inst ? state.results[inst.symbol] : null;
+      const r = inst ? resOf(inst) : null;
       return { weight: row.amount || 0, mdd: Number.isFinite(row.mdd) ? row.mdd : null, vol: r && !r.error && Number.isFinite(r.forward?.vol) ? r.forward.vol : null };
     }),
     rho,
@@ -1661,7 +1682,7 @@ function renderPortfolio() {
     const rowsH = arr
       .map((row, k) => {
         const inst = findByCode(row.isin);
-        const r = inst ? state.results[inst.symbol] : null;
+        const r = inst ? resOf(inst) : null;
         const pp = inst && r && !r.error ? projParams(inst, r, isStock) : null;
         const prm = paramsOf(row);
         // Guadagno netto atteso per ogni strumento, per orizzonte (azioni: base; bond: × (1 − MDD))
@@ -1691,7 +1712,7 @@ function renderPortfolio() {
     const bearLoss = valid.reduce((a, r) => a + (Number.isFinite(r.mdd) ? r.amount * Math.min(0.95, Math.abs(r.mdd)) : 0), 0);
     const bearCov = valid.filter((r) => Number.isFinite(r.mdd)).reduce((a, r) => a + r.amount, 0);
     const og = cap > 0 ? projectPortfolio({ rows: arr.map((r) => ({ ...r, weight: r.amount || 0, vol: volOfCode(r.isin) })), capital: cap, years, rho, orderCost: state.settings.mc.orderCost ?? 1 }) : null;
-    const grk = cap > 0 ? portfolioRisk(arr.map((r) => { const inst = findByCode(r.isin); const res = inst ? state.results[inst.symbol] : null; return { weight: r.amount || 0, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null }; }), rho) : null;
+    const grk = cap > 0 ? portfolioRisk(arr.map((r) => { const inst = findByCode(r.isin); const res = inst ? resOf(inst) : null; return { weight: r.amount || 0, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null }; }), rho) : null;
     const prof = grk ? classifyPortfolio({ vol: grk.vol, mdd: grk.mdd }) : null;
     const note = isStock
       ? "Azioni singole (metodo del documento PRJ-FIN-2026-010): niente TER né rendimento di mercato garantito, imposta 26% sulle plusvalenze. Il CAGR del modello usa le prospettive di crescita aggiornate (fondamentali forward: crescita utili attesa + dividendo + valutazione). Il guadagno netto totale è la somma dei singoli titoli. Oltre allo scenario base sono mostrati Bull e Bear: nelle azioni singole il capitale NON è protetto come in un ETF diversificato."
@@ -1744,7 +1765,7 @@ function renderPortfolio() {
   let nr5Cov = 0;
   for (const row of p.rows) {
     const inst = findByCode(row.isin);
-    const r = inst ? state.results[inst.symbol] : null;
+    const r = inst ? resOf(inst) : null;
     const v = r && !r.error ? nr5Of(r.sim, inst.type) : null;
     if (v != null && row.amount > 0) {
       nr5W += row.amount * v;
@@ -1847,7 +1868,7 @@ function renderPortfolio() {
         const grk = portfolioRisk(
           g.rows.map((r) => {
             const inst = findByCode(r.isin);
-            const res = inst ? state.results[inst.symbol] : null;
+            const res = inst ? resOf(inst) : null;
             return { weight: r.weight, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null };
           }),
           Number.isFinite(p.rho) ? p.rho : 0.65,
@@ -1986,7 +2007,7 @@ function renderPortfolio() {
         row.name = inst.name;
         // Nuovo strumento: CAGR atteso, TER, aliquota e MDD storico dal modello (l'utente può poi correggerli).
         // Per le azioni si usa il CAGR fondamentale forward (prospettive di crescita aggiornate, metodo Gemini).
-        const r = state.results[inst.symbol];
+        const r = resOf(inst);
         const pp = r && !r.error ? projParams(inst, r, bucket === 'stocks') : null;
         row.manual = []; // nuovo strumento: tutte le stime seguono il modello
         if (pp) {
@@ -2054,7 +2075,7 @@ function renderPortfolio() {
     for (const row of [...p.rows, ...(p.stocks || []), ...(p.bonds || [])]) {
       row.manual = []; // d'ora in poi segue sempre il modello
       const inst = findByCode(row.isin);
-      const r = inst ? state.results[inst.symbol] : null;
+      const r = inst ? resOf(inst) : null;
       const pp = inst && r && !r.error ? projParams(inst, r, inStocks.has(row)) : null;
       if (pp) {
         row.cagr = pp.cagr;

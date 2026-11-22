@@ -104,3 +104,33 @@ test('trimAtBreak: tiene lo storico dopo un raggruppamento di azioni non corrett
   assert.equal(ok.cut, 0);
   assert.equal(ok.closes.length, 6);
 });
+
+test('provisionalEstimate: fattori base da uno storico breve (8+ settimane)', async () => {
+  const { provisionalEstimate, analyze, DEFAULT_SETTINGS, isInverseProduct } = await import('../public/js/analyze.js');
+  const rnd = mulberry32(3);
+  const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+  const N = 32;
+  const ts = Array.from({ length: N }, (_, i) => 1_700_000_000 + i * 604800);
+  const walk = (vol) => { let p = 100; return Array.from({ length: N }, () => (p *= Math.exp(vol * Math.sqrt(1 / 52) * gauss()))); };
+  const bench = { timestamps: ts, closesEur: walk(0.15) };
+  const own = { timestamps: ts, closesEur: bench.closesEur.map((x) => x * 1.001) }; // stessi rendimenti → beta ≈ 1
+  const base = provisionalEstimate({ instrument: { name: 'MSCI World UCITS ETF', type: 'etf' }, history: own, benchmark: bench, market: 0.07, settings: DEFAULT_SETTINGS });
+  assert.ok(base.provisional && base.weeks === N && base.vol > 0.05 && base.mdd >= 0);
+  assert.ok(Math.abs(base.beta - 1) < 1e-6);
+  assert.ok(Math.abs(base.cagr - 0.07) < 1e-3, String(base.cagr)); // rf + 1 × (m − rf) = m
+  // troppo poco storico → nessuna stima
+  assert.equal(provisionalEstimate({ instrument: {}, history: { closesEur: [1, 2, 3], timestamps: [1, 2, 3] } }), null);
+  // leva long 3x: sopra al mercato ma ridotta dal decadimento; short/inverse: negativa; TER stimato 0,6%
+  const levH = { timestamps: ts, closesEur: walk(0.9) };
+  const lev = provisionalEstimate({ instrument: { name: 'Nasdaq 100 3x Daily Leveraged' }, history: levH, benchmark: bench, market: 0.07, settings: DEFAULT_SETTINGS });
+  const inv = provisionalEstimate({ instrument: { name: 'WisdomTree Silver 3x Daily Short' }, history: levH, benchmark: bench, market: 0.07, settings: DEFAULT_SETTINGS });
+  assert.equal(lev.leverage, 3);
+  assert.ok(inv.inverse && inv.cagr < 0 && inv.cagr >= -0.6 && inv.ter === 0.006);
+  assert.ok(lev.cagr <= 0.5 && lev.cagr >= -0.6);
+  assert.ok(isInverseProduct('BTP (-2x) Inverse EUR') && isInverseProduct('Brent Crude Oil Short USD') && !isInverseProduct('Euro Short Duration Bond'));
+  // analyze(): con storico < 1 anno restituisce la stima insieme al motivo
+  const r = analyze({ instrument: { name: 'MSCI World UCITS ETF', type: 'etf' }, history: own, benchmark: bench, market: 0.07 }, DEFAULT_SETTINGS);
+  assert.equal(r.sim.ok, false);
+  assert.match(r.sim.reason, /Storico insufficiente/);
+  assert.ok(r.estimate?.provisional);
+});

@@ -191,3 +191,38 @@ test('priorEstimate: ogni strumento ha una stima, anche senza alcun dato', async
   const r = projectShort({ cagr: e.cagr, ter: 0.002, tax: 0.26 }, 1000, 7 / 365, { vol: e.vol });
   assert.ok(Number.isFinite(r.netGain) && r.low < r.high && r.pProfit > 0.4 && r.pProfit < 0.6);
 });
+
+test('tendenza recente: momentumStats, finestra e limite di momentumTilt', async () => {
+  const { momentumStats } = await import('../public/js/analyze.js');
+  const { momentumTilt, projectShort, projectPortfolio } = await import('../public/js/projection.js');
+  const prices = Array.from({ length: 30 }, (_, i) => 100 * 1.01 ** i);
+  const m = momentumStats(prices);
+  assert.ok(Math.abs(m.w1 - 0.01) < 1e-4 && Math.abs(m.w4 - (1.01 ** 4 - 1)) < 1e-4 && m.w26 != null);
+  assert.equal(momentumStats([1, 2, 3]).w4, null);
+  assert.equal(momentumStats([]), null);
+  const mom = { w1: 0, w4: 0.5, w13: 2, w26: 3 };
+  // finestra più breve ≥ 2 × orizzonte (in settimane): 14 gg → 4 sett., 30 gg → 13, 90 gg → 26
+  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 14 / 365 }).window, 4);
+  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 30 / 365 }).window, 13);
+  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 90 / 365 }).window, 26);
+  // tendenza positiva e CAGR negativo: l'atteso sale; effetto sul periodo limitato a 0,5 σ·√T
+  const t = momentumTilt({ net: -0.6, vol: 1.2, mom, years: 14 / 365 });
+  assert.ok(t.net > -0.6 && t.tilt > 0 && t.tilt <= 0.5 * 1.2 * Math.sqrt(14 / 365) + 1e-12);
+  const flat = momentumTilt({ net: 0.07, vol: 0.15, mom: { w4: 0 }, years: 30 / 365 });
+  assert.ok(flat.net < 0.07); // tendenza nulla sotto il CAGR atteso: lo abbassa un po'
+  assert.deepEqual(momentumTilt({ net: 0.07, vol: 0.15, mom: null, years: 0.1 }), { net: 0.07, tilt: 0, window: null, rho: 0.25 });
+  // projectShort: con tendenza e ρ più alta il guadagno atteso aumenta; senza momentum è invariato
+  const base = { cagr: -0.6, ter: 0.006, tax: 0.26 };
+  const y = 14 / 365;
+  const a = projectShort(base, 1000, y, { vol: 1.25 });
+  const b = projectShort({ ...base, mom }, 1000, y, { vol: 1.25 });
+  const c = projectShort({ ...base, mom }, 1000, y, { vol: 1.25, momRho: 0.5 });
+  assert.ok(b.netGain > a.netGain && c.netGain > b.netGain && b.trend.window === 4 && a.trend === null);
+  // ETC/ETN/ETP: minusvalenze compensabili → imposta sul guadagno medio, meno imposta attesa
+  const sym = projectShort({ ...base, mom, symTax: true }, 1000, y, { vol: 1.25 });
+  assert.ok(sym.tax < b.tax && sym.netGain > b.netGain);
+  // portafoglio: imposta per strumento, tendenza inclusa
+  const out = projectPortfolio({ rows: [{ weight: 500, cagr: -0.6, ter: 0.006, tax: 0.26, vol: 1.25, mom, symTax: true }, { weight: 500, cagr: 0.07, ter: 0.002, tax: 0.26, vol: 0.15 }], capital: 1000, years: [y, 5] });
+  assert.ok(out.horizons[0].trend && Number.isFinite(out.horizons[0].netGain) && out.horizons[0].costs === 4);
+  assert.ok(!out.horizons[1].short);
+});

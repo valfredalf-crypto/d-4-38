@@ -1,4 +1,4 @@
-import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate } from './analyze.js';
+import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats } from './analyze.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -206,7 +206,8 @@ async function analyzeOne(inst) {
   const cryptoBenchmark = inst.type === 'crypto' ? state.cryptoBenchmark : null;
   const r = await runAnalysis({ instrument: inst, history, benchmark, cryptoBenchmark, fundamentals: d.fundamentals, holdings: d.fundamentals?.lookThrough, market: state.market?.expected, marketGrowth: state.market?.growth, settings: state.settings });
   const fund = state.results[inst.symbol]?.fund; // dati del fondo (patrimonio, TER) dal server
-  state.results[inst.symbol] = r.sim.ok ? (fund ? { ...r, fund } : r) : { error: r.sim.reason, ...(r.estimate ? { estimate: r.estimate } : {}) };
+  const mom = momentumStats(history.closesEur);
+  state.results[inst.symbol] = r.sim.ok ? { ...(fund ? { ...r, fund } : r), mom } : { error: r.sim.reason, ...(r.estimate ? { estimate: r.estimate } : {}), mom };
   state.priced[inst.symbol] = price;
   return state.results[inst.symbol];
 }
@@ -624,6 +625,7 @@ function estimateHtml(e) {
     <table class="mini"><tbody>
       <tr><td>CAGR atteso (lordo)</td><td class="num ${cls(e.cagr)}"><b>${pct(e.cagr, true, 2)}</b></td></tr>
       <tr><td>Volatilità annua σ</td><td class="num">${pct(e.vol, false, 1)}</td></tr>
+      ${e.mom ? `<tr><td>Tendenza recente (1 / 4 / 13 / 26 sett.)</td><td class="num">${[e.mom.w1, e.mom.w4, e.mom.w13, e.mom.w26].map((v) => (v == null ? '–' : pct(v, true, 0))).join(' · ')}</td></tr>` : ''}
       <tr><td>Drawdown massimo osservato</td><td class="num neg">−${pct(e.mdd, false, 1)}</td></tr>
       ${e.beta != null ? `<tr><td>Beta verso il mercato azionario</td><td class="num">${nf2.format(e.beta)}</td></tr>` : ''}
       ${Number.isFinite(e.ter) ? `<tr><td>TER stimato</td><td class="num">${pct(e.ter, false, 2)}</td></tr>` : ''}
@@ -1509,7 +1511,10 @@ const HIST_SCEN = [
 ];
 // Orizzonti brevi (giorni): algoritmo con volatilità del modello e costi degli ordini (projection.js);
 // da 1 anno in su resta l'algoritmo 019. `vol` = σ annua dello strumento (null se ignota).
-const projectH = (prm, cap, y, vol = null, positions = 1) => projectAny(prm, cap, y, { vol, orderCost: state.settings.mc.orderCost ?? 1, positions });
+// `mom` = tendenza recente dello strumento (rendimenti 1/4/13/26 settimane): per gli orizzonti brevi corregge il CAGR.
+// `symTax`: ETC/ETN/ETP (non UCITS): minusvalenze compensabili. `momRho`: persistenza della tendenza (impostabile nel portafoglio).
+const projectH = (prm, cap, y, vol = null, positions = 1, mom = null, symTax = false) => projectAny({ ...prm, ...(mom ? { mom } : {}), ...(symTax ? { symTax } : {}) }, cap, y, { vol, orderCost: state.settings.mc.orderCost ?? 1, positions, momRho: state.portfolio?.momRho });
+const projectPortfolioH = (args) => projectPortfolio({ momRho: state.portfolio?.momRho, ...args });
 // Risultato utilizzabile dal portafoglio: la previsione completa oppure, con storico < 1 anno, la stima provvisoria
 // (CAGR, volatilità, MDD calcolati sui dati disponibili). Altrimenti l'oggetto con l'errore (o null).
 function resOf(inst) {
@@ -1518,7 +1523,16 @@ function resOf(inst) {
   // nessuna previsione: stima dallo storico/dataset (build) oppure, per strumenti aggiunti dopo, valore tipico della categoria
   const e = r?.estimate || priorEstimate({ instrument: inst, market: state.market?.expected, settings: state.settings });
   if (!e) return r ?? null;
-  return { estimated: true, forward: { expected: e.cagr, vol: e.vol, beta: e.beta }, sim: { estimated: true, histMdd: e.mdd, taxRate: 26 }, ...(Number.isFinite(e.ter) ? { fund: { ter: e.ter } } : {}) };
+  return { estimated: true, mom: e.mom ?? null, forward: { expected: e.cagr, vol: e.vol, beta: e.beta }, sim: { estimated: true, histMdd: e.mdd, taxRate: 26 }, ...(Number.isFinite(e.ter) ? { fund: { ter: e.ter } } : {}) };
+}
+// Prodotti strutturati a leva (ISIN non IE/LU): ETC/ETN/ETP con redditi diversi, minusvalenze compensabili con le plusvalenze
+function symTaxOf(code) {
+  const inst = findByCode(code);
+  return !!(inst?.leveraged && inst.isin && !/^(IE|LU)/.test(inst.isin));
+}
+function momOfCode(code) {
+  const inst = findByCode(code);
+  return (inst && resOf(inst)?.mom) || null;
 }
 function volOfCode(code) {
   const inst = findByCode(code);
@@ -1652,7 +1666,7 @@ function renderPortfolio() {
           if (!(quota > 0) || !Number.isFinite(row.cagr)) return '<td class="num muted">–</td><td class="num muted">–</td>';
           const prm = { cagr: row.cagr, ter: Number.isFinite(row.ter) ? row.ter : 0, tax: Number.isFinite(row.tax) ? row.tax : 0.26, net: row.cagr - (Number.isFinite(row.ter) ? row.ter : 0) };
           const cells = years.map((y) => {
-            const h = projectH(prm, quota, y, pp?.vol);
+            const h = projectH(prm, quota, y, pp?.vol, 1, r?.mom, symTaxOf(row.isin));
             const adj = !h.short && Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
             const rng = h.short && h.low != null ? `<div class="muted small-note" title="Intervallo tipico del netto (≈ ±1σ, 68%) e probabilità di guadagno nel periodo">${Math.round(h.low).toLocaleString('it-IT')} … ${Math.round(h.high).toLocaleString('it-IT')} € · P(+) ${pct(h.pProfit, false, 0)}</div>` : '';
             return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${horizonShort(y)}</span></div>${adj != null ? `<div class="muted small-note">× (1 − MDD) = <b class="${cls(adj)}">${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</b></div>` : ''}${rng}`;
@@ -1664,7 +1678,7 @@ function renderPortfolio() {
       </tr>`;
     })
     .join('');
-  const out = projectPortfolio({ rows: p.rows.map((x) => ({ ...x, weight: x.amount || 0, vol: volOfCode(x.isin) })), capital: p.capital, years, rho: Number.isFinite(p.rho) ? p.rho : 0.65, orderCost: state.settings.mc.orderCost ?? 1 });
+  const out = projectPortfolioH({ rows: p.rows.map((x) => ({ ...x, weight: x.amount || 0, vol: volOfCode(x.isin), mom: momOfCode(x.isin), symTax: symTaxOf(x.isin) })), capital: p.capital, years, rho: Number.isFinite(p.rho) ? p.rho : 0.65, orderCost: state.settings.mc.orderCost ?? 1 });
   const fmt = (x) => eur(Math.round(x * 100) / 100);
   const rho = Number.isFinite(p.rho) ? p.rho : 0.65;
   const rk = portfolioRisk(
@@ -1691,7 +1705,7 @@ function renderPortfolio() {
         // Guadagno netto atteso per ogni strumento, per orizzonte (azioni: base; bond: × (1 − MDD))
         const gain = row.amount > 0 && prm
           ? years.map((y) => {
-              const h = projectH(prm, row.amount, y, pp?.vol);
+              const h = projectH(prm, row.amount, y, pp?.vol, 1, r?.mom, symTaxOf(row.isin));
               const adj = !isStock && !h.short && Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
               return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${horizonShort(y)}</span></div>${adj != null ? `<div class="muted small-note">netto atteso ${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</div>` : ''}`;
             }).join('')
@@ -1711,10 +1725,10 @@ function renderPortfolio() {
       .join('');
     // Totali come somma dei singoli strumenti (coerenti con la colonna per strumento)
     const valid = arr.filter((r) => r.amount > 0 && Number.isFinite(r.cagr));
-    const totalFor = (y, mult = 1) => valid.reduce((a, r) => a + projectH({ ...paramsOf(r), cagr: r.cagr * mult, net: r.cagr * mult - (Number.isFinite(r.ter) && !isStock ? r.ter : 0) }, r.amount, y, volOfCode(r.isin)).netGain, 0);
+    const totalFor = (y, mult = 1) => valid.reduce((a, r) => a + projectH({ ...paramsOf(r), cagr: r.cagr * mult, net: r.cagr * mult - (Number.isFinite(r.ter) && !isStock ? r.ter : 0) }, r.amount, y, volOfCode(r.isin), 1, momOfCode(r.isin), symTaxOf(r.isin)).netGain, 0);
     const bearLoss = valid.reduce((a, r) => a + (Number.isFinite(r.mdd) ? r.amount * Math.min(0.95, Math.abs(r.mdd)) : 0), 0);
     const bearCov = valid.filter((r) => Number.isFinite(r.mdd)).reduce((a, r) => a + r.amount, 0);
-    const og = cap > 0 ? projectPortfolio({ rows: arr.map((r) => ({ ...r, weight: r.amount || 0, vol: volOfCode(r.isin) })), capital: cap, years, rho, orderCost: state.settings.mc.orderCost ?? 1 }) : null;
+    const og = cap > 0 ? projectPortfolioH({ rows: arr.map((r) => ({ ...r, weight: r.amount || 0, vol: volOfCode(r.isin), mom: momOfCode(r.isin), symTax: symTaxOf(r.isin) })), capital: cap, years, rho, orderCost: state.settings.mc.orderCost ?? 1 }) : null;
     const grk = cap > 0 ? portfolioRisk(arr.map((r) => { const inst = findByCode(r.isin); const res = inst ? resOf(inst) : null; return { weight: r.amount || 0, mdd: Number.isFinite(r.mdd) ? r.mdd : null, vol: res && !res.error && Number.isFinite(res.forward?.vol) ? res.forward.vol : null }; }), rho) : null;
     const prof = grk ? classifyPortfolio({ vol: grk.vol, mdd: grk.mdd }) : null;
     const note = isStock
@@ -1809,9 +1823,9 @@ function renderPortfolio() {
       <span>Capitale investito (ETF): <b>${eur(Math.round(wSum))}</b> <span class="muted">(somma degli importi)</span></span>
       <span class="row" style="flex-wrap:wrap;gap:4px;align-items:center" title="Scegli uno o più orizzonti: giorni (algoritmo breve con volatilità e costi) o anni (algoritmo 019)"><b>Orizzonti</b>
         ${[...HORIZON_PRESETS, ...years.filter((y) => !HORIZON_PRESETS.some((h) => Math.abs(h - y) < 1e-9))].sort((a, b) => a - b).map((y) => { const on = years.some((v) => Math.abs(v - y) < 1e-9); return `<button class="tab small${on ? ' active' : ''}" data-h="${y}" aria-pressed="${on}" title="${on ? 'Togli' : 'Aggiungi'} l'orizzonte di ${horizonLong(y)}">${horizonShort(y)}</button>`; }).join('')}
-        <input id="pf-hn" type="number" min="1" max="3650" step="1" placeholder="n" style="width:4.5em" aria-label="Orizzonte personalizzato"> <select id="pf-hu" aria-label="Unità"><option value="d">giorni</option><option value="y">anni</option></select> <button id="pf-hadd" class="ghost small">+ Orizzonte</button>
+        <input id="pf-hn" type="number" min="1" max="3650" step="1" placeholder="n" style="width:4.5em" aria-label="Orizzonte personalizzato"> <select id="pf-hu" aria-label="Unità"><option value="d">giorni</option><option value="y">anni</option></select> <button id="pf-hadd" class="ghost small">+ Orizzonte</button> <label class="muted small-note" title="Quanta parte della tendenza recente dello strumento si assume che continui negli orizzonti brevi (0 = nessuna, 25 = prudente)">persistenza tendenza <input id="pf-mrho" type="number" min="0" max="100" step="5" value="${Math.round((p.momRho ?? 0.25) * 100)}" style="width:4em"> %</label>
       </span>
-      ${years.some(isShortHorizon) ? `<span class="muted small-note" style="flex-basis:100%">Orizzonti brevi: guadagno netto atteso = capitale × rendimento atteso del periodo − imposta attesa (solo sui guadagni, con la volatilità del modello) − costi degli ordini. In pochi giorni il risultato reale oscilla molto più dell'atteso: guarda l'intervallo e la probabilità di guadagno. Per leva/short il rischio è ancora più alto.</span>` : ''}
+      ${years.some(isShortHorizon) ? `<span class="muted small-note" style="flex-basis:100%">Orizzonti brevi: guadagno netto atteso = capitale × rendimento atteso del periodo (CAGR del modello corretto con la tendenza recente dello strumento, entro ±0,5 σ del periodo) − imposta attesa − costi degli ordini. Imposta: per gli ETF UCITS solo sui guadagni (redditi di capitale, perdite non compensabili); per ETC/ETN/ETP a leva le minusvalenze compensano le plusvalenze (redditi diversi), quindi è sul guadagno medio. In pochi giorni il risultato reale oscilla molto più dell'atteso: guarda l'intervallo e la probabilità di guadagno. Per leva/short il rischio è ancora più alto.</span>` : ''}
       <button class="ghost small" data-addbucket="rows">+ Strumento (ETF)</button>
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
@@ -1838,6 +1852,7 @@ function renderPortfolio() {
       ${h.short ? `<tr><td>Costi ordini (acquisto + vendita, ${eur(state.settings.mc.orderCost ?? 1)} ciascuno)</td><td class="num neg">− ${fmt(h.costs)}</td></tr>` : ''}
       <tr><th>Guadagno netto finale (${pct(h.netPct, true)})</th><th class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${fmt(h.netGain)}</th></tr>
       <tr><td>Capitale netto a scadenza</td><td class="num"><b>${fmt(h.finalCapital)}</b></td></tr>
+      ${h.short && h.trend && Math.abs(h.trend.tilt) > 1e-4 ? `<tr><td>Tendenza recente (momentum${h.trend.window ? `, ultime ${h.trend.window} sett.` : ''}; persistenza ${pct(h.trend.rho ?? 0.25, false, 0)}) <span class="muted small-note">già inclusa nel guadagno</span></td><td class="num ${cls(h.trend.tilt)}">${pct(h.trend.tilt, true, 1)} ≈ ${h.trend.tilt > 0 ? '+' : ''}${fmt(p.capital * h.trend.tilt)}</td></tr>` : ''}
       ${h.short && h.pProfit != null ? `<tr><td>Probabilità di guadagno nel periodo (σ ${pct(h.sigma, false, 2)})</td><td class="num">${pct(h.pProfit, false, 0)}</td></tr><tr><td>Intervallo tipico del netto (≈ ±1σ, 68% degli scenari)</td><td class="num">${fmt(h.low)} … ${fmt(h.high)}</td></tr>` : ''}
       ${rk && !h.short ? `<tr><th>CAGR netto atteso: guadagno netto × (1 − MDD<sub>p</sub> ${pct(rk.mdd, false, 1)})</th><th class="num ${cls(h.netGain * (1 - rk.mdd))}">${h.netGain * (1 - rk.mdd) > 0 ? '+' : ''}${fmt(h.netGain * (1 - rk.mdd))} (${pct((h.netGain * (1 - rk.mdd)) / p.capital, true)})</th></tr>` : ''}
     </tbody></table>`,
@@ -1866,7 +1881,7 @@ function renderPortfolio() {
       if (groups.length < 2) return ''; // una sola classe: la proiezione aggregata basta
       const row = (g) => {
         const gCap = p.capital * (g.gw / (wSum || 1));
-        const og = projectPortfolio({ rows: g.rows.map((x) => ({ ...x, vol: volOfCode(x.isin) })), capital: gCap, years, rho: Number.isFinite(p.rho) ? p.rho : 0.65, orderCost: state.settings.mc.orderCost ?? 1 });
+        const og = projectPortfolioH({ rows: g.rows.map((x) => ({ ...x, vol: volOfCode(x.isin), mom: momOfCode(x.isin), symTax: symTaxOf(x.isin) })), capital: gCap, years, rho: Number.isFinite(p.rho) ? p.rho : 0.65, orderCost: state.settings.mc.orderCost ?? 1 });
         if (!og) return '';
         const grk = portfolioRisk(
           g.rows.map((r) => {
@@ -1917,9 +1932,9 @@ function renderPortfolio() {
       // Ogni strumento è proiettato con i suoi parametri (CAGR, TER, aliquota) e i totali sono la somma.
       const nameOf = (row) => findByCode(row.isin)?.name || row.isin || 'strumento';
       const items = [
-        ...p.rows.map((r) => ({ amount: r.amount || 0, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd, vol: volOfCode(r.isin) })),
-        ...(p.stocks || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: 0, tax: r.tax, mdd: r.mdd, vol: volOfCode(r.isin) })),
-        ...(p.bonds || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd, vol: volOfCode(r.isin) })),
+        ...p.rows.map((r) => ({ amount: r.amount || 0, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd, vol: volOfCode(r.isin), mom: momOfCode(r.isin), symTax: symTaxOf(r.isin) })),
+        ...(p.stocks || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: 0, tax: r.tax, mdd: r.mdd, vol: volOfCode(r.isin), mom: momOfCode(r.isin), symTax: symTaxOf(r.isin) })),
+        ...(p.bonds || []).map((r) => ({ amount: r.amount, cagr: r.cagr, ter: r.ter, tax: r.tax, mdd: r.mdd, vol: volOfCode(r.isin), mom: momOfCode(r.isin), symTax: symTaxOf(r.isin) })),
       ];
       const nSec = [p.rows.length > 0, (p.stocks || []).length > 0, (p.bonds || []).length > 0].filter(Boolean).length;
       if (nSec < 1) return '';
@@ -1933,7 +1948,7 @@ function renderPortfolio() {
       const scenario = (y) => {
         let gross = 0, gain = 0, tax = 0, net = 0, costs = 0;
         for (const i of valid) {
-          const h = projectH({ cagr: i.cagr, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: Number.isFinite(i.tax) ? i.tax : 0.26, net: i.cagr - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y, i.vol);
+          const h = projectH({ cagr: i.cagr, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: Number.isFinite(i.tax) ? i.tax : 0.26, net: i.cagr - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y, i.vol, 1, i.mom, i.symTax);
           gross += h.gross; gain += h.gain; tax += h.tax; net += h.netGain; costs += h.costs || 0;
         }
         const taxRate = gain > 0 ? tax / gain : 0;
@@ -2142,6 +2157,12 @@ function renderPortfolio() {
     const has = cur.some((v) => Math.abs(v - y) < 1e-9);
     if (has && cur.length === 1) return; // ne serve almeno uno
     setHorizons(has ? cur.filter((v) => Math.abs(v - y) >= 1e-9) : [...cur, y]);
+  });
+  $('#pf-mrho')?.addEventListener('change', (e) => {
+    const v = parseFloat(String(e.target.value).replace(',', '.'));
+    p.momRho = Number.isFinite(v) ? Math.max(0, Math.min(1, v / 100)) : 0.25;
+    savePortfolio(p);
+    renderPortfolio();
   });
   $('#pf-hadd')?.addEventListener('click', () => {
     const n = parseFloat(String($('#pf-hn').value).replace(',', '.'));

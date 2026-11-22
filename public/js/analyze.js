@@ -30,17 +30,18 @@ export function applyLivePrice(history, priceEur) {
 
 // Risultato senza i dati dei grafici, per salvarlo/pubblicarlo in forma compatta.
 export function compactResult(r) {
-  if (r.error) return { error: r.error, ...(r.estimate ? { estimate: r.estimate } : {}) };
-  return { forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined }, ...(r.fund ? { fund: r.fund } : {}) };
+  if (r.error) return { error: r.error, ...(r.estimate ? { estimate: r.estimate } : {}), ...(r.mom ? { mom: r.mom } : {}) };
+  return { ...(r.mom ? { mom: r.mom } : {}), forward: r.forward, sim: { ...r.sim, fan: undefined, histogram: undefined }, ...(r.fund ? { fund: r.fund } : {}) };
 }
 
 // Solo i numeri della tabella (per pubblicare migliaia di strumenti ogni pochi minuti):
 // il dettaglio di uno strumento viene comunque ricalcolato nel browser quando lo si apre.
 const r4 = (x) => (Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : x === Infinity ? null : x ?? null);
 export function tableResult(r) {
-  if (r.error) return { error: r.error, ...(r.estimate ? { estimate: r.estimate } : {}) };
+  if (r.error) return { error: r.error, ...(r.estimate ? { estimate: r.estimate } : {}), ...(r.mom ? { mom: r.mom } : {}) };
   const s = r.sim;
   return {
+    ...(r.mom ? { mom: r.mom } : {}),
     forward: {
       expected: r4(r.forward?.expected),
       growth: r4(r.forward?.expectedGrowth),
@@ -101,6 +102,18 @@ export function leverageOf(name = '') {
 // La previsione completa richiede almeno 1 anno di storico. Con 8+ settimane si calcolano comunque i fattori
 // base (volatilità e drawdown dai dati disponibili, CAGR atteso dal modello di mercato) così il portafoglio
 // si compila da solo e gli orizzonti brevi hanno la σ. NON entra in classifica: è una stima prudente.
+/**
+ * Tendenza recente di uno strumento: rendimenti semplici sulle ultime 1, 4, 13 e 26 settimane (null se lo storico non basta).
+ * Serve ai calcoli a breve termine (momentumTilt in projection.js): per leva e alta volatilità la tendenza degli ultimi
+ * giorni/settimane pesa più del CAGR di lungo periodo.
+ */
+export function momentumStats(prices) {
+  const n = prices?.length || 0;
+  const ret = (k) => (n > k && prices[n - 1 - k] > 0 && prices[n - 1] > 0 ? r4(prices[n - 1] / prices[n - 1 - k] - 1) : null);
+  const out = { w1: ret(1), w4: ret(4), w13: ret(13), w26: ret(26) };
+  return Object.values(out).some((v) => v != null) ? out : null;
+}
+
 export const PROVISIONAL_MIN_WEEKS = 8;
 const INVERSE = /\b(short(?!\s*(duration|dur|term|maturity|dated|-term))|inverse|bear)\b|\(-\d|-\d\s?x\b/i;
 export const isInverseProduct = (name = '') => INVERSE.test(String(name));
@@ -147,18 +160,18 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
       if (vx > 0) beta = xs.reduce((a, x, k) => a + (x - mx) * (ys[k] - my), 0) / vx;
     }
   }
-  return buildEstimate({ name, vol, mdd, beta, m, rf, weeks: prices.length, source: 'history' });
+  return { ...buildEstimate({ name, vol, mdd, beta, m, rf, weeks: prices.length, source: 'history' }), mom: momentumStats(prices) };
 }
 
 /**
  * Stima dalla sola volatilità annua (strumenti senza storico di prezzo, es. dal dataset radar): beta ≈ 0,6 × σ ÷ σ mercato
  * (correlazione 0,6 con il mercato, σ mercato 15%) e drawdown ≈ 1,5 × σ. Meno precisa di quella dallo storico.
  */
-export function radarEstimate({ instrument, vol, market, settings, label = 'dataset radar', source = 'radar' } = {}) {
+export function radarEstimate({ instrument, vol, market, settings, label = 'dataset radar', source = 'radar', mom = null } = {}) {
   if (!(vol > 0 && vol < 5)) return null;
   const rf = (settings?.outlook?.riskFree ?? DEFAULT_OUTLOOK.riskFree) / 100;
   const m = Number.isFinite(market) ? market : rf + 0.045;
-  return buildEstimate({ name: instrument?.name || '', vol, mdd: Math.min(0.95, 1.5 * vol), beta: Math.min(1.5, (0.6 * vol) / 0.15), m, rf, weeks: null, source, label });
+  return { ...buildEstimate({ name: instrument?.name || '', vol, mdd: Math.min(0.95, 1.5 * vol), beta: Math.min(1.5, (0.6 * vol) / 0.15), m, rf, weeks: null, source, label }), ...(mom ? { mom } : {}) };
 }
 
 /**

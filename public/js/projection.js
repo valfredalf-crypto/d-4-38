@@ -89,6 +89,31 @@ export function normalizeHorizons(list, fallback = [5, 7]) {
   return out.length ? out : fallback.slice();
 }
 
+/**
+ * Correzione del CAGR con la TENDENZA RECENTE per gli orizzonti brevi (7-90 giorni). In pochi giorni/settimane il CAGR di
+ * lungo periodo (prospettive di crescita, equilibrio di mercato, decadimento dei prodotti a leva) pesa poco: contano le
+ * ultime evidenze di mercato. Si mescola il rendimento atteso dal modello (`net`, annuo) con la deriva logaritmica
+ * osservata sulla finestra più breve ≥ 2 × orizzonte tra 1, 4, 13 e 26 settimane, assumendo che continui in parte
+ * (persistenza `rho`, default 25%: effetto momentum di serie storica, debole ma presente su 1-12 mesi). L'effetto sul
+ * periodo non può superare ±0,5 σ·√T, così uno strappo non produce stime irrealistiche.
+ * Restituisce { net: CAGR netto equivalente per l'orizzonte, tilt: effetto (log) sul periodo, window, rho }.
+ */
+export const MOMENTUM_RHO = 0.25;
+export function momentumTilt({ net, vol, mom, years, rho = MOMENTUM_RHO }) {
+  if (!mom || !(years > 0)) return { net, tilt: 0, window: null, rho };
+  const wins = [[1, mom.w1], [4, mom.w4], [13, mom.w13], [26, mom.w26]].filter(([, r]) => Number.isFinite(r) && r > -0.99);
+  if (!wins.length) return { net, tilt: 0, window: null, rho };
+  const [k, R] = wins.find(([kk]) => kk >= 2 * years * 52) ?? wins[wins.length - 1];
+  const trend = (Math.log(1 + R) / k) * 52; // deriva logaritmica annua della tendenza recente
+  const prior = Math.log(1 + Math.max(net, -0.99));
+  let adj = rho * (trend - prior);
+  if (Number.isFinite(vol) && vol > 0) {
+    const cap = (0.5 * vol) / Math.sqrt(years); // ±0,5 σ·√T sul periodo, in termini annui
+    adj = Math.max(-cap, Math.min(cap, adj));
+  }
+  return { net: Math.exp(prior + adj) - 1, tilt: adj * years, window: k, rho };
+}
+
 /** Funzione di ripartizione della normale standard (Abramowitz–Stegun 26.2.17, errore < 1e-7). */
 export function normCdf(x) {
   const t = 1 / (1 + 0.2316419 * Math.abs(x));
@@ -109,8 +134,10 @@ export function normCdf(x) {
  * Senza σ: imposta solo se μ_T > 0 (caso deterministico). Restituisce anche probabilità di guadagno e
  * intervallo tipico (16°–84° percentile, circa ±1σ) del guadagno netto.
  */
-export function projectShort(params, capital, years, { vol = null, orderCost = 1, positions = 1 } = {}) {
-  const net = Number.isFinite(params.net) ? params.net : params.cagr - (params.ter || 0);
+export function projectShort(params, capital, years, { vol = null, orderCost = 1, positions = 1, momRho } = {}) {
+  const net0 = Number.isFinite(params.net) ? params.net : params.cagr - (params.ter || 0);
+  const tr = params.mom ? momentumTilt({ net: net0, vol, mom: params.mom, years, rho: momRho }) : null; // tendenza recente
+  const net = tr ? tr.net : net0;
   const tax = Number.isFinite(params.tax) ? params.tax : 0.26;
   const mu = (1 + net) ** years - 1;
   const costs = 2 * Math.max(0, orderCost) * Math.max(1, positions);
@@ -123,14 +150,15 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     const a = Math.log(1 + mu) - (sigma * sigma) / 2; // media del logaritmo
     const d2 = a / sigma;
     const d1 = d2 + sigma;
-    expTaxRate = tax * Math.max(0, (1 + mu) * normCdf(d1) - normCdf(d2));
+    // ETC/ETN/ETP (redditi diversi): le minusvalenze compensano le plusvalenze → imposta sul guadagno medio atteso
+    expTaxRate = params.symTax ? tax * mu : tax * Math.max(0, (1 + mu) * normCdf(d1) - normCdf(d2));
     pProfit = normCdf(d2);
     const at = (z) => {
       const g = capital * (Math.exp(a + z * sigma) - 1);
-      return g - (g > 0 ? g * tax : 0) - costs;
+      return g - (params.symTax || g > 0 ? g * tax : 0) - costs;
     };
     quant = { low: at(-1), high: at(1) };
-  } else expTaxRate = mu > 0 ? mu * tax : 0;
+  } else expTaxRate = params.symTax ? tax * mu : mu > 0 ? mu * tax : 0;
   const taxEur = capital * expTaxRate;
   const gain = capital * gainRate;
   const netGain = gain - taxEur - costs;
@@ -144,6 +172,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     finalCapital: capital + netGain,
     netPct: capital > 0 ? netGain / capital : 0,
     short: true,
+    trend: tr && tr.window ? { tilt: tr.tilt, window: tr.window, rho: tr.rho } : null,
     sigma,
     pProfit,
     low: quant?.low ?? null,
@@ -157,12 +186,33 @@ export function projectAny(params, capital, years, opts = {}) {
 }
 
 /** Proiezione completa del portafoglio sugli orizzonti indicati (`rows[].vol` opzionale: σ annua per gli orizzonti brevi). */
-export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost = 1 }) {
+export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost = 1, momRho }) {
   const params = weightedParams(rows);
   if (!params) return null;
   const used = rows.filter((r) => r && r.weight > 0 && Number.isFinite(r.cagr));
   const vol = portfolioRisk(used.map((r) => ({ weight: r.weight, vol: r.vol })), rho)?.vol ?? null;
-  return { params, horizons: years.map((y) => projectAny(params, capital, y, { vol, orderCost, positions: used.length })) };
+  const wSum = used.reduce((a, r) => a + r.weight, 0) || 1;
+  return {
+    params,
+    horizons: years.map((y) => {
+      if (!isShortHorizon(y)) return project(params, capital, y);
+      // breve termine: CAGR di ogni strumento corretto con la sua tendenza recente, poi media ponderata
+      let tilt = 0;
+      const tilted = used.map((r) => {
+        const t = momentumTilt({ net: r.cagr - (r.ter || 0), vol: r.vol, mom: r.mom, years: y });
+        tilt += (r.weight / wSum) * t.tilt;
+        return { ...r, cagr: t.net + (r.ter || 0) };
+      });
+      const agg = projectShort(weightedParams(tilted), capital, y, { vol, orderCost, positions: used.length, momRho });
+      // atteso e imposta per strumento: il regime fiscale cambia (ETF UCITS vs ETC/ETN) e la σ è quella di ciascuno
+      const per = tilted.map((r) => projectShort({ cagr: r.cagr, ter: r.ter, tax: r.tax, net: r.cagr - (r.ter || 0), symTax: r.symTax }, (capital * r.weight) / wSum, y, { vol: r.vol, orderCost, positions: 1 }));
+      const gain = per.reduce((a, x) => a + x.gain, 0);
+      const tax = per.reduce((a, x) => a + x.tax, 0);
+      const costs = per.reduce((a, x) => a + x.costs, 0);
+      const netGain = gain - tax - costs;
+      return { ...agg, gross: capital + gain, gain, tax, costs, netGain, finalCapital: capital + netGain, netPct: capital > 0 ? netGain / capital : 0, trend: used.some((r) => r.mom) ? { tilt, window: null, rho: momRho ?? MOMENTUM_RHO } : null };
+    }),
+  };
 }
 
 /**

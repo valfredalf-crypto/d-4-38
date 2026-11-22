@@ -91,3 +91,16 @@ test('projectAny e projectPortfolio: ≥ 1 anno = algoritmo 019, < 1 anno = algo
   assert.ok(out.horizons[0].sigma > 0 && out.horizons[0].pProfit > 0.5);
   assert.ok(!out.horizons[1].short && out.horizons[1].netGain > 0);
 });
+
+test('trimAtBreak: tiene lo storico dopo un raggruppamento di azioni non corretto', async () => {
+  const { trimAtBreak } = await import('../lib/market.js');
+  const ts = [1, 2, 3, 4, 5, 6];
+  const r = trimAtBreak(ts, [0.003, 0.0031, 0.0029, 15.8, 16, 15.5]);
+  assert.deepEqual(r.closes, [15.8, 16, 15.5]);
+  assert.deepEqual(r.timestamps, [4, 5, 6]);
+  assert.equal(r.cut, 3);
+  // salti normali (anche ×3) non tagliano nulla
+  const ok = trimAtBreak(ts, [10, 12, 9, 30, 28, 31]);
+  assert.equal(ok.cut, 0);
+  assert.equal(ok.closes.length, 6);
+});

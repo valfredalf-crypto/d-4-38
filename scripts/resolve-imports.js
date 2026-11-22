@@ -16,6 +16,13 @@ const UNRESOLVED = process.env.IMPORT_UNRESOLVED || 'data/import-unresolved.json
 const MIN_WEEKS = Number(process.env.MIN_WEEKS) || 8; // storico minimo (≈2 mesi): gli strumenti recenti entrano in elenco, la previsione a 5 anni richiede ≥1 anno (minYears)
 const log = (...a) => console.log(...a);
 // Prodotti a leva/short: salti settimanali ampi sono normali (×3 non è più un dato errato), soglia ×12.
+// Nomi concordi: almeno 3 parole e ≥ 80% di quelle della quotazione presenti nel nome del catalogo.
+const words = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
+const sameName = (catalogName, listingName) => {
+  const a = new Set(words(catalogName));
+  const b = words(listingName);
+  return b.length >= 3 && b.filter((w) => a.has(w)).length / b.length >= 0.8;
+};
 const jumpLimit = (name) => (isLeveraged(name) ? Math.log(12) : undefined);
 
 const requests = JSON.parse(fs.readFileSync(REQUESTS, 'utf8')).instruments.filter((r) => isValidIsin(r.isin));
@@ -50,7 +57,7 @@ try {
   log(`ATTENZIONE lista Xetra non disponibile: ${e.message}`);
 }
 
-const how = { xetra: 0, hint: 0, search: 0 };
+const how = { xetra: 0, hint: 0, search: 0, name: 0 };
 const unresolved = [];
 let i = 0;
 let n = 0;
@@ -77,6 +84,18 @@ await Promise.all(
         const ordered = [...hits.filter((h) => isEuroListing(h.symbol)), ...hits.filter((h) => !isEuroListing(h.symbol))];
         for (const h of ordered.slice(0, 6)) resolved ||= await tryListing(req, h.symbol, 'search', tried);
       }
+      // Stesso ISIN su altre quotazioni che Yahoo classifica diversamente (es. ETC visto come «stock»), poi ricerca
+      // per nome: accettata solo se il nome della quotazione concorda con quello del catalogo.
+      if (!resolved) {
+        const byIsin = (await search(req.isin).catch(() => [])).filter((h) => ['stock', 'etf'].includes(h.type) && !/\.SG$/.test(h.symbol));
+        const ord = [...byIsin.filter((h) => isEuroListing(h.symbol)), ...byIsin.filter((h) => !isEuroListing(h.symbol))];
+        for (const h of ord.slice(0, 6)) resolved ||= await tryListing(req, h.symbol, 'search', tried);
+      }
+      if (!resolved && req.name && req.type === 'etf') {
+        const byName = (await search(req.name).catch(() => [])).filter((h) => h.type === 'etf' || h.type === 'stock');
+        const ord = [...byName.filter((h) => isEuroListing(h.symbol)), ...byName.filter((h) => !isEuroListing(h.symbol))];
+        for (const h of ord.slice(0, 5)) resolved ||= await tryListing(req, h.symbol, 'name', tried, true);
+      }
       if (resolved) {
         done.set(req.isin, resolved);
         how[resolved.via]++;
@@ -86,12 +105,13 @@ await Promise.all(
   }),
 );
 
-async function tryListing(req, symbol, via, tried) {
+async function tryListing(req, symbol, via, tried, checkName = false) {
   if (!symbol || tried.has(symbol)) return null;
   tried.add(symbol);
   try {
     const h = await historyEur(symbol);
-    if (h.closesEur.length < MIN_WEEKS) return null;
+    if (h.closesEur.length < MIN_WEEKS) return null;
+    if (checkName && !sameName(req.name, h.name)) return null; // ricerca per nome: solo se il nome concorda
     if (req.type !== 'crypto' && hasImplausibleJumps(h.closesEur.slice(-521), jumpLimit(req.name))) return null; // dati errati
     // Data dell'ultima quotazione: scarta i simboli fermi da più di 30 giorni (delistati o illiquidi)
     if (Date.now() / 1000 - h.timestamps.at(-1) > 30 * 86400) return null;
@@ -111,5 +131,5 @@ async function tryListing(req, symbol, via, tried) {
 const list = requests.map((r) => done.get(r.isin)).filter(Boolean);
 fs.writeFileSync(OUT, JSON.stringify(list) + '\n');
 fs.writeFileSync(UNRESOLVED, JSON.stringify(unresolved, null, 0) + '\n');
-log(`Risolti in questo giro: Xetra ${how.xetra}, ticker del file ${how.hint}, ricerca ${how.search}; non risolti ${unresolved.length}`);
+log(`Risolti in questo giro: Xetra ${how.xetra}, ticker del file ${how.hint}, ricerca ${how.search}, per nome ${how.name}; non risolti ${unresolved.length}`);
 log(`Totale importati: ${list.length} (${list.filter((x) => x.type === 'stock').length} azioni, ${list.filter((x) => x.type === 'etf').length} ETF)`);

@@ -1,7 +1,9 @@
 {
 "meta": {
 "description": "ISIN importati dai file \"rendimento-vault-backup-csv-v1\" (azioni parti 1,3,4,6,7,12,15 di 20; ETF parti 1,3,4,6,7,9,12,15 di 17). Le obbligazioni singole non sono supportate.",
-"createdAt": "2026-10-23"
+"createdAt": "2026-10-23",
+"updatedAt": "2026-11-22",
+"catalogImport": "+2035 ISIN dal catalogo \"Trade Republic - Catalogo completo DEFINITIVO\" (sezione ETF/ETC, 2959 ISIN)"
 },
 "instruments": [
 {
@@ -29841,6 +29843,10181 @@
 "name": "Mutares",
 "type": "stock",
 "hint": "MUX.DE"
+},
+{
+"isin": "CA85207H1047",
+"name": "Sprott Physical Gold Trust Reg. Trust Units o.N.",
+"type": "etf"
+},
+{
+"isin": "DE0002635265",
+"name": "Pfandbriefe EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE0005933964",
+"name": "SLI CHF (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE0006289465",
+"name": "eb.rexx Gov Germany EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0D8Q07",
+"name": "Euro STOXX EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0D8Q49",
+"name": "DJ US Dividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0H0785",
+"name": "Euro Gov Bond Capped 1.5-10.5y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0H08L5",
+"name": "STOXX 600 Media EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0Q4R02",
+"name": "STOXX 600 Utilities EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0Q4R36",
+"name": "STOXX 600 Health Care EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A0Q4RZ9",
+"name": "eb.rexx Gov Germany 0-1y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "DE000A1E0HR8",
+"name": "Physical Gold EUR",
+"type": "etf"
+},
+{
+"isin": "DE000A1EK0G3",
+"name": "Physical Gold USD (EUR Hedged)",
+"type": "etf"
+},
+{
+"isin": "DE000A2QP4D2",
+"name": "Brazil LTN BRL Govt Bond (De) USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "DE000A2QP4F7",
+"name": "STOXX Global Select Dividend EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "DE000A2T0VS9",
+"name": "Physical Silver USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "DE000A2T0VU5",
+"name": "Physical Gold USD",
+"type": "etf"
+},
+{
+"isin": "DE000A2T5DZ1",
+"name": "Physical Gold USD (EUR Hedged)",
+"type": "etf"
+},
+{
+"isin": "FR0010261198",
+"name": "MSCI Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0010510800",
+"name": "Euro Overnight Return EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0010754200",
+"name": "Euro Government Bond 0-6 M EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0010756114",
+"name": "MSCI World Ex EMU EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0010869578",
+"name": "Bund 2x Inverse EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0011023621",
+"name": "BTP (-2x) Inverse EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0011550193",
+"name": "Stoxx Europe 600 EUR (acc)",
+"type": "etf"
+},
+{
+"isin": "FR0013416716",
+"name": "Physical Gold",
+"type": "etf"
+},
+{
+"isin": "FR0014002CH1",
+"name": "MSCI Water ESG Filtered EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0014003IY1",
+"name": "MSCI World Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "FR0014018VJ3",
+"name": "MSCI Emu High Dividend EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "GB00B00FHZ82",
+"name": "Gold Bullion USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXN58",
+"name": "Aluminum USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXQ89",
+"name": "Copper USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXT11",
+"name": "Cotton USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXV33",
+"name": "WTI Crude Oil USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXW40",
+"name": "Gasoline USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXX56",
+"name": "Gold USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KXY63",
+"name": "Heating Oil USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY096",
+"name": "Live Cattle USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY211",
+"name": "Nickel USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY328",
+"name": "Silver USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY435",
+"name": "Soybean Oil USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY542",
+"name": "Soybeans USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY658",
+"name": "Sugar USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY872",
+"name": "Zinc USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KY989",
+"name": "Commodities USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYB02",
+"name": "Energy USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYC19",
+"name": "Petroleum USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYF40",
+"name": "Precious Metals USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYG56",
+"name": "Indust. Metal USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYH63",
+"name": "Agriculture USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYJ87",
+"name": "Softs USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYK92",
+"name": "Livestock USD",
+"type": "etf"
+},
+{
+"isin": "GB00B15KYL00",
+"name": "Grains USD",
+"type": "etf"
+},
+{
+"isin": "GB00B5840F36",
+"name": "Physical Gold USD",
+"type": "etf"
+},
+{
+"isin": "GB00BN474G19",
+"name": "Wisdomtree Physical Coindesk 20 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000004V778",
+"name": "MSCI World SRI Climate Net Zero Ambition PAB (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00002ZKAP0",
+"name": "Europe Equity Enhanced Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00004S2680",
+"name": "Eur Eurozone Government 1-3 Year Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0000BH4WF5",
+"name": "€ Corp Bond Ex-Financials EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0000BNORX6",
+"name": "Europe Equity Premium Income Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0000BQ75C2",
+"name": "$ Short Duration High Yield Corp Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0000CRTTJ9",
+"name": "Msci World Esg Broad Transition EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0000J0F3C5",
+"name": "USD Corporate Bond Research Enhanced Index ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0000MK7GG1",
+"name": "Goldman Sachs Government Bond Acc (EUR)",
+"type": "etf"
+},
+{
+"isin": "IE0000MR4GH9",
+"name": "iBonds Dec 2032 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0000QLH0G6",
+"name": "FTSE All-World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0000VITHT2",
+"name": "iBonds Dec 2028 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0000VKUF67",
+"name": "Corp Bond Research Enhanced EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00016PSX47",
+"name": "MSCI World ESG Leaders USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00018LB0D8",
+"name": "S&P World Financials ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0001DM7O60",
+"name": "Usd Corp Bond Research Enhanced Pab EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0001GSQ2O9",
+"name": "MSCI World ESG Climate Net Zero Ambition EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0001KPAXU3",
+"name": "IG Corporate Bond Yield EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0001PY6688",
+"name": "Euro Ig Corporate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0001T0BHM5",
+"name": "Us Income Equity Focus USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0001VDDL68",
+"name": "Global High Yield Corporate Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00021E4FE3",
+"name": "Corporate Bond ESG Multi-Factor EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000264WWY0",
+"name": "iBonds Dec 2028 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00028H9QJ8",
+"name": "Corporate Green Bond USD - EUR Hedged",
+"type": "etf"
+},
+{
+"isin": "IE0002DDYPW4",
+"name": "Alpha Enhanced World USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0002H3JQ66",
+"name": "Bloomberg 1-5 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00032L0R44",
+"name": "iBonds Dec 2035 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0003B9KF87",
+"name": "EUR IG Corporate Bond Short Duration Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0003HUCA83",
+"name": "Global Government Bond USD - EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0003NQ0IY5",
+"name": "MSCI World Quality USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0003UN5CT1",
+"name": "Europe Research Enhanced Index Equity Sri Paris Aligned Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0003W9O921",
+"name": "Corporate Green Bond USD",
+"type": "etf"
+},
+{
+"isin": "IE0003WEWAX4",
+"name": "Future of Health and Wellness USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00043L4HU0",
+"name": "Treasury Bond 10-20yr EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00048C5NZ0",
+"name": "Global IG Corporate Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00049LEBV0",
+"name": "iBonds Dec 2032 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00049TNTV6",
+"name": "Eur Aggregate Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0004J6PFL7",
+"name": "Core UK Gilts USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0004KLW911",
+"name": "ESG USD Emerging Markets Bond Quality Weighted (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0004L7EQG2",
+"name": "Liquidity Fund EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0004L9EID2",
+"name": "India INR Govt Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0004MFRED4",
+"name": "S&P 500 Equal Weight ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0004TFW0R5",
+"name": "MSCI USA ESG Selection Extra EUR Hedged ( Acc )",
+"type": "etf"
+},
+{
+"isin": "IE0004U3TX15",
+"name": "Metaverse ESG Exclusions USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0004W4ZVJ5",
+"name": "Jp Morgan Inr India Government Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005042456",
+"name": "Core FTSE 100 GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00050EGWG5",
+"name": "DJE US Equity Research USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00050J4789",
+"name": "MSCI USA Small Cap Min TE USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00052T92P8",
+"name": "S&P Global Utilities ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00053WDH64",
+"name": "Hydrogen Economy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00058MW3M8",
+"name": "S&P 500 ESG EUR (Acc) Hedged",
+"type": "etf"
+},
+{
+"isin": "IE00059GZ051",
+"name": "Msci Resilient Future USD Unhedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005B8WVT6",
+"name": "Sustainable Future of Food USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005CH3U28",
+"name": "Active Us Growth USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005E47AH7",
+"name": "MSCI Global SDG 9 Industry, Innovation & Infrastructure USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005E8B9S4",
+"name": "Russell 1000 Growth USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005F2R613",
+"name": "IG Corporate Bond Yield EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005MWBFR7",
+"name": "Global Research Enhanced Index Equity Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005NYD352",
+"name": "S&P Global Consumer Staples ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0005QL4147",
+"name": "Ultrashort Bond ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005RKXDO7",
+"name": "EUR Overnight Rate Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005TF96I9",
+"name": "Bionic Engineering USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0005VCFMG0",
+"name": "Defined Return Autocallable EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0005YK6564",
+"name": "Sprott Uranium Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000611IJM3",
+"name": "Strategic Metals USD - EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00061J0RC6",
+"name": "S&P Global Consumer Discretionary ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00063FT9K6",
+"name": "Copper Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00063GNWK1",
+"name": "MSCI USA ESG Leaders USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00064TWYK9",
+"name": "Europe Equity Premium Income Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000650M1V4",
+"name": "Russell U.S. Mid-Cap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00067X7JX0",
+"name": "STOXX 50 Equal Weight EUR( Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00069H3LK0",
+"name": "Ftse Developed Europe Small-Cap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00069JGT58",
+"name": "Us Research Enhanced Index Equity Sri Paris Aligned Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006B9CPY7",
+"name": "USD High Yield Bond Active CLASS USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006BDZN36",
+"name": "Eur Overnight Rate Sf EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006CJGQR9",
+"name": "Equity Premium Income Active USD ( Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006D3PGW3",
+"name": "FTSE Emerging ex China USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006FAD976",
+"name": "S&P 500 Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006FBEDB6",
+"name": "Global ex US Research Enhanced Index Equity Active USD (acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006FDYJF8",
+"name": "MSCI Japan Climate Transition USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006FFX5U1",
+"name": "MSCI Innovation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006FIW9Z0",
+"name": "Equity Premium Income Active Hedged USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006GNB732",
+"name": "ESG EUR High Yield Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006HMLPV6",
+"name": "Us Research Enhanced Index Equity Sri Paris Aligned Active EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006IP4XZ8",
+"name": "A.ETF-A.MSCI U.ESG BR.T.A",
+"type": "etf"
+},
+{
+"isin": "IE0006K7DEL9",
+"name": "Sustainable Euro Green Corp 1-5 Year EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006KNOFD1",
+"name": "Global HY Corp Bond Research Enhanced Pab EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006LBEDV2",
+"name": "Corporate Bond ESG Multi-Factor EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006MM8VN6",
+"name": "Global Aggregate Bond Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006NZSQW7",
+"name": "Alpha Enhanced Japan Equity Active JPY (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006OIQXE9",
+"name": "Global HY Corp Bond Research Enhanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006QCIHM0",
+"name": "Global Corp Bond Research Enhanced EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006S0EBF2",
+"name": "Vest Nasdaq-100® Moderate Buffer Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006SEWKA2",
+"name": "Global Emerging Markets Research Enhanced Index Equity Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006UQKVQ0",
+"name": "Equity Laddered Overlay Active Hedged USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006WOV4I9",
+"name": "S&P World Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006WPPA00",
+"name": "Nuclear Renaissance USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0006YCYW06",
+"name": "US Equity Premium Income Active Hedged USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006YM7D84",
+"name": "ESG USD High Yield Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000716YHJ7",
+"name": "FTSE All-World USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00072RHT03",
+"name": "Cybersecurity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00074JLU02",
+"name": "Japan Net Zero Pathway Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00075IVKF9",
+"name": "Sprott Junior Uranium Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00077FRP95",
+"name": "SuperDividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00077IIPQ8",
+"name": "Global Efficient Core USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000783LRG9",
+"name": "Eurozone Research Enhanced Index Equity ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0007BT2BH8",
+"name": "EUR Government and Related Green Transition EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007FIJUO5",
+"name": "First Trust Vest Us Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007HKA9K1",
+"name": "Global Brands USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007I99HX7",
+"name": "Morningstar US Wide Moat USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007ILCZU4",
+"name": "Active US Equity USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0007L3IJF6",
+"name": "ESG USD EM Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0007P4PBU1",
+"name": "MSCI China USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007SRI1C7",
+"name": "iBonds Dec 2037 Term ETF EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007UE04X9",
+"name": "Strategic Metals USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007ULOZS8",
+"name": "S&P 500 ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007WJ6B10",
+"name": "MSCI Global SDG 6 Clean Water & Sanitation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007Y8Y157",
+"name": "Quantum Computing USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007YZZZN7",
+"name": "Nasdaq-100 Income Advantage USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0007Z28IJ7",
+"name": "WISDOMTREE TECH MEGATRENDS UCITS - USD (ACC)",
+"type": "etf"
+},
+{
+"isin": "IE0008119MO8",
+"name": "S&P India Tech Eur (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00081SF8K7",
+"name": "Eur Government Bond Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00082MOBL9",
+"name": "European SuperDividend EUR (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE00084KY2F2",
+"name": "Alpha Enhanced Emerging Markets Equity Active USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000893FCN6",
+"name": "Emerging Markets Equity USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008BA4TY1",
+"name": "Rex Crypto Equity Income & Growth USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008DO91F6",
+"name": "Global Ex Us Research Enhanced Index Equity Active Eur Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008FB2WZ1",
+"name": "Easy Msci World Min Te USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008GO35B5",
+"name": "USD Aaa Clo (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008GRJRO8",
+"name": "S&P Europe Defense Vision EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008M1R3N4",
+"name": "Us Mega Cap 100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008P6LL15",
+"name": "Global Government Bond Active EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008QIFH42",
+"name": "Eur Aggregate Bond Active Eur (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008RX29L5",
+"name": "Wind Energy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008SEV3B2",
+"name": "EUR Government and Related Green Transition(Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008T6IUX0",
+"name": "ESG Developed Asia Pacific All Cap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008TKP6O7",
+"name": "MSCI USA ESG Leaders Extra USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008WICO06",
+"name": "Sprott Silver Miners And Physical Silver USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0008YN0OY8",
+"name": "MSCI World Minimum Volatility ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00091SR7N7",
+"name": "Global High Yield Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000929U2U9",
+"name": "SUKUK USD ETF (DIST)",
+"type": "etf"
+},
+{
+"isin": "IE00093SKUY4",
+"name": "US Aggregate Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000940RNE6",
+"name": "Blockchain USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00094FRAA6",
+"name": "China Electric Vehicle & Battery USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00094GSCQ4",
+"name": "World Equity Enhanced Active 1C USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00098ZGGO6",
+"name": "Corp Bond 0-3yr ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0009BM62P2",
+"name": "S&P 500 Annual Buffer USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0009DRFET8",
+"name": "Us Equity Max Buffer September Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0009EDBBS3",
+"name": "EUR Investment Grade Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0009EQZP90",
+"name": "iBonds Dec 2031 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0009SJ3GE3",
+"name": "S&P Global Energy Carbon Reduced EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0009W21NT4",
+"name": "MSCI World ESG Leaders hedged to EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0009WMIIC0",
+"name": "Euro Lower Carbon Government 1-3 Year Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0009Y1MQJ2",
+"name": "World Equity Factor Rotation Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000A0GH076",
+"name": "Easy MSCI World EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000A0RC215",
+"name": "Corporate Bond 2028 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000A2YGZU5",
+"name": "Nasdaq-100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000A9G9R73",
+"name": "Space Technologies USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000A9QKUV7",
+"name": "Global Equity Multi-Factor USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000A9QV382",
+"name": "France Govt Bond USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AALNYM3",
+"name": "Global Corp Bond Research Enhanced Pab Hedged Euro (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AD2AYN2",
+"name": "iBonds Dec 2036 Term ETF EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AFVKJZ0",
+"name": "EUR Cash EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AFVONT7",
+"name": "Europe Infrastructure EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AGCIYE6",
+"name": "Global Aggregate Bond Active USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AIFGRB9",
+"name": "S&P World Energy ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AK4O3W6",
+"name": "€ Corp Bond 0-3Yr ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ALI2E45",
+"name": "Easy Msci World Equal Weight Select (USD (Acc))",
+"type": "etf"
+},
+{
+"isin": "IE000ANHU3J3",
+"name": "Global Emerging Markets Research Enhanced Index Equity SRI Paris Aligned Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ANYHV73",
+"name": "S&P Global Communication Services ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AON7ET1",
+"name": "ARK Space & Defence Innovation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AP27VA7",
+"name": "Global Equity Premium Income Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000APK27S2",
+"name": "Global Aggregate Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AQ7A2X6",
+"name": "Global Aggregate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ARLR807",
+"name": "Usd Hy Corp Bond Research Enhanced Pab USD (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE000AWRDWI7",
+"name": "Chinext 50 (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AWT6D61",
+"name": "USD Short Duration Corp Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000AY6KP29",
+"name": "S&P 500 3% Capped USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AYJ75E5",
+"name": "BulletShares 2026 EUR Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000AZOUN82",
+"name": "MSCI World Catholic Principles USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000B1A2798",
+"name": "Global Government Bond USD - EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000B5UZSG9",
+"name": "Japan Equity Research Enhanced JPY (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000B9PQW54",
+"name": "Genomics & Healthcare Innovators USD",
+"type": "etf"
+},
+{
+"isin": "IE000BI0GCN3",
+"name": "Core UK Gilts GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000BMDG046",
+"name": "Corporate Bond 2027 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000BO2Y0T8",
+"name": "MSCI Nordic 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000BRM9046",
+"name": "Invesco USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000BS9KP42",
+"name": "Emerging Markets Local Currency Bond Usd (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000BVD0KE7",
+"name": "DAX Covered Call EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000BZFW5H7",
+"name": "Active US Equity USD EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000BZXJJ24",
+"name": "iBonds Dec 2030 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000C5Q64P6",
+"name": "Corporate Bond 2029 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000C6ITGC8",
+"name": "Quantum Computing Usd (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000C7EUDG1",
+"name": "Kotak Indo-Pacific USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CEUZ052",
+"name": "Defiance Memory USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CFH1JX2",
+"name": "Global Water USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CH3OQ51",
+"name": "MSCI usa EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CM02H85",
+"name": "FTSE Taiwan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CN8T855",
+"name": "US Research Enhanced Index Equity ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000COQKPO9",
+"name": "Nasdaq 100 ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CPG9HG3",
+"name": "Europe Rising Dividend Achievers EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CPT8DH7",
+"name": "Easy Msci Usa USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CQMYME2",
+"name": "Usd High Yield Bond Active Eur Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CQQ22C8",
+"name": "Active Us Value USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CR3ZDF9",
+"name": "Euro Aggregate Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CR424L6",
+"name": "MSCI Europe SRI EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000CXLGK86",
+"name": "S&P 500 Equal Weight USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000CYGD0V1",
+"name": "Global Emerging Markets Research Enhanced Index Equity Sri Paris Aligned Active USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000CYTPBT0",
+"name": "Bloomberg Commodity Carbon Tilted EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000CZJPCH1",
+"name": "High Yield Corp Bond Enhanced Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000CZU3JH0",
+"name": "Core Us Enhanced Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000D0T0BO1",
+"name": "FTSE Japan (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000D3BWBR2",
+"name": "S&P 500 Swap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000D5R9C23",
+"name": "Asia Ex Japan Equity Enhanced Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000D8FCSD8",
+"name": "Listed Private Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000D8XC064",
+"name": "World Equity Enhanced Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000DNSAS54",
+"name": "MSCI Emerging Markets Climate Transition USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000DPO6LM8",
+"name": "MSCI World Mid Cap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000DQAQ6J3",
+"name": "Alpha Enhanced Europe Equity Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000DS9ZCL4",
+"name": "China A Research Enhanced Index Equity ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000DTA2ZH9",
+"name": "Active Us Value Usd (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000DVHJV46",
+"name": "S&P 500 Market Leaders 1C USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000DVPTMD5",
+"name": "Msci India Imi USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000DYQE2Q3",
+"name": "AT1 Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000E02WFD5",
+"name": "Franklin Us Treasury 0-1 Year USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000E0NL9T3",
+"name": "iBonds Dec 2033 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000E0V65D8",
+"name": "World Biodiversity Focus SRI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000E4BATC9",
+"name": "Msci World Esg 1D USD (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE000E6TPCH9",
+"name": "S&P 500 Quality USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000E7EI9P0",
+"name": "S&P Global Information Technology ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000E9W0ID3",
+"name": "MSCI Global Telecommunication Services USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EBFYWX3",
+"name": "Agtech & Food Innovation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EBPC0Z7",
+"name": "MSCI China Paris Aligned Climate USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EDRD2Z8",
+"name": "Ultra Short-Term Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EEJLWG1",
+"name": "US Mortgage Backed Securities EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000EFHIFG3",
+"name": "S&P Global Communication Services ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EJ2EHO7",
+"name": "Factor MSCI World Minimum Volatility ESG Leaders USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EPIJ442",
+"name": "Us Listed Gold & Silver Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EPX8KB7",
+"name": "S&P 500 Quarterly Tail Hedge USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EQGURT5",
+"name": "S&P 500 Information Technology USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ESLTCW9",
+"name": "Euro Government Bond 7-10 Year EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EVUY6K9",
+"name": "Broad $ High Yield Corp Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000EXUE0G2",
+"name": "Nasdaq 100 Swap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000F04HGE5",
+"name": "Floating Rate Notes EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000F354Q61",
+"name": "MSCI World Small Cap 1C USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000F37PGZ3",
+"name": "ESG Corporate Bond EUR (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE000F472DU7",
+"name": "China CNY Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000F6G1DE0",
+"name": "€ Corp Bond 1-5Yr EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000F9AQNW6",
+"name": "WisdomTree US Value USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000F9IDGB5",
+"name": "MSCI World Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000FK14CA5",
+"name": "Usd Hy Corp Bond Research Enhanced Pab EUR (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE000FRX67F3",
+"name": "G.S Global Government Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000FVQW7E7",
+"name": "Global Corporate Bond Esg Climate Transition USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000FXHG8D6",
+"name": "US Treasury Bond 10+ Year USD EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000FZ1S3M3",
+"name": "$ Corp Bond Esg Sri Eur Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000G4ONBO6",
+"name": "Global Government Bond Climate Aware Index EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000GAKWFA7",
+"name": "Vest Nasdaq-100® Moderate Buffer December Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000GB2EQ90",
+"name": "Corporate Bond 2030 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000GDU4WA8",
+"name": "Global Government Bond Active UCITS ETF USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000GSIFIB0",
+"name": "1-3 Month T-Bil USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000GUIUCJ1",
+"name": "Global Equity Diversified USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000GZD8ME7",
+"name": "Emerging Markets Green and Social Bond Active USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000H0TSO96",
+"name": "Euro IG Corporate EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000H3Q3AF6",
+"name": "US Treasury 1-3 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000H5X52W8",
+"name": "iBonds Dec 2027 Term Corp (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000H92C4B8",
+"name": "EUR High Yield Corporate Bond ESG Paris-Aligned Climate EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000HARFTG3",
+"name": "Eur Eurozone Government 1-3 Year Bond EUR (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE000HDEYKM3",
+"name": "Sustainable High Yield Bond Paris EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000HFXP0D2",
+"name": "Global Research Enhanced Index Equity (ESG) USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000HM5TZ60",
+"name": "Corporate Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000I1Q42S9",
+"name": "iBonds Dec 2027 Term Corp USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000I25S1V5",
+"name": "BulletShares 2030 EUR Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000I2WYEU9",
+"name": "iBonds Dec 2031 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000I9HGDZ3",
+"name": "MSCI World Screened EUR 1C (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000IEOQSJ3",
+"name": "Eur High Yield Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000IF0HTJ9",
+"name": "Global Government Bond Climate Aware Index USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000IHURBR0",
+"name": "iBonds Dec 2029 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000IUNJSL2",
+"name": "Bloomberg 0-3 Year Euro Corporate Bond EUR Unhedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000IZO7033",
+"name": "€ Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000J6CHW80",
+"name": "US Fallen Angel High Yield Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000JEXZJT1",
+"name": "Eur Corp Bond Research EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000JJQ6248",
+"name": "USD Corp Bond Research Enhanced USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000JQ2IJD3",
+"name": "S&P USA Dividend Aristocrats ESG Elite USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000JS4ANL9",
+"name": "Global Government Bond Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000JUREXG2",
+"name": "Eur Government Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000JXFRNI0",
+"name": "$ TIPS 0-5 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000K1VI152",
+"name": "$ Treasury Bond 7-10Yr Hedged USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000KL4O2Z8",
+"name": "Plus World Equity Income Quant Active USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000L0X6L81",
+"name": "Global Green Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000L2TO2T2",
+"name": "€ Corp Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000L6ZMMC4",
+"name": "FTSE All-World 1C USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000LAUZQT6",
+"name": "MSCI World Value ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000LETV955",
+"name": "iBonds Dec 2033 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000LGHLQ71",
+"name": "BulletShares 2027 EUR Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000LKGEZQ6",
+"name": "BulletShares 2028 EUR Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000LX17BP9",
+"name": "iBonds Dec 2030 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000LZC9NM0",
+"name": "Asia Ex-Japan High Yield Corp Bond ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000LZI2UH4",
+"name": "Usd High Yield Bond Active Usd (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000M02BVY5",
+"name": "EUR High Yield Bond Active CLASS EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000M284BG0",
+"name": "Eur Ig Corporate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000M6STPW4",
+"name": "US Treasury 1-3 Year Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000MCVFK47",
+"name": "Corporate Green Bond EUR",
+"type": "etf"
+},
+{
+"isin": "IE000MDKBOB3",
+"name": "Vest U.S. Equity Buffer January Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000MINO564",
+"name": "ESG Emerging Markets Government Bond (USD) 0-5 Year EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000MJ79846",
+"name": "African Government Bond (USD) dist",
+"type": "etf"
+},
+{
+"isin": "IE000MKIH0W7",
+"name": "Us Quality Value USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000MUAJIF4",
+"name": "Corporate Bond ESG Short Duration Multi-Factor EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000NBRE3P7",
+"name": "ishares Ultrashort Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000NKC01D0",
+"name": "Invesco Global Government Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000NRGX9M3",
+"name": "ESG Developed Europe All Cap EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000NVDQXE1",
+"name": "Indxx Global Aerospace & Defence Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000NVM56L3",
+"name": "iShares EUR Floating Rate Bond Advanced EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000O36LOH8",
+"name": "Corporate Bond 2026 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000O6GI299",
+"name": "Eur Investment Grade Corporate Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000O8S1EX4",
+"name": "Climate Change Solutions USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000OEF25S1",
+"name": "MSCI World Equal Weight (USD) Acc",
+"type": "etf"
+},
+{
+"isin": "IE000P0R7WK6",
+"name": "Sustainable Euro Green Sovereign EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000P5IB8I8",
+"name": "BulletShares 2029 EUR Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000PA766T7",
+"name": "Corporate Bond ESG Short Duration Multi-Factor EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000PB4LRO2",
+"name": "MSCI World ESG Climate Net Zero Ambition EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000PLCL3C9",
+"name": "Global Corp Bond Eur Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000PQQLZM7",
+"name": "Global Aggregate Bond Active EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000PYIUPH0",
+"name": "Core Uk Gilts Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QADMYA3",
+"name": "ESG EUR Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QGWZZO0",
+"name": "Japan Research Enhanced Index Equity ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QLV3SY5",
+"name": "Emerging Markets Paris Aligned Climate USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QMIHY81",
+"name": "MSCI World EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QOLLXO2",
+"name": "Europe Research Enhanced Index Equity SRI Paris Aligned Active EUR (dist)",
+"type": "etf"
+},
+{
+"isin": "IE000QOU09J7",
+"name": "China Large Cap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QQ8Z0D8",
+"name": "MSCI USA ESG Climate Net Zero Ambition USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000QRDCYW2",
+"name": "Saudi Arabia Aggregate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QUOSE01",
+"name": "ESG Developed Europe All Cap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QVYFUT7",
+"name": "India Government Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QYDXKV5",
+"name": "Morningstar Developed Markets Ex-Us Dividend USD(Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000R3K9FF7",
+"name": "MSCI World ESG Enhanced CTB EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000R4ZNTN3",
+"name": "MSCI World ex-USA USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000R7DCW45",
+"name": "USD High Yield Bond Active EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000RDRMSD1",
+"name": "Blockchain Technology USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RE0SQM6",
+"name": "US Equity Premium Income Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000RHYOR04",
+"name": "€ Ultrashort Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RITWOD4",
+"name": "Alpha Enhanced Europe Equity Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RLUE8E9",
+"name": "MSCI USA ESG Climate Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RN036E0",
+"name": "Alerian Disruptive Technology Real Estate USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RN58M26",
+"name": "Metaverse USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ROSD5J6",
+"name": "Essential Metals Producers USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RRCJI06",
+"name": "USD Investment Grade Corporate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000RSCXLM4",
+"name": "Active US Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RW7V8Q4",
+"name": "Eur Ultra-Short Bond Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000S2QZKI8",
+"name": "Global Ig Corporate Bond Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000S3N6R34",
+"name": "Msci Em Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SAXJ1M1",
+"name": "Euro Stoxx 50 Covered Call EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000SB4G4I4",
+"name": "Nasdaq-100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SBJO6L2",
+"name": "iBonds Dec 2034 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000SBU19F7",
+"name": "VanEck Morningstar SMID Moat USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SCAG5Q1",
+"name": "Usd Corp Bond Research USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SE6KPV2",
+"name": "€ Corp Bond ESG Paris-Aligned Climate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SNCKVM9",
+"name": "S&P 500 Quality USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000SOORXS0",
+"name": "EUR Cash EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SRQBBT6",
+"name": "S&P 500 Defensive Shareholder Yield 1C USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ST40PX8",
+"name": "Emerging Cyber Security ESG Exclusions USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000STIHQB2",
+"name": "Euro Short Maturity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000T8QD852",
+"name": "Yieldmax® Semiconductor Option Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000TAA0GK0",
+"name": "Yieldmax® Future Of Defence Option Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000TAV7246",
+"name": "US Treasury 1-3 Year Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TD3TI26",
+"name": "Active Us Value USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TG1LGI4",
+"name": "MSCI World ESG Leaders USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TGCBXG8",
+"name": "Emerging Markets Local Currency Bond Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TGSG3Y5",
+"name": "Vest U.S. Equity Moderate Buffer Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TI21P14",
+"name": "MSCI Europe ESG Climate Paris Aligned EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TL3PL69",
+"name": "MSCI World Momentum ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TMJDGV1",
+"name": "S&P 500 Communication Services USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TSML5I8",
+"name": "MSCI USA ESG Screened EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TY854T9",
+"name": "Japan Govt Bond JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TYGG0N6",
+"name": "Global Equity Research Enhanced Pab USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000TZT8TI0",
+"name": "Emerging Markets Net Zero Pathway Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000U07IGB1",
+"name": "Emerging Markets Enhanced Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000U58J0M1",
+"name": "Global Clean Energy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000U6ABUJ7",
+"name": "Rba American Industrial Renaissance USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000U6US1Q0",
+"name": "Global Aggregate Bond ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000U9J8HX9",
+"name": "Nasdaq Equity Premium Income Active USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000U9ODG19",
+"name": "Global Aerospace & Defence USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UATQPE2",
+"name": "Msci World Small Cap Esg 1C USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UBAW7M3",
+"name": "Core S&P 500 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UDFKE13",
+"name": "Indxx Future Economy Metals USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UIPBPY3",
+"name": "Global Corporate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UL6CLP7",
+"name": "Silver Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UOXRAM8",
+"name": "Islamic Global Developed Markets (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000US24HF4",
+"name": "Russell 1000 U.S. Value USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UU299V4",
+"name": "MSCI Japan Climate Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UWJUW87",
+"name": "KRC Cat Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UX5WPU4",
+"name": "iBoxx EUR Corporate Bond Yield Plus (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UXDT343",
+"name": "US Treasury 7-10 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UYVEVN3",
+"name": "U.S. Mid Cap USD (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE000UZO4IC7",
+"name": "G.S. Emerging Markets Hard Currency Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UZTA1X0",
+"name": "S&P 500 Climate Paris Aligned USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000UZZ5SU2",
+"name": "Active Us Growth EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000V04SL39",
+"name": "Msci Usa High Dividend Yield Esg 1D USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000V0GDVU7",
+"name": "MSCI Global SDG 11 Sustainable Cities USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000V3AQGW3",
+"name": "Alpha Enhanced Us USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000V6KDJC9",
+"name": "MSCI World Selection EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000V93BNU0",
+"name": "MSCI World ESG Climate Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VA628D5",
+"name": "S&P 500 Top 20",
+"type": "etf"
+},
+{
+"isin": "IE000VAZZYM3",
+"name": "US Hedged Equity Laddered Overlay Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VDH1PG3",
+"name": "Wisdomtree Space Economy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VMAR5O6",
+"name": "Europe Biodiversity Focus SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VML2GZ3",
+"name": "MSCI USA Esg Selection Extra Dr USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VNGJFV0",
+"name": "Short Duration Bond Etf EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000VQZQ963",
+"name": "Fidelity Sustainable EUR Corporate Bond Paris-Aligned Multifactor",
+"type": "etf"
+},
+{
+"isin": "IE000VSFIC94",
+"name": "Broad USD High Yield Corp Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VU9AUN9",
+"name": "State Street Blackstone Euro Aaa Clo EUR Unhedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000VVBM1F6",
+"name": "iBonds Dec 2034 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000VXC51U5",
+"name": "MSCI World ESG Screened Eur Hedged",
+"type": "etf"
+},
+{
+"isin": "IE000VZ8BBU9",
+"name": "US Treasury 3-7 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W1S2PT6",
+"name": "Defiance Photonics Ucits Etf USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W24OG76",
+"name": "Usd Corp Bond Research USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W336086",
+"name": "ishares China CNY Bond EEU Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000W6L2AI3",
+"name": "MSCI EMU Climate Transition EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W6YTDH7",
+"name": "BulletShares 2030 EUR Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000W85O7M4",
+"name": "Us Research Enhanced Index Equity Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W8HP9L8",
+"name": "MSCI World Min TE EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W8WMSL2",
+"name": "WisdomTree Quantum Computing USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000WAKWCV7",
+"name": "Eur Ig Corporate Bond Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000WDG5795",
+"name": "Lithium & Battery Usd (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000WGK3YY5",
+"name": "Europe Research Enhanced Index Equity ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000WIQIPT2",
+"name": "$ TIPS 0-5 EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000WJWZK35",
+"name": "£ Corp Bond 0-5yr GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000WLR06P0",
+"name": "iBonds Dec 2035 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000WOBV8X1",
+"name": "Jupiter Global Government Bond Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000WP7CVZ7",
+"name": "S&P Global Materials ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000WQ16XQ4",
+"name": "MSCI Europe High Dividend Yield ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000WUTBLT5",
+"name": "DEFIANCE AI & POWER INFRASTRUCTURE UCITS USD (ACC)",
+"type": "etf"
+},
+{
+"isin": "IE000WV38GP5",
+"name": "€ Govt Bond 0-1Yr EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000WXLHR76",
+"name": "Ultrashort PAB USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000WYTQSF9",
+"name": "INQQ India Internet & Ecommerce ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000X59ZHE2",
+"name": "AI Infrastructure USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000X7DRW38",
+"name": "Global Ex-USA Quality Dividend Growth EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000X8M8M80",
+"name": "Vest U.S. Equity Moderate Buffer February Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000X9TLGN8",
+"name": "New Economy Real Estate USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000XAGSCY5",
+"name": "Blockchain USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XC6EVL9",
+"name": "NASDAQ Global Climate Tech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XD7KCJ7",
+"name": "Solar USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XE5BZ07",
+"name": "Invesco Eur Ig Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000XFORJ80",
+"name": "MSCI AC Asia Pacific Ex Japan Climate Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XFP47S2",
+"name": "iShares Broad Global Govt Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XFXBGR0",
+"name": "MSCI USA Small Cap ESG Leaders USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XG0ZRI7",
+"name": "Global High Yield Corporate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XGNMWE1",
+"name": "Bloomberg Global Sustainable Aggregate 1-3 Yr Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XHZP7D3",
+"name": "Ai Infrastructure USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XJA2OU4",
+"name": "Clearbridge Us Smaller Companies USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XLJ2JQ9",
+"name": "S&P SmallCap 600 ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000XOQ9TK4",
+"name": "MSCI Next Generation Internet Innovation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XOS4OJ6",
+"name": "BulletShares 2027 EUR Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000XRBP9E3",
+"name": "Euro Government Bond 15-30Yr EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XZSV718",
+"name": "S&P 500 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Y1595P8",
+"name": "US Large Cap Max Buffer USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Y247W99",
+"name": "iBonds Dec 2029 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000Y2JPPS4",
+"name": "EUR AAA Clon EUR ( Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Y6L6LE6",
+"name": "EMU Net Zero Pathway Paris Aligned EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Y6ZXZ48",
+"name": "MSCI Global SDG 12 Circular Economy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Y77LGG9",
+"name": "MSCI World SRI Climate Net Zero Ambition PAB USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Y83YZ44",
+"name": "Global Quality Growth USD [Acc]",
+"type": "etf"
+},
+{
+"isin": "IE000Y9MG996",
+"name": "Amundi US Tech 100 Equal Weight USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000YARBD10",
+"name": "Easy Esg Enhanced Japan Eur (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YBGJ9I4",
+"name": "MSCI Mega Cap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YDOORK7",
+"name": "MSCI Fintech Innovation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YDZG487",
+"name": "Nasdaq Global Semiconductor USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YELA4E3",
+"name": "S&P 100 Equal Weight USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YGEAK03",
+"name": "US Quality Growth USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YIXESS9",
+"name": "S&P 500 3% Capped USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YK1TO74",
+"name": "Global High Yield Corporate Bond Multi-Factor EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000YPOHA39",
+"name": "Overnight Return Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YS5XL05",
+"name": "Stablecoin & Tokenization USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YU9K6K2",
+"name": "Space Innovators USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YUTMIU2",
+"name": "Global Quality Income USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YYE6WK5",
+"name": "Defense USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YYVSM16",
+"name": "VanEck Electrification and Power Infrastructure Acc (USD)",
+"type": "etf"
+},
+{
+"isin": "IE000YZIVX22",
+"name": "Catholic Principles Emerging Markets Sovereign Debt USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Z4OBQK4",
+"name": "US Dividend Tilt USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000Z6C4D62",
+"name": "Invesco Eur Ig Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000Z7P04F4",
+"name": "Nasdaq 100 Top 30 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000Z9SJA06",
+"name": "S&P 500",
+"type": "etf"
+},
+{
+"isin": "IE000Z9UVQ99",
+"name": "Asia Pacific Ex Japan ESG Exclusions Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZC4C5Q1",
+"name": "BulletShares 2029 EUR Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000ZIJ5B20",
+"name": "S&P Global Consumer Staples ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZME9TM4",
+"name": "Easy Msci Usa Small Cap Min Te USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZOKLHY7",
+"name": "Future of Food USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZPUEP93",
+"name": "S&P U.S. Banks USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000ZUAJ6B7",
+"name": "BulletShares 2026 USD Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZURGSV2",
+"name": "Plus World Equity Quant Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZUTO1I5",
+"name": "Alpha Enhanced Emerging Markets Equity Active JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZWSN3F7",
+"name": "Global High Yield Corporate Bond Esg Climate Transition USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000ZX8CQG2",
+"name": "€ Corp Bond ESG Paris-Aligned Climate EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000ZZJ48Q0",
+"name": "Global Quality Dividend USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0032077012",
+"name": "EQQQ Nasdaq 100 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0032523478",
+"name": "Corp Bond Large Cap EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0032895942",
+"name": "Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B02KXH56",
+"name": "MSCI Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B02KXK85",
+"name": "China Large Cap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M62Q58",
+"name": "MSCI World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M62S72",
+"name": "Euro Dividend EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M62V02",
+"name": "Euro Total Market Growth EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M62X26",
+"name": "Euro Inflation Linked Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63060",
+"name": "UK Dividend GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63177",
+"name": "MSCI EM USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63284",
+"name": "European Property Yield EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63391",
+"name": "MSCI Korea USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63516",
+"name": "MSCI Brazil USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63623",
+"name": "MSCI Taiwan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B0M63730",
+"name": "MSCI AC Far East ex-Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B14X4Q57",
+"name": "Euro Gov Bond 1-3y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B14X4S71",
+"name": "USD Treasury Bond 1-3y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B14X4T88",
+"name": "Asia Pacific Dividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS244",
+"name": "Asia Property Yield USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS350",
+"name": "Developed Markets Property Yield USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS574",
+"name": "MSCI Turkey USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS681",
+"name": "Euro Gov Bond 3-5y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS798",
+"name": "USD Treasury Bond 7-10y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS806",
+"name": "Euro Gov Bond 7-10y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZS913",
+"name": "Euro Gov Bond 15-30y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZSB30",
+"name": "Core UK Gilts GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZSC47",
+"name": "USD TIPS USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B1FZSF77",
+"name": "US Property Yield USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1TXHL60",
+"name": "Listed Private Equity USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1TXK627",
+"name": "Global Water USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1TXLS18",
+"name": "UK Property GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1W57M07",
+"name": "BRIC 50 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B1XNHC34",
+"name": "Global Clean Energy USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B23D8S39",
+"name": "FTSE RAFI US 1000 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B23D9570",
+"name": "FTSE RAFI Emerging Markets USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B23LNQ02",
+"name": "FTSE RAFI All World 3000 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B27YCF74",
+"name": "Global Timber & Forestry USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B27YCK28",
+"name": "MSCI EM Latin America USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B27YCP72",
+"name": "MSCI EM Islamic USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B2NPKV68",
+"name": "JPM USD EM Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B2QWCY14",
+"name": "S&P SmallCap 600 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B2QWDR12",
+"name": "MSCI AC Far East ex-Japan Small Cap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B2QWDY88",
+"name": "MSCI Japan Small Cap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3B8PX14",
+"name": "Global Inflation Linked Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3B8Q275",
+"name": "Euro Covered Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3BPCH51",
+"name": "Euro Cash 3 Months (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3CNHG25",
+"name": "Gold Mining USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3CNHJ55",
+"name": "Russell 2000 US Small Cap Quality USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3DKXQ41",
+"name": "Euro Aggregate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3DWVS88",
+"name": "MSCI Emerging Markets USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3F81409",
+"name": "Core Global Aggregate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3F81K65",
+"name": "Global Gov Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3F81R35",
+"name": "Core Euro Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3FH7618",
+"name": "Euro Gov Bond 0-1y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3Q19T94",
+"name": "EURO STOXX Optimised Banks EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3RBWM25",
+"name": "FTSE All-World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3S1J086",
+"name": "MSCI Taiwan Capped USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3S5XW04",
+"name": "Bloomberg Euro Government Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3T9LM79",
+"name": "Bloomberg Euro Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VPKB53",
+"name": "S&P US Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VSSL01",
+"name": "Technology S&P US Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VTMJ91",
+"name": "Euro Gov Bond 1-3y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VTML14",
+"name": "Euro Gov Bond 3-7y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VTN290",
+"name": "Euro Gov Bond 7-10y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VVMM84",
+"name": "FTSE Emerging Markets USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VWLG82",
+"name": "MSCI UK Small Cap GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VWM098",
+"name": "MSCI USA Small Cap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VWN179",
+"name": "USD Treasury Bond 1-3y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VWN393",
+"name": "US Treasury Bond 3-7y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3VWN518",
+"name": "US Treasury Bond 7-10y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3W74078",
+"name": "Bloomberg UK Gilt GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3WJKG14",
+"name": "S&P 500 Information Tech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3WMTH43",
+"name": "Health Care S&P US Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3XXRP09",
+"name": "S&P 500 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3Y8D011",
+"name": "Portfolio Income EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B3YC1100",
+"name": "Industrials S&P US Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3YCGJ38",
+"name": "S&P 500 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B3Z0X395",
+"name": "MSCI Korea Capped USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B41RYL63",
+"name": "Bloomberg Euro Aggregate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B428Z604",
+"name": "Spain Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B42NKQ00",
+"name": "S&P 500 Energy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B42Q4896",
+"name": "Financials S&P Us Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B42TW061",
+"name": "FTSE 100 GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B42WWV65",
+"name": "UK Gilt GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B43QJJ40",
+"name": "Bloomberg Global Aggregate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B43VDT70",
+"name": "Physical Silver USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B441G979",
+"name": "MSCI World EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B449XP68",
+"name": "Consumer Discretionary S&P US Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B44CGS96",
+"name": "USD Aggregate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B44CND37",
+"name": "Bloomberg US Treasury Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B44T3H88",
+"name": "MSCI China USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B459R192",
+"name": "Bloomberg US Aggregate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4613386",
+"name": "Bloomberg EM Local Currency (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B466KX20",
+"name": "MSCI EM Asia (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4694Z11",
+"name": "Bloomberg Sterling Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B469F816",
+"name": "MSCI EM (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B46G8275",
+"name": "MSCI Indonesia USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4JNQZ49",
+"name": "S&P 500 Financials USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4K6B022",
+"name": "Euro Stoxx 50 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4KBBD01",
+"name": "S&P 500 Utilities USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4L5Y983",
+"name": "Core MSCI World USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4L5YC18",
+"name": "MSCI EM USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4L5ZG21",
+"name": "Euro Corp Bond ex-Fin EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4L5ZY03",
+"name": "Euro Corp Bond ex-Fin 1-5y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4L60045",
+"name": "Euro Corp Bond 1-5y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4LN9N13",
+"name": "S&P 500 Industrial USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4M7GH52",
+"name": "MSCI Poland USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4MCHD36",
+"name": "S&P 500 Consumer Discretionary USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4MKCJ84",
+"name": "S&P 500 Materials USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4ND3602",
+"name": "Physical Gold USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4PY7Y77",
+"name": "USD High Yield Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4QNHH68",
+"name": "Dax Daily 2X Long EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4QNHZ41",
+"name": "Dax Daily 2X Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4WPHX27",
+"name": "Longer Dated All Commodities USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B4WXJD03",
+"name": "MSCI Pacific ex-Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4WXJG34",
+"name": "Euro Gov Bond 5-7y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4WXJH41",
+"name": "Euro Gov Bond 10-15y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4WXJJ64",
+"name": "Core Euro Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4X9L533",
+"name": "MSCI World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B4YBJ215",
+"name": "S&P 400 US Mid Cap (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B50XJX92",
+"name": "Constant Maturity Commodity Index GBP Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B51B7Z02",
+"name": "MSCI Canada USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B52MJD48",
+"name": "Nikkei 225 JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B52MJY50",
+"name": "Core MSCI Pacific ex-Japan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B52SF786",
+"name": "MSCI Canada USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B52XQP83",
+"name": "MSCI South Africa USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5377D42",
+"name": "MSCI Australia USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B539F030",
+"name": "MSCI UK GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B53HP851",
+"name": "FTSE 100 GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B53L4350",
+"name": "Dow Jones Industr. Average USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B53QDK08",
+"name": "MSCI Japan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B53SZB19",
+"name": "NASDAQ100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B579F325",
+"name": "Physical Gold USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5B5TG76",
+"name": "EURO STOXX 50 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5BD5K76",
+"name": "Hsbc Msci Europe DST (EUR)",
+"type": "etf"
+},
+{
+"isin": "IE00B5KQNG97",
+"name": "S&P 500 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5L01S80",
+"name": "FTSE EPRA Nareit Developed USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5L8K969",
+"name": "MSCI EM Asia USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5M1WJ87",
+"name": "S&P Euro Dividend Aristocrats (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5M4WH52",
+"name": "JPM EM Local Gov Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MJYB88",
+"name": "STOXX Europe 600 Optimised Telecommunications EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MJYC95",
+"name": "STOXX Europe 600 Optimised Travel & Leisure EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MJYX09",
+"name": "STOXX Europe 600 Optimised Industrial Goods & Services EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTWD60",
+"name": "STOXX Europe 600 Optimised Banks EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTWH09",
+"name": "STOXX Europe 600 Optimised Oil & Gas EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTWY73",
+"name": "STOXX Europe 600 Optimised Basic Resources EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTWZ80",
+"name": "STOXX Europe 600 Optimised Technology EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTXJ97",
+"name": "STOXX Europe 600 Optimised Insurance EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTXK03",
+"name": "STOXX Europe 600 Optimised Utilities EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTY077",
+"name": "STOXX Europe 600 Optimised Chemicals EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTY309",
+"name": "STOXX Europe 600 Optimised Construction & Materials EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTYK77",
+"name": "STOXX Europe 600 Optimised Financial Services EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTYL84",
+"name": "STOXX Europe 600 Optimised Food & Beverage EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTZ595",
+"name": "STOXX Europe 600 Optimised Personal & Household Goods EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5MTZM66",
+"name": "STOXX Europe 600 Optimised Retail EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5NLX835",
+"name": "STOXX Europe 600 Optimised Automobiles & Parts EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5SG8Z57",
+"name": "MSCI Pacific Ex Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5SSQT16",
+"name": "MSCI Emerging Markets USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5V94313",
+"name": "Germany Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5VX7566",
+"name": "MSCI Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5W4TY14",
+"name": "MSCI Korea USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5WFQ436",
+"name": "MSCI USA USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B5WHFQ43",
+"name": "MSCI Mexico Capped USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B5ZR2157",
+"name": "Euro Short Maturity EUR",
+"type": "etf"
+},
+{
+"isin": "IE00B60SWW18",
+"name": "STOXX Europe 600 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B60SWX25",
+"name": "EURO STOXX 50 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B60SWY32",
+"name": "MSCI Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B60SX170",
+"name": "MSCI USA USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B60SX287",
+"name": "MSCI Japan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B60SX402",
+"name": "Russell 2000 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B652H904",
+"name": "EM Dividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B66F4759",
+"name": "Euro High Yield Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6QGFW01",
+"name": "Emerging Asia Local Gov Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6R51Z18",
+"name": "Oil & Gas USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B6R52036",
+"name": "Gold Producers USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B6R52143",
+"name": "Agribusiness USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B6R52259",
+"name": "MSCI ACWI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B6S2Z822",
+"name": "S&P UK Dividend Aristocrats (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6TLBW47",
+"name": "JPM USD EM Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6X2VY59",
+"name": "Euro Corp Bond Int. Rate Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6X4BP29",
+"name": "Gold 3x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5B26",
+"name": "S&P Emerging Markets Dividend Aristocrats (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5C33",
+"name": "S&P 500 (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5F63",
+"name": "Bloomberg 1-3 Year Euro Government Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5H87",
+"name": "SPDR Bloomberg SASB 0-3 Year Euro Corporate ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5K17",
+"name": "Bloomberg 1-5 Year Gilt (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5L24",
+"name": "Bloomberg 15+ Year Gilt (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B6YX5M31",
+"name": "Bloomberg Euro High Yield Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7452L46",
+"name": "FTSE UK All Share",
+"type": "etf"
+},
+{
+"isin": "IE00B74DQ490",
+"name": "Global High Yield Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B77D4428",
+"name": "MSCI USA USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B78JSG98",
+"name": "MSCI USA Value USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7J7TB45",
+"name": "Global Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7K93397",
+"name": "S&P 500 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7KMNP07",
+"name": "Solactive Global Pure Gold Miners USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7KQ7B66",
+"name": "MSCI World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7LGZ558",
+"name": "France Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7LW6Y90",
+"name": "Italy Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7N3YW49",
+"name": "US Short-Term High Yield Corporate Bond Index USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B7VB3908",
+"name": "FTSE 100 3x Short GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B7WK2W23",
+"name": "MSCI AC Asia Ex Japan SF (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B7Y34M31",
+"name": "S&P 500 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B86MWN23",
+"name": "Edge MSCI Europe Min Volatility EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B87G8S03",
+"name": "Global AAA-AA Gov Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B87RLX93",
+"name": "Euro Corp Bond Financials EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B8CJW150",
+"name": "US Energy Infrastructure MLP USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B8FHGS14",
+"name": "Edge MSCI World Min Volatility USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8GF1M35",
+"name": "Dow Jones Global Real Estate (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B8GKDB10",
+"name": "FTSE All-World High Dividend Yield USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B8HGT870",
+"name": "Gold 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8JF9153",
+"name": "EURO STOXX 50 3x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8JVMZ80",
+"name": "Copper 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8K7KM88",
+"name": "S&P 500 3x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8KGV557",
+"name": "Edge MSCI EM Min Vol USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8KMSQ34",
+"name": "S&P 500 CHF (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8NB3063",
+"name": "FTSE MIB 3x Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8X9NW27",
+"name": "US Large Cap Core Alphadex Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8X9NX34",
+"name": "Emerging Markets Alphadex Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8X9NY41",
+"name": "Eurozone Alphadex Class A EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B8X9NZ57",
+"name": "United Kingdom Alphadex Class A GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B910VR50",
+"name": "MSCI EMU (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B945VV12",
+"name": "FTSE Developed Europe EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B94QKC83",
+"name": "FTSE 100 2x Lev GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B94QKF15",
+"name": "FTSE 100 2x Short GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B94QKG22",
+"name": "FTSE 100 1x Short GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B94QKJ52",
+"name": "FTSE 250 2x Lev GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B94QLN63",
+"name": "Palladium 2x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B94QLR02",
+"name": "Palladium 1x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B94ZB998",
+"name": "US Energy Infrastructure MLP USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00B95PGT31",
+"name": "FTSE Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B979GK47",
+"name": "S&P U.S. Dividend Aristocrats (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B99FL386",
+"name": "Bloomberg SASB U.S. High Yield Corporate ESG (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9CQXS71",
+"name": "S&P Global Dividend Aristocrats USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9F5YL18",
+"name": "FTSE Developed Asia Pacific Ex Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9KNR336",
+"name": "S&P Pan Asia Dividend Aristocrats (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9M04V95",
+"name": "JPM EM Bond CHF Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9M6RS56",
+"name": "JPM USD EM Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9M6SJ31",
+"name": "Global Corp Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9MRHC27",
+"name": "MSCI Nordic EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00B9MRJJ36",
+"name": "MDAX ESG Screened (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BBGBF313",
+"name": "FTSE 250 1x Short GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BC7GZJ81",
+"name": "Bloomberg 1-3 Year U.S. Treasury Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BC7GZW19",
+"name": "Bloomberg 0-3 Year Euro Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BC7GZX26",
+"name": "Bloomberg 0-3 Year US Corporate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BCBJF711",
+"name": "Bloomberg 0-5 Year Sterling Corporate Bond GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BCLWRB83",
+"name": "US Corp Bond Interest Rate Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BCRY5Y77",
+"name": "USD Short Duration Corp Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BCRY6003",
+"name": "USD Short Duration High Yield Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BCRY6227",
+"name": "USD Ultrashort Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BCRY6557",
+"name": "EUR Ultrashort Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD0B9B76",
+"name": "Inclusion and Diversity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BD0Q9673",
+"name": "US High Yield Fallen Angels USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD4DX952",
+"name": "ESG Emerging Markets Bond Quality Weighted USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD4DXB77",
+"name": "ESG USD EM Bond Quality Weighted EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD5HBS12",
+"name": "Factor FX Class C EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BD6RZT93",
+"name": "US Equity Income USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BD8D5G25",
+"name": "Euro Short-Term High Yield Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BD8D5H32",
+"name": "Euro Short-Term High Yield Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD8PGZ49",
+"name": "US Treasury Bond 20+y EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD8PH174",
+"name": "Global Inflation Linked Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BD9MMD49",
+"name": "Betabuilders US Treasury Bond 1-3 Yr USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BD9MMF62",
+"name": "Ultra-Short Income EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDBRDM35",
+"name": "Global Aggregate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDD48R20",
+"name": "USD Corporate 1-3 Year Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDD48S37",
+"name": "Eur Corporate 1-3 Year Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDDRDW15",
+"name": "JPM ESG USD EM Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDDRDY39",
+"name": "USD Emerging Markets Sovereign Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDF12W49",
+"name": "Emerging Markets Equity Income USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDFC6G93",
+"name": "USD Emerging Markets Sovereign Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDFC6Q91",
+"name": "USD Ultra-Short Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDFGJ627",
+"name": "USD Floating Rate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDFJYM28",
+"name": "US Aggregate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDFJYP58",
+"name": "Fallen Angels High Yield Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDFK1573",
+"name": "US Treasury Bond 1-3y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDQYWQ65",
+"name": "USDTIPS 0-5 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDQZ5152",
+"name": "USD Intermediate Credit Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDR55471",
+"name": "MSCI ACWI SRI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDR5HM97",
+"name": "USD High Yield Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDS67326",
+"name": "EM Local Currency Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDT6FP91",
+"name": "Refinitiv Global Convertible Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BDT6FR16",
+"name": "Global Convertible Bond USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BDZVH966",
+"name": "USD TIPS EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF0M6N54",
+"name": "Ecommerce Logistics USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF11F458",
+"name": "USD Floating Rate Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF11F565",
+"name": "Core EUR Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF1QPH33",
+"name": "Bloomberg Global Aggregate Bond USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF1QPJ56",
+"name": "Global Aggregate Bond GBP Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF1QPL78",
+"name": "Bloomberg Global Aggregate Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2B0M76",
+"name": "Global Quality Dividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2B0P08",
+"name": "US Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FN646",
+"name": "US Treasury Bond 7-10 Year USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FN752",
+"name": "Us Treasury Bond 7-10 Year USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FN869",
+"name": "US Treasury Bond 7-10 Year EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FNG46",
+"name": "US Treasury Bond 1-3 Year USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FNH52",
+"name": "Us Treasury Bond 1-3 Year USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FNJ76",
+"name": "US Treasury Bond 1-3 Year EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FNQ44",
+"name": "US Treasury Bond 3-7 Year USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2FPB31",
+"name": "US Treasury Bond 3-7 Year EUR-Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2GFH28",
+"name": "US Treasury Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF2GFK56",
+"name": "Bloomberg US Treasury USD - EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF3N6Y61",
+"name": "USD Corp Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF3N6Z78",
+"name": "Global Corp Bond USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF3N7094",
+"name": "Euro High Yield Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF3N7102",
+"name": "Euro High Yield Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF3N7219",
+"name": "Fallen Angels High Yield Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF3NC260",
+"name": "Euro High Yield Corp Bond USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF4G6Y48",
+"name": "Global Research Enhanced Index Equity ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF4TW453",
+"name": "Bund 30Y 3x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF4TW560",
+"name": "Gilts 10Y 1x Short GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF4TW784",
+"name": "US Treasuries 30Y 3x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF4TWC33",
+"name": "Industrial Metals Enhanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF4TWF63",
+"name": "Energy Enhanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF51K025",
+"name": "USD Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF51K132",
+"name": "Emerging Markets USD Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF51K249",
+"name": "Euro Corporate Bond ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF540Y54",
+"name": "Core Global Aggregate Bond GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF540Z61",
+"name": "Global Fallen Angel High Yield Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF541080",
+"name": "Emerging Markets High Yield Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF553838",
+"name": "JPM ESG USD EM Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF59RV63",
+"name": "Corporate Bond Research Enhanced Index ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF59RW70",
+"name": "Corporate Bond 1-5 Yr Research Enhanced Index ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF59RX87",
+"name": "Corporate Bond Research Enhanced Index ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF5DXP42",
+"name": "Indxx Innovative Transaction & Process Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BF5GB717",
+"name": "Floating Rate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BF8HV600",
+"name": "US Short-Term High Yield Corp Bond EUR Hedged (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE00BF8HV717",
+"name": "Covered Bond EUR (Dis)",
+"type": "etf"
+},
+{
+"isin": "IE00BF8J5974",
+"name": "ESG USD Corporate Bond Short Duration (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BFM6T814",
+"name": "Emerging Asia Local Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFM6TB42",
+"name": "Global Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFM6TC58",
+"name": "US Treasury Bond 20+ y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFM6TD65",
+"name": "JPM US EM Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFMM8Y81",
+"name": "Spain Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFMM9235",
+"name": "Italy Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFMNHK08",
+"name": "MSCI Europe ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFNM3J75",
+"name": "MSCI World ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFNM3K80",
+"name": "MSCI World ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BFWFPY67",
+"name": "Bloomberg Emerging Markets Local Bond USD Unhedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFWXDX52",
+"name": "Investment Grade Corporate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BFWXDY69",
+"name": "Euro Short Maturity EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BFXR5S54",
+"name": "Global Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFXR5V83",
+"name": "Europe Ex UK Equity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BFXYHY63",
+"name": "USD Treasury Bond 3-7y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BFZPF546",
+"name": "iSharesJPM EM Local Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BG04LT92",
+"name": "High Yield Corporate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BG0J4957",
+"name": "Broad $ High Yield Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BG0J4B71",
+"name": "Broad € High Yield Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BG13YH41",
+"name": "Edge MSCI Europe Value EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BG13YK79",
+"name": "Edge MSCI Europe Min Volatility EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BG47KB92",
+"name": "Global Aggregate Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BG47KH54",
+"name": "Global Aggregate Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BG5QQ390",
+"name": "USD Corp Bond 0-3y ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BG8BCY43",
+"name": "Ultra-Short Income USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGCSB447",
+"name": "USD Ultrashort Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGJWWT11",
+"name": "Euro Government Bond 5-7 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGJWWV33",
+"name": "Euro Government Bond 3-5 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGJWWW40",
+"name": "Euro Government Bond 7-10 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGJWWX56",
+"name": "Euro Government Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGJWWY63",
+"name": "Euro Government Bond 1-3 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGPP6473",
+"name": "US Treasury Bond 3-7 Years EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGPP6697",
+"name": "US Treas. Bond 7-10 Years EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGQ0J979",
+"name": "JPM USD EM Bond CHF (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGR7L912",
+"name": "US Treasury Bond 0-1y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGSF1X88",
+"name": "US Treas. Bond 0-1y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGV5VM45",
+"name": "S&P Europe (ex UK) EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWCB81",
+"name": "Emerging Markets Government Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWFK87",
+"name": "USD Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWFL94",
+"name": "USD Corporate Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWFS63",
+"name": "Treasury Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWSV06",
+"name": "USD Corporate 1-3 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWSW13",
+"name": "USD Corporate 1-3 Year Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BGYWT403",
+"name": "EUR Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BH04FZ00",
+"name": "Eur Corporate 1-3 Year Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BH04GL39",
+"name": "Eurozone Government Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BH04GW44",
+"name": "U.K. Gilt GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BH4G7D40",
+"name": "USD Corp Bond ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BHZRQZ17",
+"name": "FTSE India USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BHZRR253",
+"name": "Euro Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJ06C937",
+"name": "Emerging Markets Sovereign Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJ0KDQ92",
+"name": "MSCI World USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJ5JPH63",
+"name": "JPM USD EM Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJ5JPJ87",
+"name": "MSCI Saudi Arabia Capped USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJK3WF00",
+"name": "Betabuilders US Treasury Bond 0-1 Yr USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJK55B31",
+"name": "USD High Yield Corp Bond ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJK55C48",
+"name": "Euro High Yield Corp Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJK9HD13",
+"name": "Betabuilders Govt Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJK9HH50",
+"name": "Betabuilders US Treasury Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJL36X53",
+"name": "ICE BofA 0-5 Year EM USD Government Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJP26C72",
+"name": "USD Ultrashort Bond ESG Unhedged USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJP26D89",
+"name": "Euro Ultrashort Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJP26F04",
+"name": "GBP Ultrashort Bond ESG Unhedged GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJQRDK83",
+"name": "MSCI World ESG Universal Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJQRDL90",
+"name": "MSCI Europe ESG Universal Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJQRDN15",
+"name": "Quantitative Strategies ESG Global Equity Multi-Factor (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJQRDP39",
+"name": "Quantitative Strategies ESG Global Equity Multi-Factor (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJQTJ848",
+"name": "Indxx Healthcare Megatrend Equal Weight USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJRCLL96",
+"name": "Global Equity Multi-Factor USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJSBCS90",
+"name": "Access China Government Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJSFQW37",
+"name": "Global Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJSFR200",
+"name": "Global High Yield Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJXRT698",
+"name": "Bloomberg 1-3 Month T-Bill USD Unhedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJXRT706",
+"name": "Bloomberg 1-3 Month T-Bill MXN Hedge (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJXRZJ40",
+"name": "Cybersecurity And Data Privacy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJXT3B87",
+"name": "MSCI USA Socially Responsible (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BJXT3C94",
+"name": "MSCI USA Socially Responsible (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJXT3G33",
+"name": "MSCI USA Socially Responsible EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJZ2DC62",
+"name": "MSCI USA ESG Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJZ2DD79",
+"name": "Russell 2000 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK1PV445",
+"name": "MSCI USA USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BK1PV551",
+"name": "MSCI World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BK4W7N32",
+"name": "USD Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BC677",
+"name": "Healthcare Breakthrough USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BCD43",
+"name": "Artificial Intelligence USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BCH80",
+"name": "Clean Energy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BQT80",
+"name": "FTSE All-World USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BQV03",
+"name": "FTSE Developed World USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BQW10",
+"name": "FTSE North America USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BQX27",
+"name": "FTSE Developed Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BQY34",
+"name": "FTSE Developed Europe Ex UK EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BQZ41",
+"name": "FTSE Developed Asia Pacific Ex Japan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BR626",
+"name": "FTSE All-World High Dividend Yield USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5BR733",
+"name": "FTSE Emerging Markets USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5H8015",
+"name": "Stoxx Europe 600 SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK5LYT47",
+"name": "MSCI USA USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BK7Y2P34",
+"name": "Global Gov Bond USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK8JH525",
+"name": "Bloomberg Emerging Markets Local Bond USD Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BK95B138",
+"name": "US Treasury Bond 0-1y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKBF6H24",
+"name": "Core MSCI World EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKF09C98",
+"name": "USD High Yield Corp Bond ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKFB6K94",
+"name": "MSCI China A SF (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKFB6L02",
+"name": "CMCI Commodity Carry SF (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKKCKJ46",
+"name": "Global High Yield Corporate Bond Multi-Factor USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKKKWJ26",
+"name": "USD Corp Bond ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKLC5874",
+"name": "Euro High Yield Corp Bond ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKLF1R75",
+"name": "Battery Solutions USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKLWY790",
+"name": "US Equity (Responsible Exclusions) USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKM4GZ66",
+"name": "Core MSCI EM IMI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKM4H197",
+"name": "MSCI EM Consumer Growth USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKP5L409",
+"name": "US Mortgage Backed Securities Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKP5L730",
+"name": "JPM ESG USD EM Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKPSFD61",
+"name": "China CNY Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKPT2S34",
+"name": "Global Inflation Linked Gov Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKPT2T41",
+"name": "J.P. Morgan EM Investment Grade Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKPTXQ89",
+"name": "Alerian Midstream Energy Dividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKPX3K41",
+"name": "MSCI AC Far East ex-Japan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKRWN659",
+"name": "US Development Bank Bonds USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKS2X317",
+"name": "Low Duration Global Government Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKS7L097",
+"name": "S&P 500 Scored & Screened (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKS8QM96",
+"name": "BTP 10Y 3x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKS8QN04",
+"name": "Bund 10Y 3x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKS8QQ35",
+"name": "Gilts 10Y 3x Short GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKS8QT65",
+"name": "US Treasuries 10Y 3x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKSBGS44",
+"name": "US Equity Research Enhanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT09032",
+"name": "US Treasuries 10Y 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT09149",
+"name": "BTP 10Y 3x Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT09255",
+"name": "Bund 10Y 3x Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT09479",
+"name": "Gilts 10Y 3x Lev GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT1CS59",
+"name": "JPM USD EM Corp Bond Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT6BH25",
+"name": "Euro Corp Bond ex-Financials 1-5y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT6FT27",
+"name": "Global Gov Bond EUR EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT6RT64",
+"name": "China CNY Bond USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKT6VQ12",
+"name": "China Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKTLJB70",
+"name": "Smart City Infrastructure USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKTLJC87",
+"name": "Smart City Infrastructure USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKVKW020",
+"name": "Value Line Dividend Index Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKVL7331",
+"name": "Edge MSCI USA Min Volatility ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKVL7778",
+"name": "Edge MSCI World Min Volatility ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKWD3743",
+"name": "US Treasury Bond 10+ Year USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKWD3966",
+"name": "Euro Corporate Hybrid Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKWD3B81",
+"name": "Euro Corporate Hybrid Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKWD3C98",
+"name": "US Treasury Bond 0-1 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0C77",
+"name": "MSCI Europe Consumer Discretionary EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0D84",
+"name": "MSCI Europe Consumer Staples EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0F09",
+"name": "MSCI Europe Energy EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0G16",
+"name": "MSCI Europe Financials EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0J47",
+"name": "MSCI Europe Industrials EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0K51",
+"name": "MSCI Europe Technology EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0L68",
+"name": "MSCI Europe Materials EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKWQ0N82",
+"name": "MSCI Europe Communication Services EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BKX55Q28",
+"name": "FTSE 250 GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKX55R35",
+"name": "FTSE North America USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKX55S42",
+"name": "FTSE Developed Europe Ex UK EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKX55T58",
+"name": "FTSE Developed World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BKX8G916",
+"name": "S&P 500 GBP Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKY40J65",
+"name": "USA Sustainable Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKY4W127",
+"name": "Broad Commodities USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKY55S33",
+"name": "Japan Sustainable Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKY58G26",
+"name": "Asia Pacific Ex Japan Sustainable Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKY59G90",
+"name": "Emerging Market Sustainable Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BKY59K37",
+"name": "Developed World Sustainable Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL0L0D23",
+"name": "Capital Strength Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL25JL35",
+"name": "MSCI World Quality USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL25JN58",
+"name": "MSCI World Minimum Volatility USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL25JP72",
+"name": "MSCI World Momentum USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL58LJ19",
+"name": "ESG US Corp Bonds USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL58LL31",
+"name": "ESG US Corp Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL643144",
+"name": "Digital Infrastructure & Connectivity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BL6K6H97",
+"name": "India INR Government Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BL977C92",
+"name": "MSCI China USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCH1X54",
+"name": "US Treasury Bond 0-1 Year USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCHJ534",
+"name": "US Infrastructure Development USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCHJB90",
+"name": "Robotics & Artificial Intelligence USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCHJH52",
+"name": "Renewable Energy Producers USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCHJN13",
+"name": "Lithium & Battery Tech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCHJT74",
+"name": "Internet of Things USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLCHJZ35",
+"name": "FinTech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLDGH447",
+"name": "Euro Gov Bond Climate EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLDGH553",
+"name": "Euro Gov Bond Climate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLF7VX27",
+"name": "Bloomberg SASB U.S. Corporate ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLNMYC90",
+"name": "S&P 500 Equal Weight USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLPK3577",
+"name": "Cybersecurity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLR6Q544",
+"name": "Video Games & Esports USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLR6QB00",
+"name": "Telemedicine & Digital Health USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRB0028",
+"name": "Global Clean Energy USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRB0242",
+"name": "Global Clean Energy (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPN388",
+"name": "Emerging Markets Equity Research Enhanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPPV00",
+"name": "U.S. Treasury 0-1 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPQH31",
+"name": "Sustainable Future Of Food USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPQL76",
+"name": "China CNY Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPQP15",
+"name": "ESG EM Government Bond (USD) 0-5 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPRD67",
+"name": "ESG Corporate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPRF81",
+"name": "ESG EM Corporate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPRJ20",
+"name": "NASDAQ 100 3x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLRPRL42",
+"name": "NASDAQ 100 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLS09N40",
+"name": "EURO STOXX Banks 3x Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLSN7P11",
+"name": "S&P 500 ESG Elite (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BLSN7W87",
+"name": "S&P 500 ESG Elite EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HJ62",
+"name": "MSCI Emerging Markets ex China 1C GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HK77",
+"name": "MSCI World Health Care USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HL84",
+"name": "MSCI World Financials USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HM91",
+"name": "MSCI World Energy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HN09",
+"name": "MSCI World Consumer Staples USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HP23",
+"name": "MSCI World Consumer Discretionary USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HQ30",
+"name": "MSCI World Utilities USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HR47",
+"name": "MSCI World Communications USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HS53",
+"name": "MSCI World Materials USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HT60",
+"name": "MSCI World Information Technology USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HV82",
+"name": "MSCI World Industrial USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM67HW99",
+"name": "S&P 500 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM8QRY62",
+"name": "S&P 500 Equal Weight USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BM8QRZ79",
+"name": "Solar Energy (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM8QS095",
+"name": "MSCI China Technology All Shares Stock Connect (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM8R0J59",
+"name": "NASDAQ 100 Covered Call USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BM8R0N95",
+"name": "Genomics & Biotechnology USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM97MR69",
+"name": "US Treasuries Ultrashort Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BM9GRM34",
+"name": "Sustainable Global Corporate Bond Paris-Aligned Multifactor USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BM9GRP64",
+"name": "Sustainable EM Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BM9TSP27",
+"name": "Emerging Markets Ex-State-Owned Enterprises ESG Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMC38736",
+"name": "Semiconductor USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMC5DV85",
+"name": "CMCI Commodity Carry EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMC7BF44",
+"name": "China Government Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMCZLH06",
+"name": "USD Development Bank Bonds EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMD8KP97",
+"name": "Nasdaq Next Generation 100 (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMK72",
+"name": "MSCI Pacific Ex-Japan ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMN04",
+"name": "EUR Green Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMT65",
+"name": "MSCI Pacific Ex Japan ESG Universal Screened (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMV87",
+"name": "MSCI Japan ESG Universal Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMW94",
+"name": "MSCI Europe Ex UK ESG Universal Screened (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMX02",
+"name": "MSCI EMU ESG Universal Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDBMY19",
+"name": "MSCI EM ESG Universal Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDFDY08",
+"name": "USD High Yield Corp Bond ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDH1538",
+"name": "Hydrogen Economy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDKNW35",
+"name": "Crypto & Blockchain Innovators USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDPBY65",
+"name": "Stoxx Europe 600 Paris Aligned Climate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDPBZ72",
+"name": "S&P 500 Paris Aligned Climate USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDV7354",
+"name": "AC Asia Pacific Ex Japan Research Enhanced Index Equity ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDV7461",
+"name": "Ultra-Short Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMDV7578",
+"name": "China A Research Enhanced Index Equity ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMFKG444",
+"name": "NASDAQ 100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMFNW783",
+"name": "Airlines, Hotels, Cruise Lines USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMGNVD65",
+"name": "Core Global Aggregate Bond USD Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMH5XY61",
+"name": "E-Commerce USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMH5Y327",
+"name": "Data Center REITs & Digital Infrastructure USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMH5Y871",
+"name": "Cybersecurity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMH5YF48",
+"name": "Cloud Computing USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMH5YL08",
+"name": "Cleantech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMH5YR69",
+"name": "Autonomous & Electric Vehicles USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMP3HN93",
+"name": "MSCI UK IMI Socially Responsible (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMTM6B32",
+"name": "WTI Crude Oil 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMTM6D55",
+"name": "Brent Crude Oil 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMVB5K07",
+"name": "Lifestrategy 20% Equity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMVB5L14",
+"name": "Lifestrategy 20% Equity EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMVB5M21",
+"name": "Lifestrategy 40% Equity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMVB5N38",
+"name": "Lifestrategy 40% Equity USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMW3QX54",
+"name": "Robo Global® Robotics And Automation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMW42074",
+"name": "MSCI EU Consumer Staples EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMW42298",
+"name": "MSCI EU Consumer Discretionary EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMW42413",
+"name": "MSCI Europe Information Tech EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMW42520",
+"name": "MSCI Europe Industrials Sector EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMW42637",
+"name": "MSCI Europe Energy EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMWXKN31",
+"name": "Hang Seng Tech HKD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMX0B524",
+"name": "UK Gilt EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMX0B631",
+"name": "USD Treasury Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMY76136",
+"name": "ESG MSCI World EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMYDM794",
+"name": "Hydrogen Economy USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMYDM802",
+"name": "Quality Equity Dividends ESG Exclusions UK GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMYDMB35",
+"name": "Quality Equity Dividends ESG Exclusions Asia Pacific ex-Japan USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BMYMHS24",
+"name": "Saturna Al-Kawthar Global Focused Equity USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BMZ17T93",
+"name": "MSCI World SRI GBP Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BN2BCY94",
+"name": "Xtrackers Developed Green Real Estate USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN4PXC48",
+"name": "Climate Aware Global Developed Equity CTB (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN4Q0602",
+"name": "MSCI USA Climate Paris Aligned (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN4Q0L55",
+"name": "MSCI EMU Climate Paris Aligned (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN4Q0X77",
+"name": "MSCI Japan Climate Paris Aligned (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN4Q1675",
+"name": "MSCI EM Climate Paris Aligned (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN940Z87",
+"name": "CMCI Commodity Carry Ex-Agriculture USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BN941009",
+"name": "CMCI Commodity Carry Ex-Agriculture EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC0M350",
+"name": "MSCI USA ESG Universal Low Carbon Select (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC0M913",
+"name": "MSCI EMU ESG Universal Low Carbon Select (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC0MD55",
+"name": "MSCI Japan ESG Universal Low Carbon Select (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC0MH93",
+"name": "MSCI Em Ex China Socially Responsible USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC1F287",
+"name": "iClima Global Decarbonisation Enablers USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC1G699",
+"name": "MSCI EMU ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNC1G707",
+"name": "MSCI USA Communication Services USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BNDS1P30",
+"name": "ESG Global Corporate Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNDS1Q47",
+"name": "ESG Global Corporate Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BNGFMX61",
+"name": "Japan Equity Research Enhanced JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNGFMY78",
+"name": "Pacific ex-Japan Equity Research Enhanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNGJJT35",
+"name": "S&P 500 Equal Weight USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNH72088",
+"name": "FTSE Global Convertible Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BNKF6C99",
+"name": "Stoxx European Market Leaders EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNRQM384",
+"name": "Nasdaq 100 Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BNTVVR89",
+"name": "AuAg ESG Gold Mining USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP2C0316",
+"name": "MSCI Europe Climate Paris Aligned EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP2C1S34",
+"name": "MSCI USA Climate Paris Aligned USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP2NF958",
+"name": "Japan Research Enhanced Index Equity ESG (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP3QZ601",
+"name": "Edge World Quality USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP3QZ825",
+"name": "Edge World Momentum USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP46NG52",
+"name": "ICE BofA 0-5 Year EM Government Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BP8FKB21",
+"name": "FTSE Developed Europe ex UK Real Estate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BP9F2J32",
+"name": "Euro Low Duration Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BPRCH686",
+"name": "JPX-Nikkei 400 JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BPVLQD13",
+"name": "MSCI Japan ESG Screened JPY (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BQ70R696",
+"name": "Nasdaq Biotech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQN1K901",
+"name": "Edge Europe Value EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQQ3Q067",
+"name": "Emerging Markets Equity Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BQQP9F84",
+"name": "Gold Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQQP9G91",
+"name": "Junior Gold Miners USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQQP9H09",
+"name": "US Sustainable Wide Moat USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQT3WG13",
+"name": "MSCI China A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQWJFQ70",
+"name": "Morningstar Multi-Asset Global Infrastructure USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BQXKVQ19",
+"name": "MSCI GCC Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BQZJBM26",
+"name": "Emerging Markets SmallCap Dividend USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BQZJBQ63",
+"name": "US Equity Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BQZJBX31",
+"name": "Europe High Dividend EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BQZJC527",
+"name": "Europe SmallCap Dividend EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BRB36B93",
+"name": "MSCI Japan ESG Screened EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BRHZ0398",
+"name": "MSCI UK Real Estate GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BRKWGL70",
+"name": "S&P 500 (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BS7K8821",
+"name": "Bloomberg 3-5 Year Euro Government Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BSJCQV56",
+"name": "FTSE EPRA Europe Ex Uk Real Estate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BSKRJX20",
+"name": "EUR Gov Bond 20y Target Duration EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BSKRJZ44",
+"name": "US Treasury Bond 20+y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BSKRK281",
+"name": "EUR Corp Bond BBB-BB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BSPLC298",
+"name": "MSCI Europe Small Cap Value Weighted EUR",
+"type": "etf"
+},
+{
+"isin": "IE00BSPLC413",
+"name": "MSCI USA Small Cap Value Weighted USD",
+"type": "etf"
+},
+{
+"isin": "IE00BSPLC520",
+"name": "MSCI USA Value USD",
+"type": "etf"
+},
+{
+"isin": "IE00BTGD1B38",
+"name": "MSCI Japan ESG Screened USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BTJRMP35",
+"name": "MSCI EM USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BVFZGC04",
+"name": "WTI Crude Oil USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BVFZGD11",
+"name": "Brent Crude Oil USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BVGC6645",
+"name": "JPX-Nikkei 400 (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BVZ6SP04",
+"name": "Euro Short Maturity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM278",
+"name": "S&P U.S. Consumer Discretionary Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM492",
+"name": "S&P U.S. Energy Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM500",
+"name": "S&P U.S. Financials Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM617",
+"name": "S&P U.S. Health Care Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM724",
+"name": "S&P U.S. Industrials Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM831",
+"name": "S&P U.S. Materials Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXM948",
+"name": "S&P U.S. Technology Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWBXMB69",
+"name": "S&P U.S. Utilities Select Sector USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWT3KJ20",
+"name": "Factor MSCI USA Low Volatility EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWT3KL42",
+"name": "Factor MSCI USA Prime Value ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWT3KN65",
+"name": "Factor MSCI USA Quality ESG EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BWTNM966",
+"name": "Germany Alphadex Class A EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BX7RQY03",
+"name": "Factor MSCI USA Low Volatility (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BX7RRJ27",
+"name": "Factor MSCI USA Quality ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BXDZNK39",
+"name": "Factor MSCI USA Quality ESG GBP Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYM31M36",
+"name": "Fallen Angels Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYM8JD58",
+"name": "S&P US Real Estate Select Sector (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYML9W36",
+"name": "S&P 500 (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYMS5W68",
+"name": "KBW Nasdaq Fintech (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYNXNS22",
+"name": "BTP 10Y 5x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYNXPH56",
+"name": "Bund 10Y 5x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYNXPJ70",
+"name": "US Treasuries 10Y 5x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYPC1H27",
+"name": "China CNY Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYPHT736",
+"name": "iBoxx EUR Corporate Bond Yield Plus (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYPLS672",
+"name": "Cyber Security USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYQCZF74",
+"name": "Japan Equity GBP Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYQCZQ89",
+"name": "Europe Equity GBP Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYSX4739",
+"name": "Emerging Markets Quality Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYSX4846",
+"name": "Emerging Markets Quality Income USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYSZ5R67",
+"name": "Bloomberg 3-7 Year U.S. Treasury Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYSZ5T81",
+"name": "Bloomberg 7-10 Year U.S. Treasury Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYSZ5V04",
+"name": "Bloomberg 10+ Year U.S. Treasury Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYSZ6062",
+"name": "Bloomberg 10+ Year Euro Government Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTH5602",
+"name": "US High Yield Corporate Bond ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTH5S21",
+"name": "S&P Global Dividend Aristocrats ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTH5T38",
+"name": "S&P Euro Dividend Aristocrats ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTH6121",
+"name": "Global Equity Income Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTH6238",
+"name": "US Equity Opportunities Class A USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRR640",
+"name": "MSCI World Consumer Discretionary USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRR863",
+"name": "MSCI World Energy USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRR970",
+"name": "MSCI World Financials USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRRD19",
+"name": "MSCI World Technology USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRRF33",
+"name": "MSCI World Materials USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRRG40",
+"name": "MSCI World Communication Services USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTRRH56",
+"name": "MSCI World Utilities USD",
+"type": "etf"
+},
+{
+"isin": "IE00BYTYHM11",
+"name": "Emerging Markets 3x Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYTYHN28",
+"name": "Emerging Markets 3x Lev USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYV12Y75",
+"name": "Bloomberg 1-10 Year U.S. Corporate Bond USD Unhedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYV1Y969",
+"name": "US Quality Income Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYV1YH46",
+"name": "Global Quality Income Hedged EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYVJRP78",
+"name": "MSCI EM SRI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYVQ9F29",
+"name": "NASDAQ100 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYVTMS52",
+"name": "NASDAQ-100 (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYVTMZ20",
+"name": "US High Yield Fallen Angels (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYVZV757",
+"name": "Betabuilders Govt Bond 1-3 Yr EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYWQWR46",
+"name": "Video Gaming & Esports USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYWZ0333",
+"name": "Automation & Robotics USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYWZ0440",
+"name": "Global High Yield Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYX5K108",
+"name": "MSCI Europe Ex-UK (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYX8XC17",
+"name": "MSCI Japan SRI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXG2H39",
+"name": "NASDAQ USD Biotechnology USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXPSP02",
+"name": "US Treasury Bond 1-3y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXPXK00",
+"name": "Edge MSCI World EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXVGX24",
+"name": "US Quality Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXVGY31",
+"name": "US Quality Income USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXVGZ48",
+"name": "Global Quality Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXVWC37",
+"name": "US Short-Term High Yield Corporate Bond Index GBP Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYX521",
+"name": "Bloomberg Commodity Ex-Agriculture (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYYJ35",
+"name": "USD Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYYK40",
+"name": "JPM EM Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYYL56",
+"name": "USD High Yield Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYYM63",
+"name": "US Aggregate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYYN70",
+"name": "US Mortage Backed Securities USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYXYYP94",
+"name": "USD Short Duration Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYYLVH00",
+"name": "BBG Commodity CMCI SF USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYYR0489",
+"name": "MSCI Saudi Arabia Capped USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYYW2V44",
+"name": "S&P 500 EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYYXBF44",
+"name": "FTSE Emerging Markets High Dividend Low Volatility (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZ28V50",
+"name": "Global Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZK4552",
+"name": "Automation & Robotics USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZK4669",
+"name": "Ageing Population USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZK4776",
+"name": "Healthcare Innovation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZK4883",
+"name": "Digitalisation USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZNF849",
+"name": "Global Infrastructure ESG 1C USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZTVT56",
+"name": "EuroCorp Bond ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BYZTVV78",
+"name": "Euro Corp Bond 0-3y ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ02LR44",
+"name": "MSCI World ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ036H21",
+"name": "USD Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ036J45",
+"name": "USD Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ043R46",
+"name": "Core Global Aggregate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ048462",
+"name": "USD Floating Rate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ048579",
+"name": "USD Corp Bond 0-3y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ0G8860",
+"name": "Bloomberg 10+ Year U.S. Corporate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ0G8977",
+"name": "Bloomberg U.S. Tips USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ0G8B96",
+"name": "MSCI Japan JPY",
+"type": "etf"
+},
+{
+"isin": "IE00BZ0G8C04",
+"name": "MSCI Japan EUR Hedged",
+"type": "etf"
+},
+{
+"isin": "IE00BZ0XVG69",
+"name": "At1 Coco Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ163G84",
+"name": "EUR Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ163H91",
+"name": "Eurozone Government Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ163K21",
+"name": "USD Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ163L38",
+"name": "Emerging Markets Government Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ163M45",
+"name": "USD Treasury Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ171348",
+"name": "Global AAA-AA Gov Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ173W74",
+"name": "USD Corp Bond Int. Rate USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ17CN18",
+"name": "USD Short Duration High Yield Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ1GHD37",
+"name": "Enhanced Commodity USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ2GV965",
+"name": "CMCI Ex-Agriculture SF (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ4BMM98",
+"name": "EURO STOXX High Dividend Low Volatility (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE00BZ6V7883",
+"name": "US Mortgage Backed Securities USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "JE00B1VS2W53",
+"name": "Physical Platinum USD",
+"type": "etf"
+},
+{
+"isin": "JE00B1VS3002",
+"name": "Physical Palladium USD",
+"type": "etf"
+},
+{
+"isin": "JE00B1VS3333",
+"name": "Physical Silver USD",
+"type": "etf"
+},
+{
+"isin": "JE00B1VS3770",
+"name": "Physical Gold USD",
+"type": "etf"
+},
+{
+"isin": "JE00B1VS3W29",
+"name": "Physical Precious Metal USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DK645",
+"name": "Copper 1x Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DK975",
+"name": "WTI Crude Oil 1x Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DKC09",
+"name": "Gold Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DKH53",
+"name": "Natural Gas Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DKJ77",
+"name": "Nickel Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DKK82",
+"name": "Silver Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DKT75",
+"name": "Commodities Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DKZ36",
+"name": "Indust. Metal 1x Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DLX86",
+"name": "WTI Crude Oil Longer USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DMC49",
+"name": "Commodities Longer USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DMD55",
+"name": "Energy Longer USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DMJ18",
+"name": "Indust. Metal Long USD",
+"type": "etf"
+},
+{
+"isin": "JE00B24DMK23",
+"name": "Agriculture Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFT427",
+"name": "2x Lev Agriculture USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTC05",
+"name": "2x Lev Aluminium USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTD12",
+"name": "Coffee 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTF36",
+"name": "Copper 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTG43",
+"name": "Corn 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTL95",
+"name": "Gold 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTS64",
+"name": "Silver 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFTW01",
+"name": "Sugar 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFV134",
+"name": "Platinum 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2NFV803",
+"name": "Cocoa 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2QXZK10",
+"name": "Cocoa USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2QY0436",
+"name": "Lead USD",
+"type": "etf"
+},
+{
+"isin": "JE00B2QY0H68",
+"name": "Tin USD",
+"type": "etf"
+},
+{
+"isin": "JE00B3KNMS14",
+"name": "Short JPY Long EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3L54023",
+"name": "SHORT CHF LONG EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3LGQQ51",
+"name": "Short NOK Long EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3LXVB68",
+"name": "Long GBP Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3MQG751",
+"name": "Long SEK Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3MR2Q90",
+"name": "Long CHF Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3MRDD32",
+"name": "Long NOK Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3MVPQ29",
+"name": "Short GBP Long EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3MWC642",
+"name": "Long JPY Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3N9C970",
+"name": "Short EUR Long USD 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3NKMM36",
+"name": "Short CHF Long GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B3NXB475",
+"name": "Short SEK Long EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3QBQJ84",
+"name": "Short JPY Long GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B3QQ4551",
+"name": "Long USD Short EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3QSB726",
+"name": "Short AUD Long EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3R2DZ58",
+"name": "Long GBP Short EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3RNTN80",
+"name": "Long USD Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3RQ6R05",
+"name": "Short GBP Long EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3S71Q64",
+"name": "Short CHF Long EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3SBFZ51",
+"name": "Long GBP Short USD 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3SBYQ91",
+"name": "Short USD Long EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3SX3R93",
+"name": "Long CHF Short GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B3T3K772",
+"name": "Short USD Long EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3VJDN05",
+"name": "Long EUR Short GBP 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3W0MY68",
+"name": "Short EUR Long GBP 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3WCLY57",
+"name": "Long USD Short GBP 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3WDZY68",
+"name": "Long JPY Short EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3WFMB84",
+"name": "Short JPY Long USD 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3WPFZ34",
+"name": "Long USD Short GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B3X9GJ56",
+"name": "Long JPY Short USD 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3XGSP64",
+"name": "Long AUD Short EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B3XJ8K03",
+"name": "Short GBP Long USD 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3XPTF07",
+"name": "Long CHF Short EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3XR4V72",
+"name": "Long JPY Short GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B3Y3SZ64",
+"name": "Long Euro Short GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B3Y5F176",
+"name": "Long EUR Short USD 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B3ZQRP79",
+"name": "Corn Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B438PT24",
+"name": "Short USD Long GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B43NB445",
+"name": "Short USD Long GBP 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B44CBN95",
+"name": "Short JPY Long EUR 3x",
+"type": "etf"
+},
+{
+"isin": "JE00B44F1611",
+"name": "WTI Crude Oil Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B45CYD99",
+"name": "Short EUR Long GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B460QR00",
+"name": "Commodities Long Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B4PDKD43",
+"name": "Copper Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B4RKQV36",
+"name": "Gold Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B588CD74",
+"name": "Physical Swiss Gold USD",
+"type": "etf"
+},
+{
+"isin": "JE00B5SV2703",
+"name": "Silver Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B63MJ075",
+"name": "Indust Metals Hedged GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B66M4S72",
+"name": "Short CNY Long USD",
+"type": "etf"
+},
+{
+"isin": "JE00B6822V48",
+"name": "Long CNY Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B68GR111",
+"name": "Long GBP Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B68GRJ90",
+"name": "Short GBP Long USD",
+"type": "etf"
+},
+{
+"isin": "JE00B68GS416",
+"name": "Long Euro Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B68GSM94",
+"name": "Short Euro Long USD",
+"type": "etf"
+},
+{
+"isin": "JE00B68GSP26",
+"name": "Long JPY Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B68GT596",
+"name": "Short JPY Long USD",
+"type": "etf"
+},
+{
+"isin": "JE00B6SLJ210",
+"name": "Soybeans Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B6SV8B36",
+"name": "Commodities Ex-Agri USD",
+"type": "etf"
+},
+{
+"isin": "JE00B6TK3K31",
+"name": "Coffee Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B6VG2P72",
+"name": "Aluminium EUR Hedged",
+"type": "etf"
+},
+{
+"isin": "JE00B6X05031",
+"name": "Sugar Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B6XF0923",
+"name": "Natural Gas Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B6XL6W59",
+"name": "Nickel Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B70DCH80",
+"name": "Cotton Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B7305Z55",
+"name": "Brent Crude Oil Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B766LB87",
+"name": "Brent Crude Oil Hedged GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B78CGV99",
+"name": "Brent Crude Oil USD",
+"type": "etf"
+},
+{
+"isin": "JE00B78CP782",
+"name": "Brent Crude Oil Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00B78DPL57",
+"name": "Brent Crude Oil Short USD",
+"type": "etf"
+},
+{
+"isin": "JE00B78NNK09",
+"name": "Wheat Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B78NNM23",
+"name": "Zinc Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B78NNS84",
+"name": "Broad Commodities EUR Daily Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "JE00B78NNV14",
+"name": "Energy EUR Daily Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "JE00B78NPQ01",
+"name": "Precious Metals EUR Daily Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "JE00B78NPW60",
+"name": "Indust.Metals Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B78NPY84",
+"name": "Agriculture EUR Daily Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "JE00B7VG2M16",
+"name": "Physical Gold Hedged GBP",
+"type": "etf"
+},
+{
+"isin": "JE00B8DFY052",
+"name": "Physical Gold Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "JE00B9GQFM16",
+"name": "Physical Silver USD Daily Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "JE00BDD9Q733",
+"name": "Petroleum 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BDD9Q840",
+"name": "WTI Crude Oil 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BDD9Q956",
+"name": "Natural Gas 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BDD9QB77",
+"name": "Nickel 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BDD9QC84",
+"name": "Wheat 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BDD9QD91",
+"name": "Brent Crude Oil 2x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BMM1X163",
+"name": "Long GBP Short EUR 5x",
+"type": "etf"
+},
+{
+"isin": "JE00BMM1X270",
+"name": "Short GBP Long Euro 5x",
+"type": "etf"
+},
+{
+"isin": "JE00BMM1XC77",
+"name": "Long USD Short EUR 5x",
+"type": "etf"
+},
+{
+"isin": "JE00BMM1XD84",
+"name": "Short USD Long EUR 5x",
+"type": "etf"
+},
+{
+"isin": "JE00BN2CJ301",
+"name": "Core Physical Gold USD",
+"type": "etf"
+},
+{
+"isin": "JE00BN7KB334",
+"name": "WITR COM.SEC.Z06/UN.NGAS",
+"type": "etf"
+},
+{
+"isin": "JE00BN7KB441",
+"name": "WITR COM.SEC.Z06/UN.CORN",
+"type": "etf"
+},
+{
+"isin": "JE00BN7KB557",
+"name": "WisdomTree Coffee ETC USD Acc",
+"type": "etf"
+},
+{
+"isin": "JE00BN7KB664",
+"name": "Com.Sec.Z06/Un.Weat USD (ACC)",
+"type": "etf"
+},
+{
+"isin": "JE00BN7KB771",
+"name": "WITR COM.SEC.Z06/UN.HOGS",
+"type": "etf"
+},
+{
+"isin": "JE00BNG8LN89",
+"name": "California Carbon USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "JE00BP2PWW32",
+"name": "Carbon EUR",
+"type": "etf"
+},
+{
+"isin": "JE00BQRFDY49",
+"name": "Wisdomtree Core Physical Silver USD",
+"type": "etf"
+},
+{
+"isin": "JE00BYQY3Z98",
+"name": "Coffee 3x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BYQY7H96",
+"name": "Sugar 3x Lev USD",
+"type": "etf"
+},
+{
+"isin": "JE00BYQY8102",
+"name": "Wheat 3x Lev USD",
+"type": "etf"
+},
+{
+"isin": "LU0136234068",
+"name": "Euro Stoxx 50 (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0136234654",
+"name": "MSCI USA (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0136240974",
+"name": "MSCI Japan (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0136242590",
+"name": "FTSE 100 (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0147308422",
+"name": "MSCI EMU (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0252633754",
+"name": "DAX EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0252634307",
+"name": "LevDAX EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0274209237",
+"name": "MSCI Europe USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0274209740",
+"name": "MSCI Japan USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0274210672",
+"name": "MSCI USA Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0274211217",
+"name": "Euro STOXX 50 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0274211480",
+"name": "DAX EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0274212538",
+"name": "FTSE MIB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0290355717",
+"name": "Eurozone Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290356871",
+"name": "Eurozone Gov Bond 1-3 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290356954",
+"name": "Eurozone Gov Bond 3-5 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290357176",
+"name": "Eurozone Gov Bond 5-7 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290357259",
+"name": "Eurozone Gov Bond 7-10 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290357507",
+"name": "Eurozone Gov Bond 15-30 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290357846",
+"name": "Eurozone Gov Bond 25+ EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290357929",
+"name": "Global Inflation-Linked Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290358224",
+"name": "Eurozone Inflation-Linked Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0290358497",
+"name": "Euro Overnight Rate Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292095535",
+"name": "EURO STOXX Quality Dividend EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0292096186",
+"name": "STOXX Global Dividend 100 Swap EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0292097234",
+"name": "FTSE 100 Income GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0292097317",
+"name": "FTSE 250 GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0292097747",
+"name": "ESG MSCI UK GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0292100046",
+"name": "MSCI Korea USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292100806",
+"name": "MSCI Europe Materials ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292103222",
+"name": "MSCI Europe Health Care ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292103651",
+"name": "MSCI Europe Financials ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292104030",
+"name": "MSCI Europe Communication Services ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292104469",
+"name": "MSCI Europe Information Technology ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292104899",
+"name": "MSCI Europe Utilities ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292105359",
+"name": "MSCI Europe Consumer Staples ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292106084",
+"name": "MSCI Europe Industrials ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292106167",
+"name": "Bloomberg Commodity ex-Agriculture & Livestock Swap EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292106241",
+"name": "ShortDax Daily Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292106753",
+"name": "EURO STOXX 50 Short Daily Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0292107645",
+"name": "MSCI EM Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0321462953",
+"name": "USD EM Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0321464652",
+"name": "GBP Overnight Rate Swap GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0321465469",
+"name": "USD Overnight Rate Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0328474803",
+"name": "S&P ASX 200 AUD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0328475792",
+"name": "STOXX Europe 600 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0335044896",
+"name": "Euro Overnight Rate Swap EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0378818131",
+"name": "Global Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0429458895",
+"name": "US Treasuries 1-3 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0429459356",
+"name": "US Treasuries USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0446734104",
+"name": "MSCI Europe (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0468896575",
+"name": "Germany Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0468897110",
+"name": "Germany Gov Bond 1-3 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0476289540",
+"name": "MSCI Canada ESG Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0478205379",
+"name": "Euro Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0478205965",
+"name": "EUR Corporate Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0484968812",
+"name": "ESG Euro Corp Bonds EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0484968903",
+"name": "ESG Corporate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0484969463",
+"name": "Eurozone AAA Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0494592974",
+"name": "Australia Government Bond AUD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0524480265",
+"name": "iBoxx Eurozone Government Bond Yield Plus EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0599612842",
+"name": "Ossiam Europe ESG Machine Learning EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0613540268",
+"name": "Italy Gov Bond 0-1 Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0614173549",
+"name": "Eurozone Gov Bond 1-3 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0614173895",
+"name": "Eurozone Gov Bond 3-5 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0641007009",
+"name": "Global Inflation-Linked Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0643975161",
+"name": "Germany Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0643975591",
+"name": "Eurozone Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0677077884",
+"name": "USD EM Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0690964092",
+"name": "Global Gov Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0721552544",
+"name": "Bloomberg US 1-3 Year Treasury Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0721552973",
+"name": "Bloomberg US 7-10 Year Treasury Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0879397742",
+"name": "SBI® Foreign AAA-BBB 1-5 ESG (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0879399441",
+"name": "SBI® Foreign AAA-BBB 5-10 ESG (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0908500753",
+"name": "Core Stoxx Europe 600 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0908508731",
+"name": "Global Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0908508814",
+"name": "Global Inflation-Linked Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0925589839",
+"name": "Eurozone Government Bond Yield Plus 1-3 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0942970103",
+"name": "ESG Global Aggregate Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0942970285",
+"name": "ESG Global Aggregate Bond USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0942970442",
+"name": "ESG Global Aggregate Bond CHF Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0942970798",
+"name": "ESG Global Aggregate Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0952581584",
+"name": "Japan Gov Bond JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU0962078753",
+"name": "Global Inflation-Linked Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU0969639128",
+"name": "Bloomberg EUR Treasury 1-10 Y (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1048314196",
+"name": "Bloomberg Euro Area Liquid Corporates 1-5 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1048314949",
+"name": "Bloomberg US Liquid Corporates 1-5 Year (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1048315243",
+"name": "Bloomberg US Liquid Corporates 1-5 Year EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1048316647",
+"name": "Bloomberg US Liquid Corporates USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1048317025",
+"name": "Bloomberg US Liquid Corporates EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1094612022",
+"name": "China Gov Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1109939865",
+"name": "Euro Corp Bond 1-3 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1109941689",
+"name": "Rolling Target Maturity Sept 2027 High Yield 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1109942653",
+"name": "Euro Corp Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1109943388",
+"name": "Euro Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1190417599",
+"name": "Smart Overnight Return EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1215415214",
+"name": "iBoxx Euro Liquid High Yield EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1215461085",
+"name": "Bloomberg MSCI US Liquid Corporates Sustainable USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1215461325",
+"name": "Bloomberg MSCI US Liquid Corporates Sustainable EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1233598447",
+"name": "Fed Funds US Dollar Cash USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1248511575",
+"name": "Smart Overnight Return USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1285959703",
+"name": "ESG USD Corp Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1285959885",
+"name": "ESG USD Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1285960032",
+"name": "ESG USD Corp Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1287023003",
+"name": "Euro Gov Bond 5-7Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1287023185",
+"name": "Euro Gov Bond 7-10Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1287023268",
+"name": "Euro Gov Bond 15+Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1287023342",
+"name": "EuroMTS Highest Rated Macro-Weighted Gov Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1324516050",
+"name": "Bloomberg USD Emerging Markets Sovereign (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1324516308",
+"name": "Bloomberg USD Emerging Markets Sovereign EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1390062245",
+"name": "2-10Y Inflations Expectations EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1390062831",
+"name": "USD 10Y Inflation Expectations USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1399300455",
+"name": "US Treasuries EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1407887089",
+"name": "US Treasury Bond 1-3Y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1407887162",
+"name": "Core US Treasury 1-3Y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1407887329",
+"name": "Core US Treasury 1-3Y EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1407887915",
+"name": "US Treasury Bond 7-10Y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1407888053",
+"name": "Core US Treasury 7-10Y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1407888137",
+"name": "US Treasury Bond 7-10Y EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1407888723",
+"name": "US Treasury Bond 3-7Y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1407888996",
+"name": "Core US Treasury 3-7Y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1407890547",
+"name": "US Treasury 10+Y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1407890620",
+"name": "Core US Treasury 10+Y USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1407890976",
+"name": "Core US Treasury 10+Y EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1435356065",
+"name": "High Yield Corporate Bond ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1435356149",
+"name": "High Yield Corporate Bond ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1435356495",
+"name": "High Yield Corporate Bond USD ESG EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1437015735",
+"name": "MSCI Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1437016204",
+"name": "JPM GBI Global Gov Bonds EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1437018168",
+"name": "Euro Corporate SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1437018598",
+"name": "Euro Government Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1437024729",
+"name": "Global Aggregate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1452600197",
+"name": "Core US TIPS USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1452600270",
+"name": "Core US TIPS USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1452600437",
+"name": "Core US TIPS EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1459799943",
+"name": "BBG US Treasury 10+ USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1459800030",
+"name": "BBG US Treasury 10+ USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1459802754",
+"name": "Bloomberg TIPS 10+ USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1481202692",
+"name": "JPM ESG EMU Government Bond IG EUR (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU1484799769",
+"name": "Bloomberg MSCI Euro Area Liquid Corporates Sustainable EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1484799843",
+"name": "Bloomberg MSCI Euro Area Liquid Corporates Sustainable EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1525418643",
+"name": "Barclays Euro Corp BBB 1-5y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1525418726",
+"name": "Barclays US Corp BBB 1-5y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1547515137",
+"name": "JPM ESG EMBI Global Diversified Composite EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1563454310",
+"name": "Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1563454401",
+"name": "Green Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1563454823",
+"name": "Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1598691217",
+"name": "Italy BTP Government Bond 10Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1615092217",
+"name": "MSCI World SRI PAB EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1617164998",
+"name": "BofAML Euro Short Termin High Yield Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1645380368",
+"name": "Bloomberg Euro Inflation Linked 1-10 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1645380442",
+"name": "Bloomberg Euro Inflation Linked 1-10 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1645381689",
+"name": "Bloomberg Euro Inflation Linked 10+ EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1645385839",
+"name": "EM Diversified Bond 1-5 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1645386308",
+"name": "USD EM Diversified Bond 1-5 EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1645386480",
+"name": "USD EM Diversified Bond 1-5 EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1650487413",
+"name": "Euro Gov Bond 1-3Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1650488494",
+"name": "Euro Gov Bond 3-5Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1650489385",
+"name": "Euro Gov Bond 10-15Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1650491282",
+"name": "Euro Gov Inflation Linked Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681038326",
+"name": "NASDAQ 100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681038599",
+"name": "NASDAQ 100 Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681038672",
+"name": "Russell 2000 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681038839",
+"name": "Russell 2000 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681038912",
+"name": "JPX Nikkei 400 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681039134",
+"name": "JPX Nikkei 400 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681039217",
+"name": "JPX Nikkei 400 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681039308",
+"name": "JPX-Nikkei 400 GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681039480",
+"name": "FTSE EPRA Europe Real Estate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681039647",
+"name": "Euro Corps EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681040223",
+"name": "STOXX Europe 600 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681040496",
+"name": "Euro High Yield Liquid Bond iBoxx EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681040900",
+"name": "Floating Rate USD Corp USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681041031",
+"name": "Floating Rate USD Corp Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681041114",
+"name": "Floating Rate Euro Corp 1-3y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681041205",
+"name": "Global Emerging Bond Markit iBoxx USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681041460",
+"name": "MSCI Europe Momentum EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681041627",
+"name": "MSCI Europe Min Volatility EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681042609",
+"name": "MSCI Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681042864",
+"name": "MSCI USA EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681042948",
+"name": "MSCI USA USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681043169",
+"name": "MSCI India USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681043599",
+"name": "MSCI World EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681043912",
+"name": "MSCI China Tech ESG Screened UCTIS EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681044050",
+"name": "MSCI China Tech ESG Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681044480",
+"name": "MSCI EM Asia EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681044563",
+"name": "MSCI EM Asia USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681044647",
+"name": "MSCI Nordic EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681045024",
+"name": "MSCI EM Latin America EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681045297",
+"name": "MSCI EM Latin America USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681045370",
+"name": "MSCI Emerging Markets EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681045453",
+"name": "MSCI Emerging Markets USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681045537",
+"name": "MSCI World Ex Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046006",
+"name": "MSCI Global BioEnergy ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046188",
+"name": "MSCI Global BioEnergy ESG Screened USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046261",
+"name": "Euro Government Tilted Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046345",
+"name": "Gov Bond Lowest Rated Euromts Inv. Grade 1-3y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046691",
+"name": "Gov Bond Highest Rated Euromts Inv. Grade EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046774",
+"name": "Gov Bond Lowest Rated Euromts Inv. Grade EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681046857",
+"name": "Gov Bond Lowest Rated Euromts Inv. Grade EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1681046931",
+"name": "CAC 40 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681047079",
+"name": "CAC 40 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1681047236",
+"name": "Euro STOXX 50 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681047319",
+"name": "Euro STOXX 50 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1681047400",
+"name": "Euro STOXX 50 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681047665",
+"name": "JPX-Nikkei 400 CHF (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681048127",
+"name": "S&P 500 Buyback EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681048556",
+"name": "S&P 500 Buyback USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681048630",
+"name": "S&P Global Luxury EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681048713",
+"name": "S&P Global Luxury USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681048804",
+"name": "S&P 500 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681049018",
+"name": "S&P 500 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1681049109",
+"name": "S&P 500 EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1686830909",
+"name": "iBoxx USD Liquid EM Sovereigns USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1686831030",
+"name": "iBoxx USD Liquid Emerging Markets EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1686832194",
+"name": "Euro Gov Bond 25+Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1708330235",
+"name": "JPM GBI Global Govies EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1708330318",
+"name": "Global Aggregate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1720938841",
+"name": "EM Multi-Factor Enhanced Local Currency Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737652310",
+"name": "MSCI Europe EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737652583",
+"name": "MSCI Emerging Markets EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737652823",
+"name": "FTSE EPRA Nareit Global EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737653631",
+"name": "JPM GBI Global Gov Bonds EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737653714",
+"name": "Euro Government EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737653987",
+"name": "Euro Corp SRI EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1737654019",
+"name": "Global Aggregate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1753045332",
+"name": "MSCI Europe SRI PAB EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1753045415",
+"name": "MSCI Europe SRI PAB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1753045845",
+"name": "MSCI Japan SRI PAB EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1753045928",
+"name": "MSCI Japan SRI PAB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1778293313",
+"name": "Global Aggregate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1781541096",
+"name": "Core Morningstar UK GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1781541252",
+"name": "MSCI Core Japan JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1781541849",
+"name": "MSCI EM Asia USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1805389258",
+"name": "Bloomberg MSCI Euro Area Liquid Corporates 1-5 Year Sustainable EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1805389506",
+"name": "Bloomberg Msci Euro Area Liquid Corporates 1-5 Year Sustainable EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1806495575",
+"name": "US Corp SRI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1812090543",
+"name": "High Yield Corporate Bond ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1812091194",
+"name": "STOXX 600 Real Estate EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1829218749",
+"name": "Commodity ex-Agriculture EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1829218822",
+"name": "ESG Euro Corp Bond Ex Financials EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1829219127",
+"name": "ESG Euro Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1829219390",
+"name": "EURO STOXX Banks EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1829219556",
+"name": "EuroMTS Highest Rated Macro-Weighted Gov Bond 1-3Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1829219713",
+"name": "EuroMTS Highest Rated Macro-Weighted Gov Bond 3-5Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1829221024",
+"name": "Nasdaq-100 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1832418773",
+"name": "FTSE EPRA/NAREIT Developed EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1834983477",
+"name": "STOXX Europe 600 Banks EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834983550",
+"name": "STOXX 600 Resources EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834983634",
+"name": "STOXX Europe 600 Basic Materials EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834985845",
+"name": "STOXX Europe 600 Consumer Staples EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834987890",
+"name": "STOXX Europe 600 Industrials EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834987973",
+"name": "STOXX 600 Insurance EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834988278",
+"name": "STOXX 600 Energy ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834988518",
+"name": "STOXX Europe 600 Tech EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834988609",
+"name": "STOXX 600 Telecomm. EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834988781",
+"name": "STOXX Europe 600 Consumer Discretionary EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1834988864",
+"name": "STOXX 600 Utilities EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1841731745",
+"name": "MSCI China USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1847674733",
+"name": "Ossiam Bloomberg Eurozone PAB NR EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1852211215",
+"name": "Sustainable Development Bank Bonds USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1852211991",
+"name": "Sustainable Development Bank Bonds EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1852212965",
+"name": "Sustainable Development Bank Bonds USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1859444769",
+"name": "Corp Bond SRI PAB EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1861132840",
+"name": "MSCI Robotics & AI ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1861137484",
+"name": "MSCI Europe SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1861138961",
+"name": "MSCI Emerging Markets SRI USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900065811",
+"name": "MSCI Indonesia EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900066033",
+"name": "MSCI Semiconductors ESG (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900066207",
+"name": "MSCI Brazil EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900066462",
+"name": "MSCI Eastern Europe Ex Russia EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900066975",
+"name": "MSCI Korea EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900067601",
+"name": "MSCI Turkey EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900067940",
+"name": "Hong Kong HSI EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1900068161",
+"name": "MSCI AC Asia Ex Japan EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900068328",
+"name": "MSCI AC Asia Pacific Ex Japan EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900068914",
+"name": "MSCI China ESG Leaders Extra EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1900069219",
+"name": "Commodity ex-Agriculture EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1910939849",
+"name": "Core Global Inflation-Linked 1-10Y Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1910940268",
+"name": "Core Global Inflation-Linked 1-10Y Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1910940425",
+"name": "Core Global Inflation-Linked 1-10Y Bond GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1920015366",
+"name": "MSCI EMU 4C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1920015440",
+"name": "USD EM Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1923163676",
+"name": "Floating Rate Euro Corp 1-3 GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1923163759",
+"name": "Floating Rate Euro Corp 1-3 USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1931974262",
+"name": "Prime Europe EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1931974429",
+"name": "Prime Eurozone EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1931974775",
+"name": "Prime Japan JPY (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1931975079",
+"name": "Prime Euro Corps EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1931975152",
+"name": "Prime Euro Govies EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1931975236",
+"name": "Prime Global Govies EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1931975319",
+"name": "Prime US Treasury USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1940199711",
+"name": "MSCI Europe ESG Leaders EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1940199984",
+"name": "MSCI Europe ESG Leaders EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1953136287",
+"name": "Corp Bond SRI PAB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1953137681",
+"name": "MSCI EMU SRI PAB EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1953188833",
+"name": "MSCI China ESG Universal Low Carbon Select USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1954152853",
+"name": "Core Nasdaq-100 Swap EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1971906802",
+"name": "EURO STOXX 50 ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU1974693662",
+"name": "Global Government ESG Liquid Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1974695790",
+"name": "USD EM IG ESG Diversified Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1974696418",
+"name": "USD EM IG ESG Diversified Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU1981859819",
+"name": "Green Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2008760592",
+"name": "Corp Bond SRI PAB 1-3Y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2008761053",
+"name": "Corp Bond SRI PAB 3-5Y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2008763935",
+"name": "FTSE EPRA Nareit Developed Europe Green CTB EUR (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU2009147591",
+"name": "Eurozone Gov Bond USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2009147757",
+"name": "S&P 500 Swap",
+"type": "etf"
+},
+{
+"isin": "LU2009202107",
+"name": "MSCI Emerging Markets Ex China USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2018762653",
+"name": "US Curve Steepening 2-10 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2023678282",
+"name": "Disruptive Tech USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2023678449",
+"name": "Millenials USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2023678878",
+"name": "MSCI Digital Economy & Metaverse ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2023679090",
+"name": "Future Mobility USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2037748345",
+"name": "MSCI Smart Cities ESG Screened EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2037748774",
+"name": "Euro Corp SRI 0-3y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2037749152",
+"name": "Prime US Corps USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2059756598",
+"name": "MSCI Europe SRI PAB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2059756754",
+"name": "MSCI Emerging Markets SRI USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2069380306",
+"name": "Ossiam Euro Government Bonds 3-5Y Carbon Reduction EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089238039",
+"name": "Prime Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089238112",
+"name": "Prime Eurozone EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089238385",
+"name": "Prime Japan JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089238625",
+"name": "Prime Euro Corps EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089238898",
+"name": "Prime Euro Gov EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089238971",
+"name": "Prime Global Govies EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089239193",
+"name": "Prime US Treasury USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2089239276",
+"name": "Prime US Corps USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2090063327",
+"name": "MSCI Semiconductors ESG (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2095995895",
+"name": "CNY China Government 1-10 Year Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2098179695",
+"name": "BBG Japan Treasury 1-3 JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2098180271",
+"name": "Bbg Japan Gov 1-3 Ucits Etf Heur (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2099288503",
+"name": "Core Global Gov Bond USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2099289147",
+"name": "Core Global Gov Bond Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2099295466",
+"name": "Global High Yield Sustainable USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2099296274",
+"name": "Global High Yield Sustainable EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2099991536",
+"name": "Bloomberg MSCI Global Liquid Corporates Sustainable USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2099992260",
+"name": "Bloomberg MSCI Global Liquid Corporates Sustainable EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2109787049",
+"name": "MSCI Emerging ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2109787551",
+"name": "MSCI Emerging ESG Leaders USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2109787635",
+"name": "MSCI EMU SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2130768844",
+"name": "MSCI Europe Climate Change EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2133056387",
+"name": "MSCI Core Japan EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2158769930",
+"name": "J.P. Morgan EM Local Government Bond 1D USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2178481649",
+"name": "ESG Euro Corporate Bonds Short Duration EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2182388152",
+"name": "Prime UK Mid & Small Cap GBP (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2182388236",
+"name": "Euro Agg SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2182388665",
+"name": "Prime US Treasury Bond 0-1y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2182388749",
+"name": "Prime US Treasury Bond 0-1y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2195226068",
+"name": "S&P Eurozone Paris-Aligned Climate EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2196472984",
+"name": "S&P 500 Swap EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2216829809",
+"name": "MSCI World Catholic Principles USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2233156582",
+"name": "Prime Euro Gov Bonds 0-1y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2233156749",
+"name": "MSCI Japan JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2240851688",
+"name": "DAX 50 ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2244386053",
+"name": "High Yield SRI Fossil Free EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2244386137",
+"name": "High Yield Sri Fossil Free EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2244387457",
+"name": "JPM ESG EMU Government Bond Ig 3-5 Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2244387887",
+"name": "ESG Growth Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2265794276",
+"name": "China Technology USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2265794946",
+"name": "China Technology EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2269164310",
+"name": "MSCI Japan SRI Hedged EUR",
+"type": "etf"
+},
+{
+"isin": "LU2278080713",
+"name": "Bloomberg Commodity Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2297533809",
+"name": "US Corporate SRI EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2300294316",
+"name": "MSCI Corporates 0-1Y ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2300294589",
+"name": "MSCI EM Asia SRI (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2300294746",
+"name": "MSCI Japan ESG Climate Net Zero Ambition JPY (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2300295123",
+"name": "Prime Emerging Markets USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2314312849",
+"name": "MSCI China Min TE EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2345046655",
+"name": "MSCI Emerging Ex China ESG Leaders Select USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2346257210",
+"name": "High Yield Corporate Bond ESG EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2356220926",
+"name": "Euro Government Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2361257269",
+"name": "Emerging Markets Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2365458145",
+"name": "ECPI Global ESG Hydrogen Economy EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2365458731",
+"name": "JPM ESG Green Social & Sustainability Ig Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2365458814",
+"name": "JPM ESG Green Social & Sustainability Ig Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2368674631",
+"name": "MSCI UK IMI SRI PAB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2370241684",
+"name": "Corporate Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2376679564",
+"name": "MSCI China Tech 100 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2385068163",
+"name": "ESG Global Government Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2385068593",
+"name": "ESG Global Government Bond EUR Hedged (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2402389261",
+"name": "MSCI Pacific Ex Japan SRI EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2408468291",
+"name": "Bloomberg MSCI US Liquid Corporates 1-5 Year Sustainable Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2439113387",
+"name": "Euro Aggregate Sustainable SRI EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2439119236",
+"name": "MSCI AC Far East Ex Japan ESG USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2439733507",
+"name": "Global Aggregate SRI Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2439734141",
+"name": "Global AGG SRI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2439735890",
+"name": "China Cny Bonds Dr EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2446383338",
+"name": "Corporate Bond SRI PAB 3-5Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2456436083",
+"name": "MSCI China USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2462217071",
+"name": "ESG Global Government Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2468423459",
+"name": "ESG Eurozone Government Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2469465822",
+"name": "MSCI China ESG Screened Swap",
+"type": "etf"
+},
+{
+"isin": "LU2470620761",
+"name": "Global Aggregate SRI 1-5yr USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2470620845",
+"name": "Global Aggregate SRI 1-5 USD EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2484583138",
+"name": "Global Green Bond Esg 1–10 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2490201840",
+"name": "MSCI Japan ESG Hedged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2504532131",
+"name": "TIPS US Inflation-Linked Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2504532487",
+"name": "Eurozone Government Green Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2504537445",
+"name": "Eurozone Government Bond ESG Tilted EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2533810276",
+"name": "Ecpi Circular Economy Leaders Usd (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU2533810789",
+"name": "JPM ESG EMU Government Bond IG 1-3Y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2533810862",
+"name": "JPM ESG EMU Government Bond IG 1-3Y EUR (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU2533811910",
+"name": "Corp Bond SRI Fossil Free Ultrashort Duration EUR [Dist]",
+"type": "etf"
+},
+{
+"isin": "LU2533812058",
+"name": "Corp Bond SRI Fossil Free Ultrashort Duration EUR [Acc]",
+"type": "etf"
+},
+{
+"isin": "LU2533812728",
+"name": "EUR Aggregate Bond SRI Fossil Free EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2533812991",
+"name": "EUR Aggregate Bond SRI Fossil Free EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2533813023",
+"name": "Ecpi Global Esg Hydrogen Economy Usd (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2552296563",
+"name": "iBoxx Eurozone Government Bond Yield Plus 1-3 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2572256746",
+"name": "MSCI China A II USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2572257397",
+"name": "MSCI Pacific ESG Climate Net Zero Ambition CTB USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2573966905",
+"name": "MSCI Emerging Markets II USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2573967036",
+"name": "MSCI Emerging Markets II USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2581375073",
+"name": "MSCI USA Swap USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2581375230",
+"name": "MSCI Japan JPY (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2608817958",
+"name": "MSCI Europe Climate Action EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611731667",
+"name": "MDAX ESG EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611731741",
+"name": "DivDAX EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611731824",
+"name": "NYSE Arca Gold Bugs USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611732046",
+"name": "DAX EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611732129",
+"name": "F.A.Z. 100 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611732475",
+"name": "SDAX EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611732558",
+"name": "Euro Stoxx Select Dividend 30 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2611732806",
+"name": "US Aggregate Bond Esg USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2616774076",
+"name": "Usd Corp Bond Sri Fossil Free USD (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU2616776444",
+"name": "Usd Corp Bond Sri Fossil Free USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2641054122",
+"name": "Eurozone Government Bond 0-1 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2641054551",
+"name": "Germany Government Bond 0-1 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2655993207",
+"name": "MSCI World UCITS ETF - (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2662649412",
+"name": "US Treasuries 10+ USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2662649503",
+"name": "US Treasuries 3-7 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2662649685",
+"name": "US Treasuries 7-10 USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2673522830",
+"name": "Target Maturity Sept 2027 Eur Corporate Bond 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2673522913",
+"name": "Target Maturity Sept 2029 Eur Corporate Bond 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2673523051",
+"name": "Target Maturity Sept 2033 Eur Corporate Bond 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2673523135",
+"name": "Target Maturity Sept 2031 Eur Corporate Bond 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2673523218",
+"name": "Target Maturity Sept 2027 EUR Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2673523309",
+"name": "Target Maturity Sept 2029 EUR Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2673523481",
+"name": "Target Maturity Sept 2031 EUR Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2673523564",
+"name": "Target Maturity Sept 2033 EUR Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2697596745",
+"name": "Sustainable Eur Corporate Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2697596828",
+"name": "Sustainable Eur Corporate Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2697597552",
+"name": "Sustainable Government Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2697597719",
+"name": "Sustainable Government Bond EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2742532745",
+"name": "Corp Bond Sri Fossil Free 7-10Y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2742532828",
+"name": "Corp Bond Sri Fossil Free 7-10Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2742533552",
+"name": "JPM ESG EMU Government Bond IG 10Y+ EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2742533636",
+"name": "JPM ESG EMU Government Bond IG 10Y+ EUR (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU2780870932",
+"name": "Global Corporate Sri 1-5Y Highest Rated USD Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2780871401",
+"name": "Amundi 2028 Euro Government Bond Broad (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2780871666",
+"name": "Amundi 2028 Euro Government Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2780871823",
+"name": "Amundi 2027 German Government Bond (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2788421340",
+"name": "CSI 500 Swap",
+"type": "etf"
+},
+{
+"isin": "LU2809864296",
+"name": "Target Maturity Sept 2030 EUR Corporate Bond 1D (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2809864452",
+"name": "Target Maturity Sept 2032 EUR Corporate Bond 1D (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2809864619",
+"name": "Target Maturity Sept 2034 EUR Corporate Bond 1D (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2810185665",
+"name": "Target Maturity Sept 2028 EUR Corporate Bond 1D (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2823895250",
+"name": "Global Aggregate Bond Sri Fossil Free USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2823895763",
+"name": "ESG Enhanced EUR Corporate Bond December 2032 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2823895847",
+"name": "Sustainable Corporate Bond December 2032 Ucits Etf EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2823896738",
+"name": "Esg Enhanced Eur Corporate Bond December 2029 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2823896811",
+"name": "Sustainable Eur Corporate Bond December 2029 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2859297330",
+"name": "World Small Cap Green Transition Innovators USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2859392081",
+"name": "World Green Transition Innovators USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2872291948",
+"name": "Amundi Lifecycle 2030 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2872292086",
+"name": "Lifecycle 2033 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2872292243",
+"name": "Lifecycle 2039 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2873560481",
+"name": "Msci Europe Esg Broad Transition EUR Hedged C (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2898088419",
+"name": "Serenity Euro 1C EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2914558916",
+"name": "Easy FTSE EPRA Nareit Developed Europe Green CTB EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2924150019",
+"name": "Global Corporate Bond Hedged Usd (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2924150282",
+"name": "Euro Government Low Duration Tilted Green Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2932780914",
+"name": "S&P Eurozone Climate Paris Aligned EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU2977997381",
+"name": "Usd Corporate Bond EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2991918421",
+"name": "S&P 500 Equal Weight USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993390504",
+"name": "Easy - S&P 500 Ii USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993390686",
+"name": "Easy - S&P 500 Ii USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993390769",
+"name": "S&P 500 II USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993390843",
+"name": "S&P 500 II EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993392898",
+"name": "JPM ESG EMU Government Bond IG 5-7Y EUR [Acc]",
+"type": "etf"
+},
+{
+"isin": "LU2993394241",
+"name": "Alpha Enhanced EUR Corporate Bond (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993397939",
+"name": "Alpha Enhanced USD Corporate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU2993401392",
+"name": "Alpha Enhanced Global High Yield USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3003218016",
+"name": "Australia Government Bond 2C EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3003218446",
+"name": "Japan Government Bond 2C EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3025345516",
+"name": "€ Overnight EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3025346910",
+"name": "Jpm Esg Emu Government Bond Ig 1-10Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3038520774",
+"name": "Stoxx Europe Defense EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3047998896",
+"name": "Easy Bloomberg Europe Defense EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3047998979",
+"name": "Easy Bloomberg Europe Defense EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU3061478973",
+"name": "XTR.E.D.T.E. 1CEOA",
+"type": "etf"
+},
+{
+"isin": "LU3086267096",
+"name": "Bloomberg Us Treasury 1-3Y USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3086268227",
+"name": "Easy ESG Enhanced EMU EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3086268573",
+"name": "MSCI Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3086269894",
+"name": "MSCI Japan EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3086272419",
+"name": "Bloomberg Us Treasury USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3086273813",
+"name": "Easy - Msci Emerging USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3104524593",
+"name": "S&P 400 Us Mid Cap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3116008346",
+"name": "Diversified Portfolio 20% Equity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3116008429",
+"name": "Diversified Portfolio 40% Equity EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3116008692",
+"name": "DIVERSIFIED PORTFOLIO 60% EQUITY EUR (ACC)",
+"type": "etf"
+},
+{
+"isin": "LU3119430067",
+"name": "Eurozone Government Bond 1-3 Esg Tilted EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3119430141",
+"name": "Eurozone Government Bond 3-5 Esg Tilted EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3119430224",
+"name": "Eurozone Government Bond 5-7 Esg Tilted EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3119430497",
+"name": "Eurozone Government Bond 7-10Y EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3119430570",
+"name": "Eurozone Government Bond 10+ EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3152892546",
+"name": "Target Maturity Sept 2035 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU3152892629",
+"name": "Target Maturity Sept 2036 EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU3173209654",
+"name": "EASY MSCI WORLD II EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3178805456",
+"name": "Eur Cash Active Ucits EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3180074463",
+"name": "European Strategic Autonomy EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3206582846",
+"name": "Msci World Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3206583067",
+"name": "Index Solutions Dax EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3206583901",
+"name": "Msci China A Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3215536486",
+"name": "EASY MSCI EMU EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3243907741",
+"name": "MSCI ACWI EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3250315499",
+"name": "Global Aggregate Bond Sri Fossil Free EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3254330437",
+"name": "Global Ex-Us Government Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3257630437",
+"name": "Easy MSCI Emerging USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3257630510",
+"name": "Easy MSCI Emerging Ex China USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3277835305",
+"name": "Eur Short Term High Yield Corporate Bond Esg EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3299677271",
+"name": "Euro Stoxx 50 Target Income EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU3299677438",
+"name": "Nasdaq-100 Target Income EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "LU3299677511",
+"name": "Global Government Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3307219520",
+"name": "Equity Premium Income EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3332965949",
+"name": "Msci Usa Swap Ucits USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "LU3332966160",
+"name": "Amundi Index Solutions - Amundi Core MSCI USA Swap UCITS ETF EUR Hedged Acc",
+"type": "etf"
+},
+{
+"isin": "NL0009272749",
+"name": "AEX EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0009272764",
+"name": "Multi-Asset Conservative Allocation EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0009272772",
+"name": "Multi-Asset Balanced Allocation EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0009690239",
+"name": "Global Real Estate EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0009690247",
+"name": "iBoxx Corporates EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0009690254",
+"name": "iBoxx Sovereign Diversified 1-10 Y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0010273801",
+"name": "iBoxx Sovereign Capped AAA-AA 1-5 Y EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "NL0010731816",
+"name": "Sustainable European Equal Weight EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "US00301W1053",
+"name": "ABERDEEN EMERGING MARKETS Fund USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "XS2115336336",
+"name": "Responsibly Sourced Physical Gold USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2183935274",
+"name": "Physical Gold USD (EUR Hedged)",
+"type": "etf"
+},
+{
+"isin": "XS2284324667",
+"name": "Energy Enhanced EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2353177293",
+"name": "Physical Carbon EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2425842106",
+"name": "Battery Metals USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2425848053",
+"name": "Energy Transition Metals USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2427363036",
+"name": "STOXX Europe Travel & Leisure 2x Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2427363895",
+"name": "STOXX Europe Automobiles 2x Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2427474023",
+"name": "STOXX Europe Oil & Gas 2x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2437455608",
+"name": "STOXX Europe Travel & Leisure 2x Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2637077020",
+"name": "CAC 40 3X Daily Leveraged EUR",
+"type": "etf"
+},
+{
+"isin": "XS2637077533",
+"name": "CAC 40 3X Daily Short EUR",
+"type": "etf"
+},
+{
+"isin": "XS2771502718",
+"name": "Euro Stoxx 50 5X Daily Short EUR",
+"type": "etf"
+},
+{
+"isin": "XS2771503104",
+"name": "Euro Stoxx 50 5X Daily Leveraged EUR",
+"type": "etf"
+},
+{
+"isin": "XS2771611840",
+"name": "Qs100 5X Daily Short USD",
+"type": "etf"
+},
+{
+"isin": "XS2771642134",
+"name": "Qs100 5X Daily Leveraged USD",
+"type": "etf"
+},
+{
+"isin": "XS2771642308",
+"name": "S&P 500 5X Daily Short USD",
+"type": "etf"
+},
+{
+"isin": "XS2771643025",
+"name": "S&P 500 5X Daily Leveraged USD",
+"type": "etf"
+},
+{
+"isin": "XS2792094604",
+"name": "ZIPA PRECIOUS METALS PUBLIC Lt OPEN END NTS 24(O.End)",
+"type": "etf"
+},
+{
+"isin": "XS2819843223",
+"name": "Natural Gas 3x Daily Short",
+"type": "etf"
+},
+{
+"isin": "XS2819843736",
+"name": "S&P 500 VIX Short-Term Futures 2.25x Daily Leveraged",
+"type": "etf"
+},
+{
+"isin": "XS2819843900",
+"name": "Natural Gas 3x Daily Leveraged",
+"type": "etf"
+},
+{
+"isin": "XS2819844031",
+"name": "FTSE MIB 3x Daily Short",
+"type": "etf"
+},
+{
+"isin": "XS2819844387",
+"name": "WTI Crude Oil 3x Daily Short",
+"type": "etf"
+},
+{
+"isin": "XS2872232850",
+"name": "Stoxx Europe Aerospace & Defence 3X Daily Lev EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS2872233403",
+"name": "European Natural Gas EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "XS2892963286",
+"name": "The Royal Mint Responsibly Sourced Physical Gold Securities EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3003323741",
+"name": "Stoxx Europe Aerospace & Defence 3X Daily Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3022291473",
+"name": "Enhanced Commodity Carry USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3087774306",
+"name": "MSTR Option Income USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "XS3091646797",
+"name": "PHLX Semiconductor 3x Daily Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3091654114",
+"name": "Magnificent 7 3x Daily Leveraged USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3091657307",
+"name": "Magnificent 7 3x Daily Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3091657729",
+"name": "PHLX Semiconductor 3x Daily Leveraged USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3218061631",
+"name": "Yieldmax® Ultra Option Income Strategy USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "XS3306516876",
+"name": "WisdomTree Silver 3x Daily Leveraged USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306516959",
+"name": "WisdomTree Copper 3x Daily Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306517098",
+"name": "WisdomTree Brent Crude Oil 3x Daily Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306517338",
+"name": "WisdomTree DAX 3x Daily Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306517502",
+"name": "WisdomTree EURO STOXX 50 3x Daily Short EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306517924",
+"name": "WisdomTree Silver 3x Daily Short USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306518492",
+"name": "WisdomTree DAX 3x Daily Leveraged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306518658",
+"name": "WisdomTree EURO STOXX 50 3x Daily Leveraged EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306519201",
+"name": "WisdomTree FTSE MIB Banks EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3306519896",
+"name": "WisdomTree FTSE 100 3x Daily Leveraged GBP (Acc)",
+"type": "etf"
+},
+{
+"isin": "XS3330165328",
+"name": "WisdomTree 1-Day Equity Put Premium USD",
+"type": "etf"
+},
+{
+"isin": "XS3384723154",
+"name": "Physical Gold II USD (Acc)",
+"type": "etf"
 }
 ]
 }

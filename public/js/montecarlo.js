@@ -99,7 +99,7 @@ export const DEFAULT_OPTIONS = {
   method: 'bootstrap', // 'bootstrap' (blocchi di rendimenti storici) | 'gbm' (moto browniano geometrico)
   blockWeeks: 4,      // lunghezza blocchi nel bootstrap: preserva parte dell'autocorrelazione
   lookbackYears: 10,  // quanti anni di storico usare per stimare la distribuzione
-  minYears: 2,        // storico minimo richiesto
+  minYears: 1,        // storico minimo richiesto (1 anno: include ETF di recente quotazione; <2 anni = previsione meno affidabile, segnalata)
   amount: 10000,      // capitale investito (€)
   orderCost: 1,       // costo per ordine Trade Republic (€) — applicato in acquisto e vendita
   spreadPct: 0,       // spread/markup stimato (%) applicato una volta in acquisto

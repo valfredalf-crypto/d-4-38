@@ -114,6 +114,46 @@ export function momentumStats(prices) {
   return Object.values(out).some((v) => v != null) ? out : null;
 }
 
+/**
+ * Rendimento atteso ARITMETICO annuo di un prodotto a leva/short con ribilanciamento giornaliero, dato il rendimento atteso
+ * aritmetico del sottostante `mu`: long L·mu − (L−1)·rf, short/inverse −L·mu + (L+1)·rf. Il decadimento da ribilanciamento
+ * riguarda la crescita composta (mediana), non la media: nelle proiezioni a breve lo applica già la distribuzione lognormale
+ * (−σ²/2), quindi qui NON va sottratto di nuovo. null se il prodotto non è a leva/short.
+ */
+export function leveragedArith({ name = '', mu, rf = 0.02 }) {
+  const L = Math.max(1, leverageOf(name));
+  const inverse = isInverseProduct(name);
+  if (L === 1 && !inverse) return null;
+  if (!Number.isFinite(mu)) return null;
+  const a = inverse ? -L * mu + (L + 1) * rf : L * mu - (L - 1) * rf;
+  return Math.max(-0.95, Math.min(3, a));
+}
+
+/** Sottostante di un prodotto a leva/short dal nome (per usare le prospettive del sottostante reale, non del mercato azionario). */
+export const UNDERLYINGS = [
+  { key: 'silver', label: 'argento', re: /\bsilver\b|argento/i, proxy: /physical silver|\bsilver usd\b|core physical silver|silver hedged/i },
+  { key: 'gold', label: 'oro', re: /\bgold\b|\boro\b/i, proxy: /physical gold|\bgold usd\b|core physical gold|gold hedged|swiss gold/i },
+  { key: 'platinum', label: 'platino', re: /platinum/i, proxy: /physical platinum/i },
+  { key: 'palladium', label: 'palladio', re: /palladium/i, proxy: /physical palladium/i },
+  { key: 'oil', label: 'petrolio', re: /\b(brent|wti|crude|oil)\b/i, proxy: /^(?!.*(\d\s?x|short|lev)).*(brent|wti|crude oil)/i },
+  { key: 'natgas', label: 'gas naturale', re: /natural gas/i, proxy: /^(?!.*(\d\s?x|short|lev)).*natural gas/i },
+  { key: 'copper', label: 'rame', re: /copper/i, proxy: /^(?!.*(\d\s?x|short|lev)).*copper/i },
+  { key: 'nasdaq', label: 'Nasdaq 100', re: /nasdaq|qs100|\bndx\b/i, proxy: /nasdaq[- ]?100/i },
+  { key: 'sp500', label: 'S&P 500', re: /s&p ?500|\bspx\b/i, proxy: /s&p ?500/i },
+  { key: 'semis', label: 'semiconduttori', re: /semiconductor|phlx/i, proxy: /semiconductor/i },
+  { key: 'dax', label: 'DAX', re: /\bdax\b/i, proxy: /\bdax\b/i },
+  { key: 'estx50', label: 'Euro Stoxx 50', re: /euro ?stoxx ?50/i, proxy: /euro ?stoxx ?50/i },
+  { key: 'ftsemib', label: 'FTSE MIB', re: /ftse ?mib/i, proxy: /ftse ?mib/i },
+  { key: 'cac40', label: 'CAC 40', re: /cac ?40/i, proxy: /cac ?40/i },
+  { key: 'nikkei', label: 'Nikkei', re: /nikkei/i, proxy: /nikkei/i },
+  { key: 'btp', label: 'BTP', re: /\bbtp\b/i, proxy: /\bbtp\b|italy govt|italia/i },
+  { key: 'bund', label: 'Bund', re: /\bbund\b/i, proxy: /\bbund\b|germany govt|german govt/i },
+  { key: 'bitcoin', label: 'bitcoin', re: /bitcoin|\bbtc\b/i, proxy: null },
+];
+export function underlyingOf(name = '') {
+  return UNDERLYINGS.find((u) => u.re.test(String(name))) || null;
+}
+
 export const PROVISIONAL_MIN_WEEKS = 8;
 const INVERSE = /\b(short(?!\s*(duration|dur|term|maturity|dated|-term))|inverse|bear)\b|\(-\d|-\d\s?x\b/i;
 export const isInverseProduct = (name = '') => INVERSE.test(String(name));
@@ -223,6 +263,7 @@ function buildEstimate({ name, vol, mdd, beta, betaR2 = null, betaN = 0, m, rf, 
     const raw = cagr;
     cagr = Math.min(0.5, Math.max(-0.6, cagr));
     ter = 0.006;
+    var cagrShort = leveragedArith({ name, mu: m, rf });
     basis = `Prodotto a leva ${inverse ? 'inversa ' : ''}${L}x: rendimento atteso = ${inverse ? '−' : ''}${L} × rendimento del mercato (${(m * 100).toFixed(1)}%) con costo di finanziamento e decadimento da ribilanciamento giornaliero (σ del sottostante ≈ ${((vol / L) * 100).toFixed(0)}%), ${raw < -0.6 ? 'Limite prudenziale −60%/anno (la formula darebbe ' + (raw * 100).toFixed(0) + '%). ' : ''}TER stimato ${(ter * 100).toFixed(2)}%. ${tail}`;
   } else {
     // Beta robusto: con poche settimane e titoli molto volatili la regressione è rumore (es. −4 su 19 settimane).
@@ -265,6 +306,7 @@ function buildEstimate({ name, vol, mdd, beta, betaR2 = null, betaN = 0, m, rf, 
     beta: beta == null ? null : r4(beta),
     ter,
     weeks,
+    ...(typeof cagrShort === 'number' ? { cagrShort: r4(cagrShort) } : {}),
     ...(L > 1 ? { leverage: L } : {}),
     ...(inverse ? { inverse: true } : {}),
     basis,

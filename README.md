@@ -92,6 +92,29 @@ settimanale) e, dove esiste, della volatilità implicita delle opzioni a circa 9
 Tutti i parametri si modificano dal pannello **Parametri**. È disponibile anche la modalità
 "solo storico", per confronto.
 
+## Portafoglio: orizzonti brevi (7-90 giorni) — regole fisse
+
+Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non vanno violate dalle modifiche future):
+
+1. **Il guadagno netto segue la previsione.** Calo previsto → guadagno netto negativo; crescita prevista → guadagno netto
+   positivo e tanto maggiore quanto è maggiore la crescita prevista (monotonia verificata dal test
+   «segno della previsione e crescente»). Vale per **tutti** gli strumenti (ETF, azioni, bond, crypto, leva/short, stime).
+2. **Previsione = modello aggiornato**: rendimento atteso medio (aritmetico) dal modello prospettico, che combina storico,
+   equilibrio di mercato, consenso degli analisti (prezzo obiettivo, crescita attesa di utili/ricavi) e, per gli ETF, le
+   stime sui titoli in portafoglio; aggiornato a ogni pubblicazione (ogni 2 ore). Le notizie testuali non sono convertite in
+   numeri (nessuna fonte affidabile).
+3. **Leva/short**: rendimento atteso aritmetico dal **sottostante reale** (mediana degli ETF/ETC non a leva sullo stesso
+   sottostante: argento, oro, Nasdaq 100, S&P 500, DAX…): long `L·μ − (L−1)·rf`, short `−L·μ + (L+1)·rf`. Il decadimento da
+   ribilanciamento NON si sottrae di nuovo: lo applica già la distribuzione lognormale (−σ²/2).
+4. **Tendenza recente**: entra con la «persistenza» scelta dall'utente (default **0%**: sui dati storici di 388 strumenti la
+   tendenza di 4-26 settimane non è proseguita, leggera inversione). La deriva osservata si confronta col rendimento medio
+   aggiungendo σ²/2; effetto limitato a ±0,5 σ·√T.
+5. **Imposta**: aliquota × guadagno atteso (perdite compensabili tra le posizioni, mai negativa); dividendi tassati a parte.
+   Opzione «imposta prudente»: perdite non compensate (imposta sui soli scenari in guadagno).
+6. **Costi**: 1 € per ordine (acquisto + vendita) per posizione; la probabilità di guadagno è calcolata al netto dei costi.
+7. Orizzonti ≥ 1 anno: algoritmo 019 con il CAGR di lungo periodo (`cagrLong`); il campo CAGR del portafoglio si compila da
+   solo con il valore per gli orizzonti brevi quando questi sono selezionati.
+
 ## Struttura
 
 ```

@@ -98,13 +98,17 @@ export function normalizeHorizons(list, fallback = [5, 7]) {
  * periodo non può superare ±0,5 σ·√T, così uno strappo non produce stime irrealistiche.
  * Restituisce { net: CAGR netto equivalente per l'orizzonte, tilt: effetto (log) sul periodo, window, rho }.
  */
-export const MOMENTUM_RHO = 0.25;
+// Persistenza di default 0: sui dati storici (388 strumenti, 110 a leva) la tendenza delle ultime 4-26 settimane NON continua
+// (pendenza da −0,02 a −0,17 a 1-13 settimane, senza informazioni future). L'utente può comunque impostarla (anche negativa).
+export const MOMENTUM_RHO = 0;
 export function momentumTilt({ net, vol, mom, years, rho = MOMENTUM_RHO }) {
+  rho = Number.isFinite(rho) ? rho : MOMENTUM_RHO;
   if (!mom || !(years > 0)) return { net, tilt: 0, window: null, rho };
   const wins = [[1, mom.w1], [4, mom.w4], [13, mom.w13], [26, mom.w26]].filter(([, r]) => Number.isFinite(r) && r > -0.99);
   if (!wins.length) return { net, tilt: 0, window: null, rho };
   const [k, R] = wins.find(([kk]) => kk >= 2 * years * 52) ?? wins[wins.length - 1];
-  const trend = (Math.log(1 + R) / k) * 52; // deriva logaritmica annua della tendenza recente
+  // deriva logaritmica annua osservata (crescita mediana): + σ²/2 per confrontarla con il rendimento MEDIO del modello
+  const trend = (Math.log(1 + R) / k) * 52 + (Number.isFinite(vol) && vol > 0 ? (vol * vol) / 2 : 0);
   const prior = Math.log(1 + Math.max(net, -0.99));
   let adj = rho * (trend - prior);
   if (Number.isFinite(vol) && vol > 0) {
@@ -155,7 +159,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     // `taxPrudent` (solo ETF UCITS): perdite non compensate → imposta sui soli scenari in guadagno (più alta con σ grande).
     const prudent = params.taxPrudent && !params.symTax;
     expTaxRate = prudent ? tax * Math.max(0, (1 + mu) * normCdf(d1) - normCdf(d2)) : tax * Math.max(0, mu); // mai imposta negativa
-    pProfit = normCdf(d2);
+    pProfit = normCdf((a - Math.log(1 + costs / Math.max(capital, 1e-9))) / sigma); // guadagno dopo i costi degli ordini
     const at = (z) => {
       const g = capital * (Math.exp(a + z * sigma) - 1);
       return g - (g > 0 ? g * tax : 0) - costs;

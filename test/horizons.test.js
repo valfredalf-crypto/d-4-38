@@ -222,25 +222,27 @@ test('tendenza recente: momentumStats, finestra e limite di momentumTilt', async
   assert.equal(momentumStats([]), null);
   const mom = { w1: 0, w4: 0.5, w13: 2, w26: 3 };
   // finestra più breve ≥ 2 × orizzonte (in settimane): 14 gg → 4 sett., 30 gg → 13, 90 gg → 26
-  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 14 / 365 }).window, 4);
-  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 30 / 365 }).window, 13);
-  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 90 / 365 }).window, 26);
+  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 14 / 365, rho: 0.25 }).window, 4);
+  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 30 / 365, rho: 0.25 }).window, 13);
+  assert.equal(momentumTilt({ net: -0.3, vol: 1, mom, years: 90 / 365, rho: 0.25 }).window, 26);
   // tendenza positiva e CAGR negativo: l'atteso sale; effetto sul periodo limitato a 0,5 σ·√T
-  const t = momentumTilt({ net: -0.6, vol: 1.2, mom, years: 14 / 365 });
+  const t = momentumTilt({ net: -0.6, vol: 1.2, mom, years: 14 / 365, rho: 0.25 });
   assert.ok(t.net > -0.6 && t.tilt > 0 && t.tilt <= 0.5 * 1.2 * Math.sqrt(14 / 365) + 1e-12);
-  const flat = momentumTilt({ net: 0.07, vol: 0.15, mom: { w4: 0 }, years: 30 / 365 });
+  const flat = momentumTilt({ net: 0.07, vol: 0.15, mom: { w4: 0 }, years: 30 / 365, rho: 0.25 });
   assert.ok(flat.net < 0.07); // tendenza nulla sotto il CAGR atteso: lo abbassa un po'
-  assert.deepEqual(momentumTilt({ net: 0.07, vol: 0.15, mom: null, years: 0.1 }), { net: 0.07, tilt: 0, window: null, rho: 0.25 });
+  assert.deepEqual(momentumTilt({ net: 0.07, vol: 0.15, mom: null, years: 0.1 }), { net: 0.07, tilt: 0, window: null, rho: 0 });
+  // default 0 (calibrato sui dati): la tendenza non sposta la previsione
+  assert.ok(Math.abs(momentumTilt({ net: 0.07, vol: 0.15, mom, years: 0.1 }).net - 0.07) < 1e-12);
   // projectShort: con tendenza e ρ più alta il guadagno atteso aumenta; senza momentum è invariato
   const base = { cagr: -0.6, ter: 0.006, tax: 0.26 };
   const y = 14 / 365;
   const a = projectShort(base, 1000, y, { vol: 1.25 });
-  const b = projectShort({ ...base, mom }, 1000, y, { vol: 1.25 });
+  const b = projectShort({ ...base, mom }, 1000, y, { vol: 1.25, momRho: 0.25 });
   const c = projectShort({ ...base, mom }, 1000, y, { vol: 1.25, momRho: 0.5 });
   assert.ok(b.netGain > a.netGain && c.netGain > b.netGain && b.trend.window === 4 && a.trend === null);
   // ETC/ETN/ETP: minusvalenze compensabili → imposta sul guadagno medio, meno imposta attesa
-  const pru = projectShort({ ...base, mom, taxPrudent: true }, 1000, y, { vol: 1.25 });
-  const sym = projectShort({ ...base, mom, symTax: true, taxPrudent: true }, 1000, y, { vol: 1.25 });
+  const pru = projectShort({ ...base, mom, taxPrudent: true }, 1000, y, { vol: 1.25, momRho: 0.25 });
+  const sym = projectShort({ ...base, mom, symTax: true, taxPrudent: true }, 1000, y, { vol: 1.25, momRho: 0.25 });
   assert.ok(sym.tax < pru.tax && sym.netGain > pru.netGain); // ETC: compensazione anche in modalità prudente
   assert.ok(Math.abs(b.tax - 0.26 * Math.max(0, b.gain)) < 1e-9); // default: aliquota × guadagno atteso
   // portafoglio: imposta per strumento, tendenza inclusa
@@ -267,4 +269,27 @@ test('stima provvisoria: beta non significativo → 1, evidenze degli analisti n
   const ev = ((0.3 + 0.01) + (0.2 + 0.01)) / 2;
   assert.ok(Math.abs(e2.cagr - (0.5 * 0.103 + 0.5 * ev)) < 1e-3, String(e2.cagr));
   assert.match(e2.basis, /analisti/);
+});
+
+test('guadagno netto a breve: segno della previsione e crescente con la crescita prevista', async () => {
+  const { projectShort } = await import('../public/js/projection.js');
+  const y = 30 / 365;
+  const net = (cagr) => projectShort({ cagr, ter: 0.002, tax: 0.26 }, 10000, y, { vol: 0.4 }).netGain;
+  const xs = [-0.9, -0.5, -0.2, 0, 0.2, 0.5, 1, 2, 5];
+  const v = xs.map(net);
+  for (let k = 1; k < v.length; k++) assert.ok(v[k] > v[k - 1], `non crescente tra ${xs[k - 1]} e ${xs[k]}`);
+  assert.ok(net(-0.5) < 0 && net(-0.9) < -1000); // calo previsto forte → netto molto negativo
+  assert.ok(net(0.5) > 0 && net(2) > 5 * net(0.2)); // crescita prevista → netto positivo, tanto più grande quanto la crescita
+});
+
+test('leva/short: rendimento aritmetico dal sottostante senza doppio decadimento', async () => {
+  const { leveragedArith, underlyingOf } = await import('../public/js/analyze.js');
+  assert.ok(Math.abs(leveragedArith({ name: 'WisdomTree Silver 3x Daily Short', mu: 0.06, rf: 0.02 }) - (-3 * 0.06 + 4 * 0.02)) < 1e-12);
+  assert.ok(Math.abs(leveragedArith({ name: 'Nasdaq 100 3x Daily Leveraged', mu: 0.1, rf: 0.02 }) - (0.3 - 0.04)) < 1e-12);
+  assert.ok(Math.abs(leveragedArith({ name: 'Silver Short USD', mu: 0.06, rf: 0.02 }) - (-0.06 + 0.04)) < 1e-12);
+  assert.equal(leveragedArith({ name: 'MSCI World UCITS ETF', mu: 0.07, rf: 0.02 }), null);
+  assert.equal(underlyingOf('WisdomTree Silver 3x Daily Short').key, 'silver');
+  assert.equal(underlyingOf('Qs100 5X Daily Short USD').key, 'nasdaq');
+  assert.equal(underlyingOf('Euro Stoxx 50 5X Daily Short').key, 'estx50');
+  assert.ok(underlyingOf('Physical Silver USD (Acc)').proxy.test('Physical Silver USD (Acc)'));
 });

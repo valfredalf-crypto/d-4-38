@@ -354,3 +354,20 @@ test('persistenza automatica e previsioni di mercato verificate', async () => {
   const sh1 = leveragedArith({ name: 'Silver Short USD', mu, rf: 0.02 });
   assert.ok(sh > 0 && lg < 0 && sh > sh1 && sh1 > 0);
 });
+
+test('tableResult pubblica il prezzo obiettivo degli analisti (upside)', async () => {
+  const { tableResult } = await import('../public/js/analyze.js');
+  const r = tableResult({ forward: { expected: 0.1, analystUpside: 0.315 }, sim: {} });
+  assert.equal(r.forward.upside, 0.315);
+  assert.equal(tableResult({ forward: { expected: 0.1 }, sim: {} }).forward.upside, undefined);
+});
+
+test('prezzo obiettivo implicito degli ETF dai titoli in portafoglio', async () => {
+  const { holdingsUpside } = await import('../public/js/analyze.js');
+  const h = (w, t, p, a = 10) => ({ weight: w, fundamentals: { targetMean: t, price: p, analysts: a } });
+  const r = holdingsUpside({ holdings: [h(0.4, 120, 100), h(0.3, 90, 100), h(0.3, 300, 100, 1)] });
+  // coperto 70% (il terzo ha 1 solo analista): (0,4·0,2 + 0,3·(−0,1)) / 0,7
+  assert.ok(Math.abs(r.upside - (0.4 * 0.2 - 0.3 * 0.1) / 0.7) < 1e-12 && Math.abs(r.coverage - 0.7) < 1e-12);
+  assert.equal(holdingsUpside({ holdings: [h(0.3, 120, 100), h(0.7, 0, 100)] }), null); // copertura < 50%
+  assert.ok(Math.abs(holdingsUpside({ holdings: [h(1, 500, 100)] }).upside - 0.5) < 1e-12); // limite +50%
+});

@@ -46,6 +46,7 @@ export function tableResult(r) {
       expected: r4(r.forward?.expected),
       growth: r4(r.forward?.expectedGrowth),
       growthSource: r.forward?.growthSource ?? null,
+      ...(Number.isFinite(r.forward?.analystUpside) ? { upside: r4(r.forward.analystUpside) } : {}), // prezzo obiettivo degli analisti ÷ prezzo − 1 (12 mesi)
       vol: r4(r.forward?.vol), // volatilità annua usata nella simulazione (per il drag della volatilità nel CAGR)
       beta: r4(r.forward?.beta), // beta verso il mercato azionario (stress test: impatto di una correzione)
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
@@ -92,6 +93,24 @@ export function tableQuote(q) {
 }
 
 /** Fattore di leva dedotto dal nome ("2x", "3X", "Leveraged" → 2 se non indicato); 1 per i prodotti normali. */
+/**
+ * Prezzo obiettivo «implicito» di un ETF: media, ponderata per il peso, del rialzo atteso dagli analisti (prezzo obiettivo ÷
+ * prezzo − 1, limitato a ±50%) sui titoli in portafoglio con almeno `minAnalysts` analisti. null se la copertura è sotto il 50%.
+ */
+export function holdingsUpside(holdings, { minAnalysts = 3, minCoverage = 0.5 } = {}) {
+  const hs = holdings?.holdings || holdings || [];
+  let w = 0;
+  let sum = 0;
+  for (const h of hs) {
+    const f = h?.fundamentals;
+    if (!f || !(h.weight > 0) || !(f.targetMean > 0) || !(f.price > 0) || (f.analysts || 0) < minAnalysts) continue;
+    sum += h.weight * Math.max(-0.5, Math.min(0.5, f.targetMean / f.price - 1));
+    w += h.weight;
+  }
+  const total = hs.reduce((a, h) => a + (h?.weight > 0 ? h.weight : 0), 0) || 1;
+  return w / total >= minCoverage ? { upside: sum / w, coverage: w / total } : null;
+}
+
 export function leverageOf(name = '') {
   // leve anche decimali (es. «2.25x»): prima si leggeva solo l'ultima cifra («5x»)
   const m = /(\d+(?:[.,]\d+)?)\s*[xX]\b|\b[xX]\s*(\d+(?:[.,]\d+)?)\b/.exec(name);
@@ -414,6 +433,11 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     },
     settings.outlook,
   );
+  // ETF: prezzo obiettivo implicito dai titoli in portafoglio (stesso ruolo del prezzo obiettivo delle azioni)
+  if (instrument.type === 'etf' && !Number.isFinite(fwd.analystUpside)) {
+    const hu = holdingsUpside(holdings);
+    if (hu) { fwd.analystUpside = hu.upside; fwd.upsideCoverage = hu.coverage; }
+  }
   // Dividendi distribuiti (ETF a distribuzione, azioni): in Italia tassati al 26% all'incasso, non a fine
   // periodo. Rispetto a un accumulo l'unica differenza, reinvestendo il netto, è l'anticipo dell'imposta:
   // il capitale che compone è minore. Costo del differimento ≈ tassa × dividendo × rendimento × (anni−1)/2

@@ -719,7 +719,11 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   const tax = Number.isFinite(r?.sim?.taxRate) ? r.sim.taxRate / 100 : 0.26;
   const ter = Number.isFinite(r?.fund?.ter) ? r.fund.ter : DEFAULT_TER[i.type] ?? 0; // TER reale del fondo se noto
   const div = i.type === 'etf' && Number.isFinite(r?.sim?.distYield) && r.sim.distYield > 0 ? r.sim.distYield : 0; // ETF a distribuzione
-  const sp = shortPrior(i, cagr);
+  // Azioni ed ETF con prezzo obiettivo degli analisti (per gli ETF: media ponderata dei titoli in portafoglio): a breve termine
+  // la previsione è la media tra prezzo obiettivo (previsione diretta sul prezzo a 12 mesi) e crescita dei fondamentali.
+  const target = (i.type === 'stock' || (i.type === 'etf' && !i.leveraged)) && Number.isFinite(r?.forward?.upside) ? r.forward.upside : null;
+  const sp = shortPrior(i, target != null ? (target + cagr) / 2 : cagr);
+  if (target != null && !sp.src) sp.src = `analisti: prezzo obiettivo ${pct(target, true, 1)}${i.type === 'etf' ? ' (media dei titoli del fondo)' : ''}, fondamentali ${pct(cagr, true, 1)}`;
   // previsione SPECIFICA dello strumento (consenso analisti / stime sui titoli dell'ETF), non il solo rendimento di mercato
   const gs = r?.forward?.growthSource;
   const evidence = i.leveraged ? !!underlyingView(i)?.ev : !r?.estimated && (gs === 'own' || gs === 'holdings'); // leva: previsioni del sottostante

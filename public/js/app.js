@@ -690,7 +690,7 @@ function leverScenariosHtml(sc, years) {
 // Tutti i periodi usano la stessa previsione: media tra prezzo obiettivo degli analisti e crescita dei fondamentali (per gli
 // ETF: media ponderata sui titoli), previsioni verificate, sottostante dei leva. Fino a 90 giorni anche il trend se confermato;
 // da 1 anno niente trend a breve. Più probabile = esito mediano (volatilità del periodo inclusa).
-const NP_PERIODS = [[7, '7 gg'], [14, '14 gg'], [30, '30 gg'], [60, '60 gg'], [90, '90 gg'], [365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
+const NP_PERIODS = [[1, '1 gg'], [7, '7 gg'], [14, '14 gg'], [30, '30 gg'], [60, '60 gg'], [90, '90 gg'], [365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
 const npLabel = (d) => NP_PERIODS.find(([x]) => x === d)?.[1] || `${d} gg`;
 const NP_KEYS = NP_PERIODS.map(([d]) => 'np' + d);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
@@ -787,7 +787,7 @@ function rowValues(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
   const sim = r && !r.error ? r.sim : null;
-  // sezione «Netto più probabile»: tutti i periodi (7 gg … 5 anni), calcolati solo in quella sezione
+  // sezione «Netto più probabile»: tutti i periodi (1 gg … 5 anni), calcolati solo in quella sezione
   const npx = shortMode() ? Object.fromEntries(NP_PERIODS.map(([d]) => [d, npStats(i, d)])) : null;
   const v = {
     npx,
@@ -960,7 +960,7 @@ function render() {
     $$('#np-bar [data-np]').forEach((b) => b.classList.toggle('active', Number(b.dataset.np) === cur));
   }
   document.body.classList.toggle('np-mode', shortMode());
-  // intestazioni delle 8 colonne dei periodi, subito dopo «Strumento»
+  // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
   $$('#table thead th.np-col').forEach((th) => th.remove());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');

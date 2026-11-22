@@ -38,7 +38,10 @@ export function project(params, capital, years) {
   const g = params.net - div;
   const priceFinal = capital * (1 + g) ** years;
   let divCash = 0;
-  for (let t = 0; t < years; t++) divCash += capital * (1 + g) ** t * div;
+  const fullYears = Math.floor(years + 1e-9);
+  for (let t = 0; t < fullYears; t++) divCash += capital * (1 + g) ** t * div;
+  const rest = years - fullYears; // orizzonti non interi (es. 30 giorni): dividendo in proporzione al periodo
+  if (rest > 1e-9) divCash += capital * (1 + g) ** fullYears * div * rest;
   const priceGain = priceFinal - capital;
   const priceTax = priceGain > 0 ? priceGain * params.tax : 0; // nessun credito d'imposta su una minusvalenza
   const divTax = divCash * params.tax;
@@ -48,11 +51,118 @@ export function project(params, capital, years) {
   return { years, gross, gain, tax: priceTax + divTax, netGain, finalCapital: capital + netGain, netPct: netGain / capital };
 }
 
-/** Proiezione completa del portafoglio sugli orizzonti indicati. */
-export function projectPortfolio({ rows, capital, years }) {
+// ---------- orizzonti brevi (giorni) ----------
+// Gli orizzonti si esprimono in anni (frazioni: giorni / 365). Sotto 1 anno il montante deterministico
+// CAGR − TER non basta: in 7-60 giorni la volatilità pesa più del rendimento atteso, e i costi fissi degli
+// ordini (1 € in acquisto + 1 € in vendita su Trade Republic) sono una frazione rilevante del guadagno.
+export const DAYS_PER_YEAR = 365;
+/** Scelte rapide: 7, 30, 60, 90 giorni e 1, 3, 5, 7, 10 anni. */
+export const HORIZON_PRESETS = [7, 30, 60, 90].map((d) => d / DAYS_PER_YEAR).concat([1, 3, 5, 7, 10]);
+export const daysToYears = (d) => d / DAYS_PER_YEAR;
+export const isShortHorizon = (y) => y < 1 - 1e-9;
+const horizonDays = (y) => Math.max(1, Math.round(y * DAYS_PER_YEAR));
+/** «30gg» oppure «5a» (etichette compatte). */
+export function horizonShort(y) {
+  return isShortHorizon(y) ? `${horizonDays(y)}gg` : `${+(+y).toFixed(2)}a`;
+}
+/** «30 giorni» / «1 giorno» / «5 anni» / «1 anno». */
+export function horizonLong(y) {
+  if (isShortHorizon(y)) {
+    const d = horizonDays(y);
+    return d === 1 ? '1 giorno' : `${d} giorni`;
+  }
+  const n = +(+y).toFixed(2);
+  return n === 1 ? '1 anno' : `${n} anni`;
+}
+/** Esponente leggibile del montante: «7/365» per i giorni, «5» per gli anni. */
+export function horizonExp(y) {
+  return isShortHorizon(y) ? `${horizonDays(y)}/${DAYS_PER_YEAR}` : String(+(+y).toFixed(2));
+}
+/** Orizzonti validi (numeri > 0), senza doppioni, in ordine crescente, al massimo 6; vuoto → predefiniti. */
+export function normalizeHorizons(list, fallback = [5, 7]) {
+  const seen = [];
+  for (const v of Array.isArray(list) ? list : []) {
+    const y = Number(v);
+    if (Number.isFinite(y) && y > 0 && y <= 100 && !seen.some((s) => Math.abs(s - y) < 1e-9)) seen.push(y);
+  }
+  const out = seen.sort((a, b) => a - b).slice(0, 6);
+  return out.length ? out : fallback.slice();
+}
+
+/** Funzione di ripartizione della normale standard (Abramowitz–Stegun 26.2.17, errore < 1e-7). */
+export function normCdf(x) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(x));
+  const d = 0.3989422804014327 * Math.exp((-x * x) / 2);
+  const p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+  return x > 0 ? 1 - p : p;
+}
+
+/**
+ * Guadagno netto atteso a orizzonte BREVE (< 1 anno) di `capital` euro.
+ *   μ_T  = (1 + CAGR − TER)^T − 1            rendimento atteso del periodo (T in anni)
+ *   σ_T  = σ·√T                               volatilità del periodo (σ annua del modello)
+ *   1+R ~ lognormale con E[1+R] = 1 + μ_T     (il capitale non scende sotto zero)
+ *   imposta attesa = aliquota × capitale × E[max(R,0)]   (nessun credito d'imposta sulle perdite),
+ *     E[max(R,0)] = (1+μ_T)·Φ(d1) − Φ(d2), d2 = ln-media/σ_T, d1 = d2 + σ_T  (formula chiusa)
+ *   costi = 2 × costo ordine × posizioni      (acquisto + vendita)
+ *   netto atteso = capitale × μ_T − imposta attesa − costi
+ * Senza σ: imposta solo se μ_T > 0 (caso deterministico). Restituisce anche probabilità di guadagno e
+ * intervallo tipico (16°–84° percentile, circa ±1σ) del guadagno netto.
+ */
+export function projectShort(params, capital, years, { vol = null, orderCost = 1, positions = 1 } = {}) {
+  const net = Number.isFinite(params.net) ? params.net : params.cagr - (params.ter || 0);
+  const tax = Number.isFinite(params.tax) ? params.tax : 0.26;
+  const mu = (1 + net) ** years - 1;
+  const costs = 2 * Math.max(0, orderCost) * Math.max(1, positions);
+  const sigma = Number.isFinite(vol) && vol > 0 ? vol * Math.sqrt(years) : 0;
+  let gainRate = mu;
+  let expTaxRate;
+  let pProfit = null;
+  let quant = null;
+  if (sigma > 0) {
+    const a = Math.log(1 + mu) - (sigma * sigma) / 2; // media del logaritmo
+    const d2 = a / sigma;
+    const d1 = d2 + sigma;
+    expTaxRate = tax * Math.max(0, (1 + mu) * normCdf(d1) - normCdf(d2));
+    pProfit = normCdf(d2);
+    const at = (z) => {
+      const g = capital * (Math.exp(a + z * sigma) - 1);
+      return g - (g > 0 ? g * tax : 0) - costs;
+    };
+    quant = { low: at(-1), high: at(1) };
+  } else expTaxRate = mu > 0 ? mu * tax : 0;
+  const taxEur = capital * expTaxRate;
+  const gain = capital * gainRate;
+  const netGain = gain - taxEur - costs;
+  return {
+    years,
+    gross: capital + gain,
+    gain,
+    tax: taxEur,
+    costs,
+    netGain,
+    finalCapital: capital + netGain,
+    netPct: capital > 0 ? netGain / capital : 0,
+    short: true,
+    sigma,
+    pProfit,
+    low: quant?.low ?? null,
+    high: quant?.high ?? null,
+  };
+}
+
+/** `project` per orizzonti ≥ 1 anno (algoritmo 019), `projectShort` sotto l'anno. Stessa forma di risultato. */
+export function projectAny(params, capital, years, opts = {}) {
+  return isShortHorizon(years) ? projectShort(params, capital, years, opts) : project(params, capital, years);
+}
+
+/** Proiezione completa del portafoglio sugli orizzonti indicati (`rows[].vol` opzionale: σ annua per gli orizzonti brevi). */
+export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost = 1 }) {
   const params = weightedParams(rows);
   if (!params) return null;
-  return { params, horizons: years.map((y) => project(params, capital, y)) };
+  const used = rows.filter((r) => r && r.weight > 0 && Number.isFinite(r.cagr));
+  const vol = portfolioRisk(used.map((r) => ({ weight: r.weight, vol: r.vol })), rho)?.vol ?? null;
+  return { params, horizons: years.map((y) => projectAny(params, capital, y, { vol, orderCost, positions: used.length })) };
 }
 
 /**

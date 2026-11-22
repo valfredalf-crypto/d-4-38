@@ -1,0 +1,93 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { project, projectShort, projectAny, projectPortfolio, normCdf, normalizeHorizons, horizonShort, horizonLong, horizonExp, daysToYears, isShortHorizon, HORIZON_PRESETS } from '../public/js/projection.js';
+import { mulberry32 } from '../public/js/montecarlo.js';
+
+test('normCdf: valori noti', () => {
+  assert.ok(Math.abs(normCdf(0) - 0.5) < 1e-7);
+  assert.ok(Math.abs(normCdf(1.96) - 0.975) < 1e-4);
+  assert.ok(Math.abs(normCdf(-1) - 0.158655) < 1e-5);
+});
+
+test('etichette e normalizzazione degli orizzonti (giorni e anni)', () => {
+  assert.equal(horizonShort(daysToYears(7)), '7gg');
+  assert.equal(horizonShort(5), '5a');
+  assert.equal(horizonLong(daysToYears(30)), '30 giorni');
+  assert.equal(horizonLong(daysToYears(1)), '1 giorno');
+  assert.equal(horizonLong(1), '1 anno');
+  assert.equal(horizonLong(7), '7 anni');
+  assert.equal(horizonExp(daysToYears(60)), '60/365');
+  assert.ok(isShortHorizon(daysToYears(60)) && !isShortHorizon(1));
+  assert.deepEqual(normalizeHorizons([7, daysToYears(30), 7, -1, 'x', 0]), [daysToYears(30), 7]);
+  assert.deepEqual(normalizeHorizons([]), [5, 7]);
+  assert.deepEqual(normalizeHorizons(undefined, [1]), [1]);
+  assert.equal(HORIZON_PRESETS.length, 9);
+});
+
+test('project: orizzonti interi invariati, dividendo in proporzione per frazioni d’anno', () => {
+  const p = { cagr: 0.07, ter: 0, tax: 0.26, net: 0.07, div: 0.02 };
+  // 5 anni: stesso risultato di prima (5 dividendi interi)
+  const five = project(p, 10000, 5);
+  let div = 0;
+  for (let t = 0; t < 5; t++) div += 10000 * (1.05) ** t * 0.02;
+  assert.ok(Math.abs(five.gross - (10000 * 1.05 ** 5 + div)) < 1e-6);
+  // 30 giorni: ≈ 1/12 del dividendo annuo, non un anno intero
+  const m = project(p, 10000, daysToYears(30));
+  assert.ok(m.gross - 10000 * 1.05 ** (30 / 365) < 10000 * 0.02 * (30 / 365) + 1e-6);
+});
+
+test('projectShort senza volatilità: deterministico, imposta solo sul guadagno, costi 2 × ordine', () => {
+  const y = daysToYears(7);
+  const mu = 1.07 ** y - 1;
+  const r = projectShort({ cagr: 0.07, ter: 0, tax: 0.26 }, 10000, y, { orderCost: 1 });
+  assert.ok(Math.abs(r.netGain - (10000 * mu * 0.74 - 2)) < 1e-9);
+  assert.equal(r.pProfit, null);
+  assert.equal(r.costs, 2);
+  // CAGR negativo: nessun credito d'imposta
+  const neg = projectShort({ cagr: -0.2, ter: 0, tax: 0.26 }, 10000, y, { orderCost: 0 });
+  assert.ok(neg.netGain < 0 && Math.abs(neg.tax) < 1e-12);
+});
+
+test('projectShort con volatilità: coincide con una simulazione lognormale indipendente', () => {
+  const y = daysToYears(30);
+  const cap = 10000;
+  const prm = { cagr: 0.08, ter: 0.002, tax: 0.26, net: 0.078 };
+  const vol = 0.3;
+  const r = projectShort(prm, cap, y, { vol, orderCost: 1 });
+  // Monte Carlo: 1+R lognormale con E[1+R] = (1+net)^T
+  const rnd = mulberry32(7);
+  const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+  const s = vol * Math.sqrt(y);
+  const a = Math.log(1.078 ** y) - (s * s) / 2;
+  let sum = 0, wins = 0;
+  const N = 400000;
+  for (let i = 0; i < N; i++) {
+    const g = cap * (Math.exp(a + s * gauss()) - 1);
+    sum += g - (g > 0 ? g * 0.26 : 0) - 2;
+    if (g > 0) wins++;
+  }
+  assert.ok(Math.abs(r.netGain - sum / N) < 3, `${r.netGain} vs ${sum / N}`);
+  assert.ok(Math.abs(r.pProfit - wins / N) < 0.005);
+  assert.ok(r.low < 0 && r.high > 0 && r.low < r.netGain && r.netGain < r.high);
+  // la volatilità aumenta l'imposta attesa rispetto al caso deterministico
+  const det = projectShort(prm, cap, y, { orderCost: 1 });
+  assert.ok(r.netGain < det.netGain);
+});
+
+test('projectAny e projectPortfolio: ≥ 1 anno = algoritmo 019, < 1 anno = algoritmo breve', () => {
+  const p = { cagr: 0.07, ter: 0.002, tax: 0.26, net: 0.068 };
+  assert.deepEqual(projectAny(p, 5000, 3), project(p, 5000, 3));
+  assert.equal(projectAny(p, 5000, daysToYears(7)).short, true);
+  const out = projectPortfolio({
+    rows: [
+      { weight: 6000, cagr: 0.07, ter: 0.002, tax: 0.26, vol: 0.15 },
+      { weight: 4000, cagr: 0.1, ter: 0.003, tax: 0.26, vol: 0.2 },
+    ],
+    capital: 10000,
+    years: [daysToYears(7), 5],
+  });
+  assert.equal(out.horizons[0].short, true);
+  assert.equal(out.horizons[0].costs, 4); // 2 posizioni × 2 ordini × 1 €
+  assert.ok(out.horizons[0].sigma > 0 && out.horizons[0].pProfit > 0.5);
+  assert.ok(!out.horizons[1].short && out.horizons[1].netGain > 0);
+});

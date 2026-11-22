@@ -7,14 +7,16 @@ import { downloadXetraCsv } from '../lib/xetra.js';
 import { parseInstrumentCsv } from '../lib/importer.js';
 import { historyEur } from '../lib/market.js';
 import { search } from '../lib/yahoo.js';
-import { isEuroListing, hasImplausibleJumps } from '../lib/universe.js';
+import { isEuroListing, hasImplausibleJumps, isLeveraged } from '../lib/universe.js';
 import { isValidIsin } from '../public/js/isin.js';
 
 const REQUESTS = process.env.IMPORT_REQUESTS || 'data/import-requests.json';
 const OUT = process.env.IMPORTED || 'data/imported-instruments.json';
 const UNRESOLVED = process.env.IMPORT_UNRESOLVED || 'data/import-unresolved.json';
-const MIN_WEEKS = 26; // almeno 6 mesi di storico per essere utile
+const MIN_WEEKS = Number(process.env.MIN_WEEKS) || 8; // storico minimo (≈2 mesi): gli strumenti recenti entrano in elenco, la previsione a 5 anni richiede ≥1 anno (minYears)
 const log = (...a) => console.log(...a);
+// Prodotti a leva/short: salti settimanali ampi sono normali (×3 non è più un dato errato), soglia ×12.
+const jumpLimit = (name) => (isLeveraged(name) ? Math.log(12) : undefined);
 
 const requests = JSON.parse(fs.readFileSync(REQUESTS, 'utf8')).instruments.filter((r) => isValidIsin(r.isin));
 const previous = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : [];
@@ -28,7 +30,7 @@ await Promise.all(
       const it = previous[k];
       if (it.type === 'crypto') continue;
       const h = await historyEur(it.symbol).catch(() => null);
-      if (h && hasImplausibleJumps(h.closesEur.slice(-521))) {
+      if (h && hasImplausibleJumps(h.closesEur.slice(-521), jumpLimit(it.name))) {
         done.delete(it.isin);
         recheck++;
       }
@@ -90,7 +92,7 @@ async function tryListing(req, symbol, via, tried) {
   try {
     const h = await historyEur(symbol);
     if (h.closesEur.length < MIN_WEEKS) return null;
-    if (req.type !== 'crypto' && hasImplausibleJumps(h.closesEur.slice(-521))) return null; // dati errati
+    if (req.type !== 'crypto' && hasImplausibleJumps(h.closesEur.slice(-521), jumpLimit(req.name))) return null; // dati errati
     // Data dell'ultima quotazione: scarta i simboli fermi da più di 30 giorni (delistati o illiquidi)
     if (Date.now() / 1000 - h.timestamps.at(-1) > 30 * 86400) return null;
     return {

@@ -251,6 +251,9 @@ table.mini .num { white-space: nowrap; }
   body.mview-prob #table th:nth-child(22), body.mview-prob #table td:nth-child(22),
   body.mview-prob #table th:nth-child(n+29):nth-child(-n+30), body.mview-prob #table td:nth-child(n+29):nth-child(-n+30) { display: table-cell; }
   body.mview-prob #table th:nth-child(n+3):nth-child(-n+9), body.mview-prob #table td:nth-child(n+3):nth-child(-n+9) { display: none; }
+  /* Vista "Breve": guadagno netto più probabile a 7/14/30/60 giorni (33–36) */
+  body.mview-short #table th:nth-child(n+33):nth-child(-n+36), body.mview-short #table td:nth-child(n+33):nth-child(-n+36) { display: table-cell; }
+  body.mview-short #table th:nth-child(n+3):nth-child(-n+7), body.mview-short #table td:nth-child(n+3):nth-child(-n+7) { display: none; }
   th, td { padding: 8px 3px; }
   #table td { font-size: 12.5px; }
   th .l { display: none; }

@@ -415,7 +415,7 @@ function filtered() {
   const active = activeFilters(state.view.filters);
   // L'imbuto si applica solo quando i dati dei fondi (patrimonio) sono stati pubblicati
   const fundData = Object.values(state.results).some((r) => r?.fund?.aum);
-  const funnelOn = state.view.funnel === 'on' && fundData;
+  const funnelOn = state.view.funnel === 'on' && fundData; // modalità breve: nessun imbuto, tutti gli strumenti
   const phase1On = state.view.funnel === 'maxgrowth';
   const levTab = type === 'lev';
   return state.instruments.filter((i) => {
@@ -442,7 +442,7 @@ function filtered() {
     // ETF: in elenco solo quelli con la stima costruita dalla composizione reale (partecipazioni, pesi, stime
     // dei singoli titoli); gli altri (stima dal mercato × β) sono nascosti salvo richiesta.
     // Chi cerca per nome/ISIN, o nella scheda Bond (obbligazionari, stima dal mercato), si mostrano comunque.
-    if (!allEtf && !needle && !levTab && type !== 'bond' && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
+    if (!allEtf && !shortMode() && !needle && !levTab && type !== 'bond' && i.type === 'etf' && !hasHoldingsEstimate(i)) return false;
     if (needle && !`${i.name} ${i.symbol} ${i.isin || ''}`.toLowerCase().includes(needle) && !(code && `${i.symbol} ${i.isin || ''}`.toLowerCase().replace(/[\s-]/g, '').includes(code))) return false;
     return !active.length || passes(rowValues(i), active);
   });
@@ -655,7 +655,16 @@ function autoShort({ base, ter = 0, vol, mom, years, view = false, rho = null, e
   const full = momentumTilt({ net: baseNet, vol, mom, years, rho: 1 });
   // conferma solo da previsioni specifiche dello strumento; senza, il trend non viene esteso
   const r = evidence ? autoRho(baseNet, full.net) : 0;
-  return { net: r ? full.net : baseNet, window: full.window, rho: r, view: false, auto: true, noEvidence: !evidence };
+  let net = r ? full.net : baseNet;
+  let capped = false;
+  if (r) {
+    // il trend prosegue, ma non oltre quanto la previsione stessa ritiene raggiungibile: il movimento nel periodo non supera il
+    // rendimento annuo previsto (evita di proiettare salti una tantum, es. offerte di acquisto o trimestrali)
+    const move = (1 + net) ** years - 1;
+    const lim = Math.abs(baseNet);
+    if (Math.abs(move) > lim) { net = (1 + Math.sign(move) * lim) ** (1 / years) - 1; capped = true; }
+  }
+  return { net, window: full.window, rho: r, view: false, auto: true, noEvidence: !evidence, capped };
 }
 /** Scenari del sottostante per un prodotto a leva/short (σ del sottostante = σ del prodotto ÷ leva). */
 function leverScenarios(inst, volProduct, years, ter = 0, capital = 1000) {
@@ -677,6 +686,28 @@ function leverScenariosHtml(sc, years) {
   const fmtR = (r) => `<b class="${cls(r)}">${r > 0 ? '+' : ''}${(r * 100).toFixed(0)}%</b>`;
   return `<div class="muted small-note" title="Prodotto a leva con ribilanciamento giornaliero: risultato a ${horizonLong(years)} secondo la variazione del ${sc.label}, con la volatilità attuale. Anche con il sottostante fermo si perde per il decadimento da ribilanciamento.">${sc.label} a ${horizonShort(years)}: ${sc.pts.map((p) => `${p.m === 0 ? 'fermo' : `${p.m > 0 ? '+' : ''}${p.m * 100}%`} → ${fmtR(p.r)}`).join(' · ')}${sc.breakeven != null ? ` · pari se ${sc.label} ${sc.breakeven > 0 ? '+' : ''}${(sc.breakeven * 100).toFixed(1)}%` : ''}</div>`;
 }
+// Guadagno netto a breve (7/14/30/60 gg) per la classifica: stesso algoritmo del Portafoglio sul capitale impostato.
+const SHORT_DAYS = [7, 14, 30, 60];
+function shortStats(inst) {
+  const r = resOf(inst);
+  if (!r || r.error) return null;
+  const pp = projParams(inst, r, inst.type === 'stock');
+  if (!pp) return null;
+  const cap = state.settings.mc.amount || 10000;
+  const base = Number.isFinite(pp.cagrShort) ? pp.cagrShort : pp.cagr;
+  const rho = Number.isFinite(state.portfolio?.momRho) ? state.portfolio.momRho : null;
+  const out = {};
+  for (const d of SHORT_DAYS) {
+    const y = d / 365;
+    const t = autoShort({ base, ter: pp.ter || 0, vol: pp.vol, mom: r.mom, years: y, view: pp.shortView, evidence: pp.evidence, rho });
+    const h = projectH({ cagr: t.net + (pp.ter || 0), ter: pp.ter || 0, tax: pp.tax, net: t.net }, cap, y, pp.vol, 1, null, symTaxOf(inst.isin || inst.symbol));
+    out[d] = { median: h.medianNet / cap, mean: h.netGain / cap, p: h.pProfit, medianEur: h.medianNet, meanEur: h.netGain };
+  }
+  out.estimated = !!r.estimated;
+  out.src = pp.shortSrc || null;
+  return out;
+}
+const shortMode = () => state.view.funnel === 'short';
 function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
   // + dividendo + valutazione: prospettive di crescita aggiornate, come nel metodo Gemini) invece del
@@ -742,7 +773,13 @@ function rowValues(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
   const sim = r && !r.error ? r.sim : null;
+  const stx = shortStats(i);
   const v = {
+    stx,
+    st7: stx?.[7]?.median ?? null,
+    st14: stx?.[14]?.median ?? null,
+    st30: stx?.[30]?.median ?? null,
+    st60: stx?.[60]?.median ?? null,
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
     plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
     // Proiezione deterministica netta (CAGR composto − TER, imposta sulla plusvalenza), in frazione del capitale
@@ -879,7 +916,7 @@ function rowValues(i) {
 
 function sortRows(rows) {
   const { key, dir } = state.view.sort;
-  const k = key === 'rank' ? 'projOpt' : key;
+  const k = key === 'rank' ? (shortMode() ? 'st30' : 'projOpt') : key;
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -897,7 +934,7 @@ function sortRows(rows) {
 const mgMode = () => state.view.funnel === 'maxgrowth' && state.view.type !== 'bond' && state.view.type !== 'crypto';
 function rankMap(rows) {
   // La posizione in classifica è sempre per guadagno netto 5a (algoritmo 019) decrescente, indipendentemente dall'ordinamento scelto.
-  const k = mgMode() ? 'maxGrowth' : 'projOpt'; // scheda ETF con l'algoritmo Max Growth: classifica per Max Growth Score
+  const k = shortMode() ? (/^st\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'st30') : mgMode() ? 'maxGrowth' : 'projOpt'; // breve termine: guadagno netto più probabile
   const ranked = rows.filter((r) => r[k] != null && Number.isFinite(r[k])).sort((a, b) => b[k] - a[k]);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
@@ -984,6 +1021,7 @@ function render() {
         <td class="num">${pct(r.prob50, false, 0)}</td>
         <td class="num ${cls(r.sharpe)}">${r.sharpe == null ? '–' : nf2.format(r.sharpe)}</td>
         <td class="num ${cls(r.sortino)}">${r.sortino == null ? '–' : nf2.format(r.sortino)}</td>
+        ${SHORT_DAYS.map((d) => { const x = r.stx?.[d]; if (!x) return '<td class="num muted">–</td>'; return `<td class="num ${cls(x.median)}" title="Più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'}${r.stx.estimated ? ' · stima provvisoria' : ''}${r.stx.src ? ' · ' + esc(r.stx.src) : ''}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P(+) ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('')}
       </tr>`;
     })
     .join('');
@@ -1590,9 +1628,9 @@ function exportCsv() {
   const rows = sortRows(filtered().map(rowValues));
   const ranks = rankMap(rows);
   const num = (x) => (x == null || !Number.isFinite(x) ? '' : String(+x.toFixed(6)).replace('.', ','));
-  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'CAGR netto atteso 5a', 'Guadagno netto 019 5a', 'MDD storico', 'CAGR atteso', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Crescita utili attesa', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD'].join(';')];
+  const lines = [['Posizione', 'Nome', 'Simbolo', 'ISIN', 'Tipo', 'CAGR netto atteso 5a', 'Guadagno netto 019 5a', 'MDD storico', 'CAGR atteso', 'Prezzo EUR', 'Var. 1 mese', 'Var. 3 mesi', 'Var. 1 anno', 'Rendimento atteso annuo', 'Crescita utili attesa', 'Perdita max 5a', 'Drawdown mediano 5a', 'Guadagno mediano 5a', 'Guadagno medio 5a', 'Rapporto', 'Rapporto DD mediano', 'Prob. perdita', 'Rend. netto 1 settimana', 'Rend. netto 1 mese', 'Rend. netto YTD', 'Più probabile 7 gg', 'Più probabile 14 gg', 'Più probabile 30 gg', 'Più probabile 60 gg'].join(';')];
   for (const r of rows) {
-    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.proj), num(r.proj019), num(r.histMdd), num(r.cagr), num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.growthExp), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd)].join(';'));
+    lines.push([ranks.get(r.inst.symbol) ?? '', `"${r.inst.name.replace(/"/g, '""')}"`, r.inst.symbol, r.inst.isin || '', r.inst.type, num(r.proj), num(r.proj019), num(r.histMdd), num(r.cagr), num(r.price), num(r.varM), num(r.varM3), num(r.varY), num(r.expected), num(r.growthExp), num(r.maxLoss), num(r.mddMedian), num(r.netGain), num(r.netMean), r.ratio === Infinity ? 'inf' : num(r.ratio), r.ratioMedian === Infinity ? 'inf' : num(r.ratioMedian), num(r.probLoss), num(r.perfW), num(r.perfM), num(r.perfYtd), num(r.st7), num(r.st14), num(r.st30), num(r.st60)].join(';'));
   }
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -2596,6 +2634,7 @@ function bind() {
     document.body.classList.toggle('mview-perf', v === 'perf');
     document.body.classList.toggle('mview-risk', v === 'risk');
     document.body.classList.toggle('mview-prob', v === 'prob');
+    document.body.classList.toggle('mview-short', v === 'short');
     $$('[data-mview]').forEach((b) => b.classList.toggle('active', b.dataset.mview === v));
     try {
       localStorage.setItem('trmc.mview', v);
@@ -2628,7 +2667,8 @@ function bind() {
       state.view.type = t.dataset.type;
       state.view.limit = PAGE;
       // Nella scheda Crescita si ordina per crescita attesa; altrove torna la classifica per rapporto.
-      if (state.view.funnel === 'maxgrowth' && !['bond', 'crypto', 'growth', 'lev'].includes(t.dataset.type)) state.view.sort = { key: 'maxGrowth', dir: -1 };
+      if (shortMode()) { if (!/^st\d+$/.test(state.view.sort.key)) state.view.sort = { key: 'st30', dir: -1 }; }
+      else if (state.view.funnel === 'maxgrowth' && !['bond', 'crypto', 'growth', 'lev'].includes(t.dataset.type)) state.view.sort = { key: 'maxGrowth', dir: -1 };
       else if (state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       if (t.dataset.type === 'growth') state.view.sort = { key: 'growth', dir: -1 };
       else if (state.view.sort.key === 'growth') state.view.sort = { key: 'ratio', dir: 1 };
@@ -2681,8 +2721,11 @@ function bind() {
     fm.addEventListener('change', (e) => {
       state.view.funnel = e.target.value;
       state.view.limit = PAGE;
-      if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
-      else if (state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
+      if (shortMode()) {
+        state.view.sort = { key: 'st30', dir: -1 };
+        if (window.matchMedia?.('(max-width: 700px)').matches) setMview('short');
+      } else if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
+      else if (/^st\d+$/.test(state.view.sort.key) || state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       try {
         localStorage.setItem('trmc.funnel2', e.target.value);
       } catch {
@@ -2726,7 +2769,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = ['maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = ['st7', 'st14', 'st30', 'st60', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }),

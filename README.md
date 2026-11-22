@@ -120,6 +120,11 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
    leva/short si mostrano gli scenari del sottostante (−20%…+20%) con la formula del ribilanciamento giornaliero
    `ln P = L·ln S + (L−L²)/2·σ²·T + (1−L)·rf·T − TER·T` e la variazione del sottostante necessaria per andare in pari:
    con il sottostante fermo il prodotto perde (decadimento).
+5c. **Limite del trend**: il trend confermato prosegue, ma il movimento nel periodo non supera il rendimento annuo previsto
+   per lo strumento (evita di proiettare salti una tantum come offerte di acquisto o trimestrali).
+5d. **Classifica «Breve termine»** (selettore Classifica): tutti gli strumenti, azioni comprese, ordinati in modo decrescente
+   per guadagno netto PIÙ PROBABILE a 7/14/30/60 giorni sul capitale impostato (colonne ordinabili, scheda «Breve» sul
+   telefono, CSV), con lo stesso algoritmo del Portafoglio.
 6. **Imposta**: aliquota × guadagno atteso (perdite compensabili tra le posizioni, mai negativa); dividendi tassati a parte.
    Opzione «imposta prudente»: perdite non compensate (imposta sui soli scenari in guadagno).
 7. **Costi**: 1 € per ordine (acquisto + vendita) per posizione; la probabilità di guadagno è calcolata al netto dei costi.

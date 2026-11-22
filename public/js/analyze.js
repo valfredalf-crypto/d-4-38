@@ -119,7 +119,7 @@ const INVERSE = /\b(short(?!\s*(duration|dur|term|maturity|dated|-term))|inverse
 export const isInverseProduct = (name = '') => INVERSE.test(String(name));
 const weekKey = (ts) => Math.round(ts / 604800);
 
-export function provisionalEstimate({ instrument, history, benchmark, market, settings } = {}) {
+export function provisionalEstimate({ instrument, history, benchmark, market, settings, fundamentals = null } = {}) {
   const prices = history?.closesEur;
   if (!Array.isArray(prices) || prices.length < PROVISIONAL_MIN_WEEKS) return null;
   const rets = [];
@@ -140,6 +140,8 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
   const name = instrument?.name || '';
   // beta verso il benchmark azionario sulle settimane in comune
   let beta = null;
+  let betaR2 = null;
+  let betaN = 0;
   if (benchmark?.closesEur?.length && benchmark?.timestamps && history.timestamps) {
     const bIdx = new Map();
     benchmark.timestamps.forEach((t, i) => bIdx.set(weekKey(t), i));
@@ -157,10 +159,15 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
       const mx = xs.reduce((a, x) => a + x, 0) / xs.length;
       const my = ys.reduce((a, x) => a + x, 0) / ys.length;
       const vx = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
-      if (vx > 0) beta = xs.reduce((a, x, k) => a + (x - mx) * (ys[k] - my), 0) / vx;
+      const vy = ys.reduce((a, y) => a + (y - my) ** 2, 0);
+      if (vx > 0) {
+        beta = xs.reduce((a, x, k) => a + (x - mx) * (ys[k] - my), 0) / vx;
+        betaR2 = vy > 0 ? Math.min(1, (beta * beta * vx) / vy) : 0;
+        betaN = xs.length;
+      }
     }
   }
-  return { ...buildEstimate({ name, vol, mdd, beta, m, rf, weeks: prices.length, source: 'history' }), mom: momentumStats(prices) };
+  return { ...buildEstimate({ name, vol, mdd, beta, betaR2, betaN, m, rf, weeks: prices.length, source: 'history', fundamentals, type: instrument?.type }), mom: momentumStats(prices) };
 }
 
 /**
@@ -201,7 +208,7 @@ function cutAfterJump(history, maxLog) {
   return cut ? { ...history, closesEur: c.slice(cut), timestamps: history.timestamps?.slice(cut) } : history;
 }
 
-function buildEstimate({ name, vol, mdd, beta, m, rf, weeks, source, label }) {
+function buildEstimate({ name, vol, mdd, beta, betaR2 = null, betaN = 0, m, rf, weeks, source, label, fundamentals = null, type = null }) {
   const L = Math.max(1, leverageOf(name));
   const inverse = isInverseProduct(name);
   let cagr;
@@ -218,9 +225,38 @@ function buildEstimate({ name, vol, mdd, beta, m, rf, weeks, source, label }) {
     ter = 0.006;
     basis = `Prodotto a leva ${inverse ? 'inversa ' : ''}${L}x: rendimento atteso = ${inverse ? '−' : ''}${L} × rendimento del mercato (${(m * 100).toFixed(1)}%) con costo di finanziamento e decadimento da ribilanciamento giornaliero (σ del sottostante ≈ ${((vol / L) * 100).toFixed(0)}%), ${raw < -0.6 ? 'Limite prudenziale −60%/anno (la formula darebbe ' + (raw * 100).toFixed(0) + '%). ' : ''}TER stimato ${(ter * 100).toFixed(2)}%. ${tail}`;
   } else {
-    const b = Math.min(2, Math.max(0, beta ?? 1));
+    // Beta robusto: con poche settimane e titoli molto volatili la regressione è rumore (es. −4 su 19 settimane).
+    // Non significativo (meno di 8 settimane o R² < 10%) → 1; altrimenti ridotto verso 1 in proporzione allo storico.
+    let b;
+    let bNote;
+    if (source !== 'history') {
+      b = Math.min(2, Math.max(0, beta ?? 1));
+      bNote = ' (stimato dalla volatilità)';
+    } else if (beta == null || betaN < 8 || !(betaR2 >= 0.1)) {
+      b = 1;
+      bNote = beta == null ? ' (non misurabile, assunto 1)' : ` (misurato ${beta.toFixed(2)} su ${betaN} settimane ma non significativo, R² ${(100 * (betaR2 ?? 0)).toFixed(0)}%: assunto 1)`;
+    } else {
+      const w = betaN / (betaN + 52);
+      b = Math.min(2, Math.max(0.3, w * beta + (1 - w)));
+      bNote = ` (misurato ${beta.toFixed(2)} su ${betaN} settimane, ridotto verso 1 per lo storico breve)`;
+    }
     cagr = rf + b * (m - rf);
-    basis = `Rendimento atteso del mercato (${(m * 100).toFixed(1)}%) con beta ${b.toFixed(2)}${source !== 'history' ? ' (stimato dalla volatilità)' : beta == null ? ' (non misurabile, assunto 1)' : ' misurato sulle settimane disponibili'}. ${tail}`;
+    basis = `Rendimento atteso del mercato (${(m * 100).toFixed(1)}%) con beta ${b.toFixed(2)}${bNote}.`;
+    // Evidenze di mercato e prospettive di crescita (analisti), quando disponibili: media con il rendimento di mercato
+    const f = fundamentals;
+    if (f && type === 'stock') {
+      const ev = [];
+      const div = Number.isFinite(f.dividendYield) ? Math.max(0, f.dividendYield) : 0;
+      if (f.targetMean > 0 && f.price > 0 && (f.analysts || 0) >= 1) ev.push(['prezzo obiettivo degli analisti', Math.max(-0.5, Math.min(0.5, f.targetMean / f.price - 1)) + div]);
+      const g = Number.isFinite(f.epsGrowthNext) ? Math.min(1, f.epsGrowthNext) : Number.isFinite(f.revenueGrowthNext) ? f.revenueGrowthNext : null;
+      if (g != null) ev.push(['crescita attesa di utili/ricavi', Math.max(-0.5, Math.min(0.5, g)) + div]);
+      if (ev.length) {
+        const e = ev.reduce((a, [, v]) => a + v, 0) / ev.length;
+        cagr = 0.5 * cagr + 0.5 * e;
+        basis += ` Media con le evidenze degli analisti (${ev.map(([k, v]) => `${k} ${(v * 100).toFixed(1)}%`).join(', ')}).`;
+      }
+    }
+    basis += ` ${tail}`;
   }
   return {
     cagr: r4(cagr),
@@ -286,7 +322,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   const prices = history.closesEur;
   const realYears = (prices.length - 1) / WEEKS_PER_YEAR;
   if (realYears < o.minYears) {
-    const estimate = provisionalEstimate({ instrument, history, benchmark, market, settings });
+    const estimate = provisionalEstimate({ instrument, history, benchmark, market, settings, fundamentals });
     return { forward: null, sim: { ok: false, reason: `Storico insufficiente (${realYears.toFixed(1)} anni, minimo ${o.minYears})`, historyYears: realYears }, ...(estimate ? { estimate } : {}) };
   }
   // Controllo qualità: per azioni ed ETF un movimento ×3 o ÷3 in una settimana indica dati errati
@@ -296,7 +332,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     const lb = prices.slice(-(Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1));
     for (let i = 1; i < lb.length; i++) {
       if (lb[i - 1] > 0 && lb[i] > 0 && Math.abs(Math.log(lb[i] / lb[i - 1])) > maxJump) {
-        const estimate = provisionalEstimate({ instrument, history: cutAfterJump(history, maxJump), benchmark, market, settings });
+        const estimate = provisionalEstimate({ instrument, history: cutAfterJump(history, maxJump), benchmark, market, settings, fundamentals });
         return { forward: null, sim: { ok: false, reason: 'Dati di prezzo non affidabili (salti anomali nello storico)', historyYears: realYears }, ...(estimate ? { estimate } : {}) };
       }
     }

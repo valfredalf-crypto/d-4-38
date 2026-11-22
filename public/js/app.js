@@ -630,6 +630,16 @@ function estimateHtml(e) {
       ${e.beta != null ? `<tr><td>Beta verso il mercato azionario</td><td class="num">${nf2.format(e.beta)}</td></tr>` : ''}
       ${Number.isFinite(e.ter) ? `<tr><td>TER stimato</td><td class="num">${pct(e.ter, false, 2)}</td></tr>` : ''}
     </tbody></table>
+    ${(() => {
+      // Rendimento atteso a breve con la tendenza recente (stesso algoritmo del portafoglio), su 1.000 €
+      const prm = { cagr: e.cagr, ter: e.ter || 0, tax: 0.26, net: e.cagr - (e.ter || 0) };
+      const rows = [7, 14, 30, 90].map((d) => {
+        const h = projectH(prm, 1000, d / 365, e.vol, 1, e.mom, !!e.leverage || !!e.inverse);
+        return `<tr><td>${d} giorni</td><td class="num ${cls(h.mu)}">${pct(h.mu, true, 1)}</td><td class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</td><td class="num">${h.pProfit != null ? pct(h.pProfit, false, 0) : '–'}</td></tr>`;
+      });
+      return `<h4 class="pf-h4" style="margin-top:12px">Orizzonti brevi con la tendenza recente (su 1.000 €)</h4>
+      <table class="mini"><thead><tr><th>Orizzonte</th><th class="num">Rendimento lordo atteso</th><th class="num">Netto atteso</th><th class="num">P(guadagno)</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+    })()}
     <p class="muted small-note">Il Portafoglio usa questi valori (anche per gli orizzonti brevi) al posto della previsione a 5 anni, che richiede almeno 1 anno di storico. È una stima prudente: non entra in classifica.</p></div>`;
 }
 function nr5Of(sim, type) {

@@ -226,3 +226,23 @@ test('tendenza recente: momentumStats, finestra e limite di momentumTilt', async
   assert.ok(out.horizons[0].trend && Number.isFinite(out.horizons[0].netGain) && out.horizons[0].costs === 4);
   assert.ok(!out.horizons[1].short);
 });
+
+test('stima provvisoria: beta non significativo → 1, evidenze degli analisti nel CAGR', async () => {
+  const { provisionalEstimate, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
+  const rnd = mulberry32(11);
+  const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+  const N = 20;
+  const ts = Array.from({ length: N }, (_, i) => 1_700_000_000 + i * 604800);
+  let pb = 100, ps = 1;
+  const bench = { timestamps: ts, closesEur: ts.map(() => (pb *= Math.exp(0.02 * gauss()))) };
+  const noisy = { timestamps: ts, closesEur: ts.map(() => (ps *= Math.exp(0.35 * gauss()))) }; // microcap scorrelata, σ enorme
+  const e = provisionalEstimate({ instrument: { name: 'Path2 Hydrogen AG', type: 'stock' }, history: noisy, benchmark: bench, market: 0.103, settings: DEFAULT_SETTINGS });
+  assert.ok(Math.abs(e.cagr - 0.103) < 1e-3, `CAGR ${e.cagr} (atteso il rendimento di mercato con beta 1)`);
+  assert.match(e.basis, /beta 1\.00/);
+  // con evidenze degli analisti: media tra mercato e prezzo obiettivo/crescita
+  const f = { price: 10, targetMean: 13, analysts: 4, epsGrowthNext: 0.2, dividendYield: 0.01 };
+  const e2 = provisionalEstimate({ instrument: { name: 'X AG', type: 'stock' }, history: noisy, benchmark: bench, market: 0.103, settings: DEFAULT_SETTINGS, fundamentals: f });
+  const ev = ((0.3 + 0.01) + (0.2 + 0.01)) / 2;
+  assert.ok(Math.abs(e2.cagr - (0.5 * 0.103 + 0.5 * ev)) < 1e-3, String(e2.cagr));
+  assert.match(e2.basis, /analisti/);
+});

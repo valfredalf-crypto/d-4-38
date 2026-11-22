@@ -134,3 +134,60 @@ test('provisionalEstimate: fattori base da uno storico breve (8+ settimane)', as
   assert.match(r.sim.reason, /Storico insufficiente/);
   assert.ok(r.estimate?.provisional);
 });
+
+test('radarEstimate: stima dalla sola volatilità del dataset', async () => {
+  const { radarEstimate, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
+  const inv = radarEstimate({ instrument: { name: 'WisdomTree Silver 3x Daily Short' }, vol: 1.2584, market: 0.07, settings: DEFAULT_SETTINGS });
+  assert.ok(inv.source === 'radar' && inv.inverse && inv.leverage === 3 && inv.cagr === -0.6 && inv.ter === 0.006 && inv.mdd === 0.95);
+  const bond = radarEstimate({ instrument: { name: 'India INR Govt Bond USD (Acc)' }, vol: 0.05, market: 0.07, settings: DEFAULT_SETTINGS });
+  assert.ok(Math.abs(bond.beta - 0.2) < 1e-9); // 0,6 × 5% ÷ 15%
+  assert.ok(bond.cagr > 0.02 && bond.cagr < 0.04, String(bond.cagr)); // rf + 0,2 × (m − rf)
+  assert.ok(Math.abs(bond.mdd - 0.075) < 1e-9);
+  assert.equal(radarEstimate({ instrument: { name: 'X' }, vol: null }), null);
+  assert.equal(radarEstimate({ instrument: { name: 'X' }, vol: 1e16 }), null); // valore corrotto dall'esportazione
+});
+
+test('store: strumenti del dataset radar senza doppioni, con flag leva', async () => {
+  const fs = await import('node:fs');
+  const os = await import('node:os');
+  const path = await import('node:path');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'radar-'));
+  const w = (f, o) => { const p = path.join(dir, f); fs.writeFileSync(p, JSON.stringify(o)); return p; };
+  process.env.UNIVERSE = w('universe.json', { meta: {}, instruments: [{ symbol: 'AAA.DE', isin: 'IE00AAAAAAA1', name: 'Core ETF', type: 'etf' }] });
+  process.env.EXTRA_INSTRUMENTS = w('extra.json', []);
+  process.env.IMPORTED = w('imported.json', [{ symbol: 'BBB.DE', isin: 'IE00BBBBBBB2', name: 'Imported ETF', type: 'etf', via: 'xetra' }]);
+  process.env.USER_INSTRUMENTS = path.join(dir, 'user.json');
+  process.env.RADAR_INSTRUMENTS = w('radar.json', [
+    { isin: 'IE00AAAAAAA1', name: 'Core ETF (radar)', vol: 0.1 }, // già nell'universo
+    { isin: 'IE00BBBBBBB2', name: 'Imported ETF (radar)', vol: 0.1 }, // già importato
+    { isin: 'XS3306517338', name: 'WisdomTree DAX 3x Daily Short EUR', vol: null },
+    { isin: 'JE00B24DKK82', name: 'Silver Short USD', vol: 0.5086 },
+  ]);
+  const { listInstruments } = await import('../lib/store.js');
+  const list = listInstruments();
+  assert.equal(list.length, 4);
+  const radar = list.filter((i) => i.source === 'radar');
+  assert.equal(radar.length, 2);
+  const silver = radar.find((i) => i.isin === 'JE00B24DKK82');
+  assert.deepEqual([silver.symbol, silver.type, silver.radarVol, silver.leveraged], ['JE00B24DKK82', 'etf', 0.5086, true]);
+  assert.equal(radar.find((i) => i.isin === 'XS3306517338').radarVol, null);
+  assert.equal(list.find((i) => i.isin === 'IE00AAAAAAA1').source, 'seed');
+  assert.equal(list.find((i) => i.isin === 'IE00BBBBBBB2').source, 'import');
+});
+
+test('priorEstimate: ogni strumento ha una stima, anche senza alcun dato', async () => {
+  const { priorVol, priorEstimate, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
+  assert.ok(Math.abs(priorVol({ name: 'WisdomTree DAX 3x Daily Short EUR', type: 'etf' }) - 0.54) < 1e-9);
+  assert.equal(priorVol({ name: 'India INR Govt Bond USD (Acc)', type: 'etf' }), 0.06);
+  assert.equal(priorVol({ name: 'Euro Overnight Rate Swap', type: 'etf' }), 0.01);
+  assert.equal(priorVol({ name: 'Physical Gold ETC', type: 'etf' }), 0.2);
+  assert.equal(priorVol({ name: 'Qualunque azione', type: 'stock' }), 0.3);
+  assert.equal(priorVol({ name: 'Bitcoin', type: 'crypto' }), 0.7);
+  assert.equal(priorVol({ name: 'MSCI World UCITS ETF', type: 'etf' }), 0.16);
+  const e = priorEstimate({ instrument: { name: 'Qualsiasi ETF azionario', type: 'etf' }, market: 0.07, settings: DEFAULT_SETTINGS });
+  assert.ok(e.source === 'prior' && e.vol === 0.16 && Number.isFinite(e.cagr) && Number.isFinite(e.mdd));
+  // usata dal portafoglio a breve termine: la stima basta a calcolare 7 giorni con intervallo
+  const { projectShort } = await import('../public/js/projection.js');
+  const r = projectShort({ cagr: e.cagr, ter: 0.002, tax: 0.26 }, 1000, 7 / 365, { vol: e.vol });
+  assert.ok(Number.isFinite(r.netGain) && r.low < r.high && r.pProfit > 0.4 && r.pProfit < 0.6);
+});

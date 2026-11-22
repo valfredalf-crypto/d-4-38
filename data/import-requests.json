@@ -3,6 +3,7 @@
 "description": "ISIN importati dai file \"rendimento-vault-backup-csv-v1\" (azioni parti 1,3,4,6,7,12,15 di 20; ETF parti 1,3,4,6,7,9,12,15 di 17). Le obbligazioni singole non sono supportate.",
 "createdAt": "2026-10-23",
 "updatedAt": "2026-11-22",
+"radarImport": "+50 ISIN dal dataset radar-classifica-2026-11-22 (ETF/ETP, 2978 ISIN totali)",
 "catalogImport": "+2035 ISIN dal catalogo \"Trade Republic - Catalogo completo DEFINITIVO\" (sezione ETF/ETC, 2959 ISIN)"
 },
 "instruments": [
@@ -40017,6 +40018,256 @@
 {
 "isin": "XS3384723154",
 "name": "Physical Gold II USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ANOU8J3",
+"name": "India INR Govt Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RJL5A30",
+"name": "$ Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000GHXL2Q3",
+"name": "€ Govt Bond 20yr Target Duration EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000578J297",
+"name": "Uk Gilts USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XU8HDM2",
+"name": "$ Intermediate Credit Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RUEGGK5",
+"name": "China CNY Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000FHBZDZ8",
+"name": "Global Aggregate Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RQJBQI6",
+"name": "iBonds Dec 2036 Term € Corp EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0008U15456",
+"name": "Govt Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0004LCA3I5",
+"name": "Spain Govt Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000LJ2O0V5",
+"name": "€ Govt Bond 0-3 month EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000JLXYKJ8",
+"name": "€ Govt Bond 0-3 month EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000BUIVY49",
+"name": "€ Corp Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000JJPY166",
+"name": "Eur Cash EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000NHAIBN0",
+"name": "€ Flexible Income Bond Active EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000R7KKFN3",
+"name": "€ Flexible Income Bond Active EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00089J8KM1",
+"name": "Broad € High Yield Corp Bond USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W1AURU9",
+"name": "High Yield Corporate Bond ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000XGYMCA8",
+"name": "$ EM Bond EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000BMP9YJ5",
+"name": "US Large Cap Max Buffer Jun USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000C9LBYZ8",
+"name": "Defensive Defined Return Autocallable EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000RAY1B92",
+"name": "Defined Return Autocallable EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000UDV9YG1",
+"name": "MSCI Europe Energy Sector EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000F4W1QI5",
+"name": "Defensive Defined Return Autocallable EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000CZQJXB8",
+"name": "US Large Cap Moderate Buffer Jun USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000EB0LQO5",
+"name": "World Equity High Income EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0002FCUS29",
+"name": "MSCI All Country World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000U1MQKJ2",
+"name": "MSCI World Quality Factor Advanced USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BJ5JP436",
+"name": "MSCI World Communication Services Sector Advanced USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000HARJEE2",
+"name": "FTSE 100 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000ZQF1PE1",
+"name": "MSCI Europe Climate Transition Aware EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000U3XZQN5",
+"name": "MSCI Europe Climate Transition Aware EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0007O06KL9",
+"name": "Russell 2000 Swap USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000MAO75G5",
+"name": "MSCI Europe EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000XSFZL82",
+"name": "STOXX Europe 600 EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000O50THD5",
+"name": "World Thematic Rotation Active USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE0002VEN3U3",
+"name": "Msci World Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000OHHIBC6",
+"name": "Core MSCI World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000OL3XN92",
+"name": "FTSE All World USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000E9XXE77",
+"name": "MSCI EMU Climate Transition Aware EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0006PTRUI8",
+"name": "MSCI EMU Climate Transition Awar EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000QZ7JON9",
+"name": "MSCI USA Swap EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000YD0IAD2",
+"name": "Msci Usa Swap EUR (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000Z3S26J2",
+"name": "S&P 500 SwapUSD EUR Hedged (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000SVXJH05",
+"name": "Nasdaq 100 ex-Top 30 USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE000W8RYVC0",
+"name": "Msci Em Ex-China USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE0002SCQ8X0",
+"name": "Msci Japan Ctb Enhanced Esg EUR (Acc)",
+"type": "etf"
+},
+{
+"isin": "IE00BHZPJ122",
+"name": "MSCI EM CTB Enhanced ESG USD (Dist)",
+"type": "etf"
+},
+{
+"isin": "IE000DR59CI3",
+"name": "Energy Storage & Hydrogen USD (Acc)",
+"type": "etf"
+},
+{
+"isin": "DE000A1EK0J7",
+"name": "Physical Silver USD EUR Hedged (Acc)",
 "type": "etf"
 }
 ]

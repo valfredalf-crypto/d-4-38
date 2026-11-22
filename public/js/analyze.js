@@ -125,8 +125,6 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
   const rf = (settings?.outlook?.riskFree ?? DEFAULT_OUTLOOK.riskFree) / 100;
   const m = Number.isFinite(market) ? market : rf + 0.045;
   const name = instrument?.name || '';
-  const L = Math.max(1, leverageOf(name));
-  const inverse = isInverseProduct(name);
   // beta verso il benchmark azionario sulle settimane in comune
   let beta = null;
   if (benchmark?.closesEur?.length && benchmark?.timestamps && history.timestamps) {
@@ -149,9 +147,54 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
       if (vx > 0) beta = xs.reduce((a, x, k) => a + (x - mx) * (ys[k] - my), 0) / vx;
     }
   }
+  return buildEstimate({ name, vol, mdd, beta, m, rf, weeks: prices.length, source: 'history' });
+}
+
+/**
+ * Stima dalla sola volatilità annua (strumenti senza storico di prezzo, es. dal dataset radar): beta ≈ 0,6 × σ ÷ σ mercato
+ * (correlazione 0,6 con il mercato, σ mercato 15%) e drawdown ≈ 1,5 × σ. Meno precisa di quella dallo storico.
+ */
+export function radarEstimate({ instrument, vol, market, settings, label = 'dataset radar', source = 'radar' } = {}) {
+  if (!(vol > 0 && vol < 5)) return null;
+  const rf = (settings?.outlook?.riskFree ?? DEFAULT_OUTLOOK.riskFree) / 100;
+  const m = Number.isFinite(market) ? market : rf + 0.045;
+  return buildEstimate({ name: instrument?.name || '', vol, mdd: Math.min(0.95, 1.5 * vol), beta: Math.min(1.5, (0.6 * vol) / 0.15), m, rf, weeks: null, source, label });
+}
+
+/**
+ * Ultima rete di sicurezza: NESSUN dato (né storico né dataset). Volatilità tipica della categoria dedotta dal nome e dal
+ * tipo, così ogni strumento è comunque utilizzabile nel portafoglio, anche per gli orizzonti brevi (7-90 giorni).
+ */
+export function priorVol(instrument = {}) {
+  const name = String(instrument.name || '');
+  const L = Math.max(1, leverageOf(name));
+  if (L > 1 || isInverseProduct(name)) return Math.min(2.5, L * 0.18); // leva: σ del sottostante ≈ 18%
+  if (instrument.type === 'crypto') return 0.7;
+  if (instrument.type === 'stock') return 0.3;
+  if (/overnight|money market|monetari|ultrashort|ultra short|cash|liquidity/i.test(name)) return 0.01;
+  if (/\b(gold|silver|oil|crude|brent|commodit|copper|platinum|palladium|gas|wheat|agri)/i.test(name)) return 0.2;
+  if (/bond|govt|gov\b|treasury|gilt|btp|bund|oat\b|obbligaz|aggregate|credit|corporate|high yield|\bnotes?\b/i.test(name)) return 0.06;
+  return 0.16; // ETF azionario generico
+}
+export function priorEstimate({ instrument, market, settings } = {}) {
+  return radarEstimate({ instrument, vol: priorVol(instrument), market, settings, source: 'prior', label: 'valore tipico della categoria (nessun dato di mercato disponibile)' });
+}
+
+/** Storico dopo l'ultimo salto settimanale oltre `maxLog` (dati anomali / raggruppamenti): serve a stimare σ e MDD puliti. */
+function cutAfterJump(history, maxLog) {
+  const c = history?.closesEur || [];
+  let cut = 0;
+  for (let i = 1; i < c.length; i++) if (c[i - 1] > 0 && c[i] > 0 && Math.abs(Math.log(c[i] / c[i - 1])) > maxLog) cut = i;
+  return cut ? { ...history, closesEur: c.slice(cut), timestamps: history.timestamps?.slice(cut) } : history;
+}
+
+function buildEstimate({ name, vol, mdd, beta, m, rf, weeks, source, label }) {
+  const L = Math.max(1, leverageOf(name));
+  const inverse = isInverseProduct(name);
   let cagr;
   let ter = null;
   let basis;
+  const tail = source !== 'history' ? `Volatilità dal ${label}; drawdown stimato 1,5 × σ.` : 'Lo storico è troppo breve per usare quello dello strumento.';
   if (L > 1 || inverse) {
     // Prodotti a leva giornaliera: L × mercato − finanziamento − decadimento da ribilanciamento, come il limite
     // del modello (outlook.js); per gli short/inverse il segno è opposto e la liquidità frutta il tasso privo di rischio.
@@ -160,11 +203,11 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
     const raw = cagr;
     cagr = Math.min(0.5, Math.max(-0.6, cagr));
     ter = 0.006;
-    basis = `Prodotto a leva ${inverse ? 'inversa ' : ''}${L}x: rendimento atteso = ${inverse ? '−' : ''}${L} × rendimento del mercato (${(m * 100).toFixed(1)}%) con costo di finanziamento e decadimento da ribilanciamento giornaliero (σ del sottostante ≈ ${((vol / L) * 100).toFixed(0)}%), ${raw < -0.6 ? 'Limite prudenziale −60%/anno (la formula darebbe ' + (raw * 100).toFixed(0) + '%). ' : ''}TER stimato ${(ter * 100).toFixed(2)}%. Lo storico è troppo breve per usare quello dello strumento.`;
+    basis = `Prodotto a leva ${inverse ? 'inversa ' : ''}${L}x: rendimento atteso = ${inverse ? '−' : ''}${L} × rendimento del mercato (${(m * 100).toFixed(1)}%) con costo di finanziamento e decadimento da ribilanciamento giornaliero (σ del sottostante ≈ ${((vol / L) * 100).toFixed(0)}%), ${raw < -0.6 ? 'Limite prudenziale −60%/anno (la formula darebbe ' + (raw * 100).toFixed(0) + '%). ' : ''}TER stimato ${(ter * 100).toFixed(2)}%. ${tail}`;
   } else {
     const b = Math.min(2, Math.max(0, beta ?? 1));
     cagr = rf + b * (m - rf);
-    basis = `Rendimento atteso del mercato (${(m * 100).toFixed(1)}%) con beta ${b.toFixed(2)}${beta == null ? ' (non misurabile, assunto 1)' : ' misurato sulle settimane disponibili'}: lo storico è troppo breve per usare quello dello strumento.`;
+    basis = `Rendimento atteso del mercato (${(m * 100).toFixed(1)}%) con beta ${b.toFixed(2)}${source !== 'history' ? ' (stimato dalla volatilità)' : beta == null ? ' (non misurabile, assunto 1)' : ' misurato sulle settimane disponibili'}. ${tail}`;
   }
   return {
     cagr: r4(cagr),
@@ -172,10 +215,11 @@ export function provisionalEstimate({ instrument, history, benchmark, market, se
     mdd: r4(mdd),
     beta: beta == null ? null : r4(beta),
     ter,
-    weeks: prices.length,
+    weeks,
     ...(L > 1 ? { leverage: L } : {}),
     ...(inverse ? { inverse: true } : {}),
     basis,
+    source,
     provisional: true,
   };
 }
@@ -239,7 +283,8 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     const lb = prices.slice(-(Math.round(o.lookbackYears * WEEKS_PER_YEAR) + 1));
     for (let i = 1; i < lb.length; i++) {
       if (lb[i - 1] > 0 && lb[i] > 0 && Math.abs(Math.log(lb[i] / lb[i - 1])) > maxJump) {
-        return { forward: null, sim: { ok: false, reason: 'Dati di prezzo non affidabili (salti anomali nello storico)', historyYears: realYears } };
+        const estimate = provisionalEstimate({ instrument, history: cutAfterJump(history, maxJump), benchmark, market, settings });
+        return { forward: null, sim: { ok: false, reason: 'Dati di prezzo non affidabili (salti anomali nello storico)', historyYears: realYears }, ...(estimate ? { estimate } : {}) };
       }
     }
   }

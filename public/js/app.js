@@ -1,4 +1,4 @@
-import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice } from './analyze.js';
+import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate } from './analyze.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -619,7 +619,7 @@ function projOf(i, r, cagrOverride = null) {
 /** NR5 ricalcolato secondo il profilo scelto: guadagno netto medio (estremi attenuati) − k × perdita media nel 5% peggiore. */
 function estimateHtml(e) {
   if (!e) return '';
-  return `<div class="card"><h3>Stima provvisoria (${e.weeks} settimane di storico)</h3>
+  return `<div class="card"><h3>Stima provvisoria${e.weeks ? ` (${e.weeks} settimane di storico)` : e.source === 'prior' ? ' (valori tipici della categoria)' : ' (dal dataset radar)'}</h3>
     <p class="muted small-note">${esc(e.basis || '')}</p>
     <table class="mini"><tbody>
       <tr><td>CAGR atteso (lordo)</td><td class="num ${cls(e.cagr)}"><b>${pct(e.cagr, true, 2)}</b></td></tr>
@@ -947,7 +947,8 @@ async function openDetail(symbol) {
     }
     renderDetail(inst, r, state.data.get(inst.symbol));
   } catch (e) {
-    $('#d-body').innerHTML = `<p class="neg">Impossibile recuperare i dati: ${esc(e.message)}</p>${removeButton(inst)}`;
+    const est = state.results[inst.symbol]?.estimate;
+    $('#d-body').innerHTML = `<p class="neg">${est ? 'Nessun dato di prezzo disponibile per questo strumento' : 'Impossibile recuperare i dati: ' + esc(e.message)}</p>${estimateHtml(est)}${removeButton(inst)}`;
     bindRemove(inst);
   }
 }
@@ -1513,7 +1514,9 @@ const projectH = (prm, cap, y, vol = null, positions = 1) => projectAny(prm, cap
 // (CAGR, volatilità, MDD calcolati sui dati disponibili). Altrimenti l'oggetto con l'errore (o null).
 function resOf(inst) {
   const r = state.results[inst.symbol];
-  const e = r?.error ? r.estimate : null;
+  if (r && !r.error) return r;
+  // nessuna previsione: stima dallo storico/dataset (build) oppure, per strumenti aggiunti dopo, valore tipico della categoria
+  const e = r?.estimate || priorEstimate({ instrument: inst, market: state.market?.expected, settings: state.settings });
   if (!e) return r ?? null;
   return { estimated: true, forward: { expected: e.cagr, vol: e.vol, beta: e.beta }, sim: { estimated: true, histMdd: e.mdd, taxRate: 26 }, ...(Number.isFinite(e.ter) ? { fund: { ter: e.ter } } : {}) };
 }
@@ -1637,7 +1640,7 @@ function renderPortfolio() {
       const pp = inst && r && !r.error ? projParams(inst, r) : null;
       const kn = inst && r && !r.error ? nr5Of(r.sim, inst.type) : null;
       return `<tr data-k="${k}">
-        <td><input data-bucket="rows" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
+        <td><input data-bucket="rows" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 48) + (!pp ? ` <span class="neg">· ${r?.error ? esc(r.error) : 'nessuna stima del modello'}: inserisci CAGR, TER, aliquota e MDD a mano</span>` : r?.estimated ? ' <span class="muted" title="Previsione a 5 anni non disponibile: CAGR, volatilità e MDD sono una stima provvisoria (storico, dataset o valore tipico della categoria)">· stima provvisoria</span>' : '') : row.name ? esc(row.name) + ' <span class="neg">(non in elenco: parametri inseriti a mano)</span>' : row.isin ? '<span class="neg">non in elenco: inserisci CAGR, TER, aliquota e MDD a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €<div class="muted small-note">${wSum > 0 && Number.isFinite(row.amount) ? pct(row.amount / wSum, false, 1) + ' del capitale' : '% automatica'}</div></td>
         <td class="num"><input data-bucket="rows" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>
         <td class="num"><input data-bucket="rows" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note" title="Rendimento annuo atteso dal modello (premio per il rischio azionario, P/E e utili attesi)">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="rows" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>
@@ -1695,7 +1698,7 @@ function renderPortfolio() {
           : '<span class="muted">–</span>';
         const terCell = isStock ? '' : `<td class="num"><input data-bucket="${bucket}" data-f="ter" type="number" step="0.01" min="0" value="${pcIn(row.ter)}" size="4"> %</td>`;
         return `<tr data-bucket="${bucket}" data-k="${k}">
-          <td><input data-bucket="${bucket}" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 46) : row.isin ? '<span class="neg">non in elenco: parametri a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
+          <td><input data-bucket="${bucket}" data-f="isin" value="${esc(row.isin || '')}" placeholder="ISIN o ticker" size="13"><div class="muted small-note">${inst ? esc(inst.name).slice(0, 46) + (!pp ? ` <span class="neg">· ${r?.error ? esc(r.error) : 'nessuna stima'}: parametri a mano</span>` : r?.estimated ? ' <span class="muted">· stima provvisoria</span>' : '') : row.isin ? '<span class="neg">non in elenco: parametri a mano</span>' : 'inserisci ISIN o ticker'}</div></td>
           <td class="num"><input data-bucket="${bucket}" data-f="amount" type="number" step="100" min="0" value="${Number.isFinite(row.amount) ? row.amount : ''}" size="6"> €</td>
           ${terCell}
           <td class="num"><input data-bucket="${bucket}" data-f="cagr" type="number" step="0.1" value="${pcIn(row.cagr)}" size="5"> %${pp ? `<div class="muted small-note">modello: ${pct(pp.cagr, false, 2)} <button class="ghost small" data-bucket="${bucket}" data-use="cagr" data-k="${k}" data-v="${pp.cagr}">usa</button></div>` : ''}</td>

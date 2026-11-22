@@ -93,7 +93,7 @@ write('data/backtest.json', backtestPayload(bt, { generatedAt, calibration, cali
 console.log(`Backtest: ${bt.modes.forward.summary?.n ?? 0} strumenti con almeno 7 anni di storico.`);
 
 console.log(`Sito generato in ${OUT}: ${ok}/${instruments.length} strumenti con dati, ${Object.keys(quotes).length} quotazioni.`);
-if (ok < instruments.length * MIN_SUCCESS) {
+if (ok < instruments.filter((i) => i.source !== 'radar').length * MIN_SUCCESS) {
   if (process.env.ALLOW_PARTIAL === '1') {
     // Pubblicazione guidata da Codex Studio: non deve dipendere dai dati di mercato.
     console.warn('Dati di mercato scarsi, ma ALLOW_PARTIAL=1: pubblico comunque (richiesto da Codex Studio).');

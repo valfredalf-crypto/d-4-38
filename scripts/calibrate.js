@@ -40,7 +40,7 @@ const { targetDrift, targetVol, seed, ...mcDefaults } = DEFAULT_OPTIONS;
 const baseSettings = (outlook) => ({ mc: { ...mcDefaults, cryptoSpreadPct: 0 }, outlook: { ...BASE_OUTLOOK, ...outlook } });
 
 // --- dati
-const all = listInstruments();
+const all = listInstruments().filter((i) => i.source !== 'radar');
 const benchmark = await historyEur(BENCHMARK_SYMBOL);
 const cryptoBenchmark = await historyEur(CRYPTO_BENCHMARK_SYMBOL).catch(() => null);
 const pool = [];

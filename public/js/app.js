@@ -1,10 +1,10 @@
-import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats, leveragedArith, underlyingOf } from './analyze.js';
+import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats, leveragedArith, underlyingOf, leverageOf, isInverseProduct } from './analyze.js';
 import { viewFor } from './market-views.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
-import { project, projectAny, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
+import { project, projectAny, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -648,6 +648,26 @@ function autoShort({ base, ter = 0, vol, mom, years, view = false, rho = null, e
   const r = evidence ? autoRho(baseNet, full.net) : 0;
   return { net: r ? full.net : baseNet, window: full.window, rho: r, view: false, auto: true, noEvidence: !evidence };
 }
+/** Scenari del sottostante per un prodotto a leva/short (σ del sottostante = σ del prodotto ÷ leva). */
+function leverScenarios(inst, volProduct, years, ter = 0, capital = 1000) {
+  if (!inst?.leveraged || !Number.isFinite(volProduct) || !(years > 0)) return null;
+  const L0 = Math.max(1, leverageOf(inst.name));
+  const L = isInverseProduct(inst.name) ? -L0 : L0;
+  const sigmaU = volProduct / L0;
+  const rf = (state.settings.outlook?.riskFree ?? 2) / 100;
+  const label = underlyingOf(inst.name)?.label || 'sottostante';
+  const pts = [-0.2, -0.1, 0, 0.1, 0.2].map((m) => ({ m, r: leveredScenario({ L, sigmaU, years, move: m, rf, ter }) }));
+  // variazione del sottostante che serve per andare in pari (ricerca numerica)
+  let lo = -0.9, hi = 3;
+  const f = (m) => leveredScenario({ L, sigmaU, years, move: m, rf, ter });
+  if (f(lo) * f(hi) < 0) for (let k = 0; k < 60; k++) { const mid = (lo + hi) / 2; if (f(lo) * f(mid) <= 0) hi = mid; else lo = mid; }
+  return { label, pts, breakeven: f(-0.9) * f(3) < 0 ? (lo + hi) / 2 : null, capital };
+}
+function leverScenariosHtml(sc, years) {
+  if (!sc) return '';
+  const fmtR = (r) => `<b class="${cls(r)}">${r > 0 ? '+' : ''}${(r * 100).toFixed(0)}%</b>`;
+  return `<div class="muted small-note" title="Prodotto a leva con ribilanciamento giornaliero: risultato a ${horizonLong(years)} secondo la variazione del ${sc.label}, con la volatilità attuale. Anche con il sottostante fermo si perde per il decadimento da ribilanciamento.">${sc.label} a ${horizonShort(years)}: ${sc.pts.map((p) => `${p.m === 0 ? 'fermo' : `${p.m > 0 ? '+' : ''}${p.m * 100}%`} → ${fmtR(p.r)}`).join(' · ')}${sc.breakeven != null ? ` · pari se ${sc.label} ${sc.breakeven > 0 ? '+' : ''}${(sc.breakeven * 100).toFixed(1)}%` : ''}</div>`;
+}
 function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
   // + dividendo + valutazione: prospettive di crescita aggiornate, come nel metodo Gemini) invece del
@@ -696,10 +716,10 @@ function estimateHtml(e, inst = null) {
         const t = autoShort({ base, ter: e.ter || 0, vol: e.vol, mom: e.mom, years: d / 365, view: !!e.shortView2, evidence: false, rho: Number.isFinite(state.portfolio?.momRho) ? state.portfolio.momRho : null });
         const c = t.net + (e.ter || 0);
         const h = projectH({ cagr: c, ter: e.ter || 0, tax: 0.26, net: t.net }, 1000, d / 365, e.vol, 1, null, !!e.leverage || !!e.inverse);
-        return `<tr><td>${d} giorni</td><td class="num ${cls(h.mu)}">${pct(h.mu, true, 1)}</td><td class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</td><td class="num">${h.pProfit != null ? pct(h.pProfit, false, 0) : '–'}</td></tr>`;
+        return `<tr><td>${d} giorni</td><td class="num ${cls(h.mu)}">${pct(h.mu, true, 1)}</td><td class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</td><td class="num ${cls(h.medianNet)}">${h.medianNet > 0 ? '+' : ''}${Math.round(h.medianNet).toLocaleString('it-IT')} €</td><td class="num">${h.pProfit != null ? pct(h.pProfit, false, 0) : '–'}</td></tr>`;
       });
       return `<h4 class="pf-h4" style="margin-top:12px">Orizzonti brevi (su 1.000 €)</h4>${e.shortSrc ? `<p class="muted small-note">Rendimento atteso medio dal ${esc(e.shortSrc)}: ${pct(base, true, 1)}/anno con la leva.</p>` : ''}
-      <table class="mini"><thead><tr><th>Orizzonte</th><th class="num">Rendimento lordo atteso</th><th class="num">Netto atteso</th><th class="num">P(guadagno)</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+      <table class="mini"><thead><tr><th>Orizzonte</th><th class="num">Rendimento lordo atteso</th><th class="num">Netto atteso (media)</th><th class="num">Più probabile</th><th class="num">P(guadagno)</th></tr></thead><tbody>${rows.join('')}</tbody></table>${inst?.leveraged ? [30, 90].map((d) => leverScenariosHtml(leverScenarios(inst, e.vol, d / 365, e.ter || 0), d / 365)).join('') : ''}`;
     })()}
     <p class="muted small-note">Il Portafoglio usa questi valori (anche per gli orizzonti brevi) al posto della previsione a 5 anni, che richiede almeno 1 anno di storico. È una stima prudente: non entra in classifica.</p></div>`;
 }
@@ -1786,8 +1806,9 @@ function renderPortfolio() {
           const cells = years.map((y) => {
             const h = projectH(prmAt(prm, row, y), quota, y, pp?.vol, 1, rowMom(row), symTaxOf(row.isin));
             const adj = !h.short && Number.isFinite(row.mdd) ? h.netGain * (1 - Math.min(1, row.mdd)) : null;
-            const rng = h.short && h.low != null ? `<div class="muted small-note" title="Intervallo tipico del netto (≈ ±1σ, 68%) e probabilità di guadagno nel periodo">${Math.round(h.low).toLocaleString('it-IT')} … ${Math.round(h.high).toLocaleString('it-IT')} € · P(+) ${pct(h.pProfit, false, 0)}</div>` : '';
-            return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${horizonShort(y)}</span></div>${adj != null ? `<div class="muted small-note">× (1 − MDD) = <b class="${cls(adj)}">${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</b></div>` : ''}${rng}`;
+            const rng = h.short && h.low != null ? `<div class="muted small-note" title="Più probabile = esito mediano (metà dei casi meglio, metà peggio). Atteso = media, che con strumenti volatili è spinta in alto da pochi casi molto favorevoli. Intervallo tipico ≈ ±1σ (68%)">più probabile <b class="${cls(h.medianNet)}">${h.medianNet > 0 ? '+' : ''}${Math.round(h.medianNet).toLocaleString('it-IT')} €</b> · ${Math.round(h.low).toLocaleString('it-IT')} … ${Math.round(h.high).toLocaleString('it-IT')} € · P(+) ${pct(h.pProfit, false, 0)}</div>` : '';
+            const lev = h.short && y === Math.max(...years.filter(isShortHorizon)) ? leverScenariosHtml(leverScenarios(inst, pp?.vol, y, Number.isFinite(row.ter) ? row.ter : 0), y) : '';
+            return `<div class="${cls(h.netGain)}"><b>${h.netGain > 0 ? '+' : ''}${Math.round(h.netGain).toLocaleString('it-IT')} €</b> <span class="muted">${horizonShort(y)}</span></div>${adj != null ? `<div class="muted small-note">× (1 − MDD) = <b class="${cls(adj)}">${adj > 0 ? '+' : ''}${Math.round(adj).toLocaleString('it-IT')} €</b></div>` : ''}${rng}${lev}`;
           });
           return `<td class="num">${eur(Math.round(quota))}</td><td class="num">${cells.join('')}</td>`;
         })()}
@@ -1970,13 +1991,14 @@ function renderPortfolio() {
         (h) => `
     <h3>Scenario a ${horizonLong(h.years)}${h.short ? ' <span class="muted small-note">· algoritmo breve: volatilità, imposta attesa e costi degli ordini</span>' : ''}</h3>
     <table class="mini"><tbody>
-      <tr><td>${h.short ? `Rendimento lordo atteso a ${horizonShort(h.years)} <span class="muted small-note">(CAGR del modello + tendenza recente, non il solo CAGR di lungo periodo)</span>` : `Montante lordo: ${eur(p.capital)} × (1 + ${pct(out.params.net, false, 2)})<sup>${horizonExp(h.years)}</sup>`}</td><td class="num">${fmt(h.gross)}${h.short ? ` <span class="muted small-note">(${pct(h.mu, true, 2)})</span>` : ''}</td></tr>
+      <tr><td>${h.short ? `Rendimento lordo atteso a ${horizonShort(h.years)} <span class="muted small-note">(previsioni attuali e trend se confermato, non il solo CAGR di lungo periodo)</span>` : `Montante lordo: ${eur(p.capital)} × (1 + ${pct(out.params.net, false, 2)})<sup>${horizonExp(h.years)}</sup>`}</td><td class="num">${fmt(h.gross)}${h.short ? ` <span class="muted small-note">(${pct(h.mu, true, 2)})</span>` : ''}</td></tr>
       <tr><td>Plusvalenza lorda</td><td class="num">${fmt(h.gain)}</td></tr>
       <tr><td>Imposta sostitutiva${h.short ? ' attesa' : ''} (${pct(out.params.tax, false, 2)})</td><td class="num neg">− ${fmt(h.tax)}</td></tr>
       ${h.short ? `<tr><td>Costi ordini (acquisto + vendita, ${eur(state.settings.mc.orderCost ?? 1)} ciascuno)</td><td class="num neg">− ${fmt(h.costs)}</td></tr>` : ''}
       <tr><th>Guadagno netto finale (${pct(h.netPct, true)})</th><th class="num ${cls(h.netGain)}">${h.netGain > 0 ? '+' : ''}${fmt(h.netGain)}</th></tr>
       <tr><td>Capitale netto a scadenza</td><td class="num"><b>${fmt(h.finalCapital)}</b></td></tr>
       ${h.short && h.trend && Math.abs(h.trend.tilt) > 1e-4 ? `<tr><td>Tendenza recente (momentum${h.trend.window ? `, ultime ${h.trend.window} sett.` : ''}; persistenza ${pct(h.trend.rho ?? 0.25, false, 0)}) <span class="muted small-note">già inclusa nel guadagno</span></td><td class="num ${cls(h.trend.tilt)}">${pct(h.trend.tilt, true, 1)} ≈ ${h.trend.tilt > 0 ? '+' : ''}${fmt(p.capital * h.trend.tilt)}</td></tr>` : ''}
+      ${h.short && Number.isFinite(h.medianNet) ? `<tr><td>Guadagno netto più probabile (mediano) <span class="muted small-note">metà dei casi meglio, metà peggio</span></td><td class="num ${cls(h.medianNet)}"><b>${h.medianNet > 0 ? '+' : ''}${fmt(h.medianNet)}</b></td></tr>` : ''}
       ${h.short && h.pProfit != null ? `<tr><td>Probabilità di guadagno nel periodo (σ ${pct(h.sigma, false, 2)})</td><td class="num">${pct(h.pProfit, false, 0)}</td></tr><tr><td>Intervallo tipico del netto (≈ ±1σ, 68% degli scenari)</td><td class="num">${fmt(h.low)} … ${fmt(h.high)}</td></tr>` : ''}
       ${rk && !h.short ? `<tr><th>CAGR netto atteso: guadagno netto × (1 − MDD<sub>p</sub> ${pct(rk.mdd, false, 1)})</th><th class="num ${cls(h.netGain * (1 - rk.mdd))}">${h.netGain * (1 - rk.mdd) > 0 ? '+' : ''}${fmt(h.netGain * (1 - rk.mdd))} (${pct((h.netGain * (1 - rk.mdd)) / p.capital, true)})</th></tr>` : ''}
     </tbody></table>`,

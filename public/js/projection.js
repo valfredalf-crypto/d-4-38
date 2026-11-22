@@ -127,6 +127,17 @@ export function momentumTilt({ net, vol, mom, years, rho = MOMENTUM_RHO }) {
   return { net: Math.exp(prior + adj) - 1, tilt: adj * years, window: k, rho };
 }
 
+/**
+ * Prodotto a leva/short con ribilanciamento GIORNALIERO: rendimento a `years` se il sottostante varia di `move` (es. −0,10),
+ * con volatilità del sottostante `sigmaU`. ln P = L·ln S + (L − L²)/2·σ²·T + (1 − L)·rf·T − TER·T (L negativo per gli short):
+ * con il sottostante fermo il prodotto perde per il decadimento da ribilanciamento, tanto più quanto è volatile.
+ */
+export function leveredScenario({ L, sigmaU, years, move, rf = 0.02, ter = 0 }) {
+  if (!Number.isFinite(L) || L === 0 || !(1 + move > 0)) return null;
+  const s = Number.isFinite(sigmaU) ? sigmaU : 0;
+  return Math.exp(L * Math.log(1 + move) + ((L - L * L) / 2) * s * s * years + (1 - L) * rf * years - ter * years) - 1;
+}
+
 /** Funzione di ripartizione della normale standard (Abramowitz–Stegun 26.2.17, errore < 1e-7). */
 export function normCdf(x) {
   const t = 1 / (1 + 0.2316419 * Math.abs(x));
@@ -173,7 +184,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
       const g = capital * (Math.exp(a + z * sigma) - 1);
       return g - (g > 0 ? g * tax : 0) - costs;
     };
-    quant = { low: at(-1), high: at(1) };
+    quant = { low: at(-1), high: at(1), median: at(0) }; // mediana = esito più probabile (metà dei casi sopra, metà sotto)
   } else expTaxRate = tax * Math.max(0, mu);
   const taxEur = capital * expTaxRate;
   const gain = capital * gainRate;
@@ -195,6 +206,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     pProfit,
     low: quant?.low ?? null,
     high: quant?.high ?? null,
+    medianNet: quant?.median ?? netGain, // netto nel caso mediano (più probabile)
   };
 }
 

@@ -178,6 +178,26 @@ test('store: strumenti del dataset radar senza doppioni, con flag leva', async (
   assert.equal(list.find((i) => i.isin === 'IE00BBBBBBB2').source, 'import');
 });
 
+test('esito più probabile e scenari dei prodotti a leva con ribilanciamento giornaliero', async () => {
+  const { projectShort, leveredScenario } = await import('../public/js/projection.js');
+  // con alta volatilità la mediana è sotto la media (pochi casi molto favorevoli alzano la media)
+  const r = projectShort({ cagr: 0.5, ter: 0.006, tax: 0.26 }, 5000, 90 / 365, { vol: 1.25 });
+  assert.ok(r.medianNet < r.netGain && r.medianNet < 0 && r.netGain > 0);
+  const lo = projectShort({ cagr: 0.07, ter: 0.002, tax: 0.26 }, 5000, 90 / 365, { vol: 0.15 });
+  assert.ok(Math.abs(lo.medianNet - lo.netGain) < 0.05 * 5000 * 0.15);
+  // 3x short con sottostante fermo: perde per il decadimento (≈ −21% a 90 gg con σ 42%)
+  const T = 90 / 365;
+  const flat = leveredScenario({ L: -3, sigmaU: 0.42, years: T, move: 0, rf: 0.02 });
+  assert.ok(Math.abs(flat - (Math.exp(-6 * 0.42 ** 2 * T + 4 * 0.02 * T) - 1)) < 1e-12 && flat < -0.18 && flat > -0.25);
+  // monotonia: lo short guadagna di più quanto più scende il sottostante, il long il contrario
+  const sh = [-0.2, -0.1, 0, 0.1, 0.2].map((m) => leveredScenario({ L: -3, sigmaU: 0.42, years: T, move: m }));
+  const lg = [-0.2, -0.1, 0, 0.1, 0.2].map((m) => leveredScenario({ L: 3, sigmaU: 0.42, years: T, move: m }));
+  for (let k = 1; k < 5; k++) assert.ok(sh[k] < sh[k - 1] && lg[k] > lg[k - 1]);
+  assert.ok(sh[0] > 0.4 && sh[4] < -0.5);
+  // senza volatilità e senza costi: esattamente la leva composta
+  assert.ok(Math.abs(leveredScenario({ L: 2, sigmaU: 0, years: 1, move: 0.1, rf: 0 }) - (1.1 ** 2 - 1)) < 1e-12);
+});
+
 test('portfolioTax: compensazione delle minusvalenze, dividendi a parte, modalità prudente', async () => {
   const { portfolioTax, project, projectShort, projectPortfolio } = await import('../public/js/projection.js');
   const a = { h: { gain: 300, tax: 78, priceGain: 300, divTax: 0 }, rate: 0.26 };

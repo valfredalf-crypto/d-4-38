@@ -115,6 +115,11 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
    in proporzione alla discesa prevista (con la leva), i long perdono, e viceversa. Vanno aggiornate quando scadono; inserire
    solo previsioni attuali e coerenti col prezzo del giorno (niente dati vecchi o sondaggi).
    La deriva osservata si confronta col rendimento medio aggiungendo σ²/2; limite di sicurezza ±2 σ·√T.
+5b. **Esito più probabile e rischio dei prodotti a leva**: accanto al guadagno atteso (media) si mostra sempre il guadagno
+   **più probabile** (mediana), che con strumenti volatili può essere negativo anche con media positiva. Per i prodotti a
+   leva/short si mostrano gli scenari del sottostante (−20%…+20%) con la formula del ribilanciamento giornaliero
+   `ln P = L·ln S + (L−L²)/2·σ²·T + (1−L)·rf·T − TER·T` e la variazione del sottostante necessaria per andare in pari:
+   con il sottostante fermo il prodotto perde (decadimento).
 6. **Imposta**: aliquota × guadagno atteso (perdite compensabili tra le posizioni, mai negativa); dividendi tassati a parte.
    Opzione «imposta prudente»: perdite non compensate (imposta sui soli scenari in guadagno).
 7. **Costi**: 1 € per ordine (acquisto + vendita) per posizione; la probabilità di guadagno è calcolata al netto dei costi.

@@ -53,7 +53,7 @@ test('projectShort con volatilità: coincide con una simulazione lognormale indi
   const cap = 10000;
   const prm = { cagr: 0.08, ter: 0.002, tax: 0.26, net: 0.078 };
   const vol = 0.3;
-  const r = projectShort(prm, cap, y, { vol, orderCost: 1 });
+  const r = projectShort({ ...prm, taxPrudent: true }, cap, y, { vol, orderCost: 1 });
   // Monte Carlo: 1+R lognormale con E[1+R] = (1+net)^T
   const rnd = mulberry32(7);
   const gauss = () => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
@@ -72,6 +72,9 @@ test('projectShort con volatilità: coincide con una simulazione lognormale indi
   // la volatilità aumenta l'imposta attesa rispetto al caso deterministico
   const det = projectShort(prm, cap, y, { orderCost: 1 });
   assert.ok(r.netGain < det.netGain);
+  // default: perdite compensabili → imposta = aliquota × guadagno atteso (non dipende dalla σ)
+  const off = projectShort(prm, cap, y, { vol, orderCost: 1 });
+  assert.ok(Math.abs(off.tax - 0.26 * off.gain) < 1e-9 && off.netGain > r.netGain);
 });
 
 test('projectAny e projectPortfolio: ≥ 1 anno = algoritmo 019, < 1 anno = algoritmo breve', () => {
@@ -175,6 +178,23 @@ test('store: strumenti del dataset radar senza doppioni, con flag leva', async (
   assert.equal(list.find((i) => i.isin === 'IE00BBBBBBB2').source, 'import');
 });
 
+test('portfolioTax: compensazione delle minusvalenze, dividendi a parte, modalità prudente', async () => {
+  const { portfolioTax, project, projectShort, projectPortfolio } = await import('../public/js/projection.js');
+  const a = { h: { gain: 300, tax: 78, priceGain: 300, divTax: 0 }, rate: 0.26 };
+  const b = { h: { gain: -100, tax: 0, priceGain: -100, divTax: 0 }, rate: 0.26 };
+  assert.ok(Math.abs(portfolioTax([a, b]) - 0.26 * 200) < 1e-9);
+  assert.equal(portfolioTax([a, b], true), 78);
+  assert.equal(portfolioTax([b]), 0); // mai imposta negativa
+  // dividendi tassati anche se il prezzo scende
+  const d = project({ cagr: -0.05, ter: 0, tax: 0.26, net: -0.05, div: 0.04 }, 1000, 3);
+  assert.ok(d.priceGain < 0 && d.divTax > 0 && Math.abs(portfolioTax([{ h: d, rate: 0.26 }]) - d.divTax) < 1e-9);
+  // portafoglio breve: imposta = 26% della plusvalenza complessiva anche con uno strumento in perdita attesa
+  const out = projectPortfolio({ rows: [{ weight: 500, cagr: 0.4, ter: 0, tax: 0.26, vol: 0.3 }, { weight: 500, cagr: -0.5, ter: 0, tax: 0.26, vol: 0.3 }], capital: 1000, years: [30 / 365] });
+  const h = out.horizons[0];
+  assert.ok(Math.abs(h.tax - 0.26 * Math.max(0, h.gain)) < 1e-9, `${h.tax} vs ${h.gain}`);
+  assert.ok(Math.abs(h.netGain - (h.gain - h.tax - h.costs)) < 1e-9);
+});
+
 test('priorEstimate: ogni strumento ha una stima, anche senza alcun dato', async () => {
   const { priorVol, priorEstimate, DEFAULT_SETTINGS } = await import('../public/js/analyze.js');
   assert.ok(Math.abs(priorVol({ name: 'WisdomTree DAX 3x Daily Short EUR', type: 'etf' }) - 0.54) < 1e-9);
@@ -219,8 +239,10 @@ test('tendenza recente: momentumStats, finestra e limite di momentumTilt', async
   const c = projectShort({ ...base, mom }, 1000, y, { vol: 1.25, momRho: 0.5 });
   assert.ok(b.netGain > a.netGain && c.netGain > b.netGain && b.trend.window === 4 && a.trend === null);
   // ETC/ETN/ETP: minusvalenze compensabili → imposta sul guadagno medio, meno imposta attesa
-  const sym = projectShort({ ...base, mom, symTax: true }, 1000, y, { vol: 1.25 });
-  assert.ok(sym.tax < b.tax && sym.netGain > b.netGain);
+  const pru = projectShort({ ...base, mom, taxPrudent: true }, 1000, y, { vol: 1.25 });
+  const sym = projectShort({ ...base, mom, symTax: true, taxPrudent: true }, 1000, y, { vol: 1.25 });
+  assert.ok(sym.tax < pru.tax && sym.netGain > pru.netGain); // ETC: compensazione anche in modalità prudente
+  assert.ok(Math.abs(b.tax - 0.26 * Math.max(0, b.gain)) < 1e-9); // default: aliquota × guadagno atteso
   // portafoglio: imposta per strumento, tendenza inclusa
   const out = projectPortfolio({ rows: [{ weight: 500, cagr: -0.6, ter: 0.006, tax: 0.26, vol: 1.25, mom, symTax: true }, { weight: 500, cagr: 0.07, ter: 0.002, tax: 0.26, vol: 0.15 }], capital: 1000, years: [y, 5] });
   assert.ok(out.horizons[0].trend && Number.isFinite(out.horizons[0].netGain) && out.horizons[0].costs === 4);

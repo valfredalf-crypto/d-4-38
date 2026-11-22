@@ -48,7 +48,7 @@ export function project(params, capital, years) {
   const gross = priceFinal + divCash;
   const gain = gross - capital;
   const netGain = priceGain - priceTax + divCash - divTax;
-  return { years, gross, gain, tax: priceTax + divTax, netGain, finalCapital: capital + netGain, netPct: netGain / capital };
+  return { years, gross, gain, tax: priceTax + divTax, priceGain, divTax, netGain, finalCapital: capital + netGain, netPct: netGain / capital };
 }
 
 // ---------- orizzonti brevi (giorni) ----------
@@ -151,14 +151,17 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     const d2 = a / sigma;
     const d1 = d2 + sigma;
     // ETC/ETN/ETP (redditi diversi): le minusvalenze compensano le plusvalenze → imposta sul guadagno medio atteso
-    expTaxRate = params.symTax ? tax * mu : tax * Math.max(0, (1 + mu) * normCdf(d1) - normCdf(d2));
+    // Default: perdite compensabili (zainetto fiscale / altre plusvalenze) → imposta = aliquota × guadagno atteso.
+    // `taxPrudent` (solo ETF UCITS): perdite non compensate → imposta sui soli scenari in guadagno (più alta con σ grande).
+    const prudent = params.taxPrudent && !params.symTax;
+    expTaxRate = prudent ? tax * Math.max(0, (1 + mu) * normCdf(d1) - normCdf(d2)) : tax * Math.max(0, mu); // mai imposta negativa
     pProfit = normCdf(d2);
     const at = (z) => {
       const g = capital * (Math.exp(a + z * sigma) - 1);
-      return g - (params.symTax || g > 0 ? g * tax : 0) - costs;
+      return g - (g > 0 ? g * tax : 0) - costs;
     };
     quant = { low: at(-1), high: at(1) };
-  } else expTaxRate = params.symTax ? tax * mu : mu > 0 ? mu * tax : 0;
+  } else expTaxRate = tax * Math.max(0, mu);
   const taxEur = capital * expTaxRate;
   const gain = capital * gainRate;
   const netGain = gain - taxEur - costs;
@@ -182,13 +185,25 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
   };
 }
 
+/**
+ * Imposta complessiva di più posizioni. `parts` = [{ h (risultato di project/projectShort), rate (aliquota) }].
+ * Default (compensazione): le minusvalenze compensano le plusvalenze → aliquota × somma delle plusvalenze (mai sotto zero);
+ * i dividendi restano tassati a parte (redditi di capitale, non compensabili). `prudent`: somma delle imposte di ciascuna.
+ */
+export function portfolioTax(parts, prudent = false) {
+  if (prudent) return parts.reduce((a, { h }) => a + (h.tax || 0), 0);
+  const div = parts.reduce((a, { h }) => a + (h.divTax || 0), 0);
+  const capGains = parts.reduce((a, { h, rate }) => a + rate * (Number.isFinite(h.priceGain) ? h.priceGain : h.gain), 0);
+  return div + Math.max(0, capGains);
+}
+
 /** `project` per orizzonti ≥ 1 anno (algoritmo 019), `projectShort` sotto l'anno. Stessa forma di risultato. */
 export function projectAny(params, capital, years, opts = {}) {
   return isShortHorizon(years) ? projectShort(params, capital, years, opts) : project(params, capital, years);
 }
 
 /** Proiezione completa del portafoglio sugli orizzonti indicati (`rows[].vol` opzionale: σ annua per gli orizzonti brevi). */
-export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost = 1, momRho }) {
+export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost = 1, momRho, taxPrudent = false }) {
   // Righe con CAGR automatico già corretto dalla tendenza (`cagrTrend`): per gli orizzonti ≥ 1 anno si usa il CAGR di
   // lungo periodo (`cagrLong`), per quelli brevi il valore del campo, senza aggiungere di nuovo la tendenza (mom = null).
   const longRows = rows.map((r) => (r && r.cagrTrend && Number.isFinite(r.cagrLong) ? { ...r, cagr: r.cagrLong } : r));
@@ -212,9 +227,10 @@ export function projectPortfolio({ rows, capital, years, rho = 0.65, orderCost =
       });
       const agg = projectShort(weightedParams(tilted), capital, y, { vol, orderCost, positions: used.length, momRho });
       // atteso e imposta per strumento: il regime fiscale cambia (ETF UCITS vs ETC/ETN) e la σ è quella di ciascuno
-      const per = tilted.map((r) => projectShort({ cagr: r.cagr, ter: r.ter, tax: r.tax, net: r.cagr - (r.ter || 0), symTax: r.symTax }, (capital * r.weight) / wSum, y, { vol: r.vol, orderCost, positions: 1 }));
+      const per = tilted.map((r) => projectShort({ cagr: r.cagr, ter: r.ter, tax: r.tax, net: r.cagr - (r.ter || 0), symTax: r.symTax, taxPrudent }, (capital * r.weight) / wSum, y, { vol: r.vol, orderCost, positions: 1 }));
       const gain = per.reduce((a, x) => a + x.gain, 0);
-      const tax = per.reduce((a, x) => a + x.tax, 0);
+      // perdite compensate nel portafoglio: l'imposta complessiva non scende sotto zero
+      const tax = portfolioTax(per.map((h, k) => ({ h, rate: Number.isFinite(tilted[k].tax) ? tilted[k].tax : 0.26 })), taxPrudent);
       const costs = per.reduce((a, x) => a + x.costs, 0);
       const netGain = gain - tax - costs;
       return { ...agg, mu: capital > 0 ? gain / capital : 0, gross: capital + gain, gain, tax, costs, netGain, finalCapital: capital + netGain, netPct: capital > 0 ? netGain / capital : 0, trend: used.some((r) => r.mom) ? { tilt, window: null, rho: momRho ?? MOMENTUM_RHO } : null };

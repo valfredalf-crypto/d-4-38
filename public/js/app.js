@@ -3,7 +3,7 @@ import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
-import { project, projectAny, momentumTilt, MOMENTUM_RHO, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
+import { project, projectAny, portfolioTax, momentumTilt, MOMENTUM_RHO, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -1523,8 +1523,8 @@ const HIST_SCEN = [
 // da 1 anno in su resta l'algoritmo 019. `vol` = σ annua dello strumento (null se ignota).
 // `mom` = tendenza recente dello strumento (rendimenti 1/4/13/26 settimane): per gli orizzonti brevi corregge il CAGR.
 // `symTax`: ETC/ETN/ETP (non UCITS): minusvalenze compensabili. `momRho`: persistenza della tendenza (impostabile nel portafoglio).
-const projectH = (prm, cap, y, vol = null, positions = 1, mom = null, symTax = false) => projectAny({ ...prm, ...(mom ? { mom } : {}), ...(symTax ? { symTax } : {}) }, cap, y, { vol, orderCost: state.settings.mc.orderCost ?? 1, positions, momRho: state.portfolio?.momRho });
-const projectPortfolioH = (args) => projectPortfolio({ momRho: state.portfolio?.momRho, ...args });
+const projectH = (prm, cap, y, vol = null, positions = 1, mom = null, symTax = false) => projectAny({ ...prm, ...(mom ? { mom } : {}), ...(symTax ? { symTax } : {}), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol, orderCost: state.settings.mc.orderCost ?? 1, positions, momRho: state.portfolio?.momRho });
+const projectPortfolioH = (args) => projectPortfolio({ momRho: state.portfolio?.momRho, taxPrudent: !!state.portfolio?.taxPrudent, ...args });
 // Risultato utilizzabile dal portafoglio: la previsione completa oppure, con storico < 1 anno, la stima provvisoria
 // (CAGR, volatilità, MDD calcolati sui dati disponibili). Altrimenti l'oggetto con l'errore (o null).
 function resOf(inst) {
@@ -1650,7 +1650,14 @@ function savePortfolio(p) {
 function findByCode(code) {
   const c = (code || '').trim().toUpperCase().replace(/[\s-]/g, '');
   if (!c) return null;
-  return state.instruments.find((i) => (i.isin || '').toUpperCase() === c) || state.instruments.find((i) => i.symbol.toUpperCase() === c || i.symbol.toUpperCase().split('.')[0] === c) || null;
+  const norm = (s) => String(s || '').toUpperCase().replace(/[\s-]/g, '');
+  return (
+    state.instruments.find((i) => (i.isin || '').toUpperCase() === c) ||
+    state.instruments.find((i) => norm(i.symbol) === c || i.symbol.toUpperCase().split('.')[0] === c) ||
+    // crypto scritte senza valuta (es. «LTC» → LTC-EUR)
+    state.instruments.find((i) => i.type === 'crypto' && norm(i.symbol).replace(/EUR$/, '') === c) ||
+    null
+  );
 }
 function renderPortfolio() {
   const p = state.portfolio;
@@ -1771,7 +1778,11 @@ function renderPortfolio() {
       .join('');
     // Totali come somma dei singoli strumenti (coerenti con la colonna per strumento)
     const valid = arr.filter((r) => r.amount > 0 && Number.isFinite(r.cagr));
-    const totalFor = (y, mult = 1) => valid.reduce((a, r) => a + projectH({ ...paramsOf(r), cagr: rowCagr(r, y) * mult, net: rowCagr(r, y) * mult - (Number.isFinite(r.ter) && !isStock ? r.ter : 0) }, r.amount, y, volOfCode(r.isin), 1, rowMom(r), symTaxOf(r.isin)).netGain, 0);
+    const totalFor = (y, mult = 1) => {
+      const parts = valid.map((r) => ({ h: projectH({ ...paramsOf(r), cagr: rowCagr(r, y) * mult, net: rowCagr(r, y) * mult - (Number.isFinite(r.ter) && !isStock ? r.ter : 0) }, r.amount, y, volOfCode(r.isin), 1, rowMom(r), symTaxOf(r.isin)), rate: Number.isFinite(r.tax) ? r.tax : 0.26 }));
+      // perdite compensate tra le posizioni (salvo «imposta prudente»)
+      return parts.reduce((a, { h }) => a + h.gain - (h.costs || 0), 0) - portfolioTax(parts, !!p.taxPrudent);
+    };
     const bearLoss = valid.reduce((a, r) => a + (Number.isFinite(r.mdd) ? r.amount * Math.min(0.95, Math.abs(r.mdd)) : 0), 0);
     const bearCov = valid.filter((r) => Number.isFinite(r.mdd)).reduce((a, r) => a + r.amount, 0);
     const og = cap > 0 ? projectPortfolioH({ rows: arr.map((r) => ({ ...r, weight: r.amount || 0, vol: volOfCode(r.isin), mom: rowMom(r), symTax: symTaxOf(r.isin) })), capital: cap, years, rho, orderCost: state.settings.mc.orderCost ?? 1 }) : null;
@@ -1869,9 +1880,9 @@ function renderPortfolio() {
       <span>Capitale investito (ETF): <b>${eur(Math.round(wSum))}</b> <span class="muted">(somma degli importi)</span></span>
       <span class="row" style="flex-wrap:wrap;gap:4px;align-items:center" title="Scegli uno o più orizzonti: giorni (algoritmo breve con volatilità e costi) o anni (algoritmo 019)"><b>Orizzonti</b>
         ${[...HORIZON_PRESETS, ...years.filter((y) => !HORIZON_PRESETS.some((h) => Math.abs(h - y) < 1e-9))].sort((a, b) => a - b).map((y) => { const on = years.some((v) => Math.abs(v - y) < 1e-9); return `<button class="tab small${on ? ' active' : ''}" data-h="${y}" aria-pressed="${on}" title="${on ? 'Togli' : 'Aggiungi'} l'orizzonte di ${horizonLong(y)}">${horizonShort(y)}</button>`; }).join('')}
-        <input id="pf-hn" type="number" min="1" max="3650" step="1" placeholder="n" style="width:4.5em" aria-label="Orizzonte personalizzato"> <select id="pf-hu" aria-label="Unità"><option value="d">giorni</option><option value="y">anni</option></select> <button id="pf-hadd" class="ghost small">+ Orizzonte</button> <label class="muted small-note" title="Quanta parte della tendenza recente dello strumento si assume che continui negli orizzonti brevi (0 = nessuna, 25 = prudente)">persistenza tendenza <input id="pf-mrho" type="number" min="0" max="100" step="5" value="${Math.round((p.momRho ?? 0.25) * 100)}" style="width:4em"> %</label>
+        <input id="pf-hn" type="number" min="1" max="3650" step="1" placeholder="n" style="width:4.5em" aria-label="Orizzonte personalizzato"> <select id="pf-hu" aria-label="Unità"><option value="d">giorni</option><option value="y">anni</option></select> <button id="pf-hadd" class="ghost small">+ Orizzonte</button> <label class="muted small-note" title="Quanta parte della tendenza recente dello strumento si assume che continui negli orizzonti brevi (0 = nessuna, 25 = prudente)">persistenza tendenza <input id="pf-mrho" type="number" min="0" max="100" step="5" value="${Math.round((p.momRho ?? 0.25) * 100)}" style="width:4em"> %</label> <label class="muted small-note" title="Spuntato: le perdite non si compensano (imposta solo sugli scenari in guadagno, più alta con strumenti volatili). Non spuntato: imposta = aliquota × guadagno atteso (minusvalenze compensabili)"><input id="pf-taxp" type="checkbox"${p.taxPrudent ? ' checked' : ''}> imposta prudente</label>
       </span>
-      ${years.some(isShortHorizon) ? `<span class="muted small-note" style="flex-basis:100%">Orizzonti brevi: guadagno netto atteso = capitale × rendimento atteso del periodo (CAGR del modello corretto con la tendenza recente dello strumento, entro ±0,5 σ del periodo) − imposta attesa − costi degli ordini. Imposta: per gli ETF UCITS solo sui guadagni (redditi di capitale, perdite non compensabili); per ETC/ETN/ETP a leva le minusvalenze compensano le plusvalenze (redditi diversi), quindi è sul guadagno medio. In pochi giorni il risultato reale oscilla molto più dell'atteso: guarda l'intervallo e la probabilità di guadagno. Per leva/short il rischio è ancora più alto.</span>` : ''}
+      ${years.some(isShortHorizon) ? `<span class="muted small-note" style="flex-basis:100%">Orizzonti brevi: guadagno netto atteso = capitale × rendimento atteso del periodo (CAGR del modello corretto con la tendenza recente dello strumento, entro ±0,5 σ del periodo) − imposta attesa − costi degli ordini. Imposta: aliquota × guadagno atteso (perdite compensabili con altre plusvalenze). Con «imposta prudente» per gli ETF UCITS si assume che le perdite non si compensino: l'imposta si calcola solo sugli scenari in guadagno ed è più alta con strumenti volatili. In pochi giorni il risultato reale oscilla molto più dell'atteso: guarda l'intervallo e la probabilità di guadagno. Per leva/short il rischio è ancora più alto.</span>` : ''}
       <button class="ghost small" data-addbucket="rows">+ Strumento (ETF)</button>
       <button id="pf-preset" class="ghost small" title="Core-Satellite 60/20/20: LS80 + Nasdaq 100 + US Health Care con i parametri del documento">Preset 60/20/20</button>
       <button id="pf-model" class="ghost small" title="Sostituisce CAGR e aliquota di ogni riga con le stime del modello per quello strumento">Usa stime del modello</button>
@@ -1993,19 +2004,24 @@ function renderPortfolio() {
       for (const i of valid) if (Number.isFinite(i.mdd)) { mdd += (i.amount / totCap) * Math.min(0.95, Math.abs(i.mdd)); mddCov += i.amount / totCap; }
       const fmt2 = (x) => eur(Math.round(x * 100) / 100);
       const scenario = (y) => {
-        let gross = 0, gain = 0, tax = 0, net = 0, costs = 0;
+        let gross = 0, gain = 0, costs = 0;
+        const parts = [];
         for (const i of valid) {
           const ci = rowCagr(i, y);
-          const h = projectH({ cagr: ci, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: Number.isFinite(i.tax) ? i.tax : 0.26, net: ci - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y, i.vol, 1, i.mom, i.symTax);
-          gross += h.gross; gain += h.gain; tax += h.tax; net += h.netGain; costs += h.costs || 0;
+          const rate = Number.isFinite(i.tax) ? i.tax : 0.26;
+          const h = projectH({ cagr: ci, ter: Number.isFinite(i.ter) ? i.ter : 0, tax: rate, net: ci - (Number.isFinite(i.ter) ? i.ter : 0) }, i.amount, y, i.vol, 1, i.mom, i.symTax);
+          gross += h.gross; gain += h.gain; costs += h.costs || 0;
+          parts.push({ h, rate });
         }
+        const tax = portfolioTax(parts, !!p.taxPrudent); // perdite compensate tra le posizioni (salvo «imposta prudente»)
+        const net = gain - tax - costs;
         const taxRate = gain > 0 ? tax / gain : 0;
         const adj = isShortHorizon(y) ? null : net * (1 - mdd);
         return `<h4 class="pf-h4">Scenario a ${horizonLong(y)}</h4>
         <table class="mini"><tbody>
           <tr><td>Montante lordo (${eur(Math.round(totCap))} investiti)</td><td class="num">${fmt2(gross)}</td></tr>
           <tr><td>Plusvalenza lorda</td><td class="num">${fmt2(gain)}</td></tr>
-          <tr><td>${costs > 0 ? 'Imposta attesa <span class="muted small-note">(posizione per posizione, sugli scenari in guadagno; perdite non compensate: stima prudente)</span>' : `Imposta (aliquota media ${pct(taxRate, false, 2)})`}</td><td class="num neg">− ${fmt2(tax)}</td></tr>
+          <tr><td>${costs > 0 ? `Imposta attesa (aliquota media ${pct(taxRate, false, 2)})${p.taxPrudent ? ' <span class="muted small-note">(prudente: perdite non compensate)</span>' : ''}` : `Imposta (aliquota media ${pct(taxRate, false, 2)})`}</td><td class="num neg">− ${fmt2(tax)}</td></tr>
           ${costs > 0 ? `<tr><td>Costi ordini (acquisto + vendita)</td><td class="num neg">− ${fmt2(costs)}</td></tr>` : ''}
           <tr><th>Guadagno netto finale (${pct(net / totCap, true)})</th><th class="num ${cls(net)}">${net > 0 ? '+' : ''}${fmt2(net)}</th></tr>
           <tr><td>Capitale netto a scadenza</td><td class="num"><b>${fmt2(totCap + net)}</b></td></tr>
@@ -2205,6 +2221,11 @@ function renderPortfolio() {
     const has = cur.some((v) => Math.abs(v - y) < 1e-9);
     if (has && cur.length === 1) return; // ne serve almeno uno
     setHorizons(has ? cur.filter((v) => Math.abs(v - y) >= 1e-9) : [...cur, y]);
+  });
+  $('#pf-taxp')?.addEventListener('change', (e) => {
+    p.taxPrudent = !!e.target.checked;
+    savePortfolio(p);
+    renderPortfolio();
   });
   $('#pf-mrho')?.addEventListener('change', (e) => {
     const v = parseFloat(String(e.target.value).replace(',', '.'));

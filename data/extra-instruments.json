@@ -33,5 +33,12 @@
   "name": "WisdomTree Silver 3x Daily Short",
   "type": "etf",
   "addedAt": "2026-11-22T11:03:24.687Z"
+ },
+ {
+  "symbol": "PTHH.DE",
+  "isin": "DE000A1A6WB2",
+  "name": "Path2 Hydrogen AG",
+  "type": "stock",
+  "addedAt": "2026-11-22T15:23:18.767Z"
  }
 ]

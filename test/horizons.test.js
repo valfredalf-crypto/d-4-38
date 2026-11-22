@@ -198,6 +198,22 @@ test('esito più probabile e scenari dei prodotti a leva con ribilanciamento gio
   assert.ok(Math.abs(leveredScenario({ L: 2, sigmaU: 0, years: 1, move: 0.1, rf: 0 }) - (1.1 ** 2 - 1)) < 1e-12);
 });
 
+test('leva decimale, VIX non trattato come S&P 500, previsione per singolo strumento', async () => {
+  const { leverageOf, underlyingOf } = await import('../public/js/analyze.js');
+  const { productViewFor, PRODUCT_VIEWS } = await import('../public/js/market-views.js');
+  assert.equal(leverageOf('S&P 500 VIX Short-Term Futures 2.25x Daily Leveraged'), 2.25);
+  assert.equal(leverageOf('Qs100 5X Daily Short USD'), 5);
+  assert.equal(leverageOf('MSCI USA Daily (2x) Leveraged EUR (Acc)'), 2);
+  assert.equal(leverageOf('Xtrackers II EUR Overnight'), 1);
+  assert.equal(leverageOf('Leva 1,5x'), 1.5);
+  assert.equal(leverageOf('10X Genomics'), 1); // azione, non leva
+  assert.equal(underlyingOf('S&P 500 VIX Short-Term Futures 2.25x Daily Leveraged').key, 'vix');
+  assert.equal(underlyingOf('S&P 500 3x Daily Leveraged').key, 'sp500');
+  const v = productViewFor('XS2819843736', Date.parse(PRODUCT_VIEWS.XS2819843736.asOf) + 864e5);
+  assert.ok(v && v.annual < 0 && Math.abs((1 + v.annual) ** (30 / 365) - 1 - v.returns[30]) < 1e-9);
+  assert.equal(productViewFor('XS2819843736', Date.parse(PRODUCT_VIEWS.XS2819843736.asOf) + 40 * 864e5), null);
+});
+
 test('portfolioTax: compensazione delle minusvalenze, dividendi a parte, modalità prudente', async () => {
   const { portfolioTax, project, projectShort, projectPortfolio } = await import('../public/js/projection.js');
   const a = { h: { gain: 300, tax: 78, priceGain: 300, divTax: 0 }, rate: 0.26 };

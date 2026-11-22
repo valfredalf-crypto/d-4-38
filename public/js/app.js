@@ -1,5 +1,5 @@
 import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats, leveragedArith, underlyingOf, leverageOf, isInverseProduct } from './analyze.js';
-import { viewFor } from './market-views.js';
+import { viewFor, productViewFor } from './market-views.js';
 import { isValidIsin } from './isin.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -85,14 +85,16 @@ const keyMatches = (k) => {
     return false;
   }
 };
+const RESULTS_FORMAT = 3;
 function saveResults() {
   const compact = {};
   for (const [k, r] of Object.entries(state.results)) compact[k] = compactResult(r);
-  store('trmc.results', { key: settingsKey(), day: state.dataVersion || new Date().toDateString(), results: compact });
+  store('trmc.results', { v: RESULTS_FORMAT, key: settingsKey(), day: state.dataVersion || new Date().toDateString(), results: compact });
 }
 async function loadResults() {
   const saved = store('trmc.results');
-  if (saved && keyMatches(saved.key) && saved.day === (state.dataVersion || new Date().toDateString())) {
+  // copie salvate con un formato precedente (es. senza TER/patrimonio del fondo): si scartano e si ricaricano i dati completi
+  if (saved && saved.v === RESULTS_FORMAT && keyMatches(saved.key) && saved.day === (state.dataVersion || new Date().toDateString())) {
     state.results = saved.results || {};
   } else if (STATIC) {
     // Classifica precalcolata con i parametri predefiniti
@@ -283,7 +285,9 @@ async function checkLiveData() {
   if (keyMatches(live.key)) {
     for (const [k, r] of Object.entries(live.results || {})) {
       if (!known.has(k)) continue;
-      state.results[k] = r;
+      // i dati del fondo (TER, patrimonio) non sempre sono negli aggiornamenti live: si conservano quelli già noti
+      const prevFund = state.results[k]?.fund;
+      state.results[k] = r && !r.fund && prevFund ? { ...r, fund: prevFund } : r;
       state.priced[k] = live.quotes?.[k]?.priceEur;
     }
     saveResults();
@@ -615,6 +619,9 @@ function underlyingView(inst) {
 /** Rendimento atteso aritmetico per gli orizzonti brevi: per leva/short dal sottostante reale (vedi leveragedArith). */
 function shortPrior(inst, cagr) {
   const rf = (state.settings.outlook?.riskFree ?? 2) / 100;
+  // 1) previsione verificata per il singolo strumento (comportamento misurato nello scenario attuale)
+  const pv = productViewFor(inst?.isin);
+  if (pv) return { cagr: Math.max(-0.995, pv.annual), netOfTer: true, view: true, src: `previsione per lo strumento: ${pct(pv.returns[30], true, 0)} a 30 gg, ${pct(pv.returns[60], true, 0)} a 60 gg (${pv.source})` };
   // Previsione di mercato verificata per il sottostante (fonte e data): vale per i prodotti a leva/short e per gli ETF/ETC
   // che replicano direttamente il sottostante (es. argento fisico), non per le società minerarie.
   const und = underlyingOf(inst?.name);
@@ -627,6 +634,8 @@ function shortPrior(inst, cagr) {
     if (a != null) return { cagr: a, view: true, src: `previsione di mercato ${und.label}: ${pct(view.move, true, 1)} al ${view.targetDate.split('-').reverse().join('/')} (${view.source})` };
   }
   if (!inst?.leveraged) return { cagr, src: null };
+  // sottostanti che non seguono la borsa (es. VIX): niente stima dal mercato azionario
+  if (und?.noEquity) return { cagr, src: `sottostante ${und.label}: nessuna previsione affidabile (non si usa il mercato azionario)` };
   const u = underlyingView(inst);
   const mu = u?.mu ?? state.market?.expected ?? rf + 0.045;
   const a = leveragedArith({ name: inst.name, mu, rf });
@@ -683,7 +692,8 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   // previsione SPECIFICA dello strumento (consenso analisti / stime sui titoli dell'ETF), non il solo rendimento di mercato
   const gs = r?.forward?.growthSource;
   const evidence = i.leveraged ? !!underlyingView(i)?.ev : !r?.estimated && (gs === 'own' || gs === 'holdings'); // leva: previsioni del sottostante
-  return { cagr, cagrShort: sp.cagr, shortSrc: sp.src, shortView: !!sp.view, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
+  // rendimenti misurati sui prezzi reali del prodotto: TER già incluso, si somma per non toglierlo due volte
+  return { cagr, cagrShort: sp.netOfTer ? sp.cagr + ter : sp.cagr, shortSrc: sp.src, shortView: !!sp.view, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
 }
 const s_tax = (i) => {
   const t = state.results[i.symbol]?.sim?.taxRate;
@@ -697,7 +707,7 @@ function projOf(i, r, cagrOverride = null) {
 /** NR5 ricalcolato secondo il profilo scelto: guadagno netto medio (estremi attenuati) − k × perdita media nel 5% peggiore. */
 function estimateHtml(e, inst = null) {
   if (!e) return '';
-  if (inst) { const sp = shortPrior(inst, e.cagrShort ?? e.cagr); e = { ...e, cagrShortUsed: sp.cagr, shortSrc: sp.src, shortView2: !!sp.view }; }
+  if (inst) { const sp = shortPrior(inst, e.cagrShort ?? e.cagr); e = { ...e, cagrShortUsed: sp.netOfTer ? sp.cagr + (e.ter || 0) : sp.cagr, shortSrc: sp.src, shortView2: !!sp.view }; }
   return `<div class="card"><h3>Stima provvisoria${e.weeks ? ` (${e.weeks} settimane di storico)` : e.source === 'prior' ? ' (valori tipici della categoria)' : ' (dal dataset radar)'}</h3>
     <p class="muted small-note">${esc(e.basis || '')}</p>
     <table class="mini"><tbody>

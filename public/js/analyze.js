@@ -93,8 +93,10 @@ export function tableQuote(q) {
 
 /** Fattore di leva dedotto dal nome ("2x", "3X", "Leveraged" → 2 se non indicato); 1 per i prodotti normali. */
 export function leverageOf(name = '') {
-  const m = /(\d)\s*[xX]\b|\b[xX]\s*(\d)\b/.exec(name);
-  if (m) return Number(m[1] || m[2]) || 1;
+  // leve anche decimali (es. «2.25x»): prima si leggeva solo l'ultima cifra («5x»)
+  const m = /(\d+(?:[.,]\d+)?)\s*[xX]\b|\b[xX]\s*(\d+(?:[.,]\d+)?)\b/.exec(name);
+  const L = m ? Number(String(m[1] || m[2]).replace(',', '.')) : NaN;
+  if (L > 0 && L <= 7) return L; // oltre 7 non è una leva (es. «10X Genomics» è un'azione)
   return /leverag|lev\.|a leva/i.test(name) ? 2 : 1;
 }
 
@@ -131,6 +133,7 @@ export function leveragedArith({ name = '', mu, rf = 0.02 }) {
 
 /** Sottostante di un prodotto a leva/short dal nome (per usare le prospettive del sottostante reale, non del mercato azionario). */
 export const UNDERLYINGS = [
+  { key: 'vix', label: 'VIX (future a breve)', re: /\bvix\b|volatility/i, proxy: null, noEquity: true },
   { key: 'silver', label: 'argento', re: /\bsilver\b|argento/i, proxy: /physical silver|\bsilver usd\b|core physical silver|silver hedged/i },
   { key: 'gold', label: 'oro', re: /\bgold\b|\boro\b/i, proxy: /physical gold|\bgold usd\b|core physical gold|gold hedged|swiss gold/i },
   { key: 'platinum', label: 'platino', re: /platinum/i, proxy: /physical platinum/i },

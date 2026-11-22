@@ -25,6 +25,28 @@ export const MARKET_VIEWS = {
   },
 };
 
+// Previsioni per SINGOLO STRUMENTO (ISIN), quando il sottostante non ha previsioni affidabili ma lo strumento stesso ha un
+// comportamento misurato nello scenario attuale. `returns`: rendimento medio del prodotto a 7/14/30/60 giorni.
+export const PRODUCT_VIEWS = {
+  XS2819843736: {
+    asOf: '2026-11-20',
+    validDays: 30,
+    returns: { 7: -0.116, 14: -0.178, 30: -0.277, 60: -0.475 },
+    median: { 7: -0.08, 14: -0.26, 30: -0.24, 60: -0.525 },
+    source: 'comportamento reale dello strumento dopo i picchi del VIX tra 30 e 45 (11 episodi 2021-2026); VIX 35,9 il 20/11/2026, future in backwardation',
+    note: 'Dopo i picchi il VIX rientra quasi sempre (21 episodi in 10 anni: −21% mediana a 14 gg, −33% a 60 gg). Rischio opposto: se la crisi si aggrava il prodotto può salire molto (+38% a 7 gg nel caso migliore).',
+  },
+};
+/** Previsione di prodotto valida (null se assente o scaduta); `annual` = crescita annua equivalente dal valore a 30 giorni. */
+export function productViewFor(isin, now = Date.now()) {
+  const v = isin && PRODUCT_VIEWS[isin];
+  if (!v) return null;
+  const asOf = Date.parse(v.asOf);
+  if (!Number.isFinite(asOf) || (now - asOf) / 864e5 > (v.validDays ?? 30)) return null;
+  const r30 = v.returns[30];
+  return { ...v, annual: (1 + r30) ** (365 / 30) - 1 };
+}
+
 /** Previsione valida per il sottostante `key` (null se assente o scaduta): crescita composta annua prevista e variazione attesa. */
 export function viewFor(key, now = Date.now()) {
   const v = MARKET_VIEWS[key];

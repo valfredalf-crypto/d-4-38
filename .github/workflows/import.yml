@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: import
@@ -30,7 +31,8 @@ jobs:
           restore-keys: |
             import-cache-
             universe-cache-
-      - run: node scripts/resolve-imports.js
+      - id: resolve
+        run: node scripts/resolve-imports.js
       - name: Salva
         run: |
           git config user.name "github-actions[bot]"
@@ -40,3 +42,9 @@ jobs:
           git commit -m "Importa ISIN: $(node -e 'console.log(JSON.parse(require("fs").readFileSync("data/imported-instruments.json")).length)') strumenti"
           git pull --rebase --quiet origin "$GITHUB_REF_NAME"
           git push
+      # Lavoro rimasto (tempo esaurito): nuovo giro automatico
+      - name: Continua
+        if: steps.resolve.outputs.pending != '' && steps.resolve.outputs.pending != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run import.yml --ref "$GITHUB_REF_NAME"

@@ -9,12 +9,17 @@ import { historyEur } from '../lib/market.js';
 import { search } from '../lib/yahoo.js';
 import { isEuroListing, hasImplausibleJumps, isLeveraged } from '../lib/universe.js';
 import { isValidIsin } from '../public/js/isin.js';
+import { lsSearch, lsSymbol, isLsSymbol, compareSeries } from '../lib/ls.js';
 
 const REQUESTS = process.env.IMPORT_REQUESTS || 'data/import-requests.json';
 const OUT = process.env.IMPORTED || 'data/imported-instruments.json';
 const UNRESOLVED = process.env.IMPORT_UNRESOLVED || 'data/import-unresolved.json';
 const MIN_WEEKS = Number(process.env.MIN_WEEKS) || 8; // storico minimo (≈2 mesi): gli strumenti recenti entrano in elenco, la previsione a 5 anni richiede ≥1 anno (minYears)
 const log = (...a) => console.log(...a);
+// Tempo massimo di lavoro: poi si salva e il workflow riparte da dove si è fermato (niente lavoro perso al timeout)
+const DEADLINE = Date.now() + (Number(process.env.TIME_BUDGET_MIN) || 200) * 60e3;
+const LS_RECHECK_DAYS = 30;
+const today = new Date().toISOString().slice(0, 10);
 // Prodotti a leva/short: salti settimanali ampi sono normali (×3 non è più un dato errato), soglia ×12.
 // Nomi concordi: almeno 3 parole e ≥ 80% di quelle della quotazione presenti nel nome del catalogo.
 const words = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(' ').filter(Boolean);
@@ -57,13 +62,13 @@ try {
   log(`ATTENZIONE lista Xetra non disponibile: ${e.message}`);
 }
 
-const how = { xetra: 0, hint: 0, search: 0, name: 0 };
+const how = { xetra: 0, hint: 0, search: 0, name: 0, ls: 0 };
 const unresolved = [];
 let i = 0;
 let n = 0;
 await Promise.all(
   Array.from({ length: 4 }, async () => {
-    while (i < todo.length) {
+    while (i < todo.length && Date.now() < DEADLINE) {
       const req = todo[i++];
       const tried = new Set();
       const attempts = [];
@@ -96,6 +101,12 @@ await Promise.all(
         const ord = [...byName.filter((h) => isEuroListing(h.symbol)), ...byName.filter((h) => !isEuroListing(h.symbol))];
         for (const h of ord.slice(0, 5)) resolved ||= await tryListing(req, h.symbol, 'name', tried, true);
       }
+      // Nessuna quotazione Yahoo valida: LS Exchange, la borsa di Trade Republic (stessi prezzi dell'app TR)
+      if (!resolved) {
+        const ls = await lsSearch(req.isin).catch(() => null);
+        if (ls?.id) resolved = await tryListing(req, lsSymbol(ls.id), 'ls', tried);
+        if (resolved) resolved.lsChk = today;
+      }
       if (resolved) {
         done.set(req.isin, resolved);
         how[resolved.via]++;
@@ -110,7 +121,7 @@ async function tryListing(req, symbol, via, tried, checkName = false) {
   tried.add(symbol);
   try {
     const h = await historyEur(symbol);
-    if (h.closesEur.length < MIN_WEEKS) return null;
+    if (h.closesEur.length < MIN_WEEKS) return null;
     if (checkName && !sameName(req.name, h.name)) return null; // ricerca per nome: solo se il nome concorda
     if (req.type !== 'crypto' && hasImplausibleJumps(h.closesEur.slice(-521), jumpLimit(req.name))) return null; // dati errati
     // Data dell'ultima quotazione: scarta i simboli fermi da più di 30 giorni (delistati o illiquidi)
@@ -128,8 +139,50 @@ async function tryListing(req, symbol, via, tried, checkName = false) {
   }
 }
 
+// Allineamento con Trade Republic: ogni quotazione Yahoo si confronta con LS Exchange (ogni 30 giorni). Se il
+// livello del prezzo differisce >5% o l'andamento è poco correlato (borse secondarie illiquide, dati errati),
+// prezzi e storico passano a LS Exchange; le stime degli analisti restano dal simbolo Yahoo (outlookSymbol).
+const stale = (d) => !d || (Date.parse(today) - Date.parse(d)) / 864e5 >= LS_RECHECK_DAYS;
+const toCheck = [...done.values()].filter((it) => it.type !== 'crypto' && it.isin && !isLsSymbol(it.symbol) && stale(it.lsChk));
+const lsFix = { checked: 0, moved: 0, absent: 0 };
+let c = 0;
+await Promise.all(
+  Array.from({ length: 3 }, async () => {
+    while (c < toCheck.length && Date.now() < DEADLINE) {
+      const it = toCheck[c++];
+      try {
+        const ls = await lsSearch(it.isin);
+        if (!ls?.id) {
+          done.set(it.isin, { ...it, lsChk: today });
+          lsFix.absent++;
+          continue;
+        }
+        const [ya, lh] = await Promise.all([historyEur(it.symbol), historyEur(lsSymbol(ls.id))]);
+        const cmp = compareSeries(ya, lh);
+        lsFix.checked++;
+        const lsUsable =
+          lh.closesEur.length >= MIN_WEEKS &&
+          Date.now() / 1000 - lh.timestamps.at(-1) <= 30 * 86400 &&
+          !hasImplausibleJumps(lh.closesEur.slice(-521), jumpLimit(it.name));
+        if (cmp.ok === false && lsUsable) {
+          const { via, ...rest } = it;
+          done.set(it.isin, { ...rest, symbol: lsSymbol(ls.id), outlookSymbol: it.outlookSymbol || it.symbol, via: 'ls', lsChk: today, lsCmp: { corr: cmp.corr, level: cmp.level } });
+          lsFix.moved++;
+        } else done.set(it.isin, { ...it, lsChk: today });
+      } catch {
+        /* LS non raggiungibile: si riprova al prossimo giro */
+      }
+      if ((lsFix.checked + lsFix.absent) % 500 === 0) log(`  LS: ${lsFix.checked + lsFix.absent}/${toCheck.length}`);
+    }
+  }),
+);
+log(`Allineamento LS Exchange: confrontati ${lsFix.checked}, spostati su LS ${lsFix.moved}, non quotati su LS ${lsFix.absent}, da fare ${toCheck.length - c}`);
+const pending = Math.max(0, todo.length - i) + Math.max(0, toCheck.length - c);
+if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `pending=${pending}\n`);
+if (pending) log(`Tempo esaurito: ${pending} operazioni rimandate al prossimo giro`);
+
 const list = requests.map((r) => done.get(r.isin)).filter(Boolean);
 fs.writeFileSync(OUT, JSON.stringify(list) + '\n');
 fs.writeFileSync(UNRESOLVED, JSON.stringify(unresolved, null, 0) + '\n');
-log(`Risolti in questo giro: Xetra ${how.xetra}, ticker del file ${how.hint}, ricerca ${how.search}, per nome ${how.name}; non risolti ${unresolved.length}`);
+log(`Risolti in questo giro: Xetra ${how.xetra}, ticker del file ${how.hint}, ricerca ${how.search}, per nome ${how.name}, LS Exchange ${how.ls}; non risolti ${unresolved.length}`);
 log(`Totale importati: ${list.length} (${list.filter((x) => x.type === 'stock').length} azioni, ${list.filter((x) => x.type === 'etf').length} ETF)`);

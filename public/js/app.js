@@ -2,6 +2,8 @@ import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, c
 import { viewFor, productViewFor } from './market-views.js';
 import { isValidIsin } from './isin.js';
 import { evaluateAlerts, dueAlerts } from './alerts.js';
+import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
+import { ema, stabilizeRanks } from './stable.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
@@ -329,11 +331,13 @@ function updateStaticBanner(meta) {
 }
 
 async function liveTick() {
-  if (!$('#auto-quotes').checked || document.hidden || state.running) return;
+  if (!$('#auto-quotes').checked || document.hidden || state.running || state.ticking) return; // niente aggiornamenti sovrapposti
+  state.ticking = true;
   try {
     if (STATIC) {
       await checkNewData().catch(() => {});
       await checkLiveData().catch(() => {});
+      state.liveReady = true;
       await liveCrypto().catch(() => {});
       checkSellAlerts();
       updateStaticBanner({ generatedAt: state.dataVersion });
@@ -346,6 +350,8 @@ async function liveTick() {
     await recomputeChanged();
   } catch (e) {
     console.warn('aggiornamento', e);
+  } finally {
+    state.ticking = false;
   }
 }
 
@@ -718,8 +724,38 @@ function npStats(inst, days) {
     const g = (1 + base - ter) ** vy * (1 + pp.cagr - ter) ** (y - vy);
     net = g > 0 ? g ** (1 / y) - 1 : -0.99;
   }
+  net = smoothNet(inst, days, net); // media mobile degli ultimi aggiornamenti: niente oscillazioni tra un ricalcolo e l'altro
   const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
   return { median: h.medianNet / cap, mean: h.netGain / cap, p: h.pProfit, medianEur: h.medianNet, meanEur: h.netGain, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
+}
+// Chiave delle impostazioni che influenzano il «netto più probabile» (calcolata al massimo ogni 50 ms: serve a ogni riga)
+let npCfgCache = { at: -1, key: '' };
+function npCfgKey() {
+  const now = performance.now();
+  if (now - npCfgCache.at > 50) npCfgCache = { at: now, key: JSON.stringify([state.settings?.mc, state.settings?.outlook, state.portfolio?.momRho, state.portfolio?.taxPrudent, state.view.scenario]) };
+  return npCfgCache.key;
+}
+// Liscio: il tasso netto annuo di ogni strumento/periodo è la media mobile esponenziale (30% al nuovo dato) dei valori delle
+// ultime versioni dei dati. Dentro la stessa versione il valore non cambia (nessuna oscillazione tra un ridisegno e l'altro);
+// al passaggio dai dati statici ai dati live si riparte dal valore live; se cambiano le impostazioni si riparte da zero.
+const npSmooth = new Map();
+function smoothNet(inst, days, raw) {
+  if (!Number.isFinite(raw)) return raw;
+  const live = !!state.liveVersion;
+  const base = state.liveVersion || state.dataVersion || '';
+  const ver = inst.type === 'crypto' ? `${base}|${Math.floor(Date.now() / 300e3)}` : base; // crypto: prezzi ogni minuto, valore ogni 5
+  const cfg = npCfgKey();
+  const key = `${inst.symbol}|${days}`;
+  const e = npSmooth.get(key);
+  if (!e || e.cfg !== cfg || (live && !e.live)) {
+    npSmooth.set(key, { ver, cfg, live, s: raw });
+    return raw;
+  }
+  if (e.ver !== ver) {
+    e.s = ema(e.s, raw, 0.3);
+    e.ver = ver;
+  }
+  return e.s;
 }
 // Memoria dei valori per strumento: si ricalcolano solo quando cambiano i dati dello strumento (nuovo oggetto risultato) o
 // le impostazioni. Ogni periodo si calcola solo quando serve (ordinamento: tutti; colonne: solo le righe mostrate).
@@ -727,11 +763,29 @@ const npMemo = new WeakMap();
 function npCached(inst, d) {
   const r = state.results[inst.symbol];
   if (!r || r.error) return null;
-  const key = JSON.stringify([state.settings?.mc, state.settings?.outlook, state.portfolio?.momRho, state.portfolio?.taxPrudent, state.view.scenario, state.liveVersion]);
+  const key = `${npCfgKey()}|${state.liveVersion}`;
   let m = npMemo.get(r);
   if (!m || m.key !== key) npMemo.set(r, (m = { key, v: new Map() }));
   if (!m.v.has(d)) m.v.set(d, npStats(inst, d));
   return m.v.get(d);
+}
+// Posizioni stabili della classifica per periodo: si aggiornano solo con una nuova versione dei dati e chi si sposta di poco
+// (meno del 20% della propria posizione) resta dov'era. Valgono per tutti gli strumenti; le schede filtrano da qui.
+const npStable = new Map();
+function stablePositions(days) {
+  const ver = `${state.liveVersion || state.dataVersion || ''}|${state.instruments.length}`;
+  const cfg = npCfgKey();
+  const st = npStable.get(days);
+  if (st && st.ver === ver && st.cfg === cfg) return st.pos;
+  const arr = [];
+  for (const i of state.instruments) {
+    const v = npCached(i, days)?.median;
+    if (Number.isFinite(v)) arr.push([i.symbol, v]);
+  }
+  arr.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1));
+  const pos = stabilizeRanks(arr.map((x) => x[0]), st && st.cfg === cfg ? st.pos : null);
+  npStable.set(days, { ver, cfg, pos });
+  return pos;
 }
 const shortMode = () => state.view.funnel === 'short';
 function projParams(i, r, growthForward = false, cagrOverride = null) {
@@ -977,6 +1031,16 @@ function rowValuesCalc(i) {
 function sortRows(rows) {
   const { key, dir } = state.view.sort;
   const k = key === 'rank' ? (shortMode() ? npSortKey() : 'projOpt') : key;
+  if (shortMode() && /^np\d+$/.test(k)) {
+    const pos = stablePositions(Number(k.slice(2)));
+    return rows.sort((a, b) => {
+      const pa = pos.get(a.inst.symbol);
+      const pb = pos.get(b.inst.symbol);
+      if ((pa == null) !== (pb == null)) return pa == null ? 1 : -1; // valori mancanti sempre in fondo
+      if (pa == null) return a.name.localeCompare(b.name);
+      return (pa - pb) * (dir < 0 ? 1 : -1);
+    });
+  }
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -994,13 +1058,19 @@ function sortRows(rows) {
 const mgMode = () => state.view.funnel === 'maxgrowth' && state.view.type !== 'bond' && state.view.type !== 'crypto';
 function rankMap(rows) {
   // La posizione in classifica è sempre per guadagno netto 5a (algoritmo 019) decrescente, indipendentemente dall'ordinamento scelto.
-  const k = shortMode() ? npSortKey() : mgMode() ? 'maxGrowth' : 'projOpt'; // breve termine: guadagno netto più probabile
+  if (shortMode()) {
+    const pos = stablePositions(Number(npSortKey().slice(2)));
+    const ranked = rows.filter((r) => pos.has(r.inst.symbol)).sort((a, b) => pos.get(a.inst.symbol) - pos.get(b.inst.symbol));
+    return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
+  }
+  const k = mgMode() ? 'maxGrowth' : 'projOpt';
   const ranked = rows.filter((r) => r[k] != null && Number.isFinite(r[k])).sort((a, b) => b[k] - a[k]);
   return new Map(ranked.map((r, k) => [r.inst.symbol, k + 1]));
 }
 
 function render() {
-  rowKeyCache.at = -1; // impostazioni o vista possono essere appena cambiate
+  rowKeyCache.at = -1;
+  npCfgCache.at = -1; // impostazioni o vista possono essere appena cambiate
   // sezione «Netto più probabile»: barra dei periodi e intestazione
   const bar = $('#np-bar');
   if (bar) {
@@ -1023,6 +1093,12 @@ function render() {
       after.after(th);
       after = th;
     }
+  }
+  // «Netto più probabile»: all'apertura i dati statici (di ore fa) vengono sostituiti dopo pochi secondi da quelli live e la
+  // classifica cambiava a vista d'occhio. Si mostra solo con i dati aggiornati (al massimo 25 s di attesa).
+  if (STATIC && shortMode() && !state.liveReady && performance.now() < 25000) {
+    $('#table tbody').innerHTML = '<tr><td colspan="40" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
+    return;
   }
   const all = filtered();
   const rows = sortRows(all.map(rowValues));
@@ -2513,95 +2589,98 @@ function bestMaxGrowth() {
   state.bestMgCache = { v: ver, best };
   return best;
 }
-// Azione suggerita per uno strumento del portafoglio (dati di mercato validati, ricalcolata a ogni
-// aggiornamento): vendi tutto / vendi una quota / rialloca una quota / aumenta / mantieni.
-function adviseHolding(inst, amount, share, prevSnap) {
-  const m = mgOf(inst, amount, 5);
-  if (!m) return null;
-  const cls = inst.type;
-  const r = state.results[inst.symbol];
-  const growth = Number.isFinite(r?.forward?.growth) ? r.forward.growth : null;
-  const growthCut = prevSnap && Number.isFinite(prevSnap.growth) && growth != null && growth - prevSnap.growth <= -0.02;
-  // destinazione: tra i migliori della stessa classe, con trend recente positivo e alta crescita attesa
-  const gMin = cls === 'stock' ? 0.12 : 0.08;
-  const cands = (bestMaxGrowth()[cls] || []).filter((x) => x.symbol !== inst.symbol);
-  const target = cands.find((x) => (x.m3 == null || x.m3 >= 0) && (x.growth == null || x.growth >= gMin)) || cands[0] || null;
-  const tNet = (yrs) => { const ti = target ? state.instruments.find((x) => x.symbol === target.symbol) : null; return ti ? mgOf(ti, amount, yrs)?.net ?? null : null; };
-  const tInst = target ? state.instruments.find((x) => x.symbol === target.symbol) : null;
-  const gainIf = (frac) => {
-    if (!tInst || m.score == null) return null;
-    const tm = mgOf(tInst, amount * frac, 5);
-    const mine = mgOf(inst, amount * frac, 5);
-    return tm && mine ? tm.net - mine.net : null;
-  };
-  const out = (action, frac, why) => {
-    // si propone di comprare un altro strumento solo se ha un punteggio più alto
-    const t = frac > 0 && action !== 'buy' && target && (m.score == null || target.score > m.score) ? target : null;
-    const ti = t ? state.instruments.find((x) => x.symbol === t.symbol) : null;
-    const amt = amount * frac;
-    return { action, frac, eur: Math.round(amt), target: t, extra: t ? gainIf(frac) : null, why, m,
-      tNet3: ti ? mgOf(ti, amt, 3)?.net ?? null : null, tNet5: ti ? mgOf(ti, amt, 5)?.net ?? null : null };
-  };
-  const m3 = m.m3;
-  if (!m.pass) return out('sell', 1, m.reason || 'non supera il filtro Max Growth');
-  if (m.score != null && m.score < 0.03) return out('sell', 1, `Max Growth ${pct(m.score, true)}/anno: sotto il rendimento di un'obbligazione`);
-  // Perdita in corso con evidenze che continuerà (dati reali: prezzi, stime degli analisti, punteggio)
-  const m1 = state.quotes[inst.symbol]?.perf?.m;
-  const losing = m3 != null && m3 <= -0.05 && (m1 == null || m1 < 0);
-  if (losing) {
-    const ev = [];
-    if (growthCut) ev.push('stime degli analisti tagliate');
-    if (growth != null && growth < 0.03) ev.push(`crescita attesa degli utili solo ${pct(growth, true)}`);
-    if (prevSnap && Number.isFinite(prevSnap.mg) && m.score != null && m.score - prevSnap.mg <= -0.01) ev.push(`Max Growth sceso da ${pct(prevSnap.mg, true)} a ${pct(m.score, true)}`);
-    if (Number.isFinite(m.y) && m.y < 0) ev.push(`${pct(m.y, true)} negli ultimi 12 mesi`);
-    const lossTxt = `in perdita (${pct(m3, true)} in 3 mesi${m1 != null ? `, ${pct(m1, true)} nell'ultimo mese` : ''})`;
-    if (ev.length >= 2) return out('sell', 1, `${lossTxt} con evidenze che il calo continui: ${ev.join(', ')}`);
-    if (ev.length === 1) return out('trim', 0.5, `${lossTxt}; segnale di debolezza: ${ev[0]}`);
+// ---------- suggerimenti del portafoglio: incentrati sul NETTO PIÙ PROBABILE
+// Il criterio è il guadagno netto più probabile (mediana, dopo imposta e costi) all'orizzonte scelto (periodo «Netto più probabile»,
+// predefinito 30 gg). Il Max Growth entra solo a parità: tra gli strumenti con netto più probabile e prospettive di crescita
+// equivalenti si suggerisce quello con il Max Growth più alto.
+const ADVICE_DAYS = [1, 7, 14, 30, 60, 90, 365, 1095, 1825];
+const adviceDays = () => {
+  const d = Number(lsGet('trmc.advDays', 30));
+  return ADVICE_DAYS.includes(d) ? d : 30; // scelto nella finestra delle notifiche: non cambia guardando altri periodi in classifica
+};
+const advClass = (i) => (isBond(i) ? 'bond' : i.type);
+// strumenti troppo piccoli o poco liquidi non vengono mai suggeriti come destinazione
+function advSizeOk(i, r) {
+  if (i.type === 'etf') return (aumEur(r.fund) ?? 0) >= 100e6;
+  if (i.type === 'stock') return (r.forward?.mcap ?? 0) >= 1e9;
+  return false;
+}
+function npCandidates(inst, days) {
+  const ver = state.liveVersion || state.dataVersion || '';
+  const cls = advClass(inst);
+  const key = `${ver}|${days}|${cls}|${inst.symbol}|${inst.leveraged ? 1 : 0}|${state.settings.mc.amount}|${state.settings.mc.orderCost}|${state.view.scenario}`;
+  if (state.advCache?.ver !== ver) state.advCache = { ver, map: new Map() };
+  if (state.advCache.map.has(key)) return state.advCache.map.get(key);
+  const list = [];
+  const hv = state.results[inst.symbol]?.forward?.vol;
+  for (const i of state.instruments) {
+    if (i.symbol === inst.symbol || advClass(i) !== cls || (i.type !== 'etf' && i.type !== 'stock')) continue;
+    if (!!i.leveraged !== !!inst.leveraged) continue;
+    const r = state.results[i.symbol];
+    if (!r || r.error || !(state.quotes[i.symbol]?.priceEur > 0) || !advSizeOk(i, r)) continue;
+    const cv = r.forward?.vol;
+    if (Number.isFinite(hv) && Number.isFinite(cv) && cv > 1.6 * hv + 0.03) continue; // non si propone uno strumento molto più rischioso
+    const x = npCached(i, days);
+    if (!x || !(x.median > 0) || !(x.p >= 0.55)) continue;
+    list.push({ symbol: i.symbol, name: i.name, isin: i.isin, median: x.median, p: x.p, vol: Number.isFinite(cv) ? cv : null, growth: Number.isFinite(r.forward?.growth) ? r.forward.growth : null });
   }
-  if (m3 != null && m3 <= -0.25 && (growthCut || (growth != null && growth < 0.03))) return out('sell', 1, `crollo di ${pct(m3, true)} in 3 mesi con prospettive di crescita in calo`);
-  if (m3 != null && m3 <= -0.15) return out('trim', 0.5, `calo di ${pct(m3, true)} in 3 mesi: riduci il rischio`);
-  if (growthCut && m3 != null && m3 < 0) return out('trim', 0.3, `stime degli analisti tagliate e prezzo in calo (${pct(m3, true)} in 3 mesi)`);
-  // Concentrazione: solo per azioni singole ed ETF poco diversificati (un indice globale con migliaia di
-  // titoli può pesare anche il 100% del portafoglio senza rischio di concentrazione)
-  const diversifiedEtf = cls === 'etf' && !(m.conc > 0);
+  list.sort((a, b) => b.median - a.median);
+  const top = list.slice(0, 60);
+  state.advCache.map.set(key, top);
+  return top;
+}
+// Destinazione: i candidati con netto più probabile entro la tolleranza dal migliore e prospettive di crescita equivalenti
+// formano la «parità»; tra questi vince il Max Growth più alto.
+function pickTarget(cands, days) {
+  const pg = parityGroup(cands, days);
+  if (!pg) return null;
+  const withMg = pg.group.map((c) => {
+    const i = state.instruments.find((x) => x.symbol === c.symbol);
+    const m = i ? mgOf(i, 10000, 5) : null;
+    return { ...c, mg: Number.isFinite(m?.score) ? m.score : null };
+  });
+  const { target, tie } = chooseByMaxGrowth(withMg);
+  return { target, tol: pg.tol, group: withMg, tie, bestMedian: pg.best.median };
+}
+// Azione suggerita per uno strumento del portafoglio: vendi tutto / vendi una quota / rialloca una quota / aumenta / mantieni
+function adviseHolding(inst, amount, share, prevSnap) {
+  const days = adviceDays();
+  const mine = npCached(inst, days);
+  if (!mine) return null;
+  const m = mgOf(inst, amount, 5); // Max Growth: solo informativo e per gli spareggi
+  const pick = pickTarget(npCandidates(inst, days), days);
+  const t = pick?.target ?? null;
+  const gap = t ? t.median - mine.median : 0;
+  const thr = t ? gapThreshold(t.median, days) : Infinity; // scarto da considerare significativo
+  const out = (action, frac, why, useTarget = true) => {
+    const tt = frac > 0 && action !== 'buy' && useTarget ? t : null;
+    return { action, frac, vol: state.results[inst.symbol]?.forward?.vol, eur: Math.round(amount * frac), target: tt, extra: tt ? (tt.median - mine.median) * amount * frac : null, why, m, days, mine, tie: !!(tt && pick.tie), group: pick?.group?.length ?? 0 };
+  };
+  const hz = npLabel(days);
+  // 1) il netto più probabile è negativo: l'esito atteso è una perdita
+  if (mine.median <= 0 && mine.p < 0.5) return out('sell', 1, `il netto più probabile a ${hz} è ${pct(mine.median, true)} (${eur(mine.median * amount)}) con probabilità di guadagno ${pct(mine.p, false, 0)}`);
+  // 2) concentrazione: solo per azioni singole ed ETF poco diversificati
+  const diversifiedEtf = inst.type === 'etf' && !(m?.conc > 0);
   if (share > 0.4 && !diversifiedEtf) return out('trim', Math.min(0.5, (share - 0.4) / share + 0.0001), `pesa ${pct(share, false, 0)} del portafoglio: riduci la concentrazione sotto il 40%`);
-  if (target && m.score != null && target.score >= m.score + 0.02) return out('move', 0.5, `${esc(target.name).slice(0, 40)} ha un Max Growth di ${pct(target.score, true)} contro ${pct(m.score, true)}`);
-  if (target && m.score != null && target.score >= m.score + 0.01) return out('move', 0.3, `${esc(target.name).slice(0, 40)} ha un Max Growth di ${pct(target.score, true)} contro ${pct(m.score, true)}`);
-  const topScore = cands[0]?.score ?? -Infinity;
-  if (m.score != null && m.score >= topScore - 0.005 && (m3 == null || m3 >= 0) && (growth == null || growth >= gMin) && share < 0.35)
-    return out('buy', 0.2, `tra i migliori della categoria (${pct(m.score, true)}/anno), trend positivo e crescita attesa ${growth != null ? pct(growth, true) : 'n.d.'}`);
-  return out('hold', 0, `Max Growth ${pct(m.score, true)}/anno in linea con le alternative`);
+  // 3) un altro strumento ha un netto più probabile nettamente migliore
+  const moveFrac = gap >= 2 * thr ? 0.5 : 0.3;
+  if (t && gap >= thr && gap * amount * moveFrac >= 20) return out('move', moveFrac, `netto più probabile a ${hz}: ${pct(t.median, true)} contro ${pct(mine.median, true)} del tuo`);
+  // 4) il tuo strumento è tra i migliori per netto più probabile
+  if (t && mine.median > 0 && mine.p >= 0.55 && mine.median >= pick.bestMedian - pick.tol && share < 0.35) return out('buy', 0.2, `tra i più probabili a ${hz} (${pct(mine.median, true)}, probabilità di guadagno ${pct(mine.p, false, 0)})`, false);
+  return out('hold', 0, `netto più probabile a ${hz} ${pct(mine.median, true)}: in linea con le alternative`, false);
 }
 const ADVICE_LABEL = { sell: '🔴 Vendi 100%', trim: '🟠 Vendi una quota', move: '🔄 Rialloca una quota', buy: '🟢 Aumenta', hold: '⚪ Mantieni' };
 function adviceText(a) {
   const pctTxt = a.action === 'sell' ? '100%' : `${Math.round(a.frac * 100)}%`;
   const amt = eur(a.eur);
-  const dest = a.target ? ` e compra ${esc(a.target.name).slice(0, 40)}${a.target.isin ? ' (' + esc(a.target.isin) + ')' : ''}${Number.isFinite(a.target.score) ? ` (Max Growth ${pct(a.target.score, true)}/anno${Number.isFinite(a.target.m3) ? `, trend 3m ${pct(a.target.m3, true)}` : ''}${Number.isFinite(a.target.growth) ? `, crescita utili ${pct(a.target.growth, true)}` : ''})` : ''}` : '';
-  const extra = a.extra != null && a.extra > 0 ? ` · +${eur(a.extra)} di guadagno netto in più in 5 anni` : '';
+  const hz = npLabel(a.days);
+  const t = a.target;
+  const dest = t ? ` e compra ${esc(t.name).slice(0, 40)}${t.isin ? ' (' + esc(t.isin) + ')' : ''}: netto più probabile a ${hz} ${pct(t.median, true)} (probabilità di guadagno ${pct(t.p, false, 0)}${Number.isFinite(t.vol) ? `, volatilità ${pct(t.vol, false, 0)}${Number.isFinite(a.vol) ? ` contro ${pct(a.vol, false, 0)} del tuo` : ''}` : ''})${a.tie && Number.isFinite(t.mg) ? `. A parità di netto più probabile e di crescita attesa tra ${a.group} strumenti, scelto per il Max Growth più alto (${pct(t.mg, true)}/anno)` : ''}` : '';
+  const extra = a.extra != null && a.extra > 0 ? ` Sull'importo spostato: +${eur(a.extra)} di netto più probabile in più a ${hz}.` : '';
   if (a.action === 'hold') return `${a.why}.`;
   if (a.action === 'buy') return `Aumenta la quota di circa ${pctTxt} (${amt}): ${a.why}.`;
-  const gains = a.tNet3 != null && a.tNet5 != null ? ` Guadagno netto atteso sull'importo spostato: ${a.tNet3 > 0 ? '+' : ''}${eur(a.tNet3)} a 3 anni, ${a.tNet5 > 0 ? '+' : ''}${eur(a.tNet5)} a 5 anni.` : '';
-  return `Vendi ${pctTxt} (${amt})${dest}. Motivo: ${a.why}${extra}.${gains}`;
+  return `Vendi ${pctTxt} (${amt})${dest}. Motivo: ${a.why}.${extra}`;
 }
-function bestByClass() {
-  const ver = state.liveVersion || state.dataVersion || '';
-  if (state.bestCache?.v === ver) return state.bestCache.best;
-  const best = {};
-  for (const i of state.instruments) {
-    const r = state.results[i.symbol];
-    if (!r || r.error) continue;
-    const cagr = r.forward?.expected;
-    if (!Number.isFinite(cagr)) continue;
-    const cls = isBond(i) ? 'bond' : i.type;
-    if (cls === 'etf' && r.forward?.growthSource !== 'holdings') continue;
-    const mdd = Number.isFinite(r.sim?.histMdd) ? Math.min(0.95, r.sim.histMdd) : 0.3;
-    const score = cagr * (1 - mdd);
-    if (!best[cls] || score > best[cls].score) best[cls] = { symbol: i.symbol, name: i.name, isin: i.isin, score, cagr, mdd };
-  }
-  state.bestCache = { v: ver, best };
-  return best;
-}
-
 function buildNotifications(save = false) {
   const p = state.portfolio || loadPortfolio();
   const holds = [
@@ -2614,7 +2693,6 @@ function buildNotifications(save = false) {
   let snap = {};
   try { snap = JSON.parse(localStorage.getItem('trmc.pfSnap') || '{}'); } catch { snap = {}; }
   const newSnap = {};
-  const best = bestByClass();
   const out = [];
   // avvisi di vendita (strumenti volatili / a breve termine): calcolati da checkSellAlerts a ogni aggiornamento dei prezzi
   for (const a of state.sellAlerts || []) out.push({ level: a.level === 'sell' ? 'sell' : a.level === 'trim' ? 'trim' : 'warn', icon: a.icon, title: esc(a.title), text: esc(a.text) });
@@ -2646,38 +2724,27 @@ function buildNotifications(save = false) {
       out.push({ level: 'warn', icon: '🔻', title: `${nm}: rendimento atteso basso`, text: `Rendimento atteso ${pct(cagr, false)}, sotto quello di un'obbligazione. Valuta di sostituirlo con uno strumento a prospettive migliori.` });
     if (share > 0.4)
       out.push({ level: 'warn', icon: '🎯', title: `${nm}: concentrazione elevata`, text: `Pesa ${pct(share, false, 0)} del portafoglio: una quota così alta su un singolo strumento aumenta il rischio. Valuta di diversificare.` });
-    if (cls === 'etf' || cls === 'stock') {
-      const mg = mgOf(inst, h.amount, 5);
-      if (mg) {
-        newSnap[inst.symbol].mg = mg.score;
-        // Revisione delle stime degli analisti: crescita attesa degli utili cambiata dall'ultimo controllo
-        const gNow = Number.isFinite(r.forward?.growth) ? r.forward.growth : null;
-        newSnap[inst.symbol].growth = gNow;
-        if (gNow != null && prev && Number.isFinite(prev.growth)) {
-          const dg = gNow - prev.growth;
-          if (dg <= -0.02) out.push({ level: 'warn', icon: '📉', title: `${nm}: stime degli analisti tagliate`, text: `La crescita attesa degli utili è scesa da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
-          else if (dg >= 0.02) out.push({ level: 'good', icon: '📈', title: `${nm}: stime degli analisti alzate`, text: `La crescita attesa degli utili è salita da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
-        }
-        const adv = adviseHolding(inst, h.amount, share, prev);
-        if (adv && adv.action !== 'hold') out.push({ level: adv.action === 'sell' ? 'warn' : adv.action === 'buy' ? 'good' : 'swap', icon: ADVICE_LABEL[adv.action].split(' ')[0], title: `${nm}: ${ADVICE_LABEL[adv.action].slice(2).trim()}`, text: adviceText(adv) });
-        const top = null;
-        if (top) {
-          const ti = state.instruments.find((x) => x.symbol === top.symbol);
-          const tm = ti ? mgOf(ti, h.amount, 5) : null;
-          const delta = tm && mg.net != null ? tm.net - mg.net : null;
-          out.push({ level: 'swap', icon: '🔄', title: `${nm}: riallocazione suggerita`, text: `${esc(top.name).slice(0, 44)}${top.isin ? ' (' + esc(top.isin) + ')' : ''} ha un Max Growth Score di ${pct(top.score, true)}/anno${mg.score != null ? ` contro ${pct(mg.score, true)}` : ''}${delta != null ? `: sui tuoi ${eur(Math.round(h.amount))} sono circa ${delta > 0 ? '+' : ''}${eur(delta)} di guadagno netto in più in 5 anni` : ''}. Valuta di spostare parte della quota.` });
-        }
-        if (mg.score != null && prev && Number.isFinite(prev.mg) && mg.score - prev.mg <= -0.015)
-          out.push({ level: 'warn', icon: '⚠️', title: `${nm}: Max Growth in calo`, text: `Il punteggio è sceso da ${pct(prev.mg, true)} a ${pct(mg.score, true)} con i dati di mercato più recenti. Valuta di ridurre la quota.` });
-        else if (mg.score != null && prev && Number.isFinite(prev.mg) && mg.score - prev.mg >= 0.015)
-          out.push({ level: 'good', icon: '✅', title: `${nm}: Max Growth in aumento`, text: `Il punteggio è salito da ${pct(prev.mg, true)} a ${pct(mg.score, true)}. Si potrebbe aumentare la quota.` });
+    if (cls !== 'crypto') {
+      // Revisione delle stime degli analisti: crescita attesa degli utili cambiata dall'ultimo controllo
+      const gNow = Number.isFinite(r.forward?.growth) ? r.forward.growth : null;
+      newSnap[inst.symbol].growth = gNow;
+      if (gNow != null && prev && Number.isFinite(prev.growth)) {
+        const dg = gNow - prev.growth;
+        if (dg <= -0.02) out.push({ level: 'warn', icon: '📉', title: `${nm}: stime degli analisti tagliate`, text: `La crescita attesa degli utili è scesa da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
+        else if (dg >= 0.02) out.push({ level: 'good', icon: '📈', title: `${nm}: stime degli analisti alzate`, text: `La crescita attesa degli utili è salita da ${pct(prev.growth, true)} a ${pct(gNow, true)}/anno con le ultime stime.` });
       }
-    }
-    const b = best[cls];
-    if (cls === 'bond' && b && b.symbol !== inst.symbol && Number.isFinite(cagr)) {
-      const myScore = cagr * (1 - (Number.isFinite(mdd) ? Math.min(0.95, mdd) : 0.3));
-      if (b.score >= myScore + 0.03)
-        out.push({ level: 'swap', icon: '🔄', title: `${nm}: alternativa migliore`, text: `Nella stessa categoria ${esc(b.name).slice(0, 40)}${b.isin ? ' (' + esc(b.isin) + ')' : ''} ha un profilo rischio/rendimento migliore (atteso ${pct(b.cagr, false)}, MDD ${pct(b.mdd, false, 0)}). Valuta di spostare parte della quota.` });
+      // Netto più probabile: variazione rispetto all'ultimo controllo (stesso orizzonte)
+      const days = adviceDays();
+      const np = npCached(inst, days);
+      if (np) {
+        newSnap[inst.symbol].np = { d: days, v: np.median };
+        const dv = prev?.np?.d === days && Number.isFinite(prev.np.v) ? np.median - prev.np.v : null;
+        const lim = 0.01 * Math.sqrt(days / 30) + 0.005;
+        if (dv != null && dv <= -lim) out.push({ level: 'warn', icon: '⚠️', title: `${nm}: netto più probabile in calo`, text: `A ${npLabel(days)} è sceso da ${pct(prev.np.v, true)} a ${pct(np.median, true)} con i dati più recenti. Valuta di ridurre la quota.` });
+        else if (dv != null && dv >= lim) out.push({ level: 'good', icon: '✅', title: `${nm}: netto più probabile in aumento`, text: `A ${npLabel(days)} è salito da ${pct(prev.np.v, true)} a ${pct(np.median, true)}. Si potrebbe aumentare la quota.` });
+      }
+      const adv = adviseHolding(inst, h.amount, share, prev);
+      if (adv && adv.action !== 'hold') out.push({ level: adv.action === 'sell' ? 'warn' : adv.action === 'buy' ? 'good' : 'swap', icon: ADVICE_LABEL[adv.action].split(' ')[0], title: `${nm}: ${ADVICE_LABEL[adv.action].slice(2).trim()}`, text: adviceText(adv) });
     }
   }
   if (save) { try { localStorage.setItem('trmc.pfSnap', JSON.stringify(newSnap)); } catch { /* niente */ } }
@@ -2797,6 +2864,13 @@ async function enableDeviceAlerts() {
   lsSet(LS_DEV, true);
   await showTestNotification('✅ Avvisi di vendita attivi', 'Riceverai un avviso quando una posizione volatile supera la soglia di protezione o la previsione a breve diventa negativa.');
 }
+function adviceHorizonHtml() {
+  const cur = adviceDays();
+  const btn = ADVICE_DAYS.filter((d) => d !== 1 && d !== 14 && d !== 60).map((d) => `<button class="tab small${d === cur ? ' active' : ''}" data-act="adv-days" data-d="${d}">${npLabel(d)}</button>`).join('');
+  return `<div class="notif notif-swap"><div class="notif-t"><span class="notif-ic">🎯</span> <b>Orizzonte dei suggerimenti: ${npLabel(cur)}</b></div>
+    <div class="muted small-note">I suggerimenti di vendita e riallocazione si basano sul <b>netto più probabile</b> a questo orizzonte. Solo a parità di netto più probabile e di crescita attesa si propone lo strumento con il Max Growth più alto.</div>
+    <span class="tabs" role="tablist">${btn}</span></div>`;
+}
 function deviceAlertsHtml() {
   const sup = typeof Notification !== 'undefined';
   const on = sup && lsGet(LS_DEV, false) === true && Notification.permission === 'granted';
@@ -2837,7 +2911,7 @@ function openNotifications() {
           .map((nt) => `<div class="notif notif-${nt.level}"><div class="notif-t"><span class="notif-ic">${nt.icon}</span> <b>${nt.title}</b></div><div class="muted">${nt.text}</div></div>`)
           .join('')}`
       : '<p class="pos">Nessun suggerimento: il portafoglio è in linea con i dati di mercato aggiornati.</p>';
-  if (hasHold) body.insertAdjacentHTML('afterbegin', deviceAlertsHtml());
+  if (hasHold) body.insertAdjacentHTML('afterbegin', adviceHorizonHtml() + deviceAlertsHtml());
   $('#notifs').showModal();
   updateNotifsBadge();
   // Notizie recenti sugli strumenti del portafoglio: solo informative, non cambiano punteggi e classifiche
@@ -3039,6 +3113,7 @@ function bind() {
     if (!b) return;
     if (b.dataset.act === 'alerts-on') await enableDeviceAlerts();
     else if (b.dataset.act === 'alerts-off') lsSet(LS_DEV, false);
+    else if (b.dataset.act === 'adv-days') lsSet('trmc.advDays', Number(b.dataset.d));
     else if (b.dataset.act === 'alerts-test') {
       await showTestNotification('🚨 Prova: avviso di vendita', 'Così arriveranno gli avvisi.');
       return;
@@ -3149,6 +3224,7 @@ async function main() {
     if (STATIC) {
       state.priced = Object.fromEntries(Object.entries(state.quotes).map(([k, q]) => [k, q?.priceEur]));
       liveTick(); // prezzi crypto subito, senza aspettare il primo minuto
+      setTimeout(() => { state.liveReady = true; render(); }, 25500); // se i dati live non arrivano, si mostrano quelli statici
     }
     // Portafoglio appena importato da un link: lo si mostra subito
     if (importedAtStart) $('#btn-portfolio')?.click();

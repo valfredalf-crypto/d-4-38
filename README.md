@@ -134,6 +134,19 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
 8. Orizzonti ≥ 1 anno: algoritmo 019 con il CAGR di lungo periodo (`cagrLong`); il campo CAGR del portafoglio si compila da
    solo con il valore per gli orizzonti brevi quando questi sono selezionati.
 
+## Suggerimenti e classifica «Netto più probabile» — regole fisse
+
+- I suggerimenti delle notifiche (vendi / rialloca / aumenta) si basano sul **guadagno netto più probabile** all'orizzonte scelto
+  nella finestra 🔔 (predefinito 30 gg). Il **Max Growth** serve solo a parità: tra gli strumenti con netto più probabile entro la
+  tolleranza dal migliore e crescita attesa equivalente (non inferiore di oltre 2 punti) si propone quello con il Max Growth più alto
+  (`public/js/advice.js`). Destinazioni solo di dimensione adeguata (ETF ≥ 100 mln €, azioni ≥ 1 mld €), con probabilità di guadagno ≥ 55%,
+  e non molto più rischiose dello strumento che si vende.
+- Gli avvisi di vendita (`public/js/alerts.js`) segnalano soglia di protezione dal massimo, calo forte in giornata, previsione a 7/30 gg
+  negativa, metà guadagno restituito.
+- La classifica «Netto più probabile» deve essere **stabile**: tasso netto con media mobile degli ultimi aggiornamenti, posizioni con banda
+  morta del 20% (`public/js/stable.js`), aggiornamento solo con una nuova versione dei dati e nessuna classifica mostrata finché non
+  sono arrivati i dati live all'apertura (niente salto dopo pochi secondi).
+
 ## Struttura
 
 ```

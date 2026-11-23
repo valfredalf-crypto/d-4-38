@@ -9,7 +9,7 @@ import { historyEur } from '../lib/market.js';
 import { search } from '../lib/yahoo.js';
 import { isEuroListing, hasImplausibleJumps, isLeveraged } from '../lib/universe.js';
 import { isValidIsin } from '../public/js/isin.js';
-import { lsSearch, lsSymbol, isLsSymbol, compareSeries } from '../lib/ls.js';
+import { lsSearch, lsSymbol, isLsSymbol } from '../lib/ls.js';
 
 const REQUESTS = process.env.IMPORT_REQUESTS || 'data/import-requests.json';
 const OUT = process.env.IMPORTED || 'data/imported-instruments.json';
@@ -18,7 +18,7 @@ const MIN_WEEKS = Number(process.env.MIN_WEEKS) || 8; // storico minimo (≈2 me
 const log = (...a) => console.log(...a);
 // Tempo massimo di lavoro: poi si salva e il workflow riparte da dove si è fermato (niente lavoro perso al timeout)
 const DEADLINE = Date.now() + (Number(process.env.TIME_BUDGET_MIN) || 200) * 60e3;
-const LS_RECHECK_DAYS = 30;
+const LS_RECHECK_DAYS = 7;
 const today = new Date().toISOString().slice(0, 10);
 // Prodotti a leva/short: salti settimanali ampi sono normali (×3 non è più un dato errato), soglia ×12.
 // Nomi concordi: almeno 3 parole e ≥ 80% di quelle della quotazione presenti nel nome del catalogo.
@@ -139,36 +139,46 @@ async function tryListing(req, symbol, via, tried, checkName = false) {
   }
 }
 
-// Allineamento con Trade Republic: ogni quotazione Yahoo si confronta con LS Exchange (ogni 30 giorni). Se il
-// livello del prezzo differisce >5% o l'andamento è poco correlato (borse secondarie illiquide, dati errati),
-// prezzi e storico passano a LS Exchange; le stime degli analisti restano dal simbolo Yahoo (outlookSymbol).
+// Prezzi come in Trade Republic: TR esegue su LS Exchange, quindi prezzi e storico di ogni strumento vengono da LS Exchange
+// (ISIN trovato, storico sufficiente, quotazione recente, dati coerenti). Yahoo resta per le stime degli analisti e la
+// composizione dei fondi (outlookSymbol) e come ripiego per gli strumenti che LS Exchange non ha o non quota più.
+const LS_VER = 2;
+const FRESH_DAYS = 14;
+const age = (h) => (Date.now() / 1000 - h.timestamps.at(-1)) / 86400;
+const lsGood = (h, name) => h.closesEur.length >= MIN_WEEKS && age(h) <= FRESH_DAYS && !hasImplausibleJumps(h.closesEur.slice(-521), jumpLimit(name));
 const stale = (d) => !d || (Date.parse(today) - Date.parse(d)) / 864e5 >= LS_RECHECK_DAYS;
-const toCheck = [...done.values()].filter((it) => it.type !== 'crypto' && it.isin && !isLsSymbol(it.symbol) && stale(it.lsChk));
-const lsFix = { checked: 0, moved: 0, absent: 0 };
+const toCheck = [...done.values()].filter((it) => it.type !== 'crypto' && it.isin && (it.lsVer !== LS_VER || stale(it.lsChk)));
+const lsFix = { checked: 0, toLs: 0, backToYahoo: 0, absent: 0 };
 let c = 0;
 await Promise.all(
-  Array.from({ length: 3 }, async () => {
+  Array.from({ length: 4 }, async () => {
     while (c < toCheck.length && Date.now() < DEADLINE) {
       const it = toCheck[c++];
       try {
-        const ls = await lsSearch(it.isin);
+        const onLs = isLsSymbol(it.symbol);
+        const ls = onLs ? { id: Number(it.symbol.slice(3)) } : await lsSearch(it.isin);
         if (!ls?.id) {
-          done.set(it.isin, { ...it, lsChk: today });
+          done.set(it.isin, { ...it, lsVer: LS_VER, lsChk: today });
           lsFix.absent++;
           continue;
         }
-        const [ya, lh] = await Promise.all([historyEur(it.symbol), historyEur(lsSymbol(ls.id))]);
-        const cmp = compareSeries(ya, lh);
+        const lh = await historyEur(lsSymbol(ls.id)).catch(() => null);
         lsFix.checked++;
-        const lsUsable =
-          lh.closesEur.length >= MIN_WEEKS &&
-          Date.now() / 1000 - lh.timestamps.at(-1) <= 30 * 86400 &&
-          !hasImplausibleJumps(lh.closesEur.slice(-521), jumpLimit(it.name));
-        if (cmp.ok === false && lsUsable) {
-          const { via, ...rest } = it;
-          done.set(it.isin, { ...rest, symbol: lsSymbol(ls.id), outlookSymbol: it.outlookSymbol || it.symbol, via: 'ls', lsChk: today, lsCmp: { corr: cmp.corr, level: cmp.level } });
-          lsFix.moved++;
-        } else done.set(it.isin, { ...it, lsChk: today });
+        if (lh && lsGood(lh, it.name)) {
+          if (!onLs) {
+            const { via, ...rest } = it;
+            done.set(it.isin, { ...rest, symbol: lsSymbol(ls.id), outlookSymbol: it.outlookSymbol || it.symbol, via: 'ls', lsVer: LS_VER, lsChk: today });
+            lsFix.toLs++;
+          } else done.set(it.isin, { ...it, lsVer: LS_VER, lsChk: today });
+        } else if (onLs && it.outlookSymbol) {
+          // LS Exchange non quota più lo strumento: si torna a Yahoo se ha dati recenti
+          const yh = await historyEur(it.outlookSymbol).catch(() => null);
+          if (yh && lsGood(yh, it.name)) {
+            const { outlookSymbol, via, ...rest } = it;
+            done.set(it.isin, { ...rest, symbol: it.outlookSymbol, via: 'yahoo', lsVer: LS_VER, lsChk: today });
+            lsFix.backToYahoo++;
+          } else done.set(it.isin, { ...it, lsVer: LS_VER, lsChk: today });
+        } else done.set(it.isin, { ...it, lsVer: LS_VER, lsChk: today });
       } catch {
         /* LS non raggiungibile: si riprova al prossimo giro */
       }
@@ -176,7 +186,7 @@ await Promise.all(
     }
   }),
 );
-log(`Allineamento LS Exchange: confrontati ${lsFix.checked}, spostati su LS ${lsFix.moved}, non quotati su LS ${lsFix.absent}, da fare ${toCheck.length - c}`);
+log(`Prezzi da LS Exchange: controllati ${lsFix.checked}, passati a LS ${lsFix.toLs}, tornati a Yahoo ${lsFix.backToYahoo}, non quotati su LS ${lsFix.absent}, da fare ${toCheck.length - c}`);
 const pending = Math.max(0, todo.length - i) + Math.max(0, toCheck.length - c);
 if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `pending=${pending}\n`);
 if (pending) log(`Tempo esaurito: ${pending} operazioni rimandate al prossimo giro`);

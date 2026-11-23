@@ -454,6 +454,7 @@ function saveFilters() {
 }
 
 function updateFiltersUi() {
+  rowKeyCache.at = -1;
   const n = activeFilters(state.view.filters).length;
   const badge = $('#filters-count');
   badge.hidden = !n;
@@ -714,8 +715,20 @@ function npStats(inst, days) {
     const g = (1 + base - ter) ** vy * (1 + pp.cagr - ter) ** (y - vy);
     net = g > 0 ? g ** (1 / y) - 1 : -0.99;
   }
-  const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOf(inst.isin || inst.symbol), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
+  const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
   return { median: h.medianNet / cap, mean: h.netGain / cap, p: h.pProfit, medianEur: h.medianNet, meanEur: h.netGain, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
+}
+// Memoria dei valori per strumento: si ricalcolano solo quando cambiano i dati dello strumento (nuovo oggetto risultato) o
+// le impostazioni. Ogni periodo si calcola solo quando serve (ordinamento: tutti; colonne: solo le righe mostrate).
+const npMemo = new WeakMap();
+function npCached(inst, d) {
+  const r = state.results[inst.symbol];
+  if (!r || r.error) return null;
+  const key = JSON.stringify([state.settings?.mc, state.settings?.outlook, state.portfolio?.momRho, state.portfolio?.taxPrudent, state.view.scenario, state.liveVersion]);
+  let m = npMemo.get(r);
+  if (!m || m.key !== key) npMemo.set(r, (m = { key, v: new Map() }));
+  if (!m.v.has(d)) m.v.set(d, npStats(inst, d));
+  return m.v.get(d);
 }
 const shortMode = () => state.view.funnel === 'short';
 function projParams(i, r, growthForward = false, cagrOverride = null) {
@@ -783,15 +796,36 @@ function nr5Of(sim, type) {
   if (sim.expGain == null || sim.expLoss == null || sim.es5 == null) return sim.nr5 ?? null;
   return sim.expGain - sim.expLoss - nr5Weight(type) * sim.es5;
 }
+// Valori di riga in memoria: si ricalcolano solo se cambiano i dati dello strumento (risultato o quotazione: nuovi oggetti
+// a ogni aggiornamento) o impostazioni/vista. Con oltre 13.000 strumenti ricalcolare tutto a ogni ridisegno bloccava l'app.
+const rowMemo = new WeakMap();
+let rowKeyCache = { at: -1, key: '' };
+function rowKey() {
+  const now = performance.now();
+  if (now - rowKeyCache.at > 50) {
+    const v = state.view;
+    rowKeyCache = { at: now, key: JSON.stringify([state.settings, v.funnel, v.scenario, v.nr5Mode, v.type, v.sort?.key, v.np, v.distFilter, v.allEtf, state.portfolio?.momRho, state.portfolio?.taxPrudent, state.liveVersion, state.dataVersion]) };
+  }
+  return rowKeyCache.key;
+}
 function rowValues(i) {
+  const key = rowKey();
+  const rr = state.results[i.symbol];
+  const qq = state.quotes[i.symbol];
+  const m = rowMemo.get(i);
+  if (m && m.key === key && m.r === rr && m.q === qq) return m.v;
+  const v = rowValuesCalc(i);
+  rowMemo.set(i, { key, r: rr, q: qq, v });
+  return v;
+}
+function rowValuesCalc(i) {
   const r = state.results[i.symbol];
   const q = state.quotes[i.symbol];
   const sim = r && !r.error ? r.sim : null;
   // sezione «Netto più probabile»: tutti i periodi (1 gg … 5 anni), calcolati solo in quella sezione
-  const npx = shortMode() ? Object.fromEntries(NP_PERIODS.map(([d]) => [d, npStats(i, d)])) : null;
+  const npx = shortMode() ? (d) => npCached(i, d) : null;
   const v = {
     npx,
-    ...Object.fromEntries(NP_PERIODS.map(([d]) => ['np' + d, npx?.[d]?.median ?? null])),
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
     plausible: sim?.ce?.['0.5'] ?? sim?.ce1 ?? null,
     // Proiezione deterministica netta (CAGR composto − TER, imposta sulla plusvalenza), in frazione del capitale
@@ -923,6 +957,14 @@ function rowValues(i) {
     perfYtd: netPerf(q?.perf?.ytd, i),
     error: r?.error || null,
   };
+  if (npx) {
+    const sk = npSortKey();
+    for (const [d] of NP_PERIODS) {
+      const k = 'np' + d;
+      if (k === sk) v[k] = npx(d)?.median ?? null;
+      else Object.defineProperty(v, k, { enumerable: true, configurable: true, get: () => npx(d)?.median ?? null });
+    }
+  }
   return v;
 }
 
@@ -952,6 +994,7 @@ function rankMap(rows) {
 }
 
 function render() {
+  rowKeyCache.at = -1; // impostazioni o vista possono essere appena cambiate
   // sezione «Netto più probabile»: barra dei periodi e intestazione
   const bar = $('#np-bar');
   if (bar) {
@@ -1005,7 +1048,7 @@ function render() {
           const fc = funnelOf(i);
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
-        ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.[d]; if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
+        ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
         ${mgMode() ? (() => {
           const rr = state.results[i.symbol];
           const ter = rr?.fund?.ter;
@@ -1700,9 +1743,9 @@ function resOf(inst) {
   return { estimated: true, mom: e.mom ?? null, forward: { expected: e.cagr, vol: e.vol, beta: e.beta }, sim: { estimated: true, histMdd: e.mdd, taxRate: 26 }, ...(Number.isFinite(e.ter) ? { fund: { ter: e.ter } } : {}) };
 }
 // Prodotti strutturati a leva (ISIN non IE/LU): ETC/ETN/ETP con redditi diversi, minusvalenze compensabili con le plusvalenze
+const symTaxOfInst = (inst) => !!(inst?.leveraged && inst.isin && !/^(IE|LU)/.test(inst.isin));
 function symTaxOf(code) {
-  const inst = findByCode(code);
-  return !!(inst?.leveraged && inst.isin && !/^(IE|LU)/.test(inst.isin));
+  return symTaxOfInst(findByCode(code));
 }
 // CAGR automatico della riga: con orizzonti brevi selezionati è il CAGR del modello corretto con la tendenza recente
 // (cagrTrend = true, cagrLong = CAGR di lungo periodo usato per gli orizzonti ≥ 1 anno).
@@ -1811,17 +1854,33 @@ function savePortfolio(p) {
     /* niente */
   }
 }
+// Indice per codice (ISIN, simbolo, simbolo senza borsa, crypto senza valuta): con oltre 13.000 strumenti la ricerca
+// lineare, ripetuta per ogni riga e periodo, bloccava l'app. Si ricostruisce quando cambia l'elenco degli strumenti.
+let codeIdx = null;
+function codeIndex() {
+  const list = state.instruments || [];
+  if (codeIdx && codeIdx.list === list && codeIdx.n === list.length) return codeIdx;
+  const norm = (s) => String(s || '').toUpperCase().replace(/[\s-]/g, '');
+  const isin = new Map();
+  const sym = new Map();
+  const crypto = new Map();
+  const put = (m, k, i) => { if (k && !m.has(k)) m.set(k, i); };
+  for (const i of list) put(isin, (i.isin || '').toUpperCase(), i);
+  for (const i of list) {
+    // stesso ordine di priorità della ricerca lineare: il primo strumento in elenco vince
+    put(sym, norm(i.symbol), i);
+    put(sym, String(i.symbol || '').toUpperCase().split('.')[0], i);
+  }
+  for (const i of list) if (i.type === 'crypto') put(crypto, norm(i.symbol).replace(/EUR$/, ''), i);
+  codeIdx = { list, n: list.length, isin, sym, crypto };
+  return codeIdx;
+}
 function findByCode(code) {
   const c = (code || '').trim().toUpperCase().replace(/[\s-]/g, '');
   if (!c) return null;
-  const norm = (s) => String(s || '').toUpperCase().replace(/[\s-]/g, '');
-  return (
-    state.instruments.find((i) => (i.isin || '').toUpperCase() === c) ||
-    state.instruments.find((i) => norm(i.symbol) === c || i.symbol.toUpperCase().split('.')[0] === c) ||
-    // crypto scritte senza valuta (es. «LTC» → LTC-EUR)
-    state.instruments.find((i) => i.type === 'crypto' && norm(i.symbol).replace(/EUR$/, '') === c) ||
-    null
-  );
+  const x = codeIndex();
+  // crypto scritte senza valuta (es. «LTC» → LTC-EUR)
+  return x.isin.get(c) || x.sym.get(c) || x.crypto.get(c) || null;
 }
 function renderPortfolio() {
   const p = state.portfolio;

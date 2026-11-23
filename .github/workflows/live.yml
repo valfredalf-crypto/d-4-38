@@ -27,15 +27,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      # Base: dati salvati dall'ultima pubblicazione del sito (storici completi); sopra, quelli dell'ultimo job dei dati live
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cache
+          key: market-cache-none
+          restore-keys: |
+            market-cache-
+            import-cache-
+            universe-cache-
       - uses: actions/cache@v4
         with:
           path: data/cache
           key: live-cache-${{ github.run_id }}
           restore-keys: |
             live-cache-
-            market-cache-
-            import-cache-
-            universe-cache-
       - id: loop
         run: node scripts/live-loop.js
       - name: Rilancio

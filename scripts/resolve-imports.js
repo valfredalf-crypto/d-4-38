@@ -162,7 +162,12 @@ await Promise.all(
           lsFix.absent++;
           continue;
         }
-        const lh = await historyEur(lsSymbol(ls.id)).catch(() => null);
+        let lsErr = false;
+        const lh = await historyEur(lsSymbol(ls.id)).catch((e) => {
+          lsErr = !/nessuno storico/.test(e.message); // errore di rete o sito non disponibile: nessuna decisione
+          return null;
+        });
+        if (lsErr) continue;
         lsFix.checked++;
         if (lh && lsGood(lh, it.name)) {
           if (!onLs) {

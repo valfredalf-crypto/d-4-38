@@ -1,6 +1,7 @@
 import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats, leveragedArith, underlyingOf, leverageOf, isInverseProduct } from './analyze.js';
 import { viewFor, productViewFor } from './market-views.js';
 import { isValidIsin } from './isin.js';
+import { evaluateAlerts, dueAlerts } from './alerts.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
@@ -334,11 +335,13 @@ async function liveTick() {
       await checkNewData().catch(() => {});
       await checkLiveData().catch(() => {});
       await liveCrypto().catch(() => {});
+      checkSellAlerts();
       updateStaticBanner({ generatedAt: state.dataVersion });
       render();
       if ($('#portfolio')?.open && !$('#pf-body')?.contains(document.activeElement)) renderPortfolio(); // aggiorna le stime del portafoglio (non mentre si digita)
     } else {
       await refreshQuotes(visibleSymbols());
+      checkSellAlerts();
     }
     await recomputeChanged();
   } catch (e) {
@@ -1124,6 +1127,7 @@ function render() {
     }).length;
   }
   if (state.instruments.length) try { updateNotifsBadge(); } catch { /* niente */ }
+  if (!state.alertsInit && state.instruments.length && Object.keys(state.quotes).length) { state.alertsInit = true; setTimeout(() => checkSellAlerts(), 0); }
   const th0 = $('#table th[data-sort="projOpt"], #table th[data-sort="maxGrowth"]');
   if (th0) {
     const mg = mgMode();
@@ -2609,6 +2613,8 @@ function buildNotifications(save = false) {
   const newSnap = {};
   const best = bestByClass();
   const out = [];
+  // avvisi di vendita (strumenti volatili / a breve termine): calcolati da checkSellAlerts a ogni aggiornamento dei prezzi
+  for (const a of state.sellAlerts || []) out.push({ level: a.level === 'sell' ? 'sell' : a.level === 'trim' ? 'trim' : 'warn', icon: a.icon, title: esc(a.title), text: esc(a.text) });
   for (const h of holds) {
     const inst = findByCode(h.isin);
     if (!inst) continue;
@@ -2672,9 +2678,137 @@ function buildNotifications(save = false) {
     }
   }
   if (save) { try { localStorage.setItem('trmc.pfSnap', JSON.stringify(newSnap)); } catch { /* niente */ } }
-  const order = { warn: 0, buy: 1, swap: 2, trim: 3, good: 4 };
+  const order = { sell: -1, warn: 0, buy: 1, swap: 2, trim: 3, good: 4 };
   out.sort((a, b2) => (order[a.level] ?? 9) - (order[b2.level] ?? 9));
   return out;
+}
+
+// ---------- avvisi di vendita (portafoglio)
+// Per ogni posizione volatile, a leva o con alto guadagno atteso a breve: soglia di protezione dal massimo, calo forte in giornata,
+// previsione a 7/30 giorni diventata negativa, metà guadagno restituito. Indicazioni del modello: l'app non vende mai da sola.
+const LS_WATCH = 'trmc.pfWatch';
+const LS_SENT = 'trmc.alertSent';
+const LS_DEV = 'trmc.alertsDev';
+const lsGet = (k, d) => {
+  try { return JSON.parse(localStorage.getItem(k) || 'null') ?? d; } catch { return d; }
+};
+const lsSet = (k, v) => {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* niente */ }
+};
+function sellHoldings() {
+  const p = state.portfolio || loadPortfolio();
+  const by = new Map();
+  for (const r of [...(p.rows || []), ...(p.stocks || []), ...(p.bonds || [])]) {
+    if (!r.isin || !(r.amount > 0)) continue;
+    const inst = findByCode(r.isin);
+    const res = inst ? state.results[inst.symbol] : null;
+    const q = inst ? state.quotes[inst.symbol] : null;
+    if (!inst || !res || res.error || !(q?.priceEur > 0)) continue;
+    const cur = by.get(inst.symbol);
+    if (cur) {
+      cur.amount += r.amount;
+      continue;
+    }
+    const fc = {};
+    for (const d of [7, 14, 30]) {
+      const x = npCached(inst, d);
+      if (x) fc[d] = { median: x.median, p: x.p };
+    }
+    by.set(inst.symbol, { symbol: inst.symbol, name: inst.name, amount: r.amount, vol: volOfCode(inst.isin), leveraged: !!inst.leveraged, price: q.priceEur, changePct: q.changePct, fc });
+  }
+  return [...by.values()];
+}
+const BASE_TITLE = document.title;
+function checkSellAlerts({ notify = true } = {}) {
+  try {
+    const now = Date.now();
+    const { alerts, watch } = evaluateAlerts(sellHoldings(), lsGet(LS_WATCH, {}), now);
+    lsSet(LS_WATCH, watch);
+    state.sellAlerts = alerts;
+    const n = alerts.filter((a) => a.level !== 'trim').length;
+    document.title = (n ? `(🚨${n}) ` : '') + BASE_TITLE;
+    updateNotifsBadge();
+    if (!notify) return;
+    const sent = lsGet(LS_SENT, {});
+    const due = dueAlerts(alerts, sent, now);
+    lsSet(LS_SENT, sent);
+    if (due.length) {
+      showSellBar(due);
+      notifyDevice(due);
+    }
+  } catch (e) {
+    console.warn('avvisi di vendita', e);
+  }
+}
+function showSellBar(list) {
+  let bar = $('#sell-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'sell-bar';
+    bar.className = 'sell-bar';
+    bar.setAttribute('role', 'alert');
+    document.body.appendChild(bar);
+    bar.addEventListener('click', (e) => {
+      if (e.target.closest('[data-act="close"]')) bar.hidden = true;
+      else openNotifications();
+    });
+  }
+  const top = list[0];
+  bar.innerHTML = `<span><b>${esc(top.icon)} ${esc(top.title)}</b>${list.length > 1 ? ` · +${list.length - 1} altri avvisi` : ''}<br><span class="muted">Tocca per vedere i dettagli</span></span><button class="ghost small" data-act="close" aria-label="Chiudi">✕</button>`;
+  bar.hidden = false;
+}
+async function notifyDevice(list) {
+  if (lsGet(LS_DEV, false) !== true || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+  const reg = await navigator.serviceWorker?.getRegistration?.().catch(() => null);
+  const show = async (title, body, tag) => {
+    const o = { body, tag, vibrate: [200, 100, 200], requireInteraction: true };
+    try {
+      if (reg?.showNotification) await reg.showNotification(title, o);
+      else new Notification(title, o);
+    } catch { /* niente */ }
+  };
+  for (const a of list.slice(0, 3)) await show(`${a.icon} ${a.title}`, a.text.slice(0, 200), a.key);
+  if (list.length > 3) await show(`🚨 ${list.length - 3} altri avvisi di vendita`, "Apri l'app per i dettagli.", 'more');
+}
+async function showTestNotification(title, body) {
+  const reg = await navigator.serviceWorker?.getRegistration?.().catch(() => null);
+  try {
+    if (reg?.showNotification) await reg.showNotification(title, { body, tag: 'test' });
+    else new Notification(title, { body, tag: 'test' });
+  } catch { /* niente */ }
+}
+async function enableDeviceAlerts() {
+  if (typeof Notification === 'undefined') {
+    alert("Questo browser non supporta le notifiche: gli avvisi restano visibili nell'app (🔔) e nella barra rossa in basso.");
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') {
+    alert('Notifiche non consentite: abilitale dalle impostazioni del sito nel browser.');
+    return;
+  }
+  try {
+    await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+  } catch { /* niente: si usano le notifiche della pagina */ }
+  lsSet(LS_DEV, true);
+  await showTestNotification('✅ Avvisi di vendita attivi', 'Riceverai un avviso quando una posizione volatile supera la soglia di protezione o la previsione a breve diventa negativa.');
+}
+function deviceAlertsHtml() {
+  const sup = typeof Notification !== 'undefined';
+  const on = sup && lsGet(LS_DEV, false) === true && Notification.permission === 'granted';
+  return `<div class="notif notif-swap"><div class="notif-t"><span class="notif-ic">📲</span> <b>Avvisi di vendita sul dispositivo: ${on ? 'attivi' : 'non attivi'}</b></div>
+    <div class="muted small-note">Per gli strumenti volatili o con alto guadagno atteso a breve ricevi una notifica se superano la soglia di protezione dal massimo (in base alla loro volatilità), calano molto in giornata, la previsione a 7/30 giorni diventa negativa o restituiscono metà del guadagno. Funziona mentre l'app è aperta sul dispositivo, anche in secondo piano; ad app chiusa non arrivano. Il prezzo di riferimento è quello della prima rilevazione di ogni strumento nel portafoglio. Sono indicazioni del modello: l'app non vende mai da sola.</div>
+    ${on ? '<button class="ghost small" data-act="alerts-test">Prova notifica</button> <button class="ghost small" data-act="alerts-off">Disattiva</button>' : sup ? '<button class="ghost small" data-act="alerts-on">Attiva avvisi sul dispositivo</button>' : '<span class="muted small-note">Notifiche non supportate da questo browser: restano gli avvisi nell\'app.</span>'}</div>`;
+}
+// App aperta in secondo piano: il controllo periodico normale è sospeso, qui solo i prezzi per gli avvisi
+async function backgroundAlerts() {
+  if (!document.hidden || !STATIC || state.running || lsGet(LS_DEV, false) !== true) return;
+  const p = state.portfolio || loadPortfolio();
+  if (![...(p.rows || []), ...(p.stocks || []), ...(p.bonds || [])].some((r) => r.isin && r.amount > 0)) return;
+  await checkLiveData().catch(() => {});
+  await liveCrypto().catch(() => {});
+  checkSellAlerts();
 }
 
 function updateNotifsBadge() {
@@ -2700,6 +2834,7 @@ function openNotifications() {
           .map((nt) => `<div class="notif notif-${nt.level}"><div class="notif-t"><span class="notif-ic">${nt.icon}</span> <b>${nt.title}</b></div><div class="muted">${nt.text}</div></div>`)
           .join('')}`
       : '<p class="pos">Nessun suggerimento: il portafoglio è in linea con i dati di mercato aggiornati.</p>';
+  if (hasHold) body.insertAdjacentHTML('afterbegin', deviceAlertsHtml());
   $('#notifs').showModal();
   updateNotifsBadge();
   // Notizie recenti sugli strumenti del portafoglio: solo informative, non cambiano punteggi e classifiche
@@ -2896,6 +3031,19 @@ function bind() {
   $('#btn-backtest').addEventListener('click', openBacktest);
   $('#btn-portfolio').addEventListener('click', openPortfolio);
   $('#btn-notifs').addEventListener('click', openNotifications);
+  $('#nf-body').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    if (b.dataset.act === 'alerts-on') await enableDeviceAlerts();
+    else if (b.dataset.act === 'alerts-off') lsSet(LS_DEV, false);
+    else if (b.dataset.act === 'alerts-test') {
+      await showTestNotification('🚨 Prova: avviso di vendita', 'Così arriveranno gli avvisi.');
+      return;
+    }
+    const keep = $('#nf-body').scrollTop;
+    openNotifications();
+    $('#nf-body').scrollTop = keep;
+  });
   $('#btn-settings').addEventListener('click', () => {
     fillSettings();
     $('#settings').showModal();
@@ -2948,6 +3096,7 @@ function bind() {
   });
   $('#import-file').addEventListener('change', (e) => e.target.files[0] && doImport(e.target.files[0]));
   setInterval(liveTick, 60e3);
+  setInterval(backgroundAlerts, 120e3);
 }
 
 async function main() {
@@ -2973,7 +3122,7 @@ async function main() {
     if (!importFromHash()) return;
     if ($('#portfolio')?.open) renderPortfolio();
     else $('#btn-portfolio')?.click();
-    try { updateNotifsBadge(); } catch { /* niente */ }
+    try { checkSellAlerts(); } catch { /* niente */ }
   });
   try {
     const meta = STATIC ? await fetch(`data/meta.json?t=${Date.now()}`).then((r) => r.json()) : await api('/api/meta');

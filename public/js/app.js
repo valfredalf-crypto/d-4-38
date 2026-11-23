@@ -804,7 +804,7 @@ function rowKey() {
   const now = performance.now();
   if (now - rowKeyCache.at > 50) {
     const v = state.view;
-    rowKeyCache = { at: now, key: JSON.stringify([state.settings, v.funnel, v.scenario, v.nr5Mode, v.type, v.sort?.key, v.np, v.distFilter, v.allEtf, state.portfolio?.momRho, state.portfolio?.taxPrudent, state.liveVersion, state.dataVersion]) };
+    rowKeyCache = { at: now, key: JSON.stringify([state.settings, v.funnel, v.scenario, v.nr5Mode, v.type, v.distFilter, v.allEtf, state.portfolio?.momRho, state.portfolio?.taxPrudent, state.liveVersion, state.dataVersion]) };
   }
   return rowKeyCache.key;
 }

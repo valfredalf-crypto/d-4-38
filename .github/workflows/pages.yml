@@ -56,8 +56,9 @@ jobs:
       # netto più probabile valido per ogni strumento e periodo, ridisegno rapido, verifica dei dati superata)
       - name: Verifica dell'app prima della pubblicazione
         run: |
-          npm install --no-save --no-audit --no-fund playwright@1.52.0
-          npx playwright install --with-deps chromium
+          npm install --no-save --no-audit --no-fund playwright@latest
+          # Si usa il Chrome già installato sul server; solo se manca si scarica il Chromium di Playwright
+          if ! command -v google-chrome >/dev/null 2>&1; then npx playwright install --with-deps chromium || npx playwright install chromium || true; fi
           node scripts/verify-site.js
       # Verifica non superata (o test/build falliti): l'app NON si pubblica finché non è tutto a posto. Si apre subito una
       # segnalazione con il motivo e parte un nuovo tentativo immediato (i dati non validi vengono già esclusi in automatico

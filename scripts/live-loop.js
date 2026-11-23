@@ -10,6 +10,10 @@ const INTERVAL = Number(process.env.INTERVAL_MINUTES || 5) * 60e3;
 const DEADLINE = Date.now() + Number(process.env.LIVE_MINUTES || 330) * 60e3;
 const BRANCH = process.env.LIVE_BRANCH || 'live-data';
 const DRY = process.env.DRY_RUN === '1'; // scrive solo il file locale, senza push
+// Protezioni: un giro non può durare più di MAX_CYCLE (richiesta bloccata) e il processo non può superare MAX_RSS di memoria;
+// in entrambi i casi il job si chiude e riparte pulito, così i dati non restano fermi.
+const MAX_CYCLE = Number(process.env.MAX_CYCLE_MINUTES || 25) * 60e3;
+const MAX_RSS = Number(process.env.MAX_RSS_MB || 5000) * 1024 * 1024;
 
 // Lun–ven, 06:00–22:00 UTC: copre Xetra/LS Exchange (8–23 ora italiana) e Wall Street.
 export function isMarketHours(d = new Date()) {
@@ -51,7 +55,7 @@ async function once() {
   const json = JSON.stringify({ generatedAt: snap.generatedAt, key: snap.key, market: snap.market, verify: snap.verify, quotes: snap.quotes, results: snap.results });
   fs.writeFileSync(process.env.LIVE_FILE || 'live.json', json);
   if (!DRY) publish(json);
-  console.log(`${snap.generatedAt}: verifica ${snap.verify?.status}, ${snap.ok}/${snap.instruments.length} previsioni, ${Object.keys(snap.quotes).length} quotazioni, ${Math.round(json.length / 1024)} KB, ${((Date.now() - t0) / 1000).toFixed(0)} s`);
+  console.log(`${snap.generatedAt}: verifica ${snap.verify?.status}, ${snap.ok}/${snap.instruments.length} previsioni, ${Object.keys(snap.quotes).length} quotazioni, ${Math.round(json.length / 1024)} KB, ${((Date.now() - t0) / 1000).toFixed(0)} s, memoria ${Math.round(process.memoryUsage().rss / 1048576)} MB`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -60,9 +64,24 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   process.env.GIT_COMMITTER_NAME ||= process.env.GIT_AUTHOR_NAME;
   process.env.GIT_COMMITTER_EMAIL ||= process.env.GIT_AUTHOR_EMAIL;
   let restart = false;
+  const finish = () => {
+    if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `restart=${restart}\n`);
+  };
   for (;;) {
     const start = Date.now();
-    await once().catch((e) => console.error(`Aggiornamento fallito: ${e.message}`));
+    let timer;
+    const stuck = new Promise((r) => {
+      timer = setTimeout(() => r('stuck'), MAX_CYCLE);
+    });
+    const outcome = await Promise.race([once().catch((e) => console.error(`Aggiornamento fallito: ${e.message}`)), stuck]);
+    clearTimeout(timer);
+    const rss = process.memoryUsage().rss;
+    if (outcome === 'stuck' || rss > MAX_RSS) {
+      console.error(outcome === 'stuck' ? `Giro bloccato da oltre ${MAX_CYCLE / 60e3} minuti: il job riparte` : `Memoria a ${Math.round(rss / 1048576)} MB: il job riparte`);
+      restart = true;
+      finish();
+      process.exit(0);
+    }
     if (!isMarketHours()) break; // fuori orario basta un giro (i prezzi non cambiano)
     if (Date.now() + INTERVAL > DEADLINE) {
       restart = true; // tempo massimo del job quasi esaurito: il workflow si rilancia
@@ -70,5 +89,5 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     }
     await new Promise((r) => setTimeout(r, Math.max(0, INTERVAL - (Date.now() - start))));
   }
-  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `restart=${restart}\n`);
+  finish();
 }

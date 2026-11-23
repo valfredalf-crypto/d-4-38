@@ -24,7 +24,24 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const base = `http://127.0.0.1:${server.address().port}`;
 
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const browser = await chromium.launch(process.env.BROWSER_CHANNEL ? { channel: process.env.BROWSER_CHANNEL } : {});
+// Browser: quello indicato (BROWSER_CHANNEL), altrimenti il Chrome già installato sul computer/server, poi il Chromium di
+// Playwright, poi Edge. Così la verifica non dipende dal sistema operativo del server (Playwright non scarica Chromium su
+// sistemi che non conosce ancora).
+let browser = null;
+const launchErrors = [];
+for (const channel of [...new Set([process.env.BROWSER_CHANNEL || 'chrome', 'chrome', null, 'msedge'])]) {
+  try {
+    browser = await chromium.launch(channel ? { channel } : {});
+    console.log(`Browser della verifica: ${channel || 'chromium di Playwright'} ${browser.version()}`);
+    break;
+  } catch (e) {
+    launchErrors.push(`${channel || 'chromium'}: ${String(e.message).split('\n')[0]}`);
+  }
+}
+if (!browser) {
+  console.error(`PROBLEMA: nessun browser disponibile per la verifica (${launchErrors.join(' | ')})`);
+  process.exit(1);
+}
 const problems = [];
 const report = {};
 try {

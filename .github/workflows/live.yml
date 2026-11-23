@@ -2,9 +2,11 @@ name: Dati live
 
 # In orario di borsa un job resta attivo e ogni 5 minuti ricalcola quotazioni e previsioni di tutti
 # gli strumenti, pubblicandole sul ramo `live-data` (l'app lo legge ogni 60 s). Allo scadere del
-# tempo massimo si rilancia da solo; l'esecuzione oraria fa da riserva se la catena si interrompe.
+# tempo massimo si rilancia da solo. Riserva se la catena si interrompe (server perso, errore): in orario di borsa un avvio
+# programmato ogni 15 minuti, che resta in coda finché un job è attivo e parte appena quello si ferma; fuori orario uno all'ora.
 on:
   schedule:
+    - cron: '7,22,37,52 5-21 * * 1-5'
     - cron: '7 * * * *'
   workflow_dispatch:
 

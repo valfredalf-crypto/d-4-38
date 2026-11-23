@@ -892,6 +892,9 @@ function rowValuesCalc(i) {
     name: i.name.toLowerCase(),
     type: i.type,
     price: q?.priceEur ?? null,
+    // patrimonio (milioni di €) e TER del fondo: solo ETF, per i filtri
+    aum: aumEur(r?.fund) != null ? aumEur(r.fund) / 1e6 : null,
+    ter: Number.isFinite(r?.fund?.ter) ? r.fund.ter : null,
     change: q?.changePct ?? null,
     expected: r?.forward?.expected ?? null,
     expected5: r?.forward?.expected != null ? (1 + r.forward.expected) ** 5 - 1 : null,

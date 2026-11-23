@@ -17,3 +17,13 @@ test('filtri sugli indicatori', () => {
   assert.ok(!passes({ maxLoss: 0.45 }, activeFilters({ maxLoss: { max: 40 } })));
   assert.ok(passes({ anything: 1 }, activeFilters({})));
 });
+
+test('filtri patrimonio (milioni di €) e TER (%): scala corretta e righe senza dato escluse', async () => {
+  const { activeFilters, passes } = await import('../public/js/filters.js');
+  const a = activeFilters({ aum: { min: '500' }, ter: { max: '0,25' } });
+  assert.deepEqual(a, [{ key: 'aum', min: 500, max: null }, { key: 'ter', min: null, max: 0.0025 }]);
+  assert.equal(passes({ aum: 1200, ter: 0.002 }, a), true);
+  assert.equal(passes({ aum: 300, ter: 0.002 }, a), false); // patrimonio troppo basso
+  assert.equal(passes({ aum: 1200, ter: 0.004 }, a), false); // TER troppo alto
+  assert.equal(passes({ aum: null, ter: null }, a), false); // azioni/ETF senza dato
+});

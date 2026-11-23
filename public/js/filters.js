@@ -42,6 +42,8 @@ export const INDICATORS = [
   { key: 'varM3', label: 'Var. 3 mesi', pct: true },
   { key: 'varY', label: 'Var. 1 anno', pct: true },
   { key: 'price', label: 'Prezzo (€)', pct: false },
+  { key: 'aum', label: 'Patrimonio del fondo (milioni di €, solo ETF)', pct: false },
+  { key: 'ter', label: 'TER annuo (solo ETF)', pct: true },
 ];
 
 export const PRESETS = [
@@ -62,6 +64,9 @@ export const PRESETS = [
   { label: 'Perdita max < 50%', filters: { maxLoss: { max: 50 } } },
   { label: 'P(perdita) < 25%', filters: { probLoss: { max: 25 } } },
   { label: 'Guadagno probabile > 0', filters: { netP25: { min: 0 } } },
+  { label: 'TER ≤ 0,30%', filters: { ter: { max: 0.3 } } },
+  { label: 'Patrimonio ≥ 500 mln €', filters: { aum: { min: 500 } } },
+  { label: 'Patrimonio ≥ 1 mld € e TER ≤ 0,25%', filters: { aum: { min: 1000 }, ter: { max: 0.25 } } },
   { label: 'P(≥ +25%) > 60%', filters: { prob25: { min: 60 } } },
   { label: 'P(≥ +50%) > 30%', filters: { prob50: { min: 30 } } },
 ];

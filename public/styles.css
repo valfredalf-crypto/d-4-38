@@ -307,3 +307,8 @@ table.mini .num { white-space: nowrap; }
 .sell-bar[hidden] { display: none; }
 .sell-bar .muted { color: #ffd9de; }
 .sell-bar button { color: #fff; border-color: #ffffff80; }
+
+/* Esito della verifica automatica (barra in alto) */
+.verify-chip { border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; font: inherit; font-size: 12px; background: transparent; cursor: pointer; white-space: nowrap; }
+.verify-chip.ok { color: #1f8a4c; }
+.verify-chip.warn, .verify-chip.fail { color: #b26a00; }

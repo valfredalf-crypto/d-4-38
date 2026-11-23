@@ -46,7 +46,7 @@ for (const f of fs.readdirSync(path.join(OUT, 'js'))) {
 }
 
 const histories = [];
-const { instruments, quotes, results, ok, key, generatedAt, market } = await computeSnapshot({
+const { instruments, quotes, results, ok, key, generatedAt, market, verify } = await computeSnapshot({
   onData(inst, history, fundamentals) {
     histories.push({ instrument: inst, history });
     write(`data/history/${fileKey(inst.symbol)}.json`, history);
@@ -54,10 +54,16 @@ const { instruments, quotes, results, ok, key, generatedAt, market } = await com
   },
 });
 
-write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, liveBranch: process.env.LIVE_BRANCH || 'live-data', market, static: true, build: BUILD, mock: process.env.MOCK === '1', generatedAt });
+write('data/meta.json', { ...universe().meta, repo: process.env.GITHUB_REPOSITORY || process.env.SITE_REPO || null, liveBranch: process.env.LIVE_BRANCH || 'live-data', market, static: true, build: BUILD, mock: process.env.MOCK === '1', generatedAt, verify });
 write('data/instruments.json', instruments);
 write('data/quotes.json', quotes);
 write('data/results.json', { key, results });
+write('data/verify.json', verify);
+if (verify.status === 'fail' && process.env.ALLOW_VERIFY_FAIL !== '1') {
+  console.error('VERIFICA NON SUPERATA: il sito non viene pubblicato (restano i dati precedenti).');
+  for (const c of verify.checks) if (c.level === 'fail') console.error(`  ${c.label}: ${c.text}`);
+  process.exit(1);
+}
 fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
 
 // Notizie recenti per le azioni (solo informative, mostrate nelle notifiche del portafoglio)

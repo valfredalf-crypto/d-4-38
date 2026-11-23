@@ -250,6 +250,7 @@ async function checkNewData() {
   if (reloadIfNewBuild(meta)) return;
   if (meta.generatedAt === state.dataVersion) return;
   state.dataVersion = meta.generatedAt;
+  if (state.meta) state.meta.verify = meta.verify;
   const [instruments, quotes, pre] = await Promise.all([api('/api/instruments'), api('/api/quotes'), api('/api/results').catch(() => null)]);
   const arrived = instruments.filter((i) => state.pendingIsins?.includes(i.isin));
   state.instruments = instruments;
@@ -283,6 +284,7 @@ async function checkLiveData() {
   if (!live.generatedAt || live.generatedAt <= (state.liveVersion || state.dataVersion || '')) return;
   state.liveVersion = live.generatedAt;
   if (live.market) state.market = live.market;
+  if (live.verify) state.verify = live.verify;
   const known = new Set(state.instruments.map((i) => i.symbol));
   for (const [k, q] of Object.entries(live.quotes || {})) if (known.has(k) && q) state.quotes[k] = q;
   if (keyMatches(live.key)) {
@@ -327,6 +329,18 @@ function updateStaticBanner(meta) {
     `Azioni ed ETF aggiornati al ${fmt(latest)} (ogni ~5 minuti in orario di borsa, quotazioni ritardate)` +
     (state.liveAt ? ` · crypto in tempo reale alle ${state.liveAt.toLocaleTimeString('it-IT')}` : '') +
     '. Previsioni ricalcolate a ogni aggiornamento.';
+  // Verifica automatica eseguita a ogni aggiornamento (riproducibilità, dati, modello): esito e dettagli
+  const v = [state.verify, state.meta?.verify].filter(Boolean).sort((a, b2) => (a.at < b2.at ? 1 : -1))[0];
+  if (v) {
+    const warn = v.checks.filter((c) => c.level !== 'ok');
+    const s = document.createElement('button');
+    s.type = 'button';
+    s.className = `verify-chip ${v.status}`;
+    s.textContent = v.status === 'ok' ? '✅ Verifica dati e modelli superata' : `⚠️ Verifica: ${warn.length} ${warn.length === 1 ? 'avviso' : 'avvisi'}`;
+    s.title = 'Tocca per i dettagli della verifica';
+    s.addEventListener('click', () => alert(`Verifica automatica del ${fmt(v.at)}\n\n${v.checks.map((c) => `${c.level === 'ok' ? '✅' : c.level === 'warn' ? '⚠️' : '❌'} ${c.label}: ${c.text}`).join('\n\n')}${v.samples?.length ? `\n\nImpronte (dati → risultato) di controllo:\n${v.samples.map((x) => `${x.symbol}: ${x.inputs} → ${x.output}`).join('\n')}` : ''}`));
+    b.append(' ', s);
+  }
   b.dataset.generatedAt = meta.generatedAt;
 }
 

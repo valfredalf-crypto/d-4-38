@@ -44,10 +44,14 @@ async function once() {
   const t0 = Date.now();
   refreshLists();
   const snap = await computeSnapshot();
-  const json = JSON.stringify({ generatedAt: snap.generatedAt, key: snap.key, market: snap.market, quotes: snap.quotes, results: snap.results });
+  if (snap.verify?.status === 'fail') {
+    console.error(`${snap.generatedAt}: VERIFICA NON SUPERATA, aggiornamento non pubblicato (restano i dati precedenti)`);
+    return;
+  }
+  const json = JSON.stringify({ generatedAt: snap.generatedAt, key: snap.key, market: snap.market, verify: snap.verify, quotes: snap.quotes, results: snap.results });
   fs.writeFileSync(process.env.LIVE_FILE || 'live.json', json);
   if (!DRY) publish(json);
-  console.log(`${snap.generatedAt}: ${snap.ok}/${snap.instruments.length} previsioni, ${Object.keys(snap.quotes).length} quotazioni, ${Math.round(json.length / 1024)} KB, ${((Date.now() - t0) / 1000).toFixed(0)} s`);
+  console.log(`${snap.generatedAt}: verifica ${snap.verify?.status}, ${snap.ok}/${snap.instruments.length} previsioni, ${Object.keys(snap.quotes).length} quotazioni, ${Math.round(json.length / 1024)} KB, ${((Date.now() - t0) / 1000).toFixed(0)} s`);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

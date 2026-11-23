@@ -147,6 +147,22 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
   morta del 20% (`public/js/stable.js`), aggiornamento solo con una nuova versione dei dati e nessuna classifica mostrata finché non
   sono arrivati i dati live all'apertura (niente salto dopo pochi secondi).
 
+## Dati e verifica automatica — regole fisse
+
+- **Fonte dei prezzi**: LS Exchange, la borsa su cui esegue Trade Republic (`lib/ls.js`, simbolo `LS:<id>`), per tutti gli strumenti
+  che vi sono quotati con storico sufficiente e prezzo recente. Yahoo resta per le stime degli analisti e la composizione dei fondi
+  (`outlookSymbol`) e come ripiego. Una quotazione ferma da oltre 14 giorni non genera previsioni (niente «crolli» da dati vecchi).
+- **Verifica a ogni aggiornamento** (`lib/verify.js`, eseguita da `computeSnapshot` sia alla pubblicazione sia a ogni ciclo live):
+  1. riproducibilità — un campione di 60 strumenti (che ruota ogni ora) viene ricalcolato con gli stessi dati: il risultato deve essere
+     identico (simulazioni con seme deterministico); si pubblicano le impronte dati → risultato;
+  2. validità — nessuna previsione con valori mancanti o fuori scala;
+  3. dati — quotazioni recenti, prezzo coerente con lo storico, confronto di un campione con LS Exchange (entro il 3%);
+  4. modello — quota dei rendimenti reali delle ultime 4 settimane dentro l'intervallo previsto al 90%.
+  Esito `fail` (calcolo non riproducibile o oltre lo 0,5% di previsioni non valide): **non si pubblica**, restano i dati precedenti.
+  Esito `warn`: si pubblica e l'app lo segnala. L'esito è in `data/verify.json`, in `meta.json` e in `live.json`, e l'app lo mostra
+  nella barra in alto (tocca per i dettagli).
+- Verifica a posteriori delle previsioni a breve su storici reali: `node scripts/calibrate-short.js`.
+
 ## Struttura
 
 ```

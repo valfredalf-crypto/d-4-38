@@ -47,6 +47,7 @@ export function tableResult(r) {
       growth: r4(r.forward?.expectedGrowth),
       growthSource: r.forward?.growthSource ?? null,
       ...(Number.isFinite(r.forward?.analystUpside) ? { upside: r4(r.forward.analystUpside) } : {}), // prezzo obiettivo degli analisti ÷ prezzo − 1 (12 mesi)
+      ...(r.forward?.analystCount > 0 ? { analysts: r.forward.analystCount } : {}), // numero di analisti: peso del prezzo obiettivo
       vol: r4(r.forward?.vol), // volatilità annua usata nella simulazione (per il drag della volatilità nel CAGR)
       beta: r4(r.forward?.beta), // beta verso il mercato azionario (stress test: impatto di una correzione)
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
@@ -436,6 +437,7 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
     settings.outlook,
   );
   // ETF: prezzo obiettivo implicito dai titoli in portafoglio (stesso ruolo del prezzo obiettivo delle azioni)
+  if (fwd && instrument.type !== 'etf' && Number.isFinite(fwd.analystUpside) && fundamentals?.analysts > 0) fwd.analystCount = fundamentals.analysts;
   if (instrument.type === 'etf' && !Number.isFinite(fwd.analystUpside)) {
     const hu = holdingsUpside(holdings);
     if (hu) { fwd.analystUpside = hu.upside; fwd.upsideCoverage = hu.coverage; }

@@ -45,6 +45,13 @@ jobs:
             import-cache-
       - run: npm test
       - run: node scripts/build-static.js
+      # Regola fissa: l'app si pubblica SOLO se la verifica in un browser vero è superata (nessun errore, tabelle popolate,
+      # netto più probabile valido per ogni strumento e periodo, ridisegno rapido, verifica dei dati superata)
+      - name: Verifica dell'app prima della pubblicazione
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.52.0
+          npx playwright install --with-deps chromium
+          node scripts/verify-site.js
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

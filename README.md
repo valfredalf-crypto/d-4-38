@@ -163,6 +163,22 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
   nella barra in alto (tocca per i dettagli).
 - Verifica a posteriori delle previsioni a breve su storici reali: `node scripts/calibrate-short.js`.
 
+## Previsioni pesate per affidabilità e pubblicazione solo dopo verifica — regole fisse
+
+- **Mediana ponderata per affidabilità** (`public/js/analysts.js`): la previsione annua usata per il «netto più probabile» (orizzonti
+  brevi e primo anno) è la mediana ponderata interpolata delle previsioni disponibili, ognuna con il suo peso:
+  analisti (peso n ÷ (n + 5), dimezzato se il prezzo obiettivo è in ritardo sul prezzo), fondamentali (peso = quota confermata dalle
+  evidenze), modello (peso 1; 0,5 se stima provvisoria). Il prezzo obiettivo non si prende mai per intero: se il prezzo si è mosso
+  di oltre il 15% in 6 mesi contro il rialzo implicito si corregge, e dei rialzi positivi si crede metà. Dopo il primo anno vale il
+  rendimento atteso del modello (lo stesso della classifica a 5 anni). Una previsione estrema non deve trascinare la stima
+  (caso WashTec: obiettivo +50% con 3 analisti dopo un −26% in 6 mesi → +13% annuo, non +34%).
+- **Si pubblica solo dopo la verifica, a OGNI aggiornamento**: `pages.yml` esegue, in quest'ordine, `npm test`, la costruzione dei
+  dati con `lib/verify.js` (riproducibilità, dati, modello) e `scripts/verify-site.js`, che apre l'app costruita in un browser vero e
+  controlla: nessun errore JavaScript, tabelle popolate nella classifica principale e in «Netto più probabile», valore valido per ogni
+  strumento e periodo, nessun valore non numerico, ridisegno entro 20 secondi. Se un controllo fallisce l'app NON viene pubblicata e
+  resta online la versione precedente. Il ciclo live esegue `lib/verify.js` a ogni giro e non pubblica i dati se l'esito è `fail`.
+  Queste verifiche non vanno rimosse né indebolite.
+
 ## Struttura
 
 ```

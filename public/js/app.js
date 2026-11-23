@@ -1,9 +1,10 @@
-import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, momentumStats, leveragedArith, underlyingOf, leverageOf, isInverseProduct } from './analyze.js';
+import { BENCHMARK_SYMBOL, CRYPTO_BENCHMARK_SYMBOL, DEFAULT_SETTINGS, fileKey, compactResult, applyLivePrice, priorEstimate, priorVol, momentumStats, leveragedArith, underlyingOf, leverageOf, isInverseProduct } from './analyze.js';
 import { viewFor, productViewFor } from './market-views.js';
 import { isValidIsin } from './isin.js';
 import { evaluateAlerts, dueAlerts } from './alerts.js';
 import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
 import { ema, stabilizeRanks } from './stable.js';
+import { analystView, combineForecasts } from './analysts.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
@@ -88,7 +89,7 @@ const keyMatches = (k) => {
     return false;
   }
 };
-const RESULTS_FORMAT = 3;
+const RESULTS_FORMAT = 4;
 function saveResults() {
   const compact = {};
   for (const [k, r] of Object.entries(state.results)) compact[k] = compactResult(r);
@@ -735,12 +736,17 @@ function npStats(inst, days) {
     // il prezzo obiettivo degli analisti è a 12 mesi: vale per il primo anno; dopo, crescita di lungo periodo (fondamentali/modello)
     // ogni previsione vale per il suo orizzonte: prezzo obiettivo 12 mesi, previsioni verificate fino alla loro data
     const vy = Math.min(y, pp.shortView && Number.isFinite(pp.shortViewYears) ? pp.shortViewYears : 1);
-    const g = (1 + base - ter) ** vy * (1 + pp.cagr - ter) ** (y - vy);
+    // dopo il primo anno: rendimento atteso del modello (pesa storico, equilibrio, analisti e fondamentali secondo l'affidabilità),
+    // lo stesso della classifica a 5 anni; non il solo CAGR dai fondamentali
+    const long = Number.isFinite(r.forward?.expected) && !state.view.scenario ? r.forward.expected : pp.cagr;
+    const g = (1 + base - ter) ** vy * (1 + long - ter) ** (y - vy);
     net = g > 0 ? g ** (1 / y) - 1 : -0.99;
   }
   net = smoothNet(inst, days, net); // media mobile degli ultimi aggiornamenti: niente oscillazioni tra un ricalcolo e l'altro
   const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
-  return { median: h.medianNet / cap, mean: h.netGain / cap, p: h.pProfit, medianEur: h.medianNet, meanEur: h.netGain, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
+  const med = Math.max(-cap, h.medianNet); // non si può perdere più del capitale investito
+  const avg = Math.max(-cap, h.netGain);
+  return { median: med / cap, mean: avg / cap, p: h.pProfit, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
 }
 // Chiave delle impostazioni che influenzano il «netto più probabile» (calcolata al massimo ogni 50 ms: serve a ogni riga)
 let npCfgCache = { at: -1, key: '' };
@@ -816,13 +822,22 @@ function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Azioni ed ETF con prezzo obiettivo degli analisti (per gli ETF: media ponderata dei titoli in portafoglio): a breve termine
   // la previsione è la media tra prezzo obiettivo (previsione diretta sul prezzo a 12 mesi) e crescita dei fondamentali.
   const target = (i.type === 'stock' || (i.type === 'etf' && !i.leveraged)) && Number.isFinite(r?.forward?.upside) ? r.forward.upside : null;
-  const sp = shortPrior(i, target != null ? (target + cagr) / 2 : cagr);
-  if (target != null && !sp.src) sp.src = `analisti: prezzo obiettivo ${pct(target, true, 1)}${i.type === 'etf' ? ' (media dei titoli del fondo)' : ''}, fondamentali ${pct(cagr, true, 1)}`;
+  // Il prezzo obiettivo non si prende per intero (public/js/analysts.js): si corregge se in ritardo rispetto al prezzo, si crede solo
+  // metà del rialzo e pesa secondo il numero di analisti; il resto del peso va al rendimento atteso del modello (che include lo storico).
+  const model = Number.isFinite(r?.forward?.expected) && !Number.isFinite(cagrOverride) ? r.forward.expected : cagr;
+  const av = target != null ? analystView({ upside: target, analysts: i.type === 'stock' ? r.forward.analysts ?? r.forward.analystCount ?? 3 : null, mom26: r.mom?.w26, haircut: (state.settings.outlook?.analystHaircut ?? 0.5) }) : null;
+  // Previsione più affidabile: MEDIANA PONDERATA per affidabilità di analisti, fondamentali e modello (regola fissa)
+  const fundV = Number.isFinite(r?.forward?.fundExpected) && !Number.isFinite(cagrOverride) ? r.forward.fundExpected : null;
+  const comb = av || fundV != null ? combineForecasts({ analyst: av, fundamentals: fundV, evidence: r?.forward?.evidence, model, estimated: !!r?.estimated }) : null;
+  const sp = shortPrior(i, comb && Number.isFinite(comb.value) ? comb.value : cagr);
+  if (comb && comb.parts.length > 1 && !sp.src) sp.src = `mediana ponderata per affidabilità di: ${comb.parts.map((x) => `${x.id} ${pct(x.value, true, 1)} (peso ${nf2.format(x.weight)})`).join(' · ')}${av ? ` — prezzo obiettivo ${pct(target, true, 1)}${i.type === 'etf' ? ' (media dei titoli del fondo)' : r.forward.analysts ? `, ${r.forward.analysts} analisti` : ''}${av.stale ? ', in ritardo sul prezzo (mosso molto in 6 mesi)' : ''}` : ''}`;
   // previsione SPECIFICA dello strumento (consenso analisti / stime sui titoli dell'ETF), non il solo rendimento di mercato
   const gs = r?.forward?.growthSource;
   const evidence = i.leveraged ? !!underlyingView(i)?.ev : !r?.estimated && (gs === 'own' || gs === 'holdings'); // leva: previsioni del sottostante
   // rendimenti misurati sui prezzi reali del prodotto: TER già incluso, si somma per non toglierlo due volte
-  return { cagr, cagrShort: sp.netOfTer ? sp.cagr + ter : sp.cagr, shortSrc: sp.src, shortView: !!sp.view, shortViewYears: sp.viewYears ?? null, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null, vol: Number.isFinite(r?.forward?.vol) ? r.forward.vol : null };
+  return { cagr, cagrShort: sp.netOfTer ? sp.cagr + ter : sp.cagr, shortSrc: sp.src, shortView: !!sp.view, shortViewYears: sp.viewYears ?? null, evidence, ter, tax, net: cagr - ter, div, mdd: Number.isFinite(r?.sim?.histMdd) ? r.sim.histMdd : null,
+    // volatilità nulla (prezzo fermo: titolo non scambiato) non è un dato affidabile: si usa quella tipica della categoria
+    vol: Number.isFinite(r?.forward?.vol) && r.forward.vol > 0.001 ? r.forward.vol : r?.forward ? priorVol(i) : null };
 }
 const s_tax = (i) => {
   const t = state.results[i.symbol]?.sim?.taxRate;
@@ -3246,5 +3261,45 @@ async function main() {
     $('#table tbody').innerHTML = `<tr><td colspan="28" class="neg">Server non raggiungibile: ${esc(e.message)}</td></tr>`;
   }
 }
+
+// Autoverifica dell'app, eseguita da scripts/verify-site.js PRIMA di ogni pubblicazione (regola fissa): ogni strumento deve avere
+// un «netto più probabile» valido per ogni periodo, la tabella deve essere popolata, senza valori non numerici, e il ridisegno rapido.
+window.trmcSelfCheck = () => {
+  const days = NP_PERIODS.map(([d]) => d);
+  let values = 0;
+  let missing = 0;
+  let invalidCount = 0;
+  const invalid = [];
+  for (const i of state.instruments) {
+    const r = state.results[i.symbol];
+    if (!r) continue;
+    for (const d of days) {
+      const x = npStats(i, d);
+      if (!x) { missing++; continue; }
+      values++;
+      const ok = Number.isFinite(x.median) && Number.isFinite(x.mean) && Number.isFinite(x.p) && x.p >= 0 && x.p <= 1 && x.median >= -1 && x.mean >= -1 && x.median < 50;
+      if (!ok) invalidCount++;
+      if (!ok && invalid.length < 20) invalid.push(`${i.symbol}@${d}: ${x.median}/${x.p}`);
+    }
+  }
+  const t0 = performance.now();
+  render();
+  const renderMs = Math.round(performance.now() - t0);
+  const body = $('#table tbody');
+  const rows = body.querySelectorAll('tr[data-symbol]').length;
+  return {
+    mode: state.view.funnel,
+    instruments: state.instruments.length,
+    results: Object.keys(state.results).length,
+    values,
+    missing,
+    invalidCount,
+    invalid,
+    rows,
+    notNumbers: (body.innerText.match(/NaN|undefined|Infinity/g) || []).length,
+    renderMs,
+    verify: (state.verify || state.meta?.verify)?.status ?? null,
+  };
+};
 
 main();

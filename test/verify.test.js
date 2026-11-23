@@ -62,3 +62,12 @@ test('esito: prezzi lontani da LS Exchange o copertura anomala → avviso', () =
   assert.equal(summarize({ ...base, coverage: { n: 900, share: 0.6 } }).status, 'warn');
   assert.equal(summarize({ ...base, stale: 200 }).status, 'warn');
 });
+
+test('riparazione automatica: pochi strumenti esclusi → si pubblica con avviso; troppi → non si pubblica', () => {
+  const few = summarize({ ...base, quarantined: ['A', 'B'] });
+  assert.equal(few.status, 'warn');
+  assert.equal(few.checks.find((c) => c.id === 'repair').level, 'warn');
+  const many = summarize({ ...base, quarantined: Array.from({ length: 30 }, (_, i) => 'S' + i) });
+  assert.equal(many.status, 'fail');
+  assert.equal(summarize({ ...base, quarantined: [] }).status, 'ok');
+});

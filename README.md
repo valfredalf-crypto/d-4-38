@@ -178,6 +178,13 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
   strumento e periodo, nessun valore non numerico, ridisegno entro 20 secondi. Se un controllo fallisce l'app NON viene pubblicata e
   resta online la versione precedente. Il ciclo live esegue `lib/verify.js` a ogni giro e non pubblica i dati se l'esito è `fail`.
   Queste verifiche non vanno rimosse né indebolite.
+- **Se un controllo fallisce l'app non si pubblica finché non è tutto a posto, e si rimedia subito**:
+  1. riparazione automatica durante la costruzione dei dati: gli strumenti con numeri non validi o calcolo non riproducibile vengono
+     esclusi (restano senza previsione, con il motivo) e la verifica si ripete; oltre il 2% di esclusi il problema è generale e si blocca;
+  2. blocco: si apre subito la segnalazione «Pubblicazione bloccata dalla verifica automatica» (etichetta `pubblicazione-bloccata`)
+     con il motivo esatto e parte un nuovo tentativo immediato; poi riprova la pubblicazione programmata ogni 2 ore;
+  3. ogni correzione inviata al ramo pubblicato fa ripartire la pubblicazione: appena tutte le verifiche passano l'app va online e
+     la segnalazione si chiude da sola.
 
 ## Struttura
 

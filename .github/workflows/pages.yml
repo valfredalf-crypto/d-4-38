@@ -14,11 +14,18 @@ on:
     workflows: ['Aggiorna universo strumenti', 'Aggiungi o rimuovi ISIN', 'Importa ISIN', 'Taratura modello']
     types: [completed]
   workflow_dispatch:
+    inputs:
+      retry:
+        description: 'Nuovo tentativo automatico dopo una verifica non superata'
+        required: false
+        default: '0'
 
 permissions:
   contents: read
   pages: write
   id-token: write
+  issues: write
+  actions: write
 
 concurrency:
   group: pages
@@ -52,6 +59,24 @@ jobs:
           npm install --no-save --no-audit --no-fund playwright@1.52.0
           npx playwright install --with-deps chromium
           node scripts/verify-site.js
+      # Verifica non superata (o test/build falliti): l'app NON si pubblica finché non è tutto a posto. Si apre subito una
+      # segnalazione con il motivo e parte un nuovo tentativo immediato (i dati non validi vengono già esclusi in automatico
+      # durante la costruzione). Appena una pubblicazione passa tutte le verifiche va online e la segnalazione si chiude.
+      - name: Pubblicazione bloccata - segnalazione e nuovo tentativo
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node scripts/report-block.js > /tmp/blocco.md || echo "Pubblicazione bloccata: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /tmp/blocco.md
+          cat /tmp/blocco.md
+          n=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label pubblicazione-bloccata --json number -q '.[0].number' || true)
+          if [ -n "$n" ]; then
+            gh issue comment "$n" --repo "$GITHUB_REPOSITORY" --body-file /tmp/blocco.md || true
+          else
+            gh label create pubblicazione-bloccata --repo "$GITHUB_REPOSITORY" --color B60205 --description "La verifica automatica ha bloccato la pubblicazione" 2>/dev/null || true
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Pubblicazione bloccata dalla verifica automatica" --label pubblicazione-bloccata --body-file /tmp/blocco.md || true
+          fi
+          if [ "${{ inputs.retry }}" != "1" ]; then gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" --ref "$GITHUB_REF_NAME" -f retry=1 || true; fi
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
@@ -65,3 +90,11 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+      # Pubblicazione riuscita dopo tutte le verifiche: si chiude l'eventuale segnalazione di blocco
+      - name: Chiude la segnalazione di blocco
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label pubblicazione-bloccata --json number -q '.[].number' || true); do
+            gh issue close "$n" --repo "$GITHUB_REPOSITORY" --comment "Risolto: l'app ha superato tutte le verifiche ed è stata pubblicata (commit ${GITHUB_SHA::7})." || true
+          done

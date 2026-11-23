@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { project, projectShort, projectAny, projectPortfolio, normCdf, normalizeHorizons, horizonShort, horizonLong, horizonExp, daysToYears, isShortHorizon, HORIZON_PRESETS } from '../public/js/projection.js';
+import { project, projectShort, projectAny, momentumTilt, projectPortfolio, normCdf, normalizeHorizons, horizonShort, horizonLong, horizonExp, daysToYears, isShortHorizon, HORIZON_PRESETS } from '../public/js/projection.js';
 import { mulberry32 } from '../public/js/montecarlo.js';
 
 test('normCdf: valori noti', () => {
@@ -381,4 +381,14 @@ test('stima provvisoria: evidenze degli analisti solo con almeno 3 analisti', as
   assert.equal(junk.cagr, base.cagr); // ricavi +1.875% senza analisti: ignorati
   const ok = provisionalEstimate({ instrument: { name: 'X', type: 'stock' }, history: hist, market: 0.103, settings: DEFAULT_SETTINGS, fundamentals: { revenueGrowthNext: 0.2, analysts: 5 } });
   assert.ok(ok.cagr > base.cagr);
+});
+
+test('Orizzonte 1 giorno: trend a 4 settimane (non quello di 1 settimana, nullo nel fine settimana)', () => {
+  const mom = { w1: 0, w4: 0.08, w13: 0.12, w26: 0.2 };
+  const t1 = momentumTilt({ net: 0.1, vol: 0.4, mom, years: 1 / 365, rho: 1 });
+  const t7 = momentumTilt({ net: 0.1, vol: 0.4, mom, years: 7 / 365, rho: 1 });
+  assert.equal(t1.window, 4);
+  assert.equal(t7.window, 4);
+  assert.ok(Math.abs(t1.net - t7.net) < 1e-9); // stessa deriva annua: il guadagno a 1 gg è ~1/7 di quello a 7 gg
+  assert.ok(t1.net > 0.1);
 });

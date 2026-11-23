@@ -115,7 +115,9 @@ export function momentumTilt({ net, vol, mom, years, rho = MOMENTUM_RHO }) {
   if (!mom || !(years > 0)) return { net, tilt: 0, window: null, rho };
   const wins = [[1, mom.w1], [4, mom.w4], [13, mom.w13], [26, mom.w26]].filter(([, r]) => Number.isFinite(r) && r > -0.99);
   if (!wins.length) return { net, tilt: 0, window: null, rho };
-  const [k, R] = wins.find(([kk]) => kk >= 2 * years * 52) ?? wins[wins.length - 1];
+  // finestra almeno doppia dell'orizzonte e mai sotto 4 settimane: il rendimento di 1 settimana è troppo rumoroso (e nel
+  // fine settimana vale 0, perché la nuova barra settimanale ripete il prezzo del venerdì)
+  const [k, R] = wins.find(([kk]) => kk >= Math.max(2 * years * 52, 4)) ?? wins[wins.length - 1];
   // deriva logaritmica annua osservata (crescita mediana): + σ²/2 per confrontarla con il rendimento MEDIO del modello
   const trend = (Math.log(1 + R) / k) * 52 + (Number.isFinite(vol) && vol > 0 ? (vol * vol) / 2 : 0);
   const prior = Math.log(1 + Math.max(net, -0.99));

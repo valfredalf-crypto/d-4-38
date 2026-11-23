@@ -276,13 +276,17 @@ async function checkNewData() {
 
 // Versione online: quotazioni e previsioni aggiornate ogni ~5 minuti in orario di borsa
 // (workflow live.yml → ramo live-data, letto da raw.githubusercontent.com).
-async function checkLiveData() {
+// force (pulsante «Aggiorna ora»): lettura diretta da GitHub, senza la copia intermedia che può essere vecchia fino a 5 minuti.
+async function checkLiveData(force = false) {
   const m = state.meta;
-  if (!m?.repo) return;
-  const res = await fetch(`https://raw.githubusercontent.com/${m.repo}/${m.liveBranch || 'live-data'}/live.json`, { cache: 'no-cache' });
-  if (!res.ok) return;
+  if (!m?.repo) return false;
+  const branch = m.liveBranch || 'live-data';
+  let res = null;
+  if (force) res = await fetch(`https://api.github.com/repos/${m.repo}/contents/live.json?ref=${branch}&t=${Date.now()}`, { headers: { Accept: 'application/vnd.github.raw+json' }, cache: 'no-store' }).catch(() => null);
+  if (!res?.ok) res = await fetch(`https://raw.githubusercontent.com/${m.repo}/${branch}/live.json${force ? `?t=${Date.now()}` : ''}`, { cache: force ? 'no-store' : 'no-cache' });
+  if (!res.ok) return false;
   const live = await res.json();
-  if (!live.generatedAt || live.generatedAt <= (state.liveVersion || state.dataVersion || '')) return;
+  if (!live.generatedAt || live.generatedAt <= (state.liveVersion || state.dataVersion || '')) return false;
   state.liveVersion = live.generatedAt;
   if (live.market) state.market = live.market;
   if (live.verify) state.verify = live.verify;
@@ -298,6 +302,41 @@ async function checkLiveData() {
     }
     saveResults();
   }
+  return true;
+}
+
+// Pulsante «Aggiorna ora»: scarica subito gli ultimi dati pubblicati (sito + dati live + crypto), anche con gli aggiornamenti
+// automatici disattivati, e dice se è arrivato qualcosa di nuovo.
+async function manualRefresh() {
+  if (state.refreshing) return;
+  state.refreshing = true;
+  state.refreshMsg = 'Aggiornamento in corso…';
+  updateStaticBanner({ generatedAt: state.dataVersion });
+  for (let k = 0; k < 40 && (state.ticking || state.running); k++) await new Promise((r) => setTimeout(r, 250)); // aggiornamento automatico in corso
+  state.ticking = true;
+  const before = [state.dataVersion, state.liveVersion].filter(Boolean).sort().at(-1);
+  try {
+    await checkNewData().catch(() => {});
+    await checkLiveData(true).catch(() => {});
+    state.liveReady = true;
+    await liveCrypto().catch(() => {});
+    checkSellAlerts();
+    const after = [state.dataVersion, state.liveVersion].filter(Boolean).sort().at(-1);
+    const hm = (d) => new Date(d).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    state.refreshMsg = after && after !== before ? `Aggiornato adesso: dati delle ${hm(after)}.` : `Hai già gli ultimi dati pubblicati (${after ? hm(after) : 'n/d'}): il prossimo aggiornamento automatico arriva appena pronto.`;
+  } catch (e) {
+    state.refreshMsg = 'Aggiornamento non riuscito: controlla la connessione e riprova.';
+  } finally {
+    state.ticking = false;
+    state.refreshing = false;
+  }
+  updateStaticBanner({ generatedAt: state.dataVersion });
+  render();
+  if ($('#portfolio')?.open && !$('#pf-body')?.contains(document.activeElement)) renderPortfolio();
+  setTimeout(() => {
+    state.refreshMsg = null;
+    updateStaticBanner({ generatedAt: state.dataVersion });
+  }, 15000);
 }
 
 // Versione online: prezzi crypto in tempo reale da Coinbase (API pubblica, nessuna chiave).
@@ -326,10 +365,31 @@ function updateStaticBanner(meta) {
   b.hidden = false;
   const fmt = (d) => new Date(d).toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' });
   const latest = [meta.generatedAt, state.liveVersion].filter(Boolean).sort().at(-1);
+  // età dei dati: in orario di borsa (lun–ven, 6–22 UTC) oltre 20 minuti senza aggiornamenti viene segnalato
+  const ageMin = latest ? Math.max(0, Math.round((Date.now() - new Date(latest).getTime()) / 60e3)) : null;
+  const now = new Date();
+  const market = now.getUTCDay() >= 1 && now.getUTCDay() <= 5 && now.getUTCHours() >= 6 && now.getUTCHours() < 22;
+  const age = ageMin == null ? '' : ageMin < 1 ? 'meno di 1 minuto fa' : ageMin < 120 ? `${ageMin} min fa` : `${Math.round(ageMin / 60)} ore fa`;
   b.textContent =
-    `Azioni ed ETF aggiornati al ${fmt(latest)} (ogni ~5 minuti in orario di borsa, quotazioni ritardate)` +
+    `Ultimo aggiornamento automatico: ${latest ? fmt(latest) : 'n/d'}${age ? ` (${age})` : ''}` +
+    (market && ageMin > 20 ? ' ⚠️ dati fermi: tocca «Aggiorna ora»' : '') +
     (state.liveAt ? ` · crypto in tempo reale alle ${state.liveAt.toLocaleTimeString('it-IT')}` : '') +
-    '. Previsioni ricalcolate a ogni aggiornamento.';
+    '. Azioni ed ETF si aggiornano ogni pochi minuti in orario di borsa; previsioni ricalcolate a ogni aggiornamento.';
+  const rb = document.createElement('button');
+  rb.type = 'button';
+  rb.id = 'refresh-now';
+  rb.className = 'refresh-btn';
+  rb.textContent = state.refreshing ? 'Aggiornamento…' : 'Aggiorna ora';
+  rb.disabled = !!state.refreshing;
+  rb.title = 'Scarica subito gli ultimi dati pubblicati';
+  rb.addEventListener('click', manualRefresh);
+  b.append(' ', rb);
+  if (state.refreshMsg) {
+    const rm = document.createElement('span');
+    rm.className = 'refresh-msg';
+    rm.textContent = state.refreshMsg;
+    b.append(' ', rm);
+  }
   // Verifica automatica eseguita a ogni aggiornamento (riproducibilità, dati, modello): esito e dettagli
   const v = [state.verify, state.meta?.verify].filter(Boolean).sort((a, b2) => (a.at < b2.at ? 1 : -1))[0];
   if (v) {

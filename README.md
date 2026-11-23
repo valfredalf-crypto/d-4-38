@@ -186,6 +186,14 @@ Regole permanenti dell'algoritmo (verificate da `test/horizons.test.js`; non van
   3. ogni correzione inviata al ramo pubblicato fa ripartire la pubblicazione: appena tutte le verifiche passano l'app va online e
      la segnalazione si chiude da sola.
 
+## Dati sempre aggiornati — regole fisse
+
+- Il ciclo live (`live.yml` → `scripts/live-loop.js`) gira in continuazione in orario di borsa e l'app legge i dati ogni 60 secondi.
+- Per restare veloce con oltre 13.000 strumenti: quotazioni LS Exchange a due velocità (`lib/ls.js`: strumenti «caldi» — a leva,
+  grandi società e fondi, movimenti oltre il 2% — a ogni giro; gli altri a rotazione entro ~25 minuti) e previsioni ricalcolate solo
+  quando cambiano i dati in ingresso o il prezzo si muove di oltre lo 0,3% (`lib/snapshot.js`). Un giro deve durare pochi minuti.
+- Una quotazione ferma da oltre 5 giorni non si mostra come «variazione 0%»: vale l'ultima chiusura dello storico, senza variazione.
+
 ## Struttura
 
 ```

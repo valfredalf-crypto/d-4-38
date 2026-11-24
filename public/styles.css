@@ -251,9 +251,9 @@ table.mini .num { white-space: nowrap; }
   body.mview-prob #table th:nth-child(22), body.mview-prob #table td:nth-child(22),
   body.mview-prob #table th:nth-child(n+29):nth-child(-n+30), body.mview-prob #table td:nth-child(n+29):nth-child(-n+30) { display: table-cell; }
   body.mview-prob #table th:nth-child(n+3):nth-child(-n+9), body.mview-prob #table td:nth-child(n+3):nth-child(-n+9) { display: none; }
-  /* Sezione «Netto più probabile»: #, Strumento e le 9 colonne dei periodi (3–11), il resto nascosto */
-  body.np-mode #table th:nth-child(n+3):nth-child(-n+11), body.np-mode #table td:nth-child(n+3):nth-child(-n+11) { display: table-cell !important; }
-  body.np-mode #table th:nth-child(n+12), body.np-mode #table td:nth-child(n+12) { display: none !important; }
+  /* Sezione «Netto più probabile»: #, Strumento e le 9 colonne dei periodi (3–11) e le 5 dello storico (12–16), il resto nascosto */
+  body.np-mode #table th:nth-child(n+3):nth-child(-n+16), body.np-mode #table td:nth-child(n+3):nth-child(-n+16) { display: table-cell !important; }
+  body.np-mode #table th:nth-child(n+17), body.np-mode #table td:nth-child(n+17) { display: none !important; }
   body.np-mode .mobile-view { display: none; }
   th, td { padding: 8px 3px; }
   .np-bar { margin: 0 16px 10px; }

@@ -102,3 +102,24 @@ test('variazione di oggi come Trade Republic: riferimento alla chiusura del gior
   // prezzi fuori seduta vecchi (oltre 20 ore) ignorati
   assert.equal(sessionView({ ...usa, prePrice: 157, preTime: at(22, 10) }, now).price, 165);
 });
+
+test('storico nella sezione netto più probabile: variazioni non credibili scartate', async () => {
+  const { histValues } = await import('../public/js/history.js');
+  const etf = { type: 'etf' };
+  const stock = { type: 'stock' };
+  // valori normali: passano tali e quali
+  assert.deepEqual(histValues(stock, { changePct: -0.0478, perf: { w: 0.0052, w2: -0.03, m: -0.2346, y: -0.0863 } }), { hD: -0.0478, hW: 0.0052, hW2: -0.03, hM: -0.2346, hY: -0.0863 });
+  // dati mancanti: null, mai NaN o undefined
+  assert.deepEqual(histValues(stock, { changePct: null }), { hD: null, hW: null, hW2: null, hM: null, hY: null });
+  assert.deepEqual(histValues(stock, undefined), { hD: null, hW: null, hW2: null, hM: null, hY: null });
+  // ETF non a leva a +110% in un giorno: chiusura precedente sbagliata
+  assert.equal(histValues(etf, { changePct: 1.1031, perf: { w: -0.0081 } }).hD, null);
+  assert.equal(histValues({ type: 'etf', leveraged: true }, { changePct: 0.31, perf: { w: 0.4 } }).hD, 0.31);
+  // azione a +789% oggi ma −12% nella settimana: incoerente; +109% oggi e +105% nella settimana: reale
+  assert.equal(histValues(stock, { changePct: 7.8889, perf: { w: -0.1241 } }).hD, null);
+  assert.equal(histValues(stock, { changePct: 1.0908, perf: { w: 1.05 } }).hD, 1.0908);
+  // raggruppamenti non corretti dalla fonte
+  assert.equal(histValues(stock, { changePct: null, perf: { w: 9999.0005 } }).hW, null);
+  assert.equal(histValues({ type: 'etf', leveraged: true }, { changePct: 0.1, perf: { y: 598.2 } }).hY, null);
+  assert.equal(histValues(stock, { changePct: 0, perf: { y: 13.15 } }).hY, 13.15);
+});

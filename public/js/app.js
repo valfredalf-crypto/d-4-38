@@ -4,6 +4,7 @@ import { isValidIsin } from './isin.js';
 import { evaluateAlerts, dueAlerts } from './alerts.js';
 import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
 import { ema, stabilizeRanks } from './stable.js';
+import { histValues } from './history.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -778,6 +779,17 @@ function leverScenariosHtml(sc, years) {
 const NP_PERIODS = [[1, '1 gg'], [7, '7 gg'], [14, '14 gg'], [30, '30 gg'], [60, '60 gg'], [90, '90 gg'], [365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
 const npLabel = (d) => NP_PERIODS.find(([x]) => x === d)?.[1] || `${d} gg`;
 const NP_KEYS = NP_PERIODS.map(([d]) => 'np' + d);
+// Storico accanto alle previsioni: variazioni lorde del prezzo in EUR (le stesse grandezze dei grafici di Trade Republic),
+// ordinabili toccando l'intestazione (prima il rendimento più alto).
+const HIST_COLS = [
+  ['hD', 'Oggi', 'Variazione del prezzo di oggi: dalla chiusura del giorno prima al prezzo attuale'],
+  ['hW', '1 sett.', 'Variazione del prezzo nell’ultima settimana (dalla chiusura di 7 giorni fa)'],
+  ['hW2', '14 gg', 'Variazione del prezzo negli ultimi 14 giorni (dalla chiusura di 14 giorni fa)'],
+  ['hM', '1 mese', 'Variazione del prezzo nell’ultimo mese'],
+  ['hY', '1 anno', 'Variazione del prezzo nell’ultimo anno'],
+];
+const HIST_KEYS = HIST_COLS.map(([k]) => k);
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 function npStats(inst, days) {
   const r = resOf(inst);
@@ -1101,6 +1113,7 @@ function rowValuesCalc(i) {
     varM: q?.perf?.m ?? null,
     varM3: q?.perf?.m3 ?? null,
     varY: q?.perf?.y ?? null,
+    ...histValues(i, q),
     perfW: netPerf(q?.perf?.w, i),
     perfM: netPerf(q?.perf?.m, i),
     perfYtd: netPerf(q?.perf?.ytd, i),
@@ -1169,7 +1182,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.hist-col').forEach((th) => th.remove());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
     let after = nameTh;
@@ -1179,6 +1192,16 @@ function render() {
       th.dataset.sort = 'np' + d;
       th.title = `Guadagno netto PIÙ PROBABILE a ${l} (esito mediano: metà dei casi meglio, metà peggio), sul capitale impostato, dopo imposta e costi. Tocca per ordinare.`;
       th.innerHTML = `<span class="l">Più probabile ${l}</span><span class="s">${l}</span>${state.view.sort.key === 'np' + d ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+      after.after(th);
+      after = th;
+    }
+    // storico: variazioni di oggi, 1 settimana, 14 giorni, 1 mese, 1 anno
+    for (const [k, l, tip] of HIST_COLS) {
+      const th = document.createElement('th');
+      th.className = 'num hist-col';
+      th.dataset.sort = k;
+      th.title = `${tip}, in EUR, lorda (senza costi né imposte). Tocca per ordinare dal rendimento più alto; tocca ancora per invertire.`;
+      th.innerHTML = `<span class="l">Storico ${l}</span><span class="s">${l}</span>`;
       after.after(th);
       after = th;
     }
@@ -1220,6 +1243,7 @@ function render() {
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
+        ${shortMode() ? HIST_COLS.map(([k]) => `<td class="num hist-col ${cls(r[k])}">${pct(r[k], true, 2)}</td>`).join('') : ''}
         ${mgMode() ? (() => {
           const rr = state.results[i.symbol];
           const ter = rr?.fund?.ter;
@@ -3065,7 +3089,7 @@ function bind() {
       state.view.type = t.dataset.type;
       state.view.limit = PAGE;
       // Nella scheda Crescita si ordina per crescita attesa; altrove torna la classifica per rapporto.
-      if (shortMode()) { if (!/^np\d+$/.test(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 }; }
+      if (shortMode()) { if (!npViewSort(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 }; }
       else if (state.view.funnel === 'maxgrowth' && !['bond', 'crypto', 'growth', 'lev'].includes(t.dataset.type)) state.view.sort = { key: 'maxGrowth', dir: -1 };
       else if (state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       if (t.dataset.type === 'growth') state.view.sort = { key: 'growth', dir: -1 };
@@ -3124,7 +3148,7 @@ function bind() {
   if (fm) {
     fm.value = state.view.funnel || 'maxgrowth';
     // all'avvio con la sezione «Netto più probabile» già scelta: ordinamento per il periodo salvato
-    if (shortMode() && !/^np\d+$/.test(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 };
+    if (shortMode() && !npViewSort(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 };
     fm.addEventListener('change', (e) => {
       state.view.funnel = e.target.value;
       state.view.limit = PAGE;
@@ -3132,7 +3156,7 @@ function bind() {
         state.view.sort = { key: 'np' + state.view.np, dir: -1 };
         if (window.matchMedia?.('(max-width: 700px)').matches) setMview('short');
       } else if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
-      else if (/^np\d+$/.test(state.view.sort.key) || state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
+      else if (npViewSort(state.view.sort.key) || state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
       try {
         localStorage.setItem('trmc.funnel2', e.target.value);
       } catch {
@@ -3179,7 +3203,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

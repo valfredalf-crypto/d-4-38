@@ -75,3 +75,30 @@ test('rendimenti recenti: settimana, mese, da inizio anno', async () => {
   assert.equal(p.y, null); // lo storico non arriva a un anno fa
   assert.equal(performanceFrom({ timestamps: [now - day], closesEur: [10] }, 11, now * 1000).ytd, null); // nessuna chiusura dell'anno scorso
 });
+
+test('variazione di oggi come Trade Republic: riferimento alla chiusura del giorno prima', async () => {
+  const { sessionView, tradingDay } = await import('../lib/market.js');
+  const at = (d, h, m = 0) => Date.UTC(2026, 10, d, h - 1, m) / 1000; // ora di Berlino (UTC+1), novembre 2026
+  // martedì 24 novembre, 11:00: azione USA con seduta chiusa lunedì alle 22:00
+  const now = at(24, 11) * 1000;
+  assert.equal(tradingDay(now), '2026-11-24');
+  const usa = { price: 165, previousClose: 125, marketTime: at(23, 22) };
+  // con scambi prima dell'apertura: prezzo attuale e variazione dalla chiusura di ieri (non il +32% di ieri)
+  assert.deepEqual(sessionView({ ...usa, prePrice: 157, preTime: at(24, 10, 59) }, now), { price: 157, time: at(24, 10, 59), ref: 165 });
+  // senza prezzi di oggi: nessuna variazione, resta l'ultima chiusura
+  assert.deepEqual(sessionView(usa, now), { price: 165, time: at(23, 22), ref: null });
+  // scambi dopo la chiusura fino a notte: contano come movimento di oggi
+  assert.deepEqual(sessionView({ ...usa, postPrice: 160, postTime: at(24, 1, 30) }, now), { price: 160, time: at(24, 1, 30), ref: 165 });
+  // seduta di oggi aperta: riferimento = chiusura precedente
+  assert.deepEqual(sessionView({ price: 130, previousClose: 131, marketTime: at(24, 10, 40) }, now), { price: 130, time: at(24, 10, 40), ref: 131 });
+  // fine settimana e lunedì prima delle 7:30: vale ancora la seduta di venerdì; dalle 7:30 non più
+  const fri = { price: 100, previousClose: 90, marketTime: at(20, 17, 35) };
+  assert.equal(tradingDay(at(21, 12) * 1000), '2026-11-20');
+  assert.equal(sessionView(fri, at(21, 12) * 1000).ref, 90);
+  assert.equal(tradingDay(at(23, 7) * 1000), '2026-11-20');
+  assert.equal(sessionView(fri, at(23, 7) * 1000).ref, 90);
+  assert.equal(tradingDay(at(23, 8) * 1000), '2026-11-23');
+  assert.equal(sessionView(fri, at(23, 8) * 1000).ref, null);
+  // prezzi fuori seduta vecchi (oltre 20 ore) ignorati
+  assert.equal(sessionView({ ...usa, prePrice: 157, preTime: at(22, 10) }, now).price, 165);
+});

@@ -820,9 +820,12 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
+// Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
+const PENNY_MIN_EUR = 0.5;
 function npStats(inst, days) {
   const r = resOf(inst);
   if (!r || r.error) return null;
+  if (inst.type === 'stock' && (state.quotes[inst.symbol]?.priceEur ?? Infinity) < PENNY_MIN_EUR) return null;
   const pp = projParams(inst, r, inst.type === 'stock');
   if (!pp) return null;
   const cap = state.settings.mc.amount || 10000;

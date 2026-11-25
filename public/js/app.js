@@ -8,7 +8,7 @@ import { histValues } from './history.js';
 import { SOLID_MIN, solidRecent, solidPass } from './solid.js';
 import { evaluateSolid, LEVEL_ORDER } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, MEAN_KEY, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
@@ -603,7 +603,7 @@ function buildFiltersPanel() {
   if (npf) {
     npf.innerHTML = `<div class="npf-title"><b>Netto più probabile</b> <span class="muted">su <span id="npf-cap"></span> investiti: solo gli strumenti sopra la soglia</span></div>${NP_FILTER_PERIODS.map(
       ([d, l]) => `<div class="npf-row"><span>${l}</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${npFilterKey(d)}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con netto più probabile a ${l} maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`,
-    ).join('')}<div class="npf-title npf-sep"><b>Guadagno netto medio su ${meanSims()} scenari</b> <span class="muted">(${MEAN_NOTE})</span></div><div class="npf-row"><span>${meanYears()} anni</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${MEAN_KEY}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con guadagno netto medio a ${meanYears()} anni maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`;
+    ).join('')}`;
     npf.addEventListener('click', (e) => {
       const b = e.target.closest('[data-npf]');
       if (!b) return;
@@ -818,11 +818,7 @@ const HIST_COLS = [
   ['hY', '1 anno', 'Variazione del prezzo nell’ultimo anno'],
 ];
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === MEAN_KEY;
-// Guadagno netto medio di tutti gli scenari simulati (lo stesso valore della scheda dello strumento), in euro sul capitale impostato
-const meanYears = () => state.settings.mc.years || 5;
-const meanSims = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const MEAN_NOTE = 'netto vero: 26% sui dividendi a ogni stacco e non reinvestiti, 26% sulla plusvalenza alla vendita, nessun credito se in perdita, bollo 0,20%/anno, commissioni e spread';
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 function npStats(inst, days) {
   const r = resOf(inst);
@@ -1100,7 +1096,6 @@ function rowValuesCalc(i) {
     ratioMedian: sim && sim.mddMedian != null && sim.netGain != null ? (sim.netGain > 0 ? sim.mddMedian / sim.netGain : Infinity) : null,
     netGain: sim?.netGain ?? null,
     netMean: sim?.netMean ?? null,
-    [MEAN_KEY]: sim?.netMean != null && Number.isFinite(sim.netMean) ? sim.netMean * (state.settings.mc.amount || 10000) : null,
     netP25: sim?.netP25 ?? null,
     finalLoss: sim?.finalLoss ?? null,
     // Guadagno tipico (mediano) meno la perdita definitiva nel caso sfavorevole: quanto guadagni, già "pagato" il rischio
@@ -1226,7 +1221,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.mean-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.hist-col').forEach((th) => th.remove());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
     let after = nameTh;
@@ -1236,17 +1231,6 @@ function render() {
       th.dataset.sort = 'np' + d;
       th.title = `Guadagno netto PIÙ PROBABILE a ${l} (esito mediano: metà dei casi meglio, metà peggio), sul capitale impostato, dopo imposta e costi. Tocca per ordinare.`;
       th.innerHTML = `<span class="l">Più probabile ${l}</span><span class="s">${l}</span>${state.view.sort.key === 'np' + d ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
-      after.after(th);
-      after = th;
-    }
-    // guadagno netto medio di tutti gli scenari simulati (netto vero)
-    {
-      const th = document.createElement('th');
-      const on = state.view.sort.key === MEAN_KEY;
-      th.className = 'num mean-col' + (on ? ' sorted' : '');
-      th.dataset.sort = MEAN_KEY;
-      th.title = `Guadagno netto MEDIO su ${meanSims()} scenari a ${meanYears()} anni, sul capitale impostato (${MEAN_NOTE}). La media è più alta del valore più probabile quando pochi scenari molto favorevoli la alzano. Tocca per ordinare dal più alto.`;
-      th.innerHTML = `<span class="l">Netto medio ${meanYears()}a (${meanSims()} scenari)</span><span class="s">Medio ${meanYears()}a</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
       after.after(th);
       after = th;
     }
@@ -1312,7 +1296,6 @@ function render() {
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
-        ${shortMode() ? (r[MEAN_KEY] == null ? '<td class="num mean-col muted">–</td>' : `<td class="num mean-col ${cls(r[MEAN_KEY])}" title="Guadagno netto medio su ${meanSims()} scenari a ${meanYears()} anni: ${eur0(r[MEAN_KEY])} (${MEAN_NOTE})"><b class="big">${r[MEAN_KEY] > 0 ? '+' : ''}${eur0(r[MEAN_KEY])}</b><span class="eur">${pct(r.netMean, true, 1)}</span></td>`) : ''}
         ${shortMode() ? HIST_COLS.map(([k]) => `<td class="num hist-col ${cls(r[k])}">${pct(r[k], true, 2)}</td>`).join('') : ''}
         ${mgMode() ? (() => {
           const rr = state.results[i.symbol];
@@ -1496,7 +1479,7 @@ function renderDetail(inst, r, d) {
       ${f?.expected != null ? `<div class="kpi"><div class="k">Rendimento atteso</div><div class="v ${cls(f.expected)}">${pct(f.expected, true)}/anno</div><div class="h">come in tabella ("Atteso / anno") · su ${s.mc.years} anni ${pct((1 + f.expected) ** s.mc.years - 1, true)} lordo (prima di costi e tasse)</div></div>` : ''}
       <div class="kpi"><div class="k">Crescita utili attesa</div><div class="v ${cls(f?.expectedGrowth)}">${f?.expectedGrowth != null ? pct(f.expectedGrowth, true) + '/anno' : 'n.d.'}</div><div class="h">${f?.expectedGrowth == null ? (inst.type === 'crypto' ? 'le crypto non hanno utili' : 'strumento non azionario o dati insufficienti') : f.growthSource === 'market' ? 'crescita del mercato × β ' + nf2.format(f.beta) : f.growthSource === 'holdings' ? `dalle partecipazioni del fondo (stime analisti sul ${pct(f.fundamentalsDetail.coverage, false, 0)} del portafoglio)` : 'consenso analisti, prudenziale, prossimi 5 anni'}</div></div>
       <div class="kpi"><div class="k">${s.mc.gainMetric === 'mean' ? 'Guadagno medio' : 'Guadagno mediano'} ${s.mc.years}a (classifica)</div><div class="v ${cls(sim.netGain)}">${pct(sim.netGain, true)}</div><div class="h">${s.mc.gainMetric === 'mean' ? 'media' : 'mediana'} · ${eur(amt * (1 + sim.netGain))} da ${eur(amt)}</div></div>
-      <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari · ${eur(amt * (1 + sim.netMean))}</div></div>
+      <div class="kpi"><div class="k">Guadagno medio ${s.mc.years}a</div><div class="v ${cls(sim.netMean)}">${pct(sim.netMean, true)}</div><div class="h">media di tutti gli scenari: la alzano pochi scenari molto favorevoli. Non è il valore più probabile: guarda la mediana e la probabilità di guadagno.</div></div>
       <div class="kpi"><div class="k">Guadagno netto probabile ${s.mc.years}a</div><div class="v ${cls(sim.netP25)}">${pct(sim.netP25, true)}</div><div class="h">ottenuto o superato nel 75% degli scenari · ${eur(amt * (1 + sim.netP25))}</div></div>
       <div class="kpi"><div class="k">Rapporto perdita/guadagno</div><div class="v">${Number.isFinite(sim.ratio) ? nf2.format(sim.ratio) : '∞'}</div><div class="h">più basso = migliore</div></div>
       <div class="kpi"><div class="k">Rapporto perdita finale/guadagno</div><div class="v">${Number.isFinite(sim.ratioFinal) ? nf2.format(sim.ratioFinal) : '∞'}</div><div class="h">perdita a fine ${s.mc.years} anni nel 5% peggiore (${sim.finalLoss > 0 ? '−' + pct(sim.finalLoss) + ', ' + eur(amt * (1 - sim.finalLoss)) : 'nessuna perdita'}) ÷ guadagno mediano</div></div>
@@ -3363,7 +3346,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, MEAN_KEY, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

@@ -5,12 +5,9 @@
 export const NP_FILTER_PERIODS = [[7, '7 giorni'], [30, '1 mese'], [90, '3 mesi'], [365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
 export const NP_FILTER_LEVELS = [0, 1000, 2000, 3000];
 export const npFilterKey = (days) => 'npEur' + days;
-// Guadagno netto medio di tutti gli scenari simulati (netto vero), in euro sul capitale impostato
-export const MEAN_KEY = 'netMeanEur';
 
 export const INDICATORS = [
   ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
-  { key: MEAN_KEY, label: 'Guadagno netto medio su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
   { key: 'proj', label: 'CAGR netto atteso 5a: netto 019 × (1 − MDD storico)', pct: true },
   { key: 'proj019', label: 'Guadagno finale 5a (CAGR − TER, montante composto, imposta)', pct: true },
   { key: 'projOpt', label: 'Rendimento netto corretto per il rischio (classifica principale)', pct: true },

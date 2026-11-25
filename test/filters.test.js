@@ -43,3 +43,15 @@ test('filtri netto più probabile in euro: 6 periodi, soglia stretta (maggiore d
   // gli altri indicatori restano «maggiore o uguale»
   assert.equal(passes({ netGain: 0.1 }, activeFilters({ netGain: { min: '10' } })), true);
 });
+
+test('filtro guadagno netto medio degli scenari in euro: soglia stretta, sommabile ai periodi', async () => {
+  const { INDICATORS, MEAN_KEY, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.equal(MEAN_KEY, 'netMeanEur');
+  assert.ok(INDICATORS.some((x) => x.key === MEAN_KEY && x.eur && x.strict && !x.pct));
+  const a = activeFilters({ [MEAN_KEY]: { min: '2000' }, npEur365: { min: '0' } });
+  assert.deepEqual(a, [{ key: 'npEur365', min: 0, max: null, strict: true }, { key: MEAN_KEY, min: 2000, max: null, strict: true }]);
+  assert.equal(passes({ netMeanEur: 2000.5, npEur365: 10 }, a), true);
+  assert.equal(passes({ netMeanEur: 2000, npEur365: 10 }, a), false);
+  assert.equal(passes({ netMeanEur: 5000, npEur365: -1 }, a), false);
+  assert.equal(passes({ netMeanEur: null, npEur365: 10 }, a), false);
+});

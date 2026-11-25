@@ -92,6 +92,7 @@ code { font-family: var(--mono); }
 .filters { margin: 0 20px 12px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
 .np-filters { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
 .npf-title { margin-bottom: 6px; }
+.npf-sep { margin-top: 10px; }
 .npf-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 5px; }
 .npf-row > span { width: 62px; flex: none; }
 .npf-row button { border-radius: 999px; padding: 4px 10px; font-size: 13px; }
@@ -261,9 +262,9 @@ table.mini .num { white-space: nowrap; }
   body.mview-prob #table th:nth-child(22), body.mview-prob #table td:nth-child(22),
   body.mview-prob #table th:nth-child(n+29):nth-child(-n+30), body.mview-prob #table td:nth-child(n+29):nth-child(-n+30) { display: table-cell; }
   body.mview-prob #table th:nth-child(n+3):nth-child(-n+9), body.mview-prob #table td:nth-child(n+3):nth-child(-n+9) { display: none; }
-  /* Sezione «Netto più probabile»: #, Strumento e le 9 colonne dei periodi (3–11) e le 5 dello storico (12–16), il resto nascosto */
-  body.np-mode #table th:nth-child(n+3):nth-child(-n+16), body.np-mode #table td:nth-child(n+3):nth-child(-n+16) { display: table-cell !important; }
-  body.np-mode #table th:nth-child(n+17), body.np-mode #table td:nth-child(n+17) { display: none !important; }
+  /* Sezione «Netto più probabile»: #, Strumento e le 9 colonne dei periodi (3–11), il netto medio degli scenari (12) e le 5 dello storico (13–17), il resto nascosto */
+  body.np-mode #table th:nth-child(n+3):nth-child(-n+17), body.np-mode #table td:nth-child(n+3):nth-child(-n+17) { display: table-cell !important; }
+  body.np-mode #table th:nth-child(n+18), body.np-mode #table td:nth-child(n+18) { display: none !important; }
   body.np-mode .mobile-view { display: none; }
   th, td { padding: 8px 3px; }
   .np-bar { margin: 0 16px 10px; }

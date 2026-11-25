@@ -311,6 +311,7 @@ table.mini .num { white-space: nowrap; }
 .np-bar { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin: 0 24px 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
 .np-bar[hidden] { display: none; }
 .np-bar .small-note { flex-basis: 100%; }
+.solid-note { flex-basis: 100%; padding: 8px 10px; border: 1px solid var(--accent); border-radius: 10px; font-size: 13px; line-height: 1.5; }
 
 /* Avvisi di vendita */
 .notif-sell { border-left-color: #b00020; background: color-mix(in srgb, #b00020 8%, var(--panel)); }

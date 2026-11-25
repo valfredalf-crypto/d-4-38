@@ -5,6 +5,7 @@ import { evaluateAlerts, dueAlerts } from './alerts.js';
 import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
 import { ema, stabilizeRanks } from './stable.js';
 import { histValues } from './history.js';
+import { SOLID_MIN, solidRecent, solidPass } from './solid.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, MEAN_KEY, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -504,6 +505,7 @@ function filtered() {
   const funnelOn = state.view.funnel === 'on' && fundData; // modalità breve: nessun imbuto, tutti gli strumenti
   const phase1On = state.view.funnel === 'maxgrowth';
   const levTab = type === 'lev';
+  const solid = solidMode();
   return state.instruments.filter((i) => {
     if (levTab) {
       if (!(i.leveraged && i.type === 'etf')) return false;
@@ -515,6 +517,7 @@ function filtered() {
       if (i.type !== 'etf' || isBond(i)) return false; // i bond hanno la loro scheda, qui solo ETF non obbligazionari
     } else if (type !== 'all' && i.type !== type) return false;
     if (onlyComputed && !(state.results[i.symbol] && !state.results[i.symbol].error)) return false;
+    if (solid && !solidOf(i)) return false;
     // Accumulazione / distribuzione: è una caratteristica dei fondi (ETF), non delle azioni singole. Il filtro
     // si applica quindi solo agli ETF (bond compresi); le azioni e le crypto non vengono mai escluse da qui,
     // altrimenti «Accumulazione» svuoterebbe la scheda Azioni (le azioni distribuiscono tutte dividendi).
@@ -908,7 +911,15 @@ function stablePositions(days) {
   npStable.set(days, { ver, cfg, pos });
   return pos;
 }
-const shortMode = () => state.view.funnel === 'short';
+const shortMode = () => state.view.funnel === 'short' || state.view.funnel === 'solid';
+// Sezione «Solidi e in crescita»: stesse colonne di «Netto più probabile», ma solo gli strumenti con netto più probabile
+// positivo e alto a 1, 3 e 5 anni e prezzo in crescita di recente (regole in solid.js). Prima lo storico (immediato), poi le previsioni.
+const solidMode = () => state.view.funnel === 'solid';
+function solidOf(i) {
+  const h = histValues(i, state.quotes[i.symbol]);
+  if (!solidRecent(h)) return false;
+  return solidPass({ y1: npCached(i, 365)?.median, y3: npCached(i, 1095)?.median, y5: npCached(i, 1825)?.median }, h);
+}
 function projParams(i, r, growthForward = false, cagrOverride = null) {
   // Per le azioni, su richiesta (sezione portafoglio), si usa il CAGR fondamentale forward (crescita utili
   // + dividendo + valutazione: prospettive di crescita aggiornate, come nel metodo Gemini) invece del
@@ -1257,6 +1268,15 @@ function render() {
   }
   const all = filtered();
   const rows = sortRows(all.map(rowValues));
+  const sn = $('#solid-note');
+  if (sn) {
+    sn.hidden = !solidMode();
+    if (solidMode()) {
+      const cap = state.settings.mc.amount || 10000;
+      const at = state.liveVersion || state.dataVersion;
+      sn.innerHTML = `<b>Solidi e in crescita: ${all.length.toLocaleString('it-IT')} ${all.length === 1 ? 'strumento' : 'strumenti'}</b> · netto più probabile maggiore di ${eur0(SOLID_MIN.y1 * cap)} a 1 anno, di ${eur0(SOLID_MIN.y3 * cap)} a 3 anni e di ${eur0(SOLID_MIN.y5 * cap)} a 5 anni (su ${eur0(cap)}) · prezzo in rialzo su 1 settimana, 14 giorni e 1 mese, oggi non in calo · ordinati per rialzo dell'ultima settimana (tocca un'intestazione per cambiare) · dati delle ${at ? new Date(at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '–'}: l'elenco si ricalcola da solo a ogni aggiornamento dei dati (in orario di borsa circa ogni 10 minuti). Stime del modello, non una raccomandazione.`;
+    }
+  }
   const ranks = rankMap(rows);
   const finiteRatios = rows.map((r) => r.ratio).filter((x) => x != null && Number.isFinite(x));
   const maxRatio = Math.max(1, ...finiteRatios.map((x) => Math.min(x, 10)));
@@ -3192,12 +3212,13 @@ function bind() {
   if (fm) {
     fm.value = state.view.funnel || 'maxgrowth';
     // all'avvio con la sezione «Netto più probabile» già scelta: ordinamento per il periodo salvato
-    if (shortMode() && !npViewSort(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 };
+    if (solidMode()) state.view.sort = { key: 'hW', dir: -1 };
+    else if (shortMode() && !npViewSort(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 };
     fm.addEventListener('change', (e) => {
       state.view.funnel = e.target.value;
       state.view.limit = PAGE;
       if (shortMode()) {
-        state.view.sort = { key: 'np' + state.view.np, dir: -1 };
+        state.view.sort = solidMode() ? { key: 'hW', dir: -1 } : { key: 'np' + state.view.np, dir: -1 };
         if (window.matchMedia?.('(max-width: 700px)').matches) setMview('short');
       } else if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
       else if (npViewSort(state.view.sort.key) || state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };

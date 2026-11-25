@@ -6,6 +6,7 @@ import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
 import { ema, stabilizeRanks } from './stable.js';
 import { histValues } from './history.js';
 import { SOLID_MIN, solidRecent, solidPass } from './solid.js';
+import { evaluateSolid, LEVEL_ORDER } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, MEAN_KEY, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -1268,6 +1269,11 @@ function render() {
   }
   const all = filtered();
   const rows = sortRows(all.map(rowValues));
+  renderSolidAlerts();
+  if (solidMode() && state.solidAlerts === undefined && !state.solidPending && (!STATIC || state.liveReady)) {
+    state.solidPending = true;
+    setTimeout(() => { checkSolidAlerts({ notify: false }); state.solidPending = false; }, 0);
+  }
   const sn = $('#solid-note');
   if (sn) {
     sn.hidden = !solidMode();
@@ -2969,7 +2975,94 @@ function sellHoldings() {
   return [...by.values()];
 }
 const BASE_TITLE = document.title;
+// ---------- notifiche sulla sezione «Solidi e in crescita» (regole in solid-alerts.js)
+// A ogni aggiornamento dei dati live: calo previsto a breve, oscillazioni forti, uscita dalla sezione, rafforzamento.
+// Lo stato (massimi, membri della sezione) è salvato su questo dispositivo; le notifiche del dispositivo arrivano se l'app è aperta.
+const LS_SOLID_WATCH = 'trmc.solidWatch';
+const LS_SOLID_SET = 'trmc.solidSet';
+const LS_SOLID_EV = 'trmc.solidEvents';
+function solidItems(prevSet) {
+  const was = new Set(prevSet || []);
+  const items = [];
+  for (const i of state.instruments) {
+    const q = state.quotes[i.symbol];
+    const r = state.results[i.symbol];
+    if (!q || !r || r.error || !(q.priceEur > 0)) continue;
+    const h = histValues(i, q);
+    if (!solidRecent(h) && !was.has(i.symbol)) continue; // la crescita recente è il filtro economico: le previsioni solo per i candidati
+    const m = (d) => npCached(i, d)?.median;
+    const np = { y1: m(365), y3: m(1095), y5: m(1825) };
+    const member = solidPass(np, h);
+    if (!member && !was.has(i.symbol)) continue;
+    np.d7 = m(7);
+    np.d30 = m(30);
+    items.push({ symbol: i.symbol, isin: i.isin || '', name: i.name, price: q.priceEur, changePct: q.changePct, vol: Number.isFinite(r.forward?.vol) ? r.forward.vol : null, h, np, solid: member });
+  }
+  return items;
+}
+function checkSolidAlerts({ notify = true } = {}) {
+  try {
+    if (STATIC && !state.liveReady) return; // dati statici di ore fa: niente confronti finché non arrivano quelli live
+    if (!state.instruments.length || !Object.keys(state.quotes).length) return;
+    const now = Date.now();
+    const prevSet = lsGet(LS_SOLID_SET, null);
+    const { alerts, watch, set } = evaluateSolid(solidItems(prevSet), lsGet(LS_SOLID_WATCH, {}), prevSet, now, state.settings.mc.amount || 10000);
+    lsSet(LS_SOLID_WATCH, watch);
+    lsSet(LS_SOLID_SET, set);
+    // Uscite e nuovi ingressi sono eventi di un solo controllo: restano visibili per 24 ore (altrimenti sparirebbero al ricalcolo successivo)
+    const isEvent = (a) => a.key.startsWith('sx:') || a.key.startsWith('snew:');
+    const keep = lsGet(LS_SOLID_EV, []).filter((e) => now - e.at < 864e5 && !alerts.some((a) => a.key === e.key) && (e.key.startsWith('sx:') ? !set.includes(e.symbol) : set.includes(e.symbol)));
+    const events = [...alerts.filter(isEvent).map((a) => ({ ...a, at: now })), ...keep].slice(0, 80);
+    lsSet(LS_SOLID_EV, events);
+    state.solidAlerts = [...alerts.filter((a) => !isEvent(a)), ...events].sort((a, b) => (LEVEL_ORDER[a.level] ?? 9) - (LEVEL_ORDER[b.level] ?? 9));
+    state.solidSet = set;
+    state.solidAt = now;
+    updateNotifsBadge();
+    renderSolidAlerts();
+    if (!notify) return;
+    const sent = lsGet(LS_SENT, {});
+    const due = dueAlerts(alerts.filter((a) => a.level === 'sell' || a.level === 'warn' || a.level === 'buy'), sent, now);
+    lsSet(LS_SENT, sent);
+    if (due.length) {
+      showSellBar(due);
+      notifyDevice(due);
+    }
+  } catch (e) {
+    console.warn('notifiche sezione solidi', e);
+  }
+}
+function solidNoteHtml(a) {
+  return `<div class="notif notif-${a.level}"><div class="notif-t"><span class="notif-ic">${esc(a.icon)}</span> <b>${esc(a.title)}</b>${a.isin ? ` <span class="muted">· ${esc(a.isin)}</span>` : ''}</div><div class="muted">${esc(a.text)}</div></div>`;
+}
+const hm = (t) => new Date(t).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+// Riquadro nella sezione: i segnali più urgenti, poi il rimando alla finestra 🔔 con tutti
+function renderSolidAlerts() {
+  const box = $('#solid-alerts');
+  if (!box) return;
+  box.hidden = !solidMode();
+  if (!solidMode()) return;
+  if (state.solidAlerts === undefined) {
+    box.innerHTML = '<span class="muted">Notifiche sulla sezione: in preparazione con i dati aggiornati…</span>';
+    return;
+  }
+  const main = state.solidAlerts.filter((a) => a.level !== 'new');
+  const news = state.solidAlerts.length - main.length;
+  box.innerHTML = `<b>🔔 Notifiche sulla sezione</b> <span class="muted">· aggiornate alle ${hm(state.solidAt)} a ogni aggiornamento dei dati · calo previsto, oscillazioni forti, uscita o rafforzamento secondo il modello (non ordini né consigli)</span>${
+    main.length
+      ? main.slice(0, 6).map(solidNoteHtml).join('') + (main.length > 6 ? `<button type="button" class="ghost small" data-act="solid-open">Mostra tutte le ${main.length} notifiche</button>` : '')
+      : '<div class="pos">Nessun calo previsto, nessuna oscillazione forte: gli strumenti della sezione sono in linea con le previsioni.</div>'
+  }${news ? `<div class="muted small-note">${news} ${news === 1 ? 'nuovo ingresso' : 'nuovi ingressi'} nella sezione dall'ultimo controllo <button type="button" class="ghost small" data-act="solid-open">Vedi</button></div>` : ''}`;
+}
+function solidSheetHtml() {
+  if (!state.solidAlerts) return '';
+  const main = state.solidAlerts.filter((a) => a.level !== 'new');
+  const news = state.solidAlerts.filter((a) => a.level === 'new');
+  return `<h3>Sezione «Solidi e in crescita»</h3><p class="muted small-note">Aggiornate alle ${hm(state.solidAt)} a ogni aggiornamento dei dati. Segnali del modello (calo previsto, oscillazioni forti, uscita dalla sezione, rafforzamento), non ordini né consigli di investimento. Le notifiche sul dispositivo arrivano con l'app aperta, anche in secondo piano.</p>${
+    main.length ? main.slice(0, 40).map(solidNoteHtml).join('') : '<p class="pos">Nessun calo previsto, nessuna oscillazione forte nella sezione.</p>'
+  }${news.length ? `<div class="muted small-note"><b>Nuovi ingressi (${news.length})</b></div>${news.slice(0, 10).map(solidNoteHtml).join('')}` : ''}`;
+}
 function checkSellAlerts({ notify = true } = {}) {
+  setTimeout(() => checkSolidAlerts({ notify }), 50); // dopo il ridisegno: non allunga l'aggiornamento della tabella
   try {
     const now = Date.now();
     const { alerts, watch } = evaluateAlerts(sellHoldings(), lsGet(LS_WATCH, {}), now);
@@ -3062,7 +3155,7 @@ function deviceAlertsHtml() {
 async function backgroundAlerts() {
   if (!document.hidden || !STATIC || state.running || lsGet(LS_DEV, false) !== true) return;
   const p = state.portfolio || loadPortfolio();
-  if (![...(p.rows || []), ...(p.stocks || []), ...(p.bonds || [])].some((r) => r.isin && r.amount > 0)) return;
+  if (![...(p.rows || []), ...(p.stocks || []), ...(p.bonds || [])].some((r) => r.isin && r.amount > 0) && !state.solidSet?.length) return;
   await checkLiveData().catch(() => {});
   await liveCrypto().catch(() => {});
   checkSellAlerts();
@@ -3071,7 +3164,7 @@ async function backgroundAlerts() {
 function updateNotifsBadge() {
   const el = $('#notifs-count');
   if (!el) return;
-  const n = buildNotifications(false).length;
+  const n = buildNotifications(false).length + (state.solidAlerts || []).filter((a) => a.level !== 'new').length;
   el.hidden = !n;
   el.textContent = n;
 }
@@ -3092,6 +3185,8 @@ function openNotifications() {
           .join('')}`
       : '<p class="pos">Nessun suggerimento: il portafoglio è in linea con i dati di mercato aggiornati.</p>';
   if (hasHold) body.insertAdjacentHTML('afterbegin', adviceHorizonHtml() + deviceAlertsHtml());
+  const sheetSolid = solidSheetHtml();
+  if (sheetSolid) body.insertAdjacentHTML('afterbegin', sheetSolid + (hasHold ? '' : deviceAlertsHtml()));
   $('#notifs').showModal();
   updateNotifsBadge();
   // Notizie recenti sugli strumenti del portafoglio: solo informative, non cambiano punteggi e classifiche
@@ -3289,6 +3384,7 @@ function bind() {
   $('#btn-backtest').addEventListener('click', openBacktest);
   $('#btn-portfolio').addEventListener('click', openPortfolio);
   $('#btn-notifs').addEventListener('click', openNotifications);
+  $('#solid-alerts')?.addEventListener('click', (e) => { if (e.target.closest('[data-act="solid-open"]')) openNotifications(); });
   $('#nf-body').addEventListener('click', async (e) => {
     const b = e.target.closest('[data-act]');
     if (!b) return;

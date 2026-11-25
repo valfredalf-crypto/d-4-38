@@ -6,6 +6,7 @@ import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
 import { ema, stabilizeRanks } from './stable.js';
 import { histValues } from './history.js';
 import { SOLID_MIN, solidRecent, solidPass } from './solid.js';
+import { trendScore } from './trend.js';
 import { evaluateSolid, LEVEL_ORDER } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
@@ -295,7 +296,11 @@ async function checkLiveData(force = false) {
   if (live.market) state.market = live.market;
   if (live.verify) state.verify = live.verify;
   const known = new Set(state.instruments.map((i) => i.symbol));
-  for (const [k, q] of Object.entries(live.quotes || {})) if (known.has(k) && q) state.quotes[k] = q;
+  for (const [k, q] of Object.entries(live.quotes || {})) {
+    if (!known.has(k) || !q) continue;
+    const old = state.quotes[k]?.perf;
+    state.quotes[k] = q.perf && q.perf.sl == null && old?.sl != null ? { ...q, perf: { ...q.perf, sl: old.sl, wm: old.wm, sn: old.sn } } : q;
+  }
   if (keyMatches(live.key)) {
     for (const [k, r] of Object.entries(live.results || {})) {
       if (!known.has(k)) continue;
@@ -818,7 +823,7 @@ const HIST_COLS = [
   ['hY', '1 anno', 'Variazione del prezzo nell’ultimo anno'],
 ];
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key);
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore';
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
@@ -1154,6 +1159,9 @@ function rowValuesCalc(i) {
     varM3: q?.perf?.m3 ?? null,
     varY: q?.perf?.y ?? null,
     ...histValues(i, q),
+    tScore: trendScore(q?.perf),
+    tSl: q?.perf?.sl ?? null,
+    tWm: q?.perf?.wm ?? null,
     perfW: netPerf(q?.perf?.w, i),
     perfM: netPerf(q?.perf?.m, i),
     perfYtd: netPerf(q?.perf?.ytd, i),
@@ -1191,6 +1199,8 @@ function sortRows(rows) {
     const na = va == null || (typeof va === 'number' && Number.isNaN(va));
     const nb = vb == null || (typeof vb === 'number' && Number.isNaN(vb));
     if (na !== nb) return na ? 1 : -1; // valori mancanti sempre in fondo
+    // senza crescita a 30 giorni (dato non ancora arrivato): tra loro vale il rialzo dell'ultima settimana
+    if (na && k === 'tScore' && a.hW !== b.hW && (a.hW != null || b.hW != null)) return (b.hW ?? -Infinity) - (a.hW ?? -Infinity);
     if (na) return a.name.localeCompare(b.name);
     if (typeof va === 'string') return va.localeCompare(vb) * dir;
     // A parità (es. rapporto 0 = nessuna perdita nemmeno nel caso sfavorevole) prima chi guadagna di più
@@ -1224,7 +1234,8 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
     let after = nameTh;
@@ -1234,6 +1245,17 @@ function render() {
       th.dataset.sort = 'np' + d;
       th.title = `Guadagno netto PIÙ PROBABILE a ${l} (esito mediano: metà dei casi meglio, metà peggio), sul capitale impostato, dopo imposta e costi. Tocca per ordinare.`;
       th.innerHTML = `<span class="l">Più probabile ${l}</span><span class="s">${l}</span>${state.view.sort.key === 'np' + d ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+      after.after(th);
+      after = th;
+    }
+    // crescita degli ultimi 30 giorni: ordina la sezione «Solidi e in crescita»
+    if (solidMode()) {
+      const th = document.createElement('th');
+      const on = state.view.sort.key === 'tScore';
+      th.className = 'num trend-col' + (on ? ' sorted' : '');
+      th.dataset.sort = 'tScore';
+      th.title = 'Crescita degli ultimi 30 giorni, in rendimento per seduta: media tra la pendenza della curva del rendimento complessivo (retta sui prezzi di chiusura in EUR) e la media ponderata degli incrementi tra una seduta e l’altra, con più peso alle sedute recenti (il peso si dimezza ogni 5 sedute). Lorda, senza costi né imposte. Tocca per ordinare.';
+      th.innerHTML = `<span class="l">Crescita 30 gg</span><span class="s">Cresc. 30 gg</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
       after.after(th);
       after = th;
     }
@@ -1267,7 +1289,7 @@ function render() {
     if (solidMode()) {
       const cap = state.settings.mc.amount || 10000;
       const at = state.liveVersion || state.dataVersion;
-      sn.innerHTML = `<b>Solidi e in crescita: ${all.length.toLocaleString('it-IT')} ${all.length === 1 ? 'strumento' : 'strumenti'}</b> · netto più probabile maggiore di ${eur0(SOLID_MIN.y1 * cap)} a 1 anno, di ${eur0(SOLID_MIN.y3 * cap)} a 3 anni e di ${eur0(SOLID_MIN.y5 * cap)} a 5 anni (su ${eur0(cap)}) · prezzo in rialzo su 1 settimana, 14 giorni e 1 mese, oggi non in calo · ordinati per rialzo dell'ultima settimana (tocca un'intestazione per cambiare) · dati delle ${at ? new Date(at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '–'}: l'elenco si ricalcola da solo a ogni aggiornamento dei dati (in orario di borsa circa ogni 10 minuti). Stime del modello, non una raccomandazione.`;
+      sn.innerHTML = `<b>Solidi e in crescita: ${all.length.toLocaleString('it-IT')} ${all.length === 1 ? 'strumento' : 'strumenti'}</b> · netto più probabile maggiore di ${eur0(SOLID_MIN.y1 * cap)} a 1 anno, di ${eur0(SOLID_MIN.y3 * cap)} a 3 anni e di ${eur0(SOLID_MIN.y5 * cap)} a 5 anni (su ${eur0(cap)}) · prezzo in rialzo su 1 settimana, 14 giorni e 1 mese, oggi non in calo · ordinati per crescita degli ultimi 30 giorni: pendenza della curva del rendimento e media ponderata degli incrementi tra le sedute, con più peso alle recenti (tocca un'intestazione per cambiare) · dati delle ${at ? new Date(at).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '–'}: l'elenco si ricalcola da solo a ogni aggiornamento dei dati (in orario di borsa circa ogni 10 minuti). Stime del modello, non una raccomandazione.`;
     }
   }
   const ranks = rankMap(rows);
@@ -1299,6 +1321,7 @@ function render() {
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span></td>
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
+        ${solidMode() ? (r.tScore == null ? '<td class="num trend-col muted" title="Crescita a 30 giorni non ancora disponibile per questo strumento">–</td>' : `<td class="num trend-col ${cls(r.tScore)}" title="Ultimi 30 giorni, per seduta: pendenza della curva del rendimento ${pct(r.tSl, true, 2)} · media ponderata degli incrementi (più peso alle sedute recenti) ${pct(r.tWm, true, 2)}"><b class="big">${pct(r.tScore, true, 2)}</b><span class="eur">pend. ${pct(r.tSl, true, 2)} · media ${pct(r.tWm, true, 2)}</span></td>`) : ''}
         ${shortMode() ? HIST_COLS.map(([k]) => `<td class="num hist-col ${cls(r[k])}">${pct(r[k], true, 2)}</td>`).join('') : ''}
         ${mgMode() ? (() => {
           const rr = state.results[i.symbol];
@@ -3293,13 +3316,13 @@ function bind() {
   if (fm) {
     fm.value = state.view.funnel || 'maxgrowth';
     // all'avvio con la sezione «Netto più probabile» già scelta: ordinamento per il periodo salvato
-    if (solidMode()) state.view.sort = { key: 'hW', dir: -1 };
+    if (solidMode()) state.view.sort = { key: 'tScore', dir: -1 };
     else if (shortMode() && !npViewSort(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 };
     fm.addEventListener('change', (e) => {
       state.view.funnel = e.target.value;
       state.view.limit = PAGE;
       if (shortMode()) {
-        state.view.sort = solidMode() ? { key: 'hW', dir: -1 } : { key: 'np' + state.view.np, dir: -1 };
+        state.view.sort = solidMode() ? { key: 'tScore', dir: -1 } : { key: 'np' + state.view.np, dir: -1 };
         if (window.matchMedia?.('(max-width: 700px)').matches) setMview('short');
       } else if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
       else if (npViewSort(state.view.sort.key) || state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
@@ -3349,7 +3372,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

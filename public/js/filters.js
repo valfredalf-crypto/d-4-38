@@ -1,6 +1,13 @@
 // Filtri sugli indicatori (min/max). I valori percentuali si inseriscono in punti percentuali
 // (es. 40 = 40%); la perdita massima si indica come numero positivo (40 = perdita fino al 40%).
+// Filtri sul «netto più probabile» in euro (sul capitale impostato): periodi e soglie dei pulsanti rapidi.
+// «Maggiore di» è stretto: con soglia 0 uno strumento a 0 € esatti non passa.
+export const NP_FILTER_PERIODS = [[7, '7 giorni'], [30, '1 mese'], [90, '3 mesi'], [365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
+export const NP_FILTER_LEVELS = [0, 1000, 2000, 3000];
+export const npFilterKey = (days) => 'npEur' + days;
+
 export const INDICATORS = [
+  ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: 'proj', label: 'CAGR netto atteso 5a: netto 019 × (1 − MDD storico)', pct: true },
   { key: 'proj019', label: 'Guadagno finale 5a (CAGR − TER, montante composto, imposta)', pct: true },
   { key: 'projOpt', label: 'Rendimento netto corretto per il rischio (classifica principale)', pct: true },
@@ -79,7 +86,7 @@ export function parseNum(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-/** Elenco dei filtri effettivamente impostati: [{ key, min, max }] (min/max già nell'unità dei dati). */
+/** Elenco dei filtri effettivamente impostati: [{ key, min, max }] (min/max già nell'unità dei dati; strict = minimo escluso). */
 export function activeFilters(filters = {}) {
   const out = [];
   for (const ind of INDICATORS) {
@@ -89,17 +96,17 @@ export function activeFilters(filters = {}) {
     const min = parseNum(f.min);
     const max = parseNum(f.max);
     if (min == null && max == null) continue;
-    out.push({ key: ind.key, min: min == null ? null : min / scale, max: max == null ? null : max / scale });
+    out.push({ key: ind.key, min: min == null ? null : min / scale, max: max == null ? null : max / scale, ...(ind.strict ? { strict: true } : {}) });
   }
   return out;
 }
 
 /** true se la riga rispetta tutti i filtri; un indicatore mancante non passa il filtro. */
 export function passes(row, active) {
-  for (const { key, min, max } of active) {
+  for (const { key, min, max, strict } of active) {
     const v = row[key];
     if (v == null || Number.isNaN(v)) return false;
-    if (min != null && !(v >= min)) return false;
+    if (min != null && !(strict ? v > min : v >= min)) return false;
     if (max != null && !(v <= max)) return false;
   }
   return true;

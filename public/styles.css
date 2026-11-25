@@ -90,6 +90,12 @@ code { font-family: var(--mono); }
 
 .badge { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px; background: var(--accent); color: var(--accent-text); font-size: 11px; font-weight: 700; text-align: center; }
 .filters { margin: 0 20px 12px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.np-filters { margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.npf-title { margin-bottom: 6px; }
+.npf-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 5px; }
+.npf-row > span { width: 62px; flex: none; }
+.npf-row button { border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.npf-row button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
 .presets button { border-radius: 999px; padding: 4px 10px; font-size: 13px; }
 .filters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 8px 18px; }
@@ -229,6 +235,10 @@ table.mini .num { white-space: nowrap; }
   .foot { padding: 0 16px 24px; }
   .progress { margin: 0 16px 10px; }
   .filters { margin: 0 16px 12px; }
+  /* una riga per periodo anche su telefono: etichetta stretta e quattro soglie di pari larghezza */
+  .npf-row { flex-wrap: nowrap; gap: 4px; }
+  .npf-row > span { width: 50px; font-size: 12px; }
+  .npf-row button { flex: 1 1 0; min-width: 0; padding: 6px 0; font-size: 12px; white-space: nowrap; }
   .frow input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
   td .name { max-width: 140px; }
   /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */

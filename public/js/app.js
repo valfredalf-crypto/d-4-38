@@ -6,7 +6,7 @@ import { parityGroup, chooseByMaxGrowth, gapThreshold } from './advice.js';
 import { ema, stabilizeRanks } from './stable.js';
 import { histValues } from './history.js';
 import { analystView, combineForecasts } from './analysts.js';
-import { INDICATORS, PRESETS, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
@@ -138,6 +138,7 @@ async function api(path, opts) {
 
 // ---------- formattazione
 const nf2 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const eur0 = (x) => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
 const nf1 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const nf4 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 6 });
 function pct(x, sign = false, digits = 1) {
@@ -549,17 +550,25 @@ function updateFiltersUi() {
     if (document.activeElement !== el) el.value = v;
     el.classList.toggle('on', String(v).trim() !== '');
   }
+  for (const b of $$('#filters-panel [data-npf]')) {
+    const f = state.view.filters[b.dataset.npf];
+    const on = !!f && parseNum(f.min) === Number(b.dataset.min) && parseNum(f.max) == null;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  }
+  const capEl = $('#npf-cap');
+  if (capEl) capEl.textContent = eur0(state.settings.mc.amount || 10000);
   const total = filtered().length;
   const bar = $('#active-filters');
   if (bar) {
     const act = activeFilters(state.view.filters);
     bar.hidden = !act.length;
-    const fmt = (ind, x) => (x == null ? '' : ind.pct ? nf1.format(x * 100) + '%' : nf2.format(x));
+    const fmt = (ind, x) => (x == null ? '' : ind.eur ? eur0(x) : ind.pct ? nf1.format(x * 100) + '%' : nf2.format(x));
     bar.innerHTML = act.length
       ? `<b>Filtri attivi:</b> ${act
           .map((a) => {
             const ind = INDICATORS.find((x) => x.key === a.key);
-            const txt = a.min != null && a.max != null ? `${fmt(ind, a.min)} – ${fmt(ind, a.max)}` : a.min != null ? `≥ ${fmt(ind, a.min)}` : `≤ ${fmt(ind, a.max)}`;
+            const txt = a.min != null && a.max != null ? `${fmt(ind, a.min)} – ${fmt(ind, a.max)}` : a.min != null ? `${a.strict ? '>' : '≥'} ${fmt(ind, a.min)}` : `≤ ${fmt(ind, a.max)}`;
             return `<span class="chip">${esc(ind.label)} ${txt} <button type="button" data-unfilter="${a.key}" title="Togli questo filtro">✕</button></span>`;
           })
           .join(' ')} · <b>${total.toLocaleString('it-IT')}</b> strumenti su ${state.instruments.length.toLocaleString('it-IT')} <button type="button" class="ghost small" data-unfilter="*">Togli tutti i filtri</button>`
@@ -586,6 +595,22 @@ function buildFiltersPanel() {
     state.view.filters = same ? {} : Object.fromEntries(Object.entries(preset).map(([k, v]) => [k, { ...v }]));
     applyFilters();
   });
+  const npf = $('#filters-panel .np-filters');
+  if (npf) {
+    npf.innerHTML = `<div class="npf-title"><b>Netto più probabile</b> <span class="muted">su <span id="npf-cap"></span> investiti: solo gli strumenti sopra la soglia</span></div>${NP_FILTER_PERIODS.map(
+      ([d, l]) => `<div class="npf-row"><span>${l}</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${npFilterKey(d)}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con netto più probabile a ${l} maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`,
+    ).join('')}`;
+    npf.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-npf]');
+      if (!b) return;
+      const k = b.dataset.npf;
+      const f = state.view.filters[k];
+      // una soglia per periodo; un secondo clic sulla stessa la toglie
+      if (f && parseNum(f.min) === Number(b.dataset.min) && parseNum(f.max) == null) delete state.view.filters[k];
+      else state.view.filters[k] = { min: b.dataset.min };
+      applyFilters();
+    });
+  }
   let t;
   $('#filters-panel .filters-grid').addEventListener('input', (e) => {
     const el = e.target.closest('input[data-key]');
@@ -1127,6 +1152,8 @@ function rowValuesCalc(i) {
       else Object.defineProperty(v, k, { enumerable: true, configurable: true, get: () => npx(d)?.median ?? null });
     }
   }
+  // filtri «netto più probabile» in euro: valgono in ogni classifica; il valore si calcola solo se un filtro lo chiede
+  for (const [d] of NP_FILTER_PERIODS) Object.defineProperty(v, npFilterKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.medianEur ?? null });
   return v;
 }
 

@@ -6,11 +6,19 @@ export const NP_FILTER_PERIODS = [[7, '7 giorni'], [30, '1 mese'], [90, '3 mesi'
 export const NP_FILTER_LEVELS = [0, 1000, 2000, 3000];
 export const npFilterKey = (days) => 'npEur' + days;
 export const SIM_KEY = 'simMed';
+// Probabilità di guadagno a 5 anni: quota dei 2.000 scenari che finisce in positivo; soglie dei pulsanti rapidi in punti percentuali
+export const SIM_P_KEY = 'simP';
+export const SIM_P_LEVELS = [70, 80, 90];
+// Probabilità di guadagno a 1 e 3 anni: dal modello delle previsioni (la «P» mostrata sotto il netto più probabile)
+export const P_GAIN_PERIODS = [[365, '1 anno'], [1095, '3 anni']];
+export const pGainKey = (days) => 'pG' + days;
 
 export const INDICATORS = [
   ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
   // Esito mediano dei 2.000 scenari simulati (non la media: pochi scenari estremi la gonfiano), in euro sul capitale impostato
   { key: SIM_KEY, label: 'Guadagno netto su 2.000 scenari, valore mediano 5 anni (€)', pct: false, eur: true, strict: true },
+  ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),
+  { key: SIM_P_KEY, label: 'Probabilità di guadagno a 5 anni (2.000 scenari)', pct: true },
   { key: 'proj', label: 'CAGR netto atteso 5a: netto 019 × (1 − MDD storico)', pct: true },
   { key: 'proj019', label: 'Guadagno finale 5a (CAGR − TER, montante composto, imposta)', pct: true },
   { key: 'projOpt', label: 'Rendimento netto corretto per il rischio (classifica principale)', pct: true },

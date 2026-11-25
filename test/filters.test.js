@@ -56,3 +56,25 @@ test('il guadagno netto medio non è un filtro: la media è influenzata da pochi
   assert.equal(passes({ [SIM_KEY]: 2000 }, a), false);
   assert.equal(passes({ [SIM_KEY]: null }, a), false);
 });
+
+test('filtro probabilità di guadagno a 5 anni: in punti percentuali, maggiore o uguale', async () => {
+  const { INDICATORS, SIM_P_KEY, SIM_P_LEVELS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(SIM_P_LEVELS, [70, 80, 90]);
+  assert.ok(INDICATORS.some((x) => x.key === SIM_P_KEY && x.pct && !x.strict));
+  const a = activeFilters({ [SIM_P_KEY]: { min: '90' } });
+  assert.deepEqual(a, [{ key: SIM_P_KEY, min: 0.9, max: null }]);
+  assert.equal(passes({ simP: 0.9 }, a), true); // il 90% esatto passa
+  assert.equal(passes({ simP: 0.8999 }, a), false);
+  assert.equal(passes({ simP: null }, a), false); // senza scenari: escluso
+});
+
+test('filtri probabilità di guadagno a 1 e 3 anni: in punti percentuali, sommabili a quello a 5 anni', async () => {
+  const { INDICATORS, P_GAIN_PERIODS, pGainKey, SIM_P_KEY, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(P_GAIN_PERIODS.map(([d]) => d), [365, 1095]);
+  for (const [d] of P_GAIN_PERIODS) assert.ok(INDICATORS.some((x) => x.key === pGainKey(d) && x.pct && !x.strict));
+  const a = activeFilters({ pG365: { min: '70' }, pG1095: { min: '80' }, [SIM_P_KEY]: { min: '90' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min]), [['pG365', 0.7], ['pG1095', 0.8], [SIM_P_KEY, 0.9]]);
+  assert.equal(passes({ pG365: 0.71, pG1095: 0.8, simP: 0.93 }, a), true);
+  assert.equal(passes({ pG365: 0.69, pG1095: 0.9, simP: 0.93 }, a), false);
+  assert.equal(passes({ pG365: 0.9, pG1095: null, simP: 0.93 }, a), false);
+});

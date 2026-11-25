@@ -47,4 +47,12 @@ test('filtri netto più probabile in euro: 6 periodi, soglia stretta (maggiore d
 test('il guadagno netto medio non è un filtro: la media è influenzata da pochi scenari estremi', async () => {
   const { INDICATORS } = await import('../public/js/filters.js');
   assert.ok(!INDICATORS.some((x) => x.key === 'netMeanEur'));
+  // al suo posto il valore mediano degli scenari, in euro e con soglia stretta
+  const { SIM_KEY, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.ok(INDICATORS.some((x) => x.key === SIM_KEY && x.eur && x.strict && !x.pct));
+  const a = activeFilters({ [SIM_KEY]: { min: '2000' } });
+  assert.deepEqual(a, [{ key: SIM_KEY, min: 2000, max: null, strict: true }]);
+  assert.equal(passes({ [SIM_KEY]: 2000.5 }, a), true);
+  assert.equal(passes({ [SIM_KEY]: 2000 }, a), false);
+  assert.equal(passes({ [SIM_KEY]: null }, a), false);
 });

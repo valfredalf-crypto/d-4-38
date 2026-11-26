@@ -306,8 +306,13 @@ async function checkLiveData(force = false) {
     for (const [k, r] of Object.entries(live.results || {})) {
       if (!known.has(k)) continue;
       // i dati del fondo (TER, patrimonio) non sempre sono negli aggiornamenti live: si conservano quelli già noti
-      const prevFund = state.results[k]?.fund;
-      state.results[k] = r && !r.fund && prevFund ? { ...r, fund: prevFund } : r;
+      const prev = state.results[k];
+      const prevFund = prev?.fund;
+      let nr = r && !r.fund && prevFund ? { ...r, fund: prevFund } : r;
+      // il 10° percentile degli scenari arriva dal job dei dati live solo dopo il suo riavvio sul nuovo codice:
+      // nel frattempo resta quello calcolato alla pubblicazione (stessi scenari a 5 anni, cambia poco da un'ora all'altra)
+      if (nr?.sim && nr.sim.netP10 == null && Number.isFinite(prev?.sim?.netP10)) nr = { ...nr, sim: { ...nr.sim, netP10: prev.sim.netP10 } };
+      state.results[k] = nr;
       state.priced[k] = live.quotes?.[k]?.priceEur;
     }
     saveResults();

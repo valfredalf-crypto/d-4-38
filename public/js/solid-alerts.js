@@ -17,9 +17,20 @@ export function oscLimit(vol) {
 
 export const LEVEL_ORDER = { sell: 0, warn: 1, buy: 2, osc: 3, new: 4 };
 
+/** Calo «significativo»: esito più probabile di almeno −1% del capitale a 7 giorni oppure −2% a 30 giorni. */
+export const DROP = { d7: 0.01, d30: 0.02 };
+/**
+ * Rapido rialzo con prezzo ancora conveniente: crescita a 30 giorni di almeno +0,30% per seduta e +2% nell'ultima settimana;
+ * prezzo almeno il 20% sotto il prezzo obiettivo medio degli analisti (dato attendibile: almeno 3 analisti, non oltre il +100%);
+ * esito più probabile positivo a 7 e 30 giorni, con probabilità di guadagno a 30 giorni di almeno il 60%.
+ */
+export const RISE = { trend: 0.003, week: 0.02, upside: 0.2, p30: 0.6 };
+const pc = (x) => `${Math.round(x * 100)}%`;
+
 /**
  * items: strumenti attuali della sezione e quelli che ne erano membri al controllo precedente:
- *   { symbol, isin, name, price, changePct, vol, h: { hD, hW, hW2, hM }, np: { d7, d30, y1, y3, y5 }, solid }
+ *   { symbol, isin, name, price, changePct, vol, h: { hD, hW, hW2, hM }, np: { d7, d30, y1, y3, y5 }, solid,
+ *     trend (crescita a 30 giorni per seduta), p30 (probabilità di guadagno a 30 giorni), an: { up, n, warn } (potenziale degli analisti) }
  *   (np: netto più probabile in frazione del capitale, già al netto di costi e imposta; solid: soddisfa ora i criteri).
  * prevWatch: { [symbol]: { ref, refAt, peak, peakAt, base: { at, d30, y5 } } }; prevSet: simboli della sezione al controllo
  * precedente (null alla prima volta: nessun «esce» o «entra» da segnalare); cap: capitale impostato (per gli importi in euro).
@@ -58,7 +69,11 @@ export function evaluateSolid(items, prevWatch = {}, prevSet = null, now = Date.
 
     // 2) calo previsto a breve: l'esito più probabile a 7 giorni (e a 30) è diventato negativo
     const exitedSell = alerts.some((a) => a.symbol === symbol && a.level === 'sell');
-    if (!exitedSell && fin(np.d7) && np.d7 < 0) {
+    const bigDrop = (fin(np.d7) && np.d7 <= -DROP.d7) || (fin(np.d30) && np.d30 <= -DROP.d30);
+    if (!exitedSell && bigDrop) {
+      // calo significativo: avviso unico al giorno, al posto dei due avvisi di calo più lievi
+      add('sell', '🚨', `sdrop:${symbol}:${date}`, 'calo significativo previsto', `Esito più probabile ${fin(np.d7) ? `${E(np.d7)} a 7 giorni` : ''}${fin(np.d7) && fin(np.d30) ? ' e ' : ''}${fin(np.d30) ? `${E(np.d30)} a 30 giorni` : ''}${fin(it.p30) ? ` (probabilità di guadagno a 30 giorni ${pc(it.p30)})` : ''}. Azione rapida che hai associato a questo segnale: valutare la vendita, parziale o totale. Segnale del modello, non una garanzia.`);
+    } else if (!exitedSell && fin(np.d7) && np.d7 < 0) {
       if (fin(np.d30) && np.d30 <= 0) add('sell', '🚨', `sf:${symbol}`, 'segnale di uscita: calo previsto', `Il modello prevede ora un esito più probabile di ${E(np.d7)} a 7 giorni e ${E(np.d30)} a 30 giorni: calo atteso nel breve periodo.`);
       else add('warn', '⚠️', `sf7:${symbol}`, 'calo probabile a 7 giorni', `Esito più probabile a 7 giorni ${E(np.d7)}${fin(np.d30) ? ` (a 30 giorni ${E(np.d30)})` : ''}.`);
     }
@@ -94,6 +109,12 @@ export function evaluateSolid(items, prevWatch = {}, prevSet = null, now = Date.
       if (b && fin(b.y5) && fin(np.y5) && np.y5 - b.y5 >= 0.03) add('buy', '✅', `sbu5:${symbol}:${date}`, 'previsione rafforzata', `Netto più probabile a 5 anni salito da ${E(b.y5)} a ${E(np.y5)} dall'ultimo controllo giornaliero. Segnale di rafforzamento del modello.`);
       else if (b && fin(b.d30) && np.d30 - b.d30 >= 0.01) add('buy', '✅', `sbu30:${symbol}:${date}`, 'previsione a 30 giorni rafforzata', `Netto più probabile a 30 giorni salito da ${E(b.d30)} a ${E(np.d30)} dall'ultimo controllo giornaliero. Segnale di rafforzamento del modello.`);
       else if (dd >= Math.max(0.03, stop / 2) && dd < stop) add('buy', '📈', `sbud:${symbol}:${Math.round(w0.peak * 100)}`, 'ritracciamento con previsioni intatte', `Sceso ${signed(-dd)} dal massimo, ma le previsioni restano positive (7 giorni ${E(np.d7)}, 30 giorni ${E(np.d30)}, 5 anni ${E(np.y5)}). Possibile occasione di rafforzamento secondo il modello.`);
+    }
+
+    // 4b) rapido rialzo con prezzo ancora conveniente rispetto al prezzo obiettivo degli analisti
+    const an = it.an || {};
+    if (!sold && fin(it.trend) && it.trend >= RISE.trend && fin(h.hW) && h.hW >= RISE.week && fin(an.up) && !an.warn && an.up >= RISE.upside && fin(np.d7) && np.d7 > 0 && fin(np.d30) && np.d30 > 0 && (!fin(it.p30) || it.p30 >= RISE.p30)) {
+      add('buy', '🟢', `sbuy:${symbol}:${date}`, 'rapido rialzo e prezzo conveniente', `In rapido rialzo (crescita a 30 giorni ${signed(it.trend, 2)} per seduta, 1 settimana ${signed(h.hW)}) e prezzo ancora del ${pc(an.up / (1 + an.up))} sotto il prezzo obiettivo medio${fin(an.n) ? ` di ${an.n} analisti` : ' dei titoli del fondo'} (potenziale ${signed(an.up, 0)}). Esito più probabile ${E(np.d7)} a 7 giorni e ${E(np.d30)} a 30 giorni${fin(it.p30) ? ` (probabilità di guadagno ${pc(it.p30)})` : ''}. Azione rapida che hai associato a questo segnale: valutare l'acquisto. Segnale del modello, non una garanzia.`);
     }
 
     // 5) nuovo ingresso nella sezione

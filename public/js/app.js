@@ -3111,7 +3111,8 @@ function solidItems(prevSet) {
     if (!member && !was.has(i.symbol)) continue;
     np.d7 = m(7);
     np.d30 = m(30);
-    items.push({ symbol: i.symbol, isin: i.isin || '', name: i.name, price: q.priceEur, changePct: q.changePct, vol: Number.isFinite(r.forward?.vol) ? r.forward.vol : null, h, np, solid: member });
+    const cv = consensusValues(i, r);
+    items.push({ symbol: i.symbol, isin: i.isin || '', name: i.name, price: q.priceEur, changePct: q.changePct, vol: Number.isFinite(r.forward?.vol) ? r.forward.vol : null, h, np, solid: member, trend: trendScore(q.perf), p30: npCached(i, 30)?.p ?? null, an: { up: cv.anUp, n: cv.anN, warn: cv.anWarn } });
   }
   return items;
 }

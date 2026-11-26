@@ -246,6 +246,7 @@ export function simulate(prices, options = {}) {
     historicalMdd: historicalMaxDrawdown(series),
     grossMedian: percentile(sortedFinals, 0.5),
     netP5: percentile(nets, 0.05),
+    netP10: percentile(nets, 0.1), // raggiunto o superato nel 90% degli scenari
     netP25: percentile(nets, 0.25),
     netMedian: percentile(nets, 0.5),
     netP75: percentile(nets, 0.75),

@@ -10,7 +10,7 @@ import { trendScore } from './trend.js';
 import { evaluateSolid, LEVEL_ORDER } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, doubtfulTarget, compareConsensus, recoLabel } from './consensus.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, AN_KEYS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
@@ -610,7 +610,7 @@ function buildFiltersPanel() {
   if (npf) {
     npf.innerHTML = `<div class="npf-title"><b>Netto più probabile</b> <span class="muted">su <span id="npf-cap"></span> investiti: solo gli strumenti sopra la soglia</span></div>${NP_FILTER_PERIODS.map(
       ([d, l]) => `<div class="npf-row"><span>${l}</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${npFilterKey(d)}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con netto più probabile a ${l} maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`,
-    ).join('')}<div class="npf-title npf-sep"><b>Guadagno netto mediano su ${simCount()} scenari</b> <span class="muted">a ${simYears()} anni (metà degli scenari sopra, metà sotto), su <span class="npf-cap2"></span></span></div><div class="npf-row"><span>${simYears()} anni</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${SIM_KEY}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con valore mediano dei ${simCount()} scenari a ${simYears()} anni maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div><div class="npf-title npf-sep"><b>Probabilità di guadagno</b> <span class="muted">a 1 e 3 anni dal modello delle previsioni, a ${simYears()} anni dai ${simCount()} scenari simulati</span></div>${P_GAIN_PERIODS.map(([d, l]) => `<div class="npf-row"><span>${l}</span>${SIM_P_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${pGainKey(d)}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con probabilità di guadagno a ${l} di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div>`).join('')}<div class="npf-row"><span>${simYears()} anni</span>${SIM_P_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${SIM_P_KEY}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con probabilità di guadagno a ${simYears()} anni di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-title npf-sep"><b>Analisti e dividendi</b> <span class="muted">potenziale = prezzo obiettivo medio a 12 mesi rispetto al prezzo; dividendo annuo lordo</span></div><div class="npf-row"><span>Potenziale</span>${AN_UP_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="anUp" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con potenziale secondo gli analisti di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-row"><span>Analisti</span>${AN_N_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="anN" data-min="${x}" aria-pressed="false" title="Mostra solo le azioni seguite da almeno ${x} analisti. Tocca ancora per togliere il filtro.">≥ ${x}</button>`).join('')}</div><div class="npf-row"><span>Dividendo</span>${DIV_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="divY" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con rendimento da dividendi di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div>`;
+    ).join('')}<div class="npf-title npf-sep"><b>Guadagno netto mediano su ${simCount()} scenari</b> <span class="muted">a ${simYears()} anni (metà degli scenari sopra, metà sotto), su <span class="npf-cap2"></span></span></div><div class="npf-row"><span>${simYears()} anni</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${SIM_KEY}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con valore mediano dei ${simCount()} scenari a ${simYears()} anni maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div><div class="npf-title npf-sep"><b>Guadagno netto nel 90% degli scenari</b> <span class="muted">in euro: raggiunto o superato in 9 casi su 10 (1 e 3 anni dal modello delle previsioni, ${simYears()} anni dai ${simCount()} scenari simulati)</span></div>${[...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l]), [SIM_P90_KEY, `${simYears()} anni`]].map(([k, l]) => `<div class="npf-row"><span>${l}</span>${P90_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${k}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti che a ${l} in 9 casi su 10 finiscono sopra ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`).join('')}<div class="npf-title npf-sep"><b>Analisti e dividendi</b> <span class="muted">potenziale = prezzo obiettivo medio a 12 mesi rispetto al prezzo; dividendo annuo lordo</span></div><div class="npf-row"><span>Potenziale</span>${AN_UP_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="anUp" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con potenziale secondo gli analisti di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-row"><span>Analisti</span>${AN_N_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="anN" data-min="${x}" aria-pressed="false" title="Mostra solo le azioni seguite da almeno ${x} analisti. Tocca ancora per togliere il filtro.">≥ ${x}</button>`).join('')}</div><div class="npf-row"><span>Dividendo</span>${DIV_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="divY" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con rendimento da dividendi di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div>`;
     npf.addEventListener('click', (e) => {
       const b = e.target.closest('[data-npf]');
       if (!b) return;
@@ -827,7 +827,7 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || AN_KEYS.includes(key);
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
@@ -859,7 +859,7 @@ function npStats(inst, days) {
   const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
   const med = Math.max(-cap, h.medianNet); // non si può perdere più del capitale investito
   const avg = Math.max(-cap, h.netGain);
-  return { median: med / cap, mean: avg / cap, p: h.pProfit, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
+  return { median: med / cap, mean: avg / cap, p: h.pProfit, p10Eur: h.p10Net != null ? Math.max(-cap, h.p10Net) : null, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
 }
 // Chiave delle impostazioni che influenzano il «netto più probabile» (calcolata al massimo ogni 50 ms: serve a ogni riga)
 let npCfgCache = { at: -1, key: '' };
@@ -1207,6 +1207,7 @@ function rowValuesCalc(i) {
     [SIM_KEY]: sim && Number.isFinite(sim.netMedian) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? sim.netMedian * (state.settings.mc.amount || 10000) : null,
     simP: sim && Number.isFinite(sim.probLoss) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? 1 - sim.probLoss : null,
     simP25: sim && Number.isFinite(sim.netP25) ? sim.netP25 * (state.settings.mc.amount || 10000) : null,
+    [SIM_P90_KEY]: sim && Number.isFinite(sim.netP10) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? sim.netP10 * (state.settings.mc.amount || 10000) : null,
     tSl: q?.perf?.sl ?? null,
     tWm: q?.perf?.wm ?? null,
     perfW: netPerf(q?.perf?.w, i),
@@ -1225,6 +1226,7 @@ function rowValuesCalc(i) {
   // filtri «netto più probabile» in euro: valgono in ogni classifica; il valore si calcola solo se un filtro lo chiede
   for (const [d] of NP_FILTER_PERIODS) Object.defineProperty(v, npFilterKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.medianEur ?? null });
   for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, pGainKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.p ?? null });
+  for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, p90Key(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.p10Eur ?? null });
   return v;
 }
 
@@ -1309,26 +1311,14 @@ function render() {
       after.after(th);
       after = th;
     }
-    // probabilità di guadagno a 1 e 3 anni: dal modello delle previsioni
-    for (const [d, l] of P_GAIN_PERIODS) {
+    // guadagno netto raggiunto o superato nel 90% degli scenari, in euro: 1 e 3 anni dal modello delle previsioni, 5 anni dagli scenari simulati
+    for (const [k, l, s, src] of [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, d === 365 ? '1a' : '3a', 'secondo il modello delle previsioni (lo stesso del netto più probabile)']), [SIM_P90_KEY, `${simYears()} anni`, `${simYears()}a`, `sui ${simCount()} scenari simulati`]]) {
       const th = document.createElement('th');
-      const k = pGainKey(d);
       const on = state.view.sort.key === k;
       th.className = 'num simp-col' + (on ? ' sorted' : '');
       th.dataset.sort = k;
-      th.title = `Probabilità che il guadagno netto a ${l} sia positivo, secondo il modello delle previsioni (la stessa «P» mostrata sotto il netto più probabile a ${l}). Non è una garanzia. Tocca per ordinare dalla più alta.`;
-      th.innerHTML = `<span class="l">Probabilità di guadagno ${l}</span><span class="s">P. guad. ${d === 365 ? '1a' : '3a'}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
-      after.after(th);
-      after = th;
-    }
-    // probabilità di guadagno a 5 anni: quota degli scenari simulati che finisce in positivo
-    {
-      const th = document.createElement('th');
-      const on = state.view.sort.key === SIM_P_KEY;
-      th.className = 'num simp-col' + (on ? ' sorted' : '');
-      th.dataset.sort = SIM_P_KEY;
-      th.title = `Probabilità di guadagno a ${simYears()} anni: quota dei ${simCount()} scenari simulati che finisce con un guadagno netto positivo (dopo imposte, bollo, commissioni e spread). Non è una garanzia: gli scenari si basano sull'andamento passato e sulle previsioni attuali. Tocca per ordinare dalla più alta.`;
-      th.innerHTML = `<span class="l">Probabilità di guadagno ${simYears()}a</span><span class="s">P. guad. ${simYears()}a</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+      th.title = `Guadagno netto a ${l} raggiunto o superato nel 90% degli scenari (9 casi su 10), in euro sul capitale impostato, ${src}, dopo imposta e costi. In 1 caso su 10 va peggio di così. Se è negativo, è la perdita che 9 volte su 10 non viene superata. Non è una garanzia. Tocca per ordinare dal più alto.`;
+      th.innerHTML = `<span class="l">Netto nel 90% degli scenari ${l}</span><span class="s">90% scen. ${s}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
       after.after(th);
       after = th;
     }
@@ -1413,8 +1403,7 @@ function render() {
         ${analystMode() ? anCells(r) : ''}
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
         ${shortMode() ? (r[SIM_KEY] == null ? '<td class="num sim-col muted">–</td>' : `<td class="num sim-col ${cls(r[SIM_KEY])}" title="Valore mediano dei ${simCount()} scenari a ${simYears()} anni: ${eur0(r[SIM_KEY])}${r.simP != null ? ` · probabilità di guadagno ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · in 3 scenari su 4 il risultato è almeno ${eur0(r.simP25)}` : ''} · media di tutti gli scenari ${pct(r.netMean, true, 1)} (gonfiata dagli scenari estremi: non usarla come previsione)"><b class="big">${r[SIM_KEY] > 0 ? '+' : ''}${eur0(r[SIM_KEY])}</b><span class="eur">${r.simP != null ? `P ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · 3 su 4 ≥ ${r.simP25 > 0 ? '+' : ''}${eur0(r.simP25)}` : ''}</span></td>`) : ''}
-        ${shortMode() ? P_GAIN_PERIODS.map(([d, l]) => { const p = r[pGainKey(d)]; return p == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${p >= 0.5 ? 'pos' : 'neg'}" title="Probabilità di guadagno a ${l}: ${Math.round(p * 100)}% (modello delle previsioni)"><b class="big">${pct(p, false, 0)}</b></td>`; }).join('') : ''}
-        ${shortMode() ? (r.simP == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${r.simP >= 0.5 ? 'pos' : 'neg'}" title="In ${Math.round(r.simP * 100)} scenari su 100 il guadagno netto a ${simYears()} anni è positivo; negli altri ${100 - Math.round(r.simP * 100)} si perde."><b class="big">${pct(r.simP, false, 0)}</b></td>`) : ''}
+        ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
         ${shortMode() && !analystMode() ? anCells(r) : ''}
         ${solidMode() ? (r.tScore == null ? '<td class="num trend-col muted" title="Crescita a 30 giorni non ancora disponibile per questo strumento">–</td>' : `<td class="num trend-col ${cls(r.tScore)}" title="Ultimi 30 giorni, per seduta: pendenza della curva del rendimento ${pct(r.tSl, true, 2)} · media ponderata degli incrementi (più peso alle sedute recenti) ${pct(r.tWm, true, 2)}"><b class="big">${pct(r.tScore, true, 2)}</b><span class="eur">pend. ${pct(r.tSl, true, 2)} · media ${pct(r.tWm, true, 2)}</span></td>`) : ''}
         ${shortMode() ? HIST_COLS.map(([k]) => `<td class="num hist-col ${cls(r[k])}">${pct(r[k], true, 2)}</td>`).join('') : ''}
@@ -3468,7 +3457,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...AN_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

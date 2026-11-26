@@ -160,6 +160,8 @@ export function normCdf(x) {
  * Senza σ: imposta solo se μ_T > 0 (caso deterministico). Restituisce anche probabilità di guadagno e
  * intervallo tipico (16°–84° percentile, circa ±1σ) del guadagno netto.
  */
+/** Quantile normale del 10%: sotto questo valore finisce 1 caso su 10. */
+export const Z_P10 = -1.2815515655446004;
 export function projectShort(params, capital, years, { vol = null, orderCost = 1, positions = 1, momRho } = {}) {
   const net0 = Number.isFinite(params.net) ? params.net : params.cagr - (params.ter || 0);
   const tr = params.mom ? momentumTilt({ net: net0, vol, mom: params.mom, years, rho: momRho }) : null; // tendenza recente
@@ -186,7 +188,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
       const g = capital * (Math.exp(a + z * sigma) - 1);
       return g - (g > 0 ? g * tax : 0) - costs;
     };
-    quant = { low: at(-1), high: at(1), median: at(0) }; // mediana = esito più probabile (metà dei casi sopra, metà sotto)
+    quant = { low: at(-1), high: at(1), median: at(0), p10: at(Z_P10) }; // mediana = esito più probabile (metà dei casi sopra, metà sotto)
   } else expTaxRate = tax * Math.max(0, mu);
   const taxEur = capital * expTaxRate;
   const gain = capital * gainRate;
@@ -209,6 +211,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     low: quant?.low ?? null,
     high: quant?.high ?? null,
     medianNet: quant?.median ?? netGain, // netto nel caso mediano (più probabile)
+    p10Net: quant?.p10 ?? null, // netto raggiunto o superato in 9 casi su 10 (10° percentile); null senza volatilità
   };
 }
 

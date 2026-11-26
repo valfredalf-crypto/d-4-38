@@ -91,3 +91,17 @@ test('filtri analisti e dividendi: potenziale e dividendo in punti percentuali, 
   assert.equal(passes({ anUp: 4.85, anN: 1, divY: 0.18 }, a), false);
   assert.equal(passes({ anUp: 0.3, anN: null, divY: 0.05 }, a), false);
 });
+
+test('filtri sul netto nel 90% degli scenari: in euro, soglia stretta, anche negativa', async () => {
+  const { INDICATORS, P90_KEYS, P90_LEVELS, p90Key, SIM_P90_KEY, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(P90_KEYS, ['p90e365', 'p90e1095', 'simP90']);
+  assert.equal(p90Key(365), 'p90e365');
+  for (const k of P90_KEYS) assert.ok(INDICATORS.some((x) => x.key === k && x.eur && x.strict && !x.pct));
+  assert.ok(P90_LEVELS.includes(0) && P90_LEVELS.some((x) => x < 0));
+  const a = activeFilters({ p90e365: { min: '-1000' }, [SIM_P90_KEY]: { min: '0' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min, x.strict]), [['p90e365', -1000, true], [SIM_P90_KEY, 0, true]]);
+  assert.equal(passes({ p90e365: -999, simP90: 1 }, a), true);
+  assert.equal(passes({ p90e365: -1000, simP90: 1 }, a), false);
+  assert.equal(passes({ p90e365: 200, simP90: 0 }, a), false);
+  assert.equal(passes({ p90e365: 200, simP90: null }, a), false);
+});

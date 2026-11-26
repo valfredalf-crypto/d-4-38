@@ -392,3 +392,33 @@ test('Orizzonte 1 giorno: trend a 4 settimane (non quello di 1 settimana, nullo 
   assert.ok(Math.abs(t1.net - t7.net) < 1e-9); // stessa deriva annua: il guadagno a 1 gg è ~1/7 di quello a 7 gg
   assert.ok(t1.net > 0.1);
 });
+
+test('projectShort: netto raggiunto in 9 casi su 10 (10° percentile), sotto la mediana, coerente con una simulazione', async () => {
+  const { projectShort: ps, Z_P10 } = await import('../public/js/projection.js');
+  assert.ok(Math.abs(Z_P10 + 1.2815515655) < 1e-9);
+  const cap = 10000;
+  for (const [cagr, vol, y] of [[0.07, 0.2, 1], [0.07, 0.2, 3], [0.12, 0.45, 1], [0.03, 0.05, 3]]) {
+    const r = ps({ cagr, ter: 0, tax: 0.26 }, cap, y, { vol, orderCost: 1 });
+    assert.ok(r.p10Net < r.medianNet, 'il 10° percentile sta sotto la mediana');
+    assert.ok(r.p10Net > r.low - 1e9 && r.p10Net < r.low, 'più in basso di una deviazione standard');
+    // simulazione indipendente: lognormale con la stessa media, netto di imposta sui soli guadagni e costi
+    const sg = vol * Math.sqrt(y);
+    const a = Math.log((1 + cagr) ** y) - (sg * sg) / 2;
+    let seed = 12345;
+    const rnd = () => { seed = (seed * 1664525 + 1013904223) % 4294967296; return (seed + 0.5) / 4294967296; };
+    const nets = [];
+    for (let k = 0; k < 40000; k++) {
+      const z = Math.sqrt(-2 * Math.log(rnd())) * Math.cos(2 * Math.PI * rnd());
+      const g = cap * (Math.exp(a + z * sg) - 1);
+      nets.push(g - (g > 0 ? g * 0.26 : 0) - 2);
+    }
+    nets.sort((p, q) => p - q);
+    const emp = nets[Math.floor(nets.length * 0.1)];
+    assert.ok(Math.abs(emp - r.p10Net) < Math.max(40, Math.abs(r.p10Net) * 0.04), `10° percentile ${r.p10Net.toFixed(0)} contro simulazione ${emp.toFixed(0)}`);
+    // quota di casi sopra il valore: circa 90%
+    const above = nets.filter((x) => x >= r.p10Net).length / nets.length;
+    assert.ok(Math.abs(above - 0.9) < 0.01, `quota sopra ${above}`);
+  }
+  // senza volatilità non c'è distribuzione
+  assert.equal(ps({ cagr: 0.07, ter: 0, tax: 0.26 }, cap, 1, { orderCost: 1 }).p10Net, null);
+});

@@ -73,3 +73,9 @@ test('potenziale da prendere con cautela: pochi analisti o rialzo oltre il +100%
   assert.equal(doubtfulTarget(0.35, null), false); // ETF: media sui titoli del fondo
   assert.equal(doubtfulTarget(-0.2, 8), false);
 });
+
+test('dati pubblicati: 10° percentile degli scenari (netto nel 90% degli scenari)', () => {
+  const t = tableResult({ forward: { expected: 0.07 }, sim: { netP10: -0.21347, netP25: -0.06, netMedian: 0.18 } });
+  assert.equal(t.sim.netP10, -0.2135);
+  assert.equal('netP10' in tableResult({ forward: {}, sim: { netP25: -0.06 } }).sim, false);
+});

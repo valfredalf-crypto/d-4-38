@@ -12,6 +12,12 @@ export const SIM_P_LEVELS = [70, 80, 90];
 // Probabilità di guadagno a 1 e 3 anni: dal modello delle previsioni (la «P» mostrata sotto il netto più probabile)
 export const P_GAIN_PERIODS = [[365, '1 anno'], [1095, '3 anni']];
 export const pGainKey = (days) => 'pG' + days;
+// Guadagno netto raggiunto o superato nel 90% degli scenari (in euro sul capitale impostato): 1 e 3 anni dal modello
+// delle previsioni, 5 anni dai 2.000 scenari simulati. In 1 caso su 10 va peggio di così.
+export const p90Key = (days) => 'p90e' + days;
+export const SIM_P90_KEY = 'simP90';
+export const P90_KEYS = [...P_GAIN_PERIODS.map(([d]) => p90Key(d)), SIM_P90_KEY];
+export const P90_LEVELS = [-2000, -1000, 0, 1000];
 // Sezione «Analisti e dividendi»: soglie dei pulsanti rapidi (punti percentuali; numero di analisti)
 export const AN_KEYS = ['anUp', 'divY'];
 export const AN_UP_LEVELS = [10, 25, 50];
@@ -22,6 +28,8 @@ export const INDICATORS = [
   ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
   // Esito mediano dei 2.000 scenari simulati (non la media: pochi scenari estremi la gonfiano), in euro sul capitale impostato
   { key: SIM_KEY, label: 'Guadagno netto mediano su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
+  ...P_GAIN_PERIODS.map(([d, l]) => ({ key: p90Key(d), label: `Guadagno netto nel 90% degli scenari a ${l} (€)`, pct: false, eur: true, strict: true })),
+  { key: SIM_P90_KEY, label: 'Guadagno netto nel 90% degli scenari a 5 anni (€, 2.000 scenari)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),
   { key: SIM_P_KEY, label: 'Probabilità di guadagno a 5 anni (2.000 scenari)', pct: true },
   { key: 'anUp', label: 'Potenziale secondo gli analisti (prezzo obiettivo a 12 mesi)', pct: true },

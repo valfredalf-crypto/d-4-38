@@ -65,6 +65,7 @@ export function tableResult(r) {
       histMdd: r4(s.histMdd),
       mddMedian: r4(s.mddMedian),
       netGain: r4(s.netGain),
+      ...(Number.isFinite(s.netP10) ? { netP10: r4(s.netP10) } : {}),
       netP25: r4(s.netP25),
       netMedian: r4(s.netMedian),
       netMean: r4(s.netMean),

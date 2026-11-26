@@ -3424,6 +3424,19 @@ function bind() {
     try { localStorage.setItem('trmc.np', String(state.view.np)); } catch { /* niente */ }
     render();
   }));
+  // salto orizzontale agli indicatori dopo le 9 colonne dei periodi (sul telefono sono fuori schermo)
+  $('#np-jump')?.addEventListener('click', () => {
+    const t = $('#table');
+    const w = t?.closest('.table-wrap') || t?.parentElement;
+    const th = $('#table thead th.sim-col');
+    if (!w || !th) return;
+    const nameTh = $('#table thead th[data-sort="name"]');
+    const sticky = nameTh && getComputedStyle(nameTh).position === 'sticky' ? nameTh.offsetWidth : 0;
+    const x = Math.max(0, th.offsetLeft - sticky - 6);
+    const back = w.scrollLeft >= x - 30;
+    w.scrollTo({ left: back ? 0 : x, behavior: 'smooth' });
+    $('#np-jump').textContent = back ? 'Vai agli indicatori →' : '← Torna ai periodi';
+  });
   const fm = $('#funnel-mode');
   if (fm) {
     fm.value = state.view.funnel || 'maxgrowth';

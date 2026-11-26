@@ -7,7 +7,7 @@ import { ema, stabilizeRanks } from './stable.js';
 import { histValues } from './history.js';
 import { SOLID_MIN, solidRecent, solidPass } from './solid.js';
 import { trendScore } from './trend.js';
-import { evaluateSolid, LEVEL_ORDER } from './solid-alerts.js';
+import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
@@ -942,14 +942,14 @@ function consensusValues(i, r) {
   // un ETF ad accumulazione non paga nulla all'investitore (reinveste), le crypto non hanno dividendi
   const acc = i.type !== 'stock' && i.type !== 'crypto' && distKind(i) === 'acc';
   const dist = r.sim?.distYield > 0 ? r.sim.distYield : null;
-  const div = i.type === 'crypto' || acc ? null : fw.divRaw ?? (stock ? null : dist);
+  const div = i.type === 'crypto' ? null : fw.divRaw ?? (stock || acc ? null : dist);
   return { anUp: up, anN: n, anReco: stock && up != null ? fw.reco ?? null : null, anWarn: warn, divY: div, divAcc: acc };
 }
 // Colonne aggiunte alle sezioni «Netto più probabile»: rendimento atteso annuo (tutti gli strumenti, crypto comprese),
 // dividendo annuo (azioni ed ETF a distribuzione) e potenziale secondo gli analisti; in «Analisti e dividendi» il potenziale va per primo.
 const AN_COLS = {
-  expected: ['Rendimento atteso annuo', 'Atteso/anno', 'Rendimento annuo atteso dal modello per i prossimi anni, lordo (prima di costi e imposte): pesa storico, equilibrio di mercato, analisti e fondamentali secondo la loro affidabilità. Vale per azioni, ETF e criptovalute. È una stima, non una garanzia. Tocca per ordinare dal più alto.'],
-  divY: ['Dividendo annuo', 'Dividendo', 'Rendimento da dividendi annuo, lordo (imposta 26% all’incasso): azioni ed ETF a distribuzione. Gli ETF ad accumulazione reinvestono e non pagano nulla («accumula»); le criptovalute non hanno dividendi. ⚠ oltre il 12% è quasi sempre un dividendo straordinario o un dato anomalo: non si ripete ogni anno, e in classifica viene dopo i dividendi ordinari. Tocca per ordinare dal più alto.'],
+  expected: ['Rendimento atteso', 'Rend. atteso', 'Lo stesso «Rendimento atteso» della scheda dello strumento: rendimento annuo atteso dal modello per i prossimi anni, lordo (prima di costi e imposte): pesa storico, equilibrio di mercato, analisti e fondamentali secondo la loro affidabilità. Vale per azioni, ETF e criptovalute. È una stima, non una garanzia. Tocca per ordinare dal più alto.'],
+  divY: ['Rendimento da dividendi', 'Rend. dividendi', 'Lo stesso «Rendimento da dividendi» della scheda dello strumento: annuo, lordo (imposta 26% all’incasso). Azioni ed ETF a distribuzione lo pagano; gli ETF ad accumulazione lo reinvestono nel fondo («accumula») e non pagano nulla; le criptovalute non hanno dividendi. ⚠ oltre il 12% è quasi sempre un dividendo straordinario o un dato anomalo: non si ripete ogni anno, e in classifica viene dopo i dividendi ordinari. Tocca per ordinare dal più alto.'],
   anUp: ['Potenziale analisti 12 mesi', 'Analisti 12m', 'Potenziale secondo gli analisti: prezzo obiettivo medio a 12 mesi rispetto al prezzo (per gli ETF: media ponderata sui titoli del fondo). Sotto: numero di analisti e giudizio prevalente; ⚠ con meno di 3 analisti, o con un rialzo oltre il +100%, il valore è poco attendibile. È una stima degli analisti, non del modello, e non è una garanzia. Tocca per ordinare dal più alto: prima i valori attendibili, poi quelli con ⚠; a parità, o senza analisti, vale il dividendo.'],
 };
 const anOrder = () => (analystMode() ? ['anUp', 'divY', 'expected'] : ['expected', 'divY', 'anUp']);
@@ -967,8 +967,8 @@ function anHeads() {
 }
 // Sul telefono le colonne degli indicatori sono fuori schermo: gli stessi tre valori compaiono sotto il nome dello strumento
 function mInd(r) {
-  const div = r.divY != null ? `${pct(r.divY, false, 1)}${r.divY > DIV_EXTREME ? ' ⚠' : ''}` : r.divAcc ? 'accumula' : '–';
-  const parts = [`Rend. atteso <b class="${cls(r.expected)}">${r.expected != null ? pct(r.expected, true, 1) + '/anno' : '–'}</b>`, `Dividendo <b>${div}</b>`];
+  const div = r.divY != null ? `${pct(r.divY, false, 1)}${r.divY > DIV_EXTREME ? ' ⚠' : r.divAcc ? ' (accumula)' : ''}` : r.divAcc ? 'accumula' : '–';
+  const parts = [`Rendimento atteso <b class="${cls(r.expected)}">${r.expected != null ? pct(r.expected, true, 1) : '–'}</b>`, `Rend. da dividendi <b>${div}</b>`];
   if (r.anUp != null) parts.push(`Analisti <b class="${cls(r.anUp)}">${pct(r.anUp, true, 0)}${r.anWarn ? ' ⚠' : ''}</b>`);
   return `<span class="m-ind" title="Rendimento atteso annuo del modello (lordo) · rendimento da dividendi annuo (lordo; gli ETF ad accumulazione reinvestono) · potenziale secondo gli analisti a 12 mesi">${parts.join('<br>')}</span>`;
 }
@@ -986,7 +986,7 @@ function anCells(r) {
       ? r.divAcc
         ? '<td class="num an-col muted" title="ETF ad accumulazione: reinveste i dividendi nel fondo e non paga nulla all’investitore">accumula</td>'
         : '<td class="num an-col muted" title="Nessun dividendo dichiarato per questo strumento">–</td>'
-      : `<td class="num an-col" title="Rendimento da dividendi annuo: ${pct(r.divY, false, 2)} lordo (imposta 26% all’incasso).${odd ? ' Oltre il 12%: quasi sempre un dividendo straordinario o un dato anomalo, non si ripete ogni anno.' : ''}"><b class="big">${pct(r.divY, false, 1)}</b>${odd ? '<span class="eur">⚠ straordinario?</span>' : ''}</td>`,
+      : `<td class="num an-col" title="Rendimento da dividendi annuo: ${pct(r.divY, false, 2)} lordo (imposta 26% all’incasso).${odd ? ' Oltre il 12%: quasi sempre un dividendo straordinario o un dato anomalo, non si ripete ogni anno.' : ''}"><b class="big">${pct(r.divY, false, 1)}</b>${odd ? '<span class="eur">⚠ straordinario?</span>' : r.divAcc ? '<span class="eur">accumula: reinvestito</span>' : ''}</td>`,
     expected: r.expected == null
       ? '<td class="num an-col muted" title="Rendimento atteso non disponibile: storico insufficiente per una stima">–</td>'
       : `<td class="num an-col ${cls(r.expected)}" title="Rendimento annuo atteso dal modello: ${pct(r.expected, true, 2)} lordo, prima di costi e imposte. È una stima, non una garanzia."><b class="big">${pct(r.expected, true, 1)}</b></td>`,
@@ -3108,6 +3108,7 @@ const BASE_TITLE = document.title;
 const LS_SOLID_WATCH = 'trmc.solidWatch';
 const LS_SOLID_SET = 'trmc.solidSet';
 const LS_SOLID_EV = 'trmc.solidEvents';
+const LS_SOLID_SEEN = 'trmc.solidSeen'; // prima comparsa di ogni notifica: serve per la data e per l'ordine
 function solidItems(prevSet) {
   const was = new Set(prevSet || []);
   const items = [];
@@ -3142,7 +3143,10 @@ function checkSolidAlerts({ notify = true } = {}) {
     const keep = lsGet(LS_SOLID_EV, []).filter((e) => now - e.at < 864e5 && !alerts.some((a) => a.key === e.key) && (e.key.startsWith('sx:') ? !set.includes(e.symbol) : set.includes(e.symbol)));
     const events = [...alerts.filter(isEvent).map((a) => ({ ...a, at: now })), ...keep].slice(0, 80);
     lsSet(LS_SOLID_EV, events);
-    state.solidAlerts = [...alerts.filter((a) => !isEvent(a)), ...events].sort((a, b) => (LEVEL_ORDER[a.level] ?? 9) - (LEVEL_ORDER[b.level] ?? 9));
+    // ordine per data: la più recente in alto (a parità di data, la più urgente)
+    const stamped = stampAlerts([...alerts.filter((a) => !isEvent(a)), ...events], lsGet(LS_SOLID_SEEN, {}), now);
+    lsSet(LS_SOLID_SEEN, stamped.seen);
+    state.solidAlerts = stamped.list;
     state.solidSet = set;
     state.solidAt = now;
     updateNotifsBadge();
@@ -3159,10 +3163,12 @@ function checkSolidAlerts({ notify = true } = {}) {
     console.warn('notifiche sezione solidi', e);
   }
 }
-function solidNoteHtml(a) {
-  return `<div class="notif notif-${a.level}"><div class="notif-t"><span class="notif-ic">${esc(a.icon)}</span> <b>${esc(a.title)}</b>${a.isin ? ` <span class="muted">· ${esc(a.isin)}</span>` : ''}</div><div class="muted">${esc(a.text)}</div></div>`;
-}
 const hm = (t) => new Date(t).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+// data della notifica: «oggi 14:05», altrimenti giorno e mese
+const whenLabel = (t) => (new Date(t).toDateString() === new Date().toDateString() ? `oggi ${hm(t)}` : `${new Date(t).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' })} ${hm(t)}`);
+function solidNoteHtml(a) {
+  return `<div class="notif notif-${a.level}"><div class="notif-t"><span class="notif-ic">${esc(a.icon)}</span> <b>${esc(a.title)}</b>${a.isin ? ` <span class="muted">· ${esc(a.isin)}</span>` : ''}${a.at ? ` <span class="muted notif-when">· ${whenLabel(a.at)}</span>` : ''}</div><div class="muted">${esc(a.text)}</div></div>`;
+}
 // Riquadro nella sezione: i segnali più urgenti, poi il rimando alla finestra 🔔 con tutti
 function renderSolidAlerts() {
   const box = $('#solid-alerts');
@@ -3175,7 +3181,7 @@ function renderSolidAlerts() {
   }
   const main = state.solidAlerts.filter((a) => a.level !== 'new');
   const news = state.solidAlerts.length - main.length;
-  box.innerHTML = `<b>🔔 Notifiche sulla sezione</b> <span class="muted">· aggiornate alle ${hm(state.solidAt)} a ogni aggiornamento dei dati · calo previsto, oscillazioni forti, uscita o rafforzamento secondo il modello (non ordini né consigli)</span>${
+  box.innerHTML = `<b>🔔 Notifiche sulla sezione</b> <span class="muted">· aggiornate alle ${hm(state.solidAt)} a ogni aggiornamento dei dati · in ordine di data, la più recente in alto · calo previsto, oscillazioni forti, uscita o rafforzamento secondo il modello (non ordini né consigli)</span>${
     main.length
       ? main.slice(0, 6).map(solidNoteHtml).join('') + (main.length > 6 ? `<button type="button" class="ghost small" data-act="solid-open">Mostra tutte le ${main.length} notifiche</button>` : '')
       : '<div class="pos">Nessun calo previsto, nessuna oscillazione forte: gli strumenti della sezione sono in linea con le previsioni.</div>'
@@ -3185,7 +3191,7 @@ function solidSheetHtml() {
   if (!state.solidAlerts) return '';
   const main = state.solidAlerts.filter((a) => a.level !== 'new');
   const news = state.solidAlerts.filter((a) => a.level === 'new');
-  return `<h3>Sezione «Solidi e in crescita»</h3><p class="muted small-note">Aggiornate alle ${hm(state.solidAt)} a ogni aggiornamento dei dati. Segnali del modello (calo previsto, oscillazioni forti, uscita dalla sezione, rafforzamento), non ordini né consigli di investimento. Le notifiche sul dispositivo arrivano con l'app aperta, anche in secondo piano.</p>${
+  return `<h3>Sezione «Solidi e in crescita»</h3><p class="muted small-note">Aggiornate alle ${hm(state.solidAt)} a ogni aggiornamento dei dati, in ordine di data (la più recente in alto). Segnali del modello (calo previsto, oscillazioni forti, uscita dalla sezione, rafforzamento), non ordini né consigli di investimento. Le notifiche sul dispositivo arrivano con l'app aperta, anche in secondo piano.</p>${
     main.length ? main.slice(0, 40).map(solidNoteHtml).join('') : '<p class="pos">Nessun calo previsto, nessuna oscillazione forte nella sezione.</p>'
   }${news.length ? `<div class="muted small-note"><b>Nuovi ingressi (${news.length})</b></div>${news.slice(0, 10).map(solidNoteHtml).join('')}` : ''}`;
 }

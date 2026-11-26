@@ -123,3 +123,19 @@ export function evaluateSolid(items, prevWatch = {}, prevSet = null, now = Date.
   alerts.sort((a, b) => (LEVEL_ORDER[a.level] ?? 9) - (LEVEL_ORDER[b.level] ?? 9));
   return { alerts, watch, set };
 }
+
+/**
+ * Data di ogni notifica e ordine per data: `seen` ricorda quando ogni notifica (per chiave) è comparsa la prima volta.
+ * Restituisce l'elenco con `at` (prima comparsa; le notifiche che hanno già una data la conservano), ordinato dalla più
+ * recente; a parità di data vale l'urgenza. `seen` viene ripulito dalle notifiche non più presenti.
+ */
+export function stampAlerts(alerts, seen = {}, now = Date.now()) {
+  const next = {};
+  const list = alerts.map((a) => {
+    const at = fin(a.at) ? a.at : fin(seen?.[a.key]) ? seen[a.key] : now;
+    next[a.key] = at;
+    return { ...a, at };
+  });
+  list.sort((a, b) => b.at - a.at || (LEVEL_ORDER[a.level] ?? 9) - (LEVEL_ORDER[b.level] ?? 9));
+  return { list, seen: next };
+}

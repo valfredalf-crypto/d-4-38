@@ -119,3 +119,23 @@ test('rapido rialzo e prezzo conveniente: serve crescita forte, prezzo ben sotto
   // con un avviso di calo sullo stesso strumento non compare il segnale di acquisto
   assert.equal(run({ np: { ...base.np, d7: -0.02 } }).length, 0);
 });
+
+test('notifiche in ordine di data: la più recente in alto, a parità la più urgente; la data è quella della prima comparsa', async () => {
+  const { stampAlerts } = await import('../public/js/solid-alerts.js');
+  const t0 = Date.UTC(2026, 10, 26, 9);
+  const t1 = t0 + 3600e3;
+  const t2 = t1 + 3600e3;
+  // primo controllo: due notifiche, stessa data → prima la vendita
+  let r = stampAlerts([{ key: 'b', level: 'buy' }, { key: 's', level: 'sell' }], {}, t0);
+  assert.deepEqual(r.list.map((a) => [a.key, a.at]), [['s', t0], ['b', t0]]);
+  // secondo controllo: ne arriva una nuova (meno urgente) → va in alto perché più recente; le vecchie tengono la loro data
+  r = stampAlerts([{ key: 's', level: 'sell' }, { key: 'b', level: 'buy' }, { key: 'o', level: 'osc' }], r.seen, t1);
+  assert.deepEqual(r.list.map((a) => [a.key, a.at]), [['o', t1], ['s', t0], ['b', t0]]);
+  // terzo controllo: una sparisce (e viene dimenticata), un evento porta già la sua data
+  r = stampAlerts([{ key: 'b', level: 'buy' }, { key: 'o', level: 'osc' }, { key: 'e', level: 'new', at: t0 + 60e3 }], r.seen, t2);
+  assert.deepEqual(r.list.map((a) => a.key), ['o', 'e', 'b']);
+  assert.deepEqual(Object.keys(r.seen).sort(), ['b', 'e', 'o']);
+  // se la stessa notifica ricompare dopo essere sparita, la data riparte
+  r = stampAlerts([{ key: 's', level: 'sell' }], r.seen, t2 + 1);
+  assert.equal(r.list[0].at, t2 + 1);
+});

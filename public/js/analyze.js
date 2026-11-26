@@ -2,6 +2,7 @@
 import { simulate, DEFAULT_OPTIONS, historicalMaxDrawdown, WEEKS_PER_YEAR } from './montecarlo.js';
 import { cleanDividend, forwardParams, DEFAULT_OUTLOOK } from './outlook.js';
 import { backfillWithProxy } from './backfill.js';
+import { targetUpside, rawDividend } from './consensus.js';
 
 export const BENCHMARK_SYMBOL = 'EUNL.DE'; // iShares Core MSCI World (EUR) per il calcolo del beta
 export const CRYPTO_BENCHMARK_SYMBOL = 'BTC-EUR'; // riferimento per ricostruire lo storico delle crypto giovani
@@ -48,6 +49,9 @@ export function tableResult(r) {
       growthSource: r.forward?.growthSource ?? null,
       ...(Number.isFinite(r.forward?.analystUpside) ? { upside: r4(r.forward.analystUpside) } : {}), // prezzo obiettivo degli analisti ÷ prezzo − 1 (12 mesi)
       ...(r.forward?.analystCount > 0 ? { analysts: r.forward.analystCount } : {}), // numero di analisti: peso del prezzo obiettivo
+      // sezione «Analisti e dividendi»: potenziale non limitato, numero di analisti (anche sotto 3), giudizio, dividendo dichiarato
+      ...(Number.isFinite(r.forward?.targetUpside) ? { tgtUp: r4(r.forward.targetUpside), tgtN: r.forward.targetAnalysts ?? null, ...(r.forward.reco ? { reco: r.forward.reco } : {}) } : {}),
+      ...(r.forward?.divRaw > 0 ? { divRaw: r4(r.forward.divRaw) } : {}),
       vol: r4(r.forward?.vol), // volatilità annua usata nella simulazione (per il drag della volatilità nel CAGR)
       beta: r4(r.forward?.beta), // beta verso il mercato azionario (stress test: impatto di una correzione)
       ...(r.forward?.fundamentalsDetail?.source === 'holdings' ? { coverage: r4(r.forward.fundamentalsDetail.coverage) } : {}),
@@ -438,6 +442,17 @@ export function analyze({ instrument, history, benchmark, cryptoBenchmark, funda
   );
   // ETF: prezzo obiettivo implicito dai titoli in portafoglio (stesso ruolo del prezzo obiettivo delle azioni)
   if (fwd && instrument.type !== 'etf' && Number.isFinite(fwd.analystUpside) && fundamentals?.analysts > 0) fwd.analystCount = fundamentals.analysts;
+  // Sezione «Analisti e dividendi»: valori dichiarati dalla fonte, non limitati (il modello qui sopra usa quelli prudenti)
+  if (fwd) {
+    const tu = instrument.type === 'stock' ? targetUpside(fundamentals) : null;
+    if (tu != null) {
+      fwd.targetUpside = tu;
+      fwd.targetAnalysts = fundamentals.analysts;
+      if (fundamentals.recommendation && fundamentals.recommendation !== 'none') fwd.reco = fundamentals.recommendation;
+    }
+    const dy = instrument.type === 'crypto' ? null : rawDividend(fundamentals);
+    if (dy != null) fwd.divRaw = dy;
+  }
   if (instrument.type === 'etf' && !Number.isFinite(fwd.analystUpside)) {
     const hu = holdingsUpside(holdings);
     if (hu) { fwd.analystUpside = hu.upside; fwd.upsideCoverage = hu.coverage; }

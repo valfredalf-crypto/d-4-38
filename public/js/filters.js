@@ -12,6 +12,11 @@ export const SIM_P_LEVELS = [70, 80, 90];
 // Probabilità di guadagno a 1 e 3 anni: dal modello delle previsioni (la «P» mostrata sotto il netto più probabile)
 export const P_GAIN_PERIODS = [[365, '1 anno'], [1095, '3 anni']];
 export const pGainKey = (days) => 'pG' + days;
+// Sezione «Analisti e dividendi»: soglie dei pulsanti rapidi (punti percentuali; numero di analisti)
+export const AN_KEYS = ['anUp', 'divY'];
+export const AN_UP_LEVELS = [10, 25, 50];
+export const AN_N_LEVELS = [3, 5, 10];
+export const DIV_LEVELS = [2, 4, 6];
 
 export const INDICATORS = [
   ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
@@ -19,6 +24,9 @@ export const INDICATORS = [
   { key: SIM_KEY, label: 'Guadagno netto mediano su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),
   { key: SIM_P_KEY, label: 'Probabilità di guadagno a 5 anni (2.000 scenari)', pct: true },
+  { key: 'anUp', label: 'Potenziale secondo gli analisti (prezzo obiettivo a 12 mesi)', pct: true },
+  { key: 'anN', label: 'Numero di analisti (solo azioni)', pct: false },
+  { key: 'divY', label: 'Rendimento da dividendi (annuo, lordo)', pct: true },
   { key: 'proj', label: 'CAGR netto atteso 5a: netto 019 × (1 − MDD storico)', pct: true },
   { key: 'proj019', label: 'Guadagno finale 5a (CAGR − TER, montante composto, imposta)', pct: true },
   { key: 'projOpt', label: 'Rendimento netto corretto per il rischio (classifica principale)', pct: true },

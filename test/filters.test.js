@@ -78,3 +78,16 @@ test('filtri probabilità di guadagno a 1 e 3 anni: in punti percentuali, sommab
   assert.equal(passes({ pG365: 0.69, pG1095: 0.9, simP: 0.93 }, a), false);
   assert.equal(passes({ pG365: 0.9, pG1095: null, simP: 0.93 }, a), false);
 });
+
+test('filtri analisti e dividendi: potenziale e dividendo in punti percentuali, analisti come numero', async () => {
+  const { INDICATORS, AN_KEYS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(AN_KEYS, ['anUp', 'divY']);
+  assert.ok(INDICATORS.some((x) => x.key === 'anUp' && x.pct));
+  assert.ok(INDICATORS.some((x) => x.key === 'anN' && !x.pct));
+  assert.ok(INDICATORS.some((x) => x.key === 'divY' && x.pct));
+  const a = activeFilters({ anUp: { min: '25' }, anN: { min: '3' }, divY: { min: '2' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min]), [['anUp', 0.25], ['anN', 3], ['divY', 0.02]]);
+  assert.equal(passes({ anUp: 0.3, anN: 5, divY: 0.021 }, a), true);
+  assert.equal(passes({ anUp: 4.85, anN: 1, divY: 0.18 }, a), false);
+  assert.equal(passes({ anUp: 0.3, anN: null, divY: 0.05 }, a), false);
+});

@@ -34,7 +34,7 @@ export const INDICATORS = [
   { key: SIM_P_KEY, label: 'Probabilità di guadagno a 5 anni (2.000 scenari)', pct: true },
   { key: 'anUp', label: 'Potenziale secondo gli analisti (prezzo obiettivo a 12 mesi)', pct: true },
   { key: 'anN', label: 'Numero di analisti (solo azioni)', pct: false },
-  { key: 'divY', label: 'Rendimento da dividendi (annuo, lordo)', pct: true },
+  { key: 'divY', label: 'Rendimento da dividendi (annuo, lordo; ETF solo a distribuzione)', pct: true },
   { key: 'proj', label: 'CAGR netto atteso 5a: netto 019 × (1 − MDD storico)', pct: true },
   { key: 'proj019', label: 'Guadagno finale 5a (CAGR − TER, montante composto, imposta)', pct: true },
   { key: 'projOpt', label: 'Rendimento netto corretto per il rischio (classifica principale)', pct: true },

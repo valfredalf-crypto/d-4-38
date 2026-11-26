@@ -9,7 +9,7 @@ import { SOLID_MIN, solidRecent, solidPass } from './solid.js';
 import { trendScore } from './trend.js';
 import { evaluateSolid, LEVEL_ORDER } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
-import { AN_MIN_RELIABLE, AN_EXTREME, doubtfulTarget, compareConsensus, recoLabel } from './consensus.js';
+import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
@@ -827,7 +827,7 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key);
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || key === 'expected';
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
@@ -926,17 +926,31 @@ const shortMode = () => state.view.funnel === 'short' || state.view.funnel === '
 const analystMode = () => state.view.funnel === 'analyst';
 function consensusValues(i, r) {
   const fw = r && !r.error ? r.forward : null;
-  if (!fw) return { anUp: null, anN: null, anReco: null, divY: null };
+  if (!fw) return { anUp: null, anN: null, anReco: null, anWarn: false, divY: null, divAcc: false };
   const stock = i.type === 'stock';
   // azioni: prezzo obiettivo medio ÷ prezzo − 1; ETF non a leva: media ponderata sui titoli del fondo
   const up = stock ? fw.tgtUp ?? fw.targetUpside ?? null : i.type === 'etf' && !i.leveraged ? fw.upside ?? fw.analystUpside ?? null : null;
-  return { anUp: up, anN: stock && up != null ? fw.tgtN ?? fw.targetAnalysts ?? null : null, anReco: stock && up != null ? fw.reco ?? null : null, divY: i.type === 'crypto' ? null : fw.divRaw ?? null };
+  const n = stock && up != null ? fw.tgtN ?? fw.targetAnalysts ?? null : null;
+  // dubbio: pochi analisti, rialzo oltre il +100%, oppure ETF fermo al tetto del +50% per titolo (non è una stima)
+  const warn = up != null && (stock ? doubtfulTarget(up, n) : up >= ETF_UPSIDE_CAP);
+  // dividendo: azioni = dichiarato dalla fonte; ETF = solo se distribuisce (dichiarato, altrimenti quello usato dal modello);
+  // un ETF ad accumulazione non paga nulla all'investitore (reinveste), le crypto non hanno dividendi
+  const acc = i.type !== 'stock' && i.type !== 'crypto' && distKind(i) === 'acc';
+  const dist = r.sim?.distYield > 0 ? r.sim.distYield : null;
+  const div = i.type === 'crypto' || acc ? null : fw.divRaw ?? (stock ? null : dist);
+  return { anUp: up, anN: n, anReco: stock && up != null ? fw.reco ?? null : null, anWarn: warn, divY: div, divAcc: acc };
 }
+// Colonne aggiunte alle sezioni «Netto più probabile»: rendimento atteso annuo (tutti gli strumenti, crypto comprese),
+// dividendo annuo (azioni ed ETF a distribuzione) e potenziale secondo gli analisti; in «Analisti e dividendi» il potenziale va per primo.
+const AN_COLS = {
+  expected: ['Rendimento atteso annuo', 'Atteso/anno', 'Rendimento annuo atteso dal modello per i prossimi anni, lordo (prima di costi e imposte): pesa storico, equilibrio di mercato, analisti e fondamentali secondo la loro affidabilità. Vale per azioni, ETF e criptovalute. È una stima, non una garanzia. Tocca per ordinare dal più alto.'],
+  divY: ['Dividendo annuo', 'Dividendo', 'Rendimento da dividendi annuo, lordo (imposta 26% all’incasso): azioni ed ETF a distribuzione. Gli ETF ad accumulazione reinvestono e non pagano nulla («accumula»); le criptovalute non hanno dividendi. ⚠ oltre il 12% è quasi sempre un dividendo straordinario o un dato anomalo: non si ripete ogni anno, e in classifica viene dopo i dividendi ordinari. Tocca per ordinare dal più alto.'],
+  anUp: ['Potenziale analisti 12 mesi', 'Analisti 12m', 'Potenziale secondo gli analisti: prezzo obiettivo medio a 12 mesi rispetto al prezzo (per gli ETF: media ponderata sui titoli del fondo). Sotto: numero di analisti e giudizio prevalente; ⚠ con meno di 3 analisti, o con un rialzo oltre il +100%, il valore è poco attendibile. È una stima degli analisti, non del modello, e non è una garanzia. Tocca per ordinare dal più alto: prima i valori attendibili, poi quelli con ⚠; a parità, o senza analisti, vale il dividendo.'],
+};
+const anOrder = () => (analystMode() ? ['anUp', 'divY', 'expected'] : ['expected', 'divY', 'anUp']);
 function anHeads() {
-  return [
-    ['anUp', 'Potenziale analisti 12 mesi', 'Analisti 12m', 'Potenziale secondo gli analisti: prezzo obiettivo medio a 12 mesi rispetto al prezzo (per gli ETF: media ponderata sui titoli del fondo). Sotto: numero di analisti e giudizio prevalente; ⚠ con meno di 3 analisti, o con un rialzo oltre il +100%, il valore è poco attendibile. È una stima degli analisti, non del modello, e non è una garanzia. Tocca per ordinare dal più alto: a parità, o senza analisti, vale il dividendo.'],
-    ['divY', 'Dividendo annuo', 'Dividendo', 'Rendimento da dividendi annuo dichiarato dalla fonte dei dati, lordo (imposta 26% all’incasso). ⚠ oltre il 12% è quasi sempre un dividendo straordinario o un dato anomalo: non si ripete ogni anno. Tocca per ordinare dal più alto.'],
-  ].map(([k, l, s, tip]) => {
+  return anOrder().map((k) => {
+    const [l, s, tip] = AN_COLS[k];
     const th = document.createElement('th');
     const on = state.view.sort.key === k;
     th.className = 'num an-col' + (on ? ' sorted' : '');
@@ -951,14 +965,21 @@ function anCells(r) {
   const few = r.anN != null && r.anN < AN_MIN_RELIABLE;
   const who = r.anN != null ? `${r.anN} ${r.anN === 1 ? 'analista' : 'analisti'}` : 'titoli del fondo';
   const reco = recoLabel(r.anReco);
-  const a = up == null
-    ? '<td class="num an-col muted" title="Nessun prezzo obiettivo degli analisti disponibile per questo strumento">–</td>'
-    : `<td class="num an-col ${cls(up)}" title="Prezzo obiettivo medio a 12 mesi: ${pct(up, true, 1)} rispetto al prezzo · ${who}${reco ? ' · giudizio prevalente: ' + reco : ''}.${few ? ' Pochi analisti: valore poco attendibile.' : ''}${up > AN_EXTREME ? ' Rialzo oltre il +100%: spesso il prezzo obiettivo non è aggiornato dopo un evento straordinario (per esempio un maxi-dividendo che ha fatto scendere il prezzo): controlla la data della stima.' : ''} Stima degli analisti, non del modello: non è una garanzia."><b class="big">${pct(up, true, 0)}</b><span class="eur">${doubtfulTarget(up, r.anN) ? '⚠ ' : ''}${who}${reco ? ' · ' + reco : ''}</span></td>`;
-  const odd = r.divY != null && r.divY > 0.12;
-  const d = r.divY == null
-    ? '<td class="num an-col muted" title="Nessun dividendo dichiarato per questo strumento">–</td>'
-    : `<td class="num an-col" title="Rendimento da dividendi annuo dichiarato dalla fonte: ${pct(r.divY, false, 2)} lordo (imposta 26% all’incasso).${odd ? ' Oltre il 12%: quasi sempre un dividendo straordinario o un dato anomalo, non si ripete ogni anno.' : ''}"><b class="big">${pct(r.divY, false, 1)}</b>${odd ? '<span class="eur">⚠ straordinario?</span>' : ''}</td>`;
-  return a + d;
+  const odd = r.divY != null && r.divY > DIV_EXTREME;
+  const cells = {
+    anUp: up == null
+      ? '<td class="num an-col muted" title="Nessun prezzo obiettivo degli analisti disponibile per questo strumento">–</td>'
+      : `<td class="num an-col ${cls(up)}" title="Prezzo obiettivo medio a 12 mesi: ${pct(up, true, 1)} rispetto al prezzo · ${who}${reco ? ' · giudizio prevalente: ' + reco : ''}.${few ? ' Pochi analisti: valore poco attendibile.' : ''}${up > AN_EXTREME ? ' Rialzo oltre il +100%: spesso il prezzo obiettivo non è aggiornato dopo un evento straordinario (per esempio un maxi-dividendo che ha fatto scendere il prezzo): controlla la data della stima.' : ''}${r.anN == null && r.anWarn ? ' Valore al tetto del +50% per titolo: non è una stima attendibile.' : ''} Stima degli analisti, non del modello: non è una garanzia."><b class="big">${pct(up, true, 0)}</b><span class="eur">${r.anWarn ? '⚠ ' : ''}${who}${reco ? ' · ' + reco : ''}</span></td>`,
+    divY: r.divY == null
+      ? r.divAcc
+        ? '<td class="num an-col muted" title="ETF ad accumulazione: reinveste i dividendi nel fondo e non paga nulla all’investitore">accumula</td>'
+        : '<td class="num an-col muted" title="Nessun dividendo dichiarato per questo strumento">–</td>'
+      : `<td class="num an-col" title="Rendimento da dividendi annuo: ${pct(r.divY, false, 2)} lordo (imposta 26% all’incasso).${odd ? ' Oltre il 12%: quasi sempre un dividendo straordinario o un dato anomalo, non si ripete ogni anno.' : ''}"><b class="big">${pct(r.divY, false, 1)}</b>${odd ? '<span class="eur">⚠ straordinario?</span>' : ''}</td>`,
+    expected: r.expected == null
+      ? '<td class="num an-col muted" title="Rendimento atteso non disponibile: storico insufficiente per una stima">–</td>'
+      : `<td class="num an-col ${cls(r.expected)}" title="Rendimento annuo atteso dal modello: ${pct(r.expected, true, 2)} lordo, prima di costi e imposte. È una stima, non una garanzia."><b class="big">${pct(r.expected, true, 1)}</b></td>`,
+  };
+  return anOrder().map((k) => cells[k]).join('');
 }
 // Sezione «Solidi e in crescita»: stesse colonne di «Netto più probabile», ma solo gli strumenti con netto più probabile
 // positivo e alto a 1, 3 e 5 anni e prezzo in crescita di recente (regole in solid.js). Prima lo storico (immediato), poi le previsioni.
@@ -1207,7 +1228,7 @@ function rowValuesCalc(i) {
     [SIM_KEY]: sim && Number.isFinite(sim.netMedian) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? sim.netMedian * (state.settings.mc.amount || 10000) : null,
     simP: sim && Number.isFinite(sim.probLoss) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? 1 - sim.probLoss : null,
     simP25: sim && Number.isFinite(sim.netP25) ? sim.netP25 * (state.settings.mc.amount || 10000) : null,
-    [SIM_P90_KEY]: sim && Number.isFinite(sim.netP10) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? sim.netP10 * (state.settings.mc.amount || 10000) : null,
+    [SIM_P90_KEY]: sim && Number.isFinite(sim.netP10) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? Math.max(-1, sim.netP10) * (state.settings.mc.amount || 10000) : null, // non si può perdere più del capitale
     tSl: q?.perf?.sl ?? null,
     tWm: q?.perf?.wm ?? null,
     perfW: netPerf(q?.perf?.w, i),
@@ -1244,6 +1265,7 @@ function sortRows(rows) {
     });
   }
   if (k === 'anUp') return rows.sort((a, b) => compareConsensus(a, b, dir) || a.name.localeCompare(b.name));
+  if (k === 'divY') return rows.sort((a, b) => compareDividend(a, b, dir) || a.name.localeCompare(b.name));
   return rows.sort((a, b) => {
     const va = a[k];
     const vb = b[k];
@@ -1364,7 +1386,7 @@ function render() {
     if (analystMode()) {
       const withUp = rows.filter((x) => x.anUp != null).length;
       const withDiv = rows.filter((x) => x.divY != null).length;
-      sn.innerHTML = `<b>Analisti e dividendi: ${withUp.toLocaleString('it-IT')} strumenti con prezzo obiettivo, ${withDiv.toLocaleString('it-IT')} con dividendo</b> · ordinati per potenziale secondo gli analisti (prezzo obiettivo medio a 12 mesi rispetto al prezzo), a parità o senza analisti per rendimento da dividendi · ⚠ meno di ${AN_MIN_RELIABLE} analisti oppure rialzo oltre il +100%: valore poco attendibile (spesso un prezzo obiettivo non aggiornato dopo un maxi-dividendo) · per gli ETF media ponderata sui titoli del fondo · le criptovalute non hanno analisti né dividendi · fonte: consenso degli analisti e dividendi di Yahoo Finance, non i dati interni di Trade Republic (possono differire) · <span class="muted">stime degli analisti, non del modello: non sono una garanzia né una raccomandazione</span>`;
+      sn.innerHTML = `<b>Analisti e dividendi: ${withUp.toLocaleString('it-IT')} strumenti con prezzo obiettivo, ${withDiv.toLocaleString('it-IT')} con dividendo</b> · ordinati per potenziale secondo gli analisti (prezzo obiettivo medio a 12 mesi rispetto al prezzo), a parità o senza analisti per rendimento da dividendi · <b>⚠ valori poco attendibili, messi dopo quelli attendibili</b>: meno di ${AN_MIN_RELIABLE} analisti, rialzo oltre il +100% (spesso un prezzo obiettivo non aggiornato, per esempio dopo un maxi-dividendo), ETF fermi al tetto del +50%, dividendi oltre il 12% (straordinari) · per gli ETF media ponderata sui titoli del fondo · le criptovalute non hanno analisti né dividendi · fonte: consenso degli analisti e dividendi di Yahoo Finance, non i dati interni di Trade Republic (possono differire) · <span class="muted">stime degli analisti, non del modello: non sono una garanzia né una raccomandazione</span>`;
     }
     if (solidMode()) {
       const cap = state.settings.mc.amount || 10000;

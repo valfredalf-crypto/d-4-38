@@ -2,10 +2,11 @@
 "meta": {
 "description": "ISIN importati dai file \"rendimento-vault-backup-csv-v1\" (azioni parti 1,3,4,6,7,12,15 di 20; ETF parti 1,3,4,6,7,9,12,15 di 17). Le obbligazioni singole non sono supportate.",
 "createdAt": "2026-10-23",
-"updatedAt": "2026-11-23",
+"updatedAt": "2026-11-27",
 "radarImport": "+50 ISIN dal dataset radar-classifica-2026-11-22 (ETF/ETP, 2978 ISIN totali)",
 "catalogImport": "+2035 ISIN dal catalogo \"Trade Republic - Catalogo completo DEFINITIVO\" (sezione ETF/ETC, 2959 ISIN)",
-"universeImport": "+7229 ISIN dal file ufficiale Trade Republic Instrument_Universe_IT_en.pdf del 22/11/2026 (7227 azioni, 2 ETF/ETP; 14542 ISIN nel file)"
+"universeImport": "+7229 ISIN dal file ufficiale Trade Republic Instrument_Universe_IT_en.pdf del 22/11/2026 (7227 azioni, 2 ETF/ETP; 14542 ISIN nel file)",
+"universeUpdate": "+7 ISIN dal file ufficiale Trade Republic Instrument_Universe_IT_en.pdf del 27/11/2026 (7 azioni, 0 ETF/ETP; 14536 ISIN nel file)"
 },
 "instruments": [
 {
@@ -76415,6 +76416,41 @@
 "isin": "LU3405679278",
 "name": "Core MSCI ACWI Swap EUR (Acc)",
 "type": "etf"
+},
+{
+"isin": "AU0000499998",
+"name": "Otto Energy",
+"type": "stock"
+},
+{
+"isin": "CA28624N1069",
+"name": "Elevate Service Group Inc. Registered Shares o.N.",
+"type": "stock"
+},
+{
+"isin": "CA87505Y8889",
+"name": "Tamarack Valley Energy Ltd. Registered Shares o.N.",
+"type": "stock"
+},
+{
+"isin": "KYG8068L1086",
+"name": "SharkNinja Inc. Registered Shares",
+"type": "stock"
+},
+{
+"isin": "SE0030336236",
+"name": "SKF Vertevo AB Namn-Aktier A o.N.",
+"type": "stock"
+},
+{
+"isin": "SE0030336244",
+"name": "SKF Vertevo AB Namn-Aktier B o.N.",
+"type": "stock"
+},
+{
+"isin": "US09073Q5018",
+"name": "Scinai Immunotherapeutics (ADR)",
+"type": "stock"
 }
 ]
 }

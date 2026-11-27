@@ -10,7 +10,7 @@ import { trendScore } from './trend.js';
 import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
@@ -832,10 +832,18 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || key === 'expected';
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || key === 'expected';
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
+// Prezzo più probabile: variazione lorda del prezzo nel caso mediano, tolti i dividendi distribuiti nel periodo
+// (escono dal prezzo: chi accumula li tiene nel fondo, le crypto non ne hanno). Restituisce il moltiplicatore del prezzo.
+function priceFactor(inst, r, grossFactor, years) {
+  if (!Number.isFinite(grossFactor) || !(grossFactor > 0)) return null;
+  const pays = inst.type !== 'crypto' && distKind(inst) !== 'acc';
+  const dy = pays ? Math.max(0, Math.min(0.08, r.sim?.distYield ?? r.sim?.divYield ?? 0)) : 0;
+  return grossFactor * (1 - dy) ** years;
+}
 function npStats(inst, days) {
   const r = resOf(inst);
   if (!r || r.error) return null;
@@ -864,7 +872,7 @@ function npStats(inst, days) {
   const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
   const med = Math.max(-cap, h.medianNet); // non si può perdere più del capitale investito
   const avg = Math.max(-cap, h.netGain);
-  return { median: med / cap, mean: avg / cap, p: h.pProfit, p10Eur: h.p10Net != null ? Math.max(-cap, h.p10Net) : null, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
+  return { median: med / cap, mean: avg / cap, p: h.pProfit, pxF: priceFactor(inst, r, 1 + h.medianGross, y), p10Eur: h.p10Net != null ? Math.max(-cap, h.p10Net) : null, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
 }
 // Chiave delle impostazioni che influenzano il «netto più probabile» (calcolata al massimo ogni 50 ms: serve a ogni riga)
 let npCfgCache = { at: -1, key: '' };
@@ -966,11 +974,40 @@ function anHeads() {
   });
 }
 // Sul telefono le colonne degli indicatori sono fuori schermo: gli stessi tre valori compaiono sotto il nome dello strumento
+const npNow = () => npLabel(state.view.np); // periodo scelto nella barra
+const pxFmt = (x, ref) => (x == null || !Number.isFinite(x) ? '–' : Math.abs(x).toLocaleString('it-IT', { minimumFractionDigits: ref >= 1 ? 2 : 4, maximumFractionDigits: ref >= 1 ? 2 : 4 }) + ' €');
+const eurDiff = (x, ref) => (x > 0 ? '+' : x < 0 ? '−' : '') + pxFmt(x, ref);
+function pxHeads() {
+  const l = npNow();
+  return [
+    ['price', 'Prezzo attuale', 'Prezzo', 'Ultimo prezzo in EUR. Tocca per ordinare.'],
+    ['pxMed', `Prezzo più probabile ${l}`, `Più prob. ${l}`, `Prezzo più probabile a ${l} secondo il modello: valore mediano della previsione (metà dei casi sopra, metà sotto), prima di costi e imposte, tolti i dividendi distribuiti nel periodo. Il periodo è quello scelto nella barra qui sopra. Non è una garanzia. Tocca per ordinare.`],
+    ['pxDiff', `Differenza ${l}`, `Diff. ${l}`, `Differenza tra il prezzo più probabile a ${l} e il prezzo attuale, in percentuale e in euro per quota. Positiva = il modello vede il prezzo più in alto; negativa = più in basso. Tocca per ordinare dalla più alta.`],
+  ].map(([k, lab, s, tip]) => {
+    const th = document.createElement('th');
+    const on = state.view.sort.key === k;
+    th.className = 'num px-col' + (on ? ' sorted' : '');
+    th.dataset.sort = k;
+    th.title = tip;
+    th.innerHTML = `<span class="l">${lab}</span><span class="s">${s}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+    return th;
+  });
+}
+function pxCells(r) {
+  const now = r.price;
+  const med = r.pxMed;
+  const d = r.pxDiff;
+  const c1 = `<td class="num px-col">${pxFmt(now, now)}</td>`;
+  if (med == null || d == null || now == null) return c1 + '<td class="num px-col muted" title="Prezzo più probabile non disponibile: manca la previsione per questo strumento">–</td><td class="num px-col muted">–</td>';
+  const l = npNow();
+  return `${c1}<td class="num px-col" title="Prezzo più probabile a ${l}: ${pxFmt(med, now)} (ora ${pxFmt(now, now)}). Valore mediano della previsione, prima di costi e imposte, tolti i dividendi distribuiti nel periodo."><b class="big">${pxFmt(med, now)}</b></td><td class="num px-col ${cls(d)}" title="A ${l} il prezzo più probabile è ${pct(d, true, 2)} rispetto a ora (${eurDiff(med - now, now)} per quota)."><b class="big">${pct(d, true, 1)}</b><span class="eur">${eurDiff(med - now, now)}</span></td>`;
+}
 function mInd(r) {
   const div = r.divY != null ? `${pct(r.divY, false, 1)}${r.divY > DIV_EXTREME ? ' ⚠' : r.divAcc ? ' (accumula)' : ''}` : r.divAcc ? 'accumula' : '–';
-  const parts = [`Rendimento atteso <b class="${cls(r.expected)}">${r.expected != null ? pct(r.expected, true, 1) : '–'}</b>`, `Rend. da dividendi <b>${div}</b>`];
+  const px = r.price != null && r.pxMed != null ? `Prezzo <b>${pxFmt(r.price, r.price)}</b> → <b>${pxFmt(r.pxMed, r.price)}</b> a ${npNow()} (<b class="${cls(r.pxDiff)}">${pct(r.pxDiff, true, 1)}</b>)` : r.price != null ? `Prezzo <b>${eur(r.price)}</b>` : null;
+  const parts = [...(px ? [px] : []), `Rendimento atteso <b class="${cls(r.expected)}">${r.expected != null ? pct(r.expected, true, 1) : '–'}</b>`, `Rend. da dividendi <b>${div}</b>`];
   if (r.anUp != null) parts.push(`Analisti <b class="${cls(r.anUp)}">${pct(r.anUp, true, 0)}${r.anWarn ? ' ⚠' : ''}</b>`);
-  return `<span class="m-ind" title="Rendimento atteso annuo del modello (lordo) · rendimento da dividendi annuo (lordo; gli ETF ad accumulazione reinvestono) · potenziale secondo gli analisti a 12 mesi">${parts.join('<br>')}</span>`;
+  return `<span class="m-ind" title="Prezzo attuale → prezzo più probabile al periodo scelto (differenza) · rendimento atteso annuo del modello (lordo) · rendimento da dividendi annuo (lordo; gli ETF ad accumulazione reinvestono) · potenziale secondo gli analisti a 12 mesi">${parts.join('<br>')}</span>`;
 }
 function anCells(r) {
   const up = r.anUp;
@@ -1260,6 +1297,9 @@ function rowValuesCalc(i) {
   for (const [d] of NP_FILTER_PERIODS) Object.defineProperty(v, npFilterKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.medianEur ?? null });
   for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, pGainKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.p ?? null });
   for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, p90Key(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.p10Eur ?? null });
+  // prezzo più probabile al periodo scelto nella barra (1 gg … 5 anni) e differenza dal prezzo attuale
+  Object.defineProperty(v, 'pxDiff', { enumerable: false, configurable: true, get: () => { const f = npCached(i, state.view.np)?.pxF; return f != null ? f - 1 : null; } });
+  Object.defineProperty(v, 'pxMed', { enumerable: false, configurable: true, get: () => { const f = npCached(i, state.view.np)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
   return v;
 }
 
@@ -1319,7 +1359,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
   document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
@@ -1334,6 +1374,8 @@ function render() {
       after.after(th);
       after = th;
     }
+    // prezzo attuale, prezzo più probabile al periodo scelto e differenza
+    for (const th of pxHeads()) { after.after(th); after = th; }
     // guadagno netto sui 2.000 scenari simulati: valore mediano (attendibile), non la media
     {
       const th = document.createElement('th');
@@ -1436,6 +1478,7 @@ function render() {
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span>${shortMode() ? mInd(r) : ''}</td>
         ${analystMode() ? anCells(r) : ''}
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
+        ${shortMode() ? pxCells(r) : ''}
         ${shortMode() ? (r[SIM_KEY] == null ? '<td class="num sim-col muted">–</td>' : `<td class="num sim-col ${cls(r[SIM_KEY])}" title="Valore mediano dei ${simCount()} scenari a ${simYears()} anni: ${eur0(r[SIM_KEY])}${r.simP != null ? ` · probabilità di guadagno ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · in 3 scenari su 4 il risultato è almeno ${eur0(r.simP25)}` : ''} · media di tutti gli scenari ${pct(r.netMean, true, 1)} (gonfiata dagli scenari estremi: non usarla come previsione)"><b class="big">${r[SIM_KEY] > 0 ? '+' : ''}${eur0(r[SIM_KEY])}</b><span class="eur">${r.simP != null ? `P ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · 3 su 4 ≥ ${r.simP25 > 0 ? '+' : ''}${eur0(r.simP25)}` : ''}</span></td>`) : ''}
         ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
         ${shortMode() && !analystMode() ? anCells(r) : ''}
@@ -3511,7 +3554,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

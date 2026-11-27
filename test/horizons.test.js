@@ -422,3 +422,20 @@ test('projectShort: netto raggiunto in 9 casi su 10 (10° percentile), sotto la 
   // senza volatilità non c'è distribuzione
   assert.equal(ps({ cagr: 0.07, ter: 0, tax: 0.26 }, cap, 1, { orderCost: 1 }).p10Net, null);
 });
+
+test('projectShort: variazione lorda del prezzo nel caso mediano (base del prezzo più probabile)', async () => {
+  const { projectShort: ps } = await import('../public/js/projection.js');
+  // senza volatilità: coincide con la variazione attesa
+  const flat = ps({ cagr: 0.07, ter: 0, tax: 0.26 }, 10000, 1, { orderCost: 1 });
+  assert.ok(Math.abs(flat.medianGross - 0.07) < 1e-12);
+  // con volatilità: mediana lognormale = (1 + attesa) × exp(−σ²/2) − 1, sotto l'attesa e non toccata da imposte e costi
+  for (const [cagr, vol, y] of [[0.07, 0.2, 1], [0.1, 0.45, 3], [0.03, 0.05, 30 / 365], [-0.05, 0.3, 5]]) {
+    const r = ps({ cagr, ter: 0, tax: 0.26 }, 10000, y, { vol, orderCost: 1 });
+    const want = (1 + cagr) ** y * Math.exp(-(vol * vol * y) / 2) - 1;
+    assert.ok(Math.abs(r.medianGross - want) < 1e-10, `${r.medianGross} contro ${want}`);
+    assert.ok(r.medianGross < r.mu);
+    // coerenza con il netto più probabile: stesso caso mediano, con imposta sul solo guadagno e costi degli ordini
+    const g = 10000 * r.medianGross;
+    assert.ok(Math.abs(r.medianNet - (g - (g > 0 ? g * 0.26 : 0) - 2)) < 1e-6);
+  }
+});

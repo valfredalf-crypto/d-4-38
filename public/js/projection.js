@@ -174,6 +174,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
   let expTaxRate;
   let pProfit = null;
   let quant = null;
+  let medianGross = mu; // variazione lorda nel caso mediano: senza volatilità coincide con quella attesa
   if (sigma > 0) {
     const a = Math.log(1 + mu) - (sigma * sigma) / 2; // media del logaritmo
     const d2 = a / sigma;
@@ -188,7 +189,8 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
       const g = capital * (Math.exp(a + z * sigma) - 1);
       return g - (g > 0 ? g * tax : 0) - costs;
     };
-    quant = { low: at(-1), high: at(1), median: at(0), p10: at(Z_P10) }; // mediana = esito più probabile (metà dei casi sopra, metà sotto)
+    quant = { low: at(-1), high: at(1), median: at(0), p10: at(Z_P10) };
+    medianGross = Math.exp(a) - 1; // metà dei casi sopra, metà sotto (prima di costi e imposte) // mediana = esito più probabile (metà dei casi sopra, metà sotto)
   } else expTaxRate = tax * Math.max(0, mu);
   const taxEur = capital * expTaxRate;
   const gain = capital * gainRate;
@@ -212,6 +214,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     high: quant?.high ?? null,
     medianNet: quant?.median ?? netGain, // netto nel caso mediano (più probabile)
     p10Net: quant?.p10 ?? null, // netto raggiunto o superato in 9 casi su 10 (10° percentile); null senza volatilità
+    medianGross,
   };
 }
 

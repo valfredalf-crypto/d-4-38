@@ -20,6 +20,8 @@ export const P90_KEYS = [...P_GAIN_PERIODS.map(([d]) => p90Key(d)), SIM_P90_KEY]
 export const P90_LEVELS = [-2000, -1000, 0, 1000];
 // Sezione «Analisti e dividendi»: soglie dei pulsanti rapidi (punti percentuali; numero di analisti)
 export const AN_KEYS = ['anUp', 'divY'];
+// Prezzo attuale, prezzo più probabile al periodo scelto e differenza tra i due
+export const PX_KEYS = ['price', 'pxMed', 'pxDiff'];
 export const AN_UP_LEVELS = [10, 25, 50];
 export const AN_N_LEVELS = [3, 5, 10];
 export const DIV_LEVELS = [2, 4, 6];
@@ -32,6 +34,7 @@ export const INDICATORS = [
   { key: SIM_P90_KEY, label: 'Guadagno netto nel 90% degli scenari a 5 anni (€, 2.000 scenari)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),
   { key: SIM_P_KEY, label: 'Probabilità di guadagno a 5 anni (2.000 scenari)', pct: true },
+  { key: 'pxDiff', label: 'Differenza tra prezzo più probabile e prezzo attuale (periodo scelto)', pct: true },
   { key: 'anUp', label: 'Potenziale secondo gli analisti (prezzo obiettivo a 12 mesi)', pct: true },
   { key: 'anN', label: 'Numero di analisti (solo azioni)', pct: false },
   { key: 'divY', label: 'Rendimento da dividendi (annuo, lordo)', pct: true },

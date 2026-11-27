@@ -105,3 +105,14 @@ test('filtri sul netto nel 90% degli scenari: in euro, soglia stretta, anche neg
   assert.equal(passes({ p90e365: 200, simP90: 0 }, a), false);
   assert.equal(passes({ p90e365: 200, simP90: null }, a), false);
 });
+
+test('filtro sulla differenza tra prezzo più probabile e prezzo attuale: in punti percentuali', async () => {
+  const { INDICATORS, PX_KEYS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(PX_KEYS, ['price', 'pxMed', 'pxDiff']);
+  assert.ok(INDICATORS.some((x) => x.key === 'pxDiff' && x.pct));
+  const a = activeFilters({ pxDiff: { min: '2' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min]), [['pxDiff', 0.02]]);
+  assert.equal(passes({ pxDiff: 0.021 }, a), true);
+  assert.equal(passes({ pxDiff: 0.019 }, a), false);
+  assert.equal(passes({ pxDiff: null }, a), false);
+});

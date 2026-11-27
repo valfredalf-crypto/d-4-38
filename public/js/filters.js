@@ -26,9 +26,10 @@ export const PX_DIFF_LEVELS = [0, 2, 5, 10]; // pulsanti rapidi: differenza di a
 // Prezzo medio e minimo a 52 settimane e a 90 giorni: [chiave del prezzo, chiave della distanza del prezzo attuale, nome]
 export const RANGE_COLS = [['avg52', 'dA52', 'Prezzo medio 52 settimane'], ['min52', 'dL52', 'Prezzo minimo 52 settimane'], ['avg90', 'dA90', 'Prezzo medio 90 giorni'], ['min90', 'dL90', 'Prezzo minimo 90 giorni']];
 // Differenze in percentuale sul minimo, mostrate come colonne: [chiave, nome, nome breve]
-export const SPREAD_COLS = [['sA52', 'Prezzo medio − minimo 52 settimane', 'Medio−min 52s'], ['sA90', 'Prezzo medio − minimo 90 giorni', 'Medio−min 90g'], ['pm6L52', 'Prezzo più probabile 6 mesi − minimo 52 settimane', 'Più prob. 6m−min 52s']];
+export const SPREAD_COLS = [['pm6Now', 'Prezzo più probabile 6 mesi − prezzo attuale', 'Più prob. 6m−attuale'], ['sA52', 'Prezzo medio − minimo 52 settimane', 'Medio−min 52s'], ['sA90', 'Prezzo medio − minimo 90 giorni', 'Medio−min 90g'], ['pm6L52', 'Prezzo più probabile 6 mesi − minimo 52 settimane', 'Più prob. 6m−min 52s']];
 export const PM6_DAYS = 180; // «6 mesi» del prezzo più probabile
 export const PM6_LEVELS = [10, 20, 30, 50]; // pulsanti rapidi: almeno x% sopra il minimo a 52 settimane
+export const PM6_NOW_LEVELS = [0, 2, 5, 10]; // pulsanti rapidi: prezzo più probabile a 6 mesi almeno x% sopra il prezzo attuale
 export const RANGE_KEYS = [...RANGE_COLS.flatMap(([k, d]) => [k, d]), ...SPREAD_COLS.map(([k]) => k)];
 export const AN_UP_LEVELS = [10, 25, 50];
 export const AN_N_LEVELS = [3, 5, 10];
@@ -39,6 +40,8 @@ export const INDICATORS = [
   { key: 'price', label: 'Prezzo attuale (€)', pct: false },
   { key: 'pxMed', label: 'Prezzo più probabile al periodo scelto (€)', pct: false },
   { key: 'pxDiff', label: 'Differenza: prezzo più probabile rispetto al prezzo attuale (%)', pct: true },
+  { key: 'pm6', label: 'Prezzo più probabile a 6 mesi (€)', pct: false },
+  { key: 'pm6Now', label: '(Prezzo più probabile a 6 mesi − prezzo attuale) ÷ prezzo attuale (%)', pct: true },
   { key: 'maxGrowth', label: 'Max Growth Score (rendimento annuo del punteggio, %)', pct: true },
   // prezzo medio e minimo a 52 settimane e a 90 giorni (in euro) e distanza del prezzo attuale da ciascuno (in %)
   { key: 'pm6L52', label: '(Prezzo più probabile a 6 mesi − minimo 52 settimane) ÷ minimo 52 settimane (%)', pct: true },

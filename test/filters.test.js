@@ -134,7 +134,7 @@ test('i tre indicatori di prezzo aprono l\'elenco: prezzo attuale, prezzo più p
 test('indicatori su prezzo medio e minimo a 52 settimane e 90 giorni: prezzi in euro e distanze in percentuale', async () => {
   const { INDICATORS, RANGE_COLS, RANGE_KEYS, activeFilters, passes } = await import('../public/js/filters.js');
   assert.deepEqual(RANGE_COLS.map((x) => x[0]), ['avg52', 'min52', 'avg90', 'min90']);
-  assert.deepEqual(RANGE_KEYS, ['avg52', 'dA52', 'min52', 'dL52', 'avg90', 'dA90', 'min90', 'dL90', 'sA52', 'sA90', 'pm6L52']);
+  assert.deepEqual(RANGE_KEYS, ['avg52', 'dA52', 'min52', 'dL52', 'avg90', 'dA90', 'min90', 'dL90', 'pm6Now', 'sA52', 'sA90', 'pm6L52']);
   for (const [k, d] of RANGE_COLS) {
     assert.ok(INDICATORS.some((x) => x.key === k && !x.pct), k);
     assert.ok(INDICATORS.some((x) => x.key === d && x.pct), d);
@@ -151,7 +151,7 @@ test('indicatori su prezzo medio e minimo a 52 settimane e 90 giorni: prezzi in 
 test('filtro prezzo più probabile a 6 mesi rispetto al minimo a 52 settimane e differenze medio − minimo', async () => {
   const { INDICATORS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, activeFilters, passes } = await import('../public/js/filters.js');
   const { distanceFrom } = await import('../public/js/range.js');
-  assert.deepEqual(SPREAD_COLS.map((x) => x[0]), ['sA52', 'sA90', 'pm6L52']);
+  assert.deepEqual(SPREAD_COLS.map((x) => x[0]), ['pm6Now', 'sA52', 'sA90', 'pm6L52']);
   assert.equal(PM6_DAYS, 180);
   assert.deepEqual(PM6_LEVELS, [10, 20, 30, 50]);
   for (const [k] of SPREAD_COLS) assert.ok(INDICATORS.some((x) => x.key === k && x.pct), k);
@@ -175,4 +175,22 @@ test('Max Growth Score tra gli indicatori filtrabili (in ogni sezione, anche «N
   assert.equal(passes({ maxGrowth: 0.089 }, a), true);
   assert.equal(passes({ maxGrowth: 0.05 }, a), false);
   assert.equal(passes({ maxGrowth: null }, a), false);
+});
+
+test('differenza tra prezzo più probabile a 6 mesi e prezzo attuale: colonna, indicatore e pulsanti rapidi', async () => {
+  const { INDICATORS, SPREAD_COLS, PM6_NOW_LEVELS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.equal(SPREAD_COLS[0][0], 'pm6Now');
+  assert.match(SPREAD_COLS[0][1], /6 mesi − prezzo attuale/);
+  assert.ok(INDICATORS.some((x) => x.key === 'pm6Now' && x.pct));
+  assert.ok(INDICATORS.some((x) => x.key === 'pm6' && !x.pct));
+  assert.match(INDICATORS.find((x) => x.key === 'pm6Now').label, /6 mesi − prezzo attuale\) ÷ prezzo attuale/);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  assert.deepEqual(PM6_NOW_LEVELS, [0, 2, 5, 10]);
+  // esempio: prezzo attuale 21,17 €, più probabile a 6 mesi 22,16 € → +4,7%
+  const d = 22.16 / 21.17 - 1;
+  const a = activeFilters({ pm6Now: { min: '2' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min]), [['pm6Now', 0.02]]);
+  assert.equal(passes({ pm6Now: d }, a), true);
+  assert.equal(passes({ pm6Now: 0.01 }, a), false);
+  assert.equal(passes({ pm6Now: null }, a), false);
 });

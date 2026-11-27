@@ -165,3 +165,14 @@ test('filtro prezzo più probabile a 6 mesi rispetto al minimo a 52 settimane e 
   assert.equal(passes({ pm6L52: distanceFrom(40, 31.55) }, a), false); // +26,8%
   assert.equal(passes({ pm6L52: null }, a), false);
 });
+
+test('Max Growth Score tra gli indicatori filtrabili (in ogni sezione, anche «Netto più probabile»)', async () => {
+  const { INDICATORS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.ok(INDICATORS.some((x) => x.key === 'maxGrowth' && x.pct));
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  const a = activeFilters({ maxGrowth: { min: '8' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min]), [['maxGrowth', 0.08]]);
+  assert.equal(passes({ maxGrowth: 0.089 }, a), true);
+  assert.equal(passes({ maxGrowth: 0.05 }, a), false);
+  assert.equal(passes({ maxGrowth: null }, a), false);
+});

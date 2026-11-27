@@ -32,6 +32,23 @@ const STATIC = document.documentElement.hasAttribute('data-static');
 const TYPE_LABEL = { stock: 'Azione', etf: 'ETF/ETC', crypto: 'Crypto' };
 const PAGE = 150;
 
+// Sezione di apertura: «Netto più probabile» (dal 27/11/2026, prima era «Max Growth»). Chi aveva ancora «Max Growth»
+// come sezione salvata passa una sola volta alla nuova; dopo, la scelta fatta dal menu resta quella salvata.
+const START_FUNNEL = (() => {
+  try {
+    const v = localStorage.getItem('trmc.funnel2');
+    if (!localStorage.getItem('trmc.npDefault')) {
+      localStorage.setItem('trmc.npDefault', '1');
+      if (!v || v === 'maxgrowth') {
+        localStorage.setItem('trmc.funnel2', 'short');
+        return 'short';
+      }
+    }
+    return v || 'short';
+  } catch {
+    return 'short';
+  }
+})();
 const state = {
   instruments: [],
   quotes: {},
@@ -40,7 +57,7 @@ const state = {
   priced: {}, // symbol → prezzo EUR usato nell'ultima previsione (per ricalcolare solo se cambia)
   benchmark: null,
   settings: loadSettings(),
-  view: { np: Number(localStorage.getItem('trmc.np')) || 30, type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: localStorage.getItem('trmc.funnel2') || 'maxgrowth', scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: (localStorage.getItem('trmc.funnel2') || 'maxgrowth') === 'maxgrowth' ? 'maxGrowth' : 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
+  view: { np: Number(localStorage.getItem('trmc.np')) || 30, type: 'all', q: '', onlyComputed: false, allEtf: localStorage.getItem('trmc.allEtf') === '1', distFilter: localStorage.getItem('trmc.distFilter') || 'all', funnel: START_FUNNEL, scenario: localStorage.getItem('trmc.scenario') || '', nr5Mode: localStorage.getItem('trmc.nr5Mode') || 'std', sort: { key: START_FUNNEL === 'maxgrowth' ? 'maxGrowth' : 'projOpt', dir: -1 }, limit: PAGE, filters: loadFilters() },
   running: false,
   stop: false,
 };
@@ -836,7 +853,7 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected';
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore';
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
@@ -1024,6 +1041,30 @@ function rangeCells(r) {
     return `<td class="num rg-col ${cls(x)}" title="${l}: ${pct(x, true, 1)} · ${name} ${pxFmt(top, r.price)}, minimo ${pxFmt(low, r.price)} (prezzo attuale ${pxFmt(r.price, r.price)})."><b class="big">${pct(x, true, 1)}</b><span class="eur">${name} ${pxFmt(top, r.price)} · min ${pxFmt(low, r.price)}</span></td>`;
   }).join('');
 }
+// Max Growth Score (lo stesso della sezione «Max Growth»): rendimento annuo del punteggio e guadagno netto corrispondente
+function mgNet(r) {
+  if (r.maxGrowth == null) return null;
+  const amt = state.settings.mc.amount || 10000;
+  const yrs = state.settings.mc.years || 5;
+  const tr = state.results[r.inst?.symbol]?.sim?.taxRate;
+  const tx = Number.isFinite(tr) ? tr / 100 : 0.26;
+  const g = amt * ((1 + r.maxGrowth) ** yrs - 1);
+  return { net: Math.round(g > 0 ? g * (1 - tx) : g), yrs, amt };
+}
+function mgHead() {
+  const th = document.createElement('th');
+  const on = state.view.sort.key === 'mgScore';
+  th.className = 'num mg-col' + (on ? ' sorted' : '');
+  th.dataset.sort = 'mgScore';
+  th.title = 'Max Growth Score, lo stesso della sezione «Max Growth»: ½ rendimento storico + ½ rendimento atteso, con correzioni per strategia, mercato globale, andamento recente, volatilità e concentrazione. In grande il guadagno netto corrispondente sul capitale impostato; sotto il rendimento annuo del punteggio. Vale per ETF e azioni. Tocca per ordinare dal più alto.';
+  th.innerHTML = `<span class="l">Max Growth Score</span><span class="s">Max Growth</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+  return th;
+}
+function mgCell(r) {
+  const m = mgNet(r);
+  if (!m) return '<td class="num mg-col muted" title="Max Growth Score non disponibile per questo strumento (vale per ETF e azioni con previsione)">–</td>';
+  return `<td class="num mg-col ${cls(r.maxGrowth)}" title="Max Growth Score: ${pct(r.maxGrowth, true, 2)} l'anno, pari a ${m.net > 0 ? '+' : ''}${eur0(m.net)} netti in ${m.yrs} anni su ${eur0(m.amt)}."><b class="big">${m.net > 0 ? '+' : ''}${eur0(m.net)}</b><span class="eur">${pct(r.maxGrowth, true, 1)}/anno</span></td>`;
+}
 function pxCells(r) {
   const now = r.price;
   const med = r.pxMed;
@@ -1038,6 +1079,7 @@ function mInd(r) {
   const px = r.price != null && r.pxMed != null ? `Prezzo <b>${pxFmt(r.price, r.price)}</b> → <b>${pxFmt(r.pxMed, r.price)}</b> a ${npNow()} (<b class="${cls(r.pxDiff)}">${pct(r.pxDiff, true, 1)}</b>)` : r.price != null ? `Prezzo <b>${eur(r.price)}</b>` : null;
   const parts = [...(px ? [px] : []), `Rendimento atteso <b class="${cls(r.expected)}">${r.expected != null ? pct(r.expected, true, 1) : '–'}</b>`, `Rend. da dividendi <b>${div}</b>`];
   if (r.anUp != null) parts.push(`Analisti <b class="${cls(r.anUp)}">${pct(r.anUp, true, 0)}${r.anWarn ? ' ⚠' : ''}</b>`);
+  { const m = mgNet(r); if (m) parts.push(`Max Growth <b class="${cls(r.maxGrowth)}">${m.net > 0 ? '+' : ''}${eur0(m.net)}</b> (${pct(r.maxGrowth, true, 1)}/anno)`); }
   if (r.avg52 != null) parts.push(`52 sett.: medio <b>${pxFmt(r.avg52, r.price)}</b> · minimo <b>${pxFmt(r.min52, r.price)}</b>`);
   if (r.avg90 != null) parts.push(`90 gg: medio <b>${pxFmt(r.avg90, r.price)}</b> · minimo <b>${pxFmt(r.min90, r.price)}</b>`);
   if (r.pm6L52 != null) parts.push(`6 mesi: più probabile <b>${pxFmt(r.pm6, r.price)}</b>, <b class="${cls(r.pm6L52)}">${pct(r.pm6L52, true, 1)}</b> sul minimo 52 sett.`);
@@ -1346,6 +1388,8 @@ function rowValuesCalc(i) {
   // prezzo più probabile al periodo scelto nella barra (1 gg … 5 anni) e differenza dal prezzo attuale
   Object.defineProperty(v, 'pxDiff', { enumerable: false, configurable: true, get: () => { const f = npCached(i, state.view.np)?.pxF; return f != null ? f - 1 : null; } });
   Object.defineProperty(v, 'pxMed', { enumerable: false, configurable: true, get: () => { const f = npCached(i, state.view.np)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
+  // Max Growth Score nelle sezioni «Netto più probabile»: stesso valore della sezione Max Growth, con una chiave propria per l'ordinamento
+  Object.defineProperty(v, 'mgScore', { enumerable: false, configurable: true, get: () => v.maxGrowth ?? null });
   // prezzo più probabile a 6 mesi e sua distanza dal minimo a 52 settimane: (prezzo a 6 mesi − minimo) ÷ minimo
   Object.defineProperty(v, 'pm6', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
   Object.defineProperty(v, 'pm6L52', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? distanceFrom(q.priceEur * f, q?.perf?.l52) : null; } });
@@ -1408,7 +1452,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
   document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
@@ -1426,6 +1470,7 @@ function render() {
     // prezzo attuale, prezzo più probabile al periodo scelto e differenza
     for (const th of pxHeads()) { after.after(th); after = th; }
     for (const th of rangeHeads()) { after.after(th); after = th; }
+    { const th = mgHead(); after.after(th); after = th; }
     // guadagno netto sui 2.000 scenari simulati: valore mediano (attendibile), non la media
     {
       const th = document.createElement('th');
@@ -1530,6 +1575,7 @@ function render() {
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
         ${shortMode() ? pxCells(r) : ''}
         ${shortMode() ? rangeCells(r) : ''}
+        ${shortMode() ? mgCell(r) : ''}
         ${shortMode() ? (r[SIM_KEY] == null ? '<td class="num sim-col muted">–</td>' : `<td class="num sim-col ${cls(r[SIM_KEY])}" title="Valore mediano dei ${simCount()} scenari a ${simYears()} anni: ${eur0(r[SIM_KEY])}${r.simP != null ? ` · probabilità di guadagno ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · in 3 scenari su 4 il risultato è almeno ${eur0(r.simP25)}` : ''} · media di tutti gli scenari ${pct(r.netMean, true, 1)} (gonfiata dagli scenari estremi: non usarla come previsione)"><b class="big">${r[SIM_KEY] > 0 ? '+' : ''}${eur0(r[SIM_KEY])}</b><span class="eur">${r.simP != null ? `P ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · 3 su 4 ≥ ${r.simP25 > 0 ? '+' : ''}${eur0(r.simP25)}` : ''}</span></td>`) : ''}
         ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
         ${shortMode() && !analystMode() ? anCells(r) : ''}
@@ -3546,7 +3592,7 @@ function bind() {
   });
   const fm = $('#funnel-mode');
   if (fm) {
-    fm.value = state.view.funnel || 'maxgrowth';
+    fm.value = state.view.funnel || 'short';
     // all'avvio con la sezione «Netto più probabile» già scelta: ordinamento per il periodo salvato
     if (analystMode()) state.view.sort = { key: 'anUp', dir: -1 };
     else if (solidMode()) state.view.sort = { key: 'tScore', dir: -1 };
@@ -3605,7 +3651,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

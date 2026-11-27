@@ -39,6 +39,7 @@ export const INDICATORS = [
   { key: 'price', label: 'Prezzo attuale (€)', pct: false },
   { key: 'pxMed', label: 'Prezzo più probabile al periodo scelto (€)', pct: false },
   { key: 'pxDiff', label: 'Differenza: prezzo più probabile rispetto al prezzo attuale (%)', pct: true },
+  { key: 'maxGrowth', label: 'Max Growth Score (rendimento annuo del punteggio, %)', pct: true },
   // prezzo medio e minimo a 52 settimane e a 90 giorni (in euro) e distanza del prezzo attuale da ciascuno (in %)
   { key: 'pm6L52', label: '(Prezzo più probabile a 6 mesi − minimo 52 settimane) ÷ minimo 52 settimane (%)', pct: true },
   { key: 'sA52', label: '(Prezzo medio − minimo) ÷ minimo, 52 settimane (%)', pct: true },

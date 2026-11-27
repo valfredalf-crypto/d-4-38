@@ -22,11 +22,16 @@ export const P90_LEVELS = [-2000, -1000, 0, 1000];
 export const AN_KEYS = ['anUp', 'divY'];
 // Prezzo attuale, prezzo più probabile al periodo scelto e differenza tra i due
 export const PX_KEYS = ['price', 'pxMed', 'pxDiff'];
+export const PX_DIFF_LEVELS = [0, 2, 5, 10]; // pulsanti rapidi: differenza di almeno x%
 export const AN_UP_LEVELS = [10, 25, 50];
 export const AN_N_LEVELS = [3, 5, 10];
 export const DIV_LEVELS = [2, 4, 6];
 
 export const INDICATORS = [
+  // prezzo attuale, prezzo più probabile al periodo scelto nella barra (1 gg … 5 anni) e differenza tra i due
+  { key: 'price', label: 'Prezzo attuale (€)', pct: false },
+  { key: 'pxMed', label: 'Prezzo più probabile al periodo scelto (€)', pct: false },
+  { key: 'pxDiff', label: 'Differenza: prezzo più probabile rispetto al prezzo attuale (%)', pct: true },
   ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
   // Esito mediano dei 2.000 scenari simulati (non la media: pochi scenari estremi la gonfiano), in euro sul capitale impostato
   { key: SIM_KEY, label: 'Guadagno netto mediano su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
@@ -34,7 +39,6 @@ export const INDICATORS = [
   { key: SIM_P90_KEY, label: 'Guadagno netto nel 90% degli scenari a 5 anni (€, 2.000 scenari)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),
   { key: SIM_P_KEY, label: 'Probabilità di guadagno a 5 anni (2.000 scenari)', pct: true },
-  { key: 'pxDiff', label: 'Differenza tra prezzo più probabile e prezzo attuale (periodo scelto)', pct: true },
   { key: 'anUp', label: 'Potenziale secondo gli analisti (prezzo obiettivo a 12 mesi)', pct: true },
   { key: 'anN', label: 'Numero di analisti (solo azioni)', pct: false },
   { key: 'divY', label: 'Rendimento da dividendi (annuo, lordo)', pct: true },
@@ -78,7 +82,6 @@ export const INDICATORS = [
   { key: 'varM', label: 'Var. 1 mese', pct: true },
   { key: 'varM3', label: 'Var. 3 mesi', pct: true },
   { key: 'varY', label: 'Var. 1 anno', pct: true },
-  { key: 'price', label: 'Prezzo (€)', pct: false },
   { key: 'aum', label: 'Patrimonio del fondo (milioni di €, solo ETF)', pct: false },
   { key: 'ter', label: 'TER annuo (solo ETF)', pct: true },
 ];

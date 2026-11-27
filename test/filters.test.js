@@ -116,3 +116,17 @@ test('filtro sulla differenza tra prezzo più probabile e prezzo attuale: in pun
   assert.equal(passes({ pxDiff: 0.019 }, a), false);
   assert.equal(passes({ pxDiff: null }, a), false);
 });
+
+test('i tre indicatori di prezzo aprono l\'elenco: prezzo attuale, prezzo più probabile, differenza', async () => {
+  const { INDICATORS, PX_DIFF_LEVELS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(INDICATORS.slice(0, 3).map((x) => x.key), ['price', 'pxMed', 'pxDiff']);
+  assert.match(INDICATORS[0].label, /Prezzo attuale/);
+  assert.match(INDICATORS[1].label, /Prezzo più probabile/);
+  assert.match(INDICATORS[2].label, /Differenza/);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  assert.deepEqual(PX_DIFF_LEVELS, [0, 2, 5, 10]);
+  const a = activeFilters({ price: { max: '50' }, pxMed: { min: '10' }, pxDiff: { min: '5' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min, x.max]), [['price', null, 50], ['pxMed', 10, null], ['pxDiff', 0.05, null]]);
+  assert.equal(passes({ price: 20, pxMed: 21.5, pxDiff: 0.075 }, a), true);
+  assert.equal(passes({ price: 20, pxMed: 20.4, pxDiff: 0.02 }, a), false);
+});

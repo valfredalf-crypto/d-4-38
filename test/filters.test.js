@@ -130,3 +130,38 @@ test('i tre indicatori di prezzo aprono l\'elenco: prezzo attuale, prezzo più p
   assert.equal(passes({ price: 20, pxMed: 21.5, pxDiff: 0.075 }, a), true);
   assert.equal(passes({ price: 20, pxMed: 20.4, pxDiff: 0.02 }, a), false);
 });
+
+test('indicatori su prezzo medio e minimo a 52 settimane e 90 giorni: prezzi in euro e distanze in percentuale', async () => {
+  const { INDICATORS, RANGE_COLS, RANGE_KEYS, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(RANGE_COLS.map((x) => x[0]), ['avg52', 'min52', 'avg90', 'min90']);
+  assert.deepEqual(RANGE_KEYS, ['avg52', 'dA52', 'min52', 'dL52', 'avg90', 'dA90', 'min90', 'dL90', 'sA52', 'sA90', 'pm6L52']);
+  for (const [k, d] of RANGE_COLS) {
+    assert.ok(INDICATORS.some((x) => x.key === k && !x.pct), k);
+    assert.ok(INDICATORS.some((x) => x.key === d && x.pct), d);
+  }
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  // esempio: prezzo attuale al massimo il 10% sopra il minimo a 52 settimane e sotto la media a 90 giorni
+  const a = activeFilters({ dL52: { max: '10' }, dA90: { max: '0' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min, x.max]), [['dL52', null, 0.1], ['dA90', null, 0]]);
+  assert.equal(passes({ dL52: 0.08, dA90: -0.02 }, a), true);
+  assert.equal(passes({ dL52: 0.3, dA90: -0.02 }, a), false);
+  assert.equal(passes({ dL52: 0.08, dA90: null }, a), false);
+});
+
+test('filtro prezzo più probabile a 6 mesi rispetto al minimo a 52 settimane e differenze medio − minimo', async () => {
+  const { INDICATORS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, activeFilters, passes } = await import('../public/js/filters.js');
+  const { distanceFrom } = await import('../public/js/range.js');
+  assert.deepEqual(SPREAD_COLS.map((x) => x[0]), ['sA52', 'sA90', 'pm6L52']);
+  assert.equal(PM6_DAYS, 180);
+  assert.deepEqual(PM6_LEVELS, [10, 20, 30, 50]);
+  for (const [k] of SPREAD_COLS) assert.ok(INDICATORS.some((x) => x.key === k && x.pct), k);
+  assert.match(INDICATORS.find((x) => x.key === 'pm6L52').label, /6 mesi − minimo 52 settimane\) ÷ minimo 52 settimane/);
+  // la formula: (prezzo più probabile a 6 mesi − minimo 52 settimane) ÷ minimo 52 settimane
+  assert.ok(Math.abs(distanceFrom(42, 31.55) - (42 - 31.55) / 31.55) < 1e-12);
+  assert.ok(Math.abs(distanceFrom(21.39, 17.94) - (21.39 - 17.94) / 17.94) < 1e-12);
+  const a = activeFilters({ pm6L52: { min: '30' } });
+  assert.deepEqual(a.map((x) => [x.key, x.min]), [['pm6L52', 0.3]]);
+  assert.equal(passes({ pm6L52: distanceFrom(42, 31.55) }, a), true); // +33,1%
+  assert.equal(passes({ pm6L52: distanceFrom(40, 31.55) }, a), false); // +26,8%
+  assert.equal(passes({ pm6L52: null }, a), false);
+});

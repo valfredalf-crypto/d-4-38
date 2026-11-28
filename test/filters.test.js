@@ -220,3 +220,34 @@ test('rischio: stress test, guadagno efficiente, bilanciato e corretto per il ri
   assert.equal(passes({ stress: 0.2 }, s), true);
   assert.equal(passes({ stress: 0.3 }, s), false);
 });
+
+test('differenziali delle probabilità a 1, 3 e 5 anni: chiavi, indicatori e filtro in punti percentuali', async () => {
+  const { INDICATORS, PD_KEYS, pdKey, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(PD_KEYS, ['pd365', 'pd1095', 'pd1825']);
+  assert.equal(pdKey(365), 'pd365');
+  assert.match(INDICATORS.find((x) => x.key === 'pd365').label, /1 anno: almeno \+25% − in perdita/);
+  assert.match(INDICATORS.find((x) => x.key === 'pd1095').label, /3 anni: almeno \+25% − in perdita/);
+  assert.match(INDICATORS.find((x) => x.key === 'pd1825').label, /5 anni: almeno \+50% − in perdita/);
+  for (const k of PD_KEYS) assert.ok(INDICATORS.some((x) => x.key === k && x.pct));
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  // almeno +10 punti: +21 pt passa, +7 pt e −23 pt no
+  const a = activeFilters({ pd365: { min: '10' } });
+  assert.equal(passes({ pd365: 0.21 }, a), true);
+  assert.equal(passes({ pd365: 0.07 }, a), false);
+  assert.equal(passes({ pd365: -0.23 }, a), false);
+  assert.equal(passes({ pd365: null }, a), false);
+});
+
+test('netto mediano degli scenari tolte le perdite a 1, 3 e 5 anni: chiavi, indicatori in euro e filtro', async () => {
+  const { INDICATORS, SIM_ADJ, SIM_ADJ_KEYS, simAdjKey, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(SIM_ADJ.map(([d]) => d), [365, 1095, 1825]);
+  assert.deepEqual(SIM_ADJ_KEYS, ['simAdj365', 'simAdj1095', 'simAdj1825']);
+  assert.equal(simAdjKey(1095), 'simAdj1095');
+  for (const k of SIM_ADJ_KEYS) assert.ok(INDICATORS.some((x) => x.key === k && x.eur && x.strict && !x.pct && /tolte le perdite/.test(x.label)), k);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  // maggiore di 0 €: +580 − 2.131 = −1.551 € non passa
+  const a = activeFilters({ simAdj1825: { min: '0' } });
+  assert.equal(passes({ simAdj1825: 580 - 2131 }, a), false);
+  assert.equal(passes({ simAdj1825: 1200 }, a), true);
+  assert.equal(passes({ simAdj1825: 0 }, a), false);
+});

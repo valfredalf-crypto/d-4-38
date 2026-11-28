@@ -9,6 +9,10 @@ export const SIM_KEY = 'simMed';
 // Stessi scenari letti a 1 e 3 anni: [giorni, anni, nome]
 export const SIM_MID = [[365, 1, '1 anno'], [1095, 3, '3 anni']];
 export const simMidKey = (days) => SIM_KEY + days;
+// Mediano degli scenari tolte le perdite attese (media delle perdite su tutti gli scenari), a 1, 3 e 5 anni
+export const SIM_ADJ = [[365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
+export const simAdjKey = (days) => 'simAdj' + days;
+export const SIM_ADJ_KEYS = SIM_ADJ.map(([d]) => simAdjKey(d));
 // Probabilità di guadagno a 5 anni: quota dei 2.000 scenari che finisce in positivo; soglie dei pulsanti rapidi in punti percentuali
 export const SIM_P_KEY = 'simP';
 export const SIM_P_LEVELS = [70, 80, 90];
@@ -45,6 +49,9 @@ export const RISK_KEYS = ['stress', 'effNet', ...RG_PERIODS.map(([d]) => balKey(
 // Sezione «Qualità»: punteggio (0–100), crescita degli utili attesa e rendimento atteso del periodo a 1, 3 e 5 anni
 export const erKey = (days) => 'er' + days;
 export const QUALITY_KEYS = ['qScore', 'qGrowth', ...RG_PERIODS.map(([d]) => erKey(d))];
+// Differenziale delle probabilità (come nella scheda): a 1 e 3 anni «almeno +25%» − «in perdita», a 5 anni «almeno +50%» − «in perdita»
+export const pdKey = (days) => 'pd' + days;
+export const PD_KEYS = RG_PERIODS.map(([d]) => pdKey(d));
 // Filtri con minimo e massimo in cima al pannello: probabilità di perdita e di guadagno netto oltre il 50% (5 anni, scenari simulati)
 export const PROB_FILTERS = [['probLoss', 'Perdita'], ['prob50', 'Guadagno > 50%']];
 export const AN_UP_LEVELS = [10, 25, 50];
@@ -75,6 +82,9 @@ export const INDICATORS = [
   { key: erKey(365), label: 'Rendimento atteso a 1 anno (lordo, totale del periodo)', pct: true },
   { key: erKey(1095), label: 'Rendimento atteso a 3 anni (lordo, totale del periodo)', pct: true },
   { key: erKey(1825), label: 'Rendimento atteso a 5 anni dal modello delle previsioni (lordo, totale del periodo)', pct: true },
+  { key: pdKey(365), label: 'Differenziale probabilità a 1 anno: almeno +25% − in perdita (punti percentuali)', pct: true },
+  { key: pdKey(1095), label: 'Differenziale probabilità a 3 anni: almeno +25% − in perdita (punti percentuali)', pct: true },
+  { key: pdKey(1825), label: 'Differenziale probabilità a 5 anni: almeno +50% − in perdita (punti percentuali)', pct: true },
   { key: 'probLoss', label: 'Probabilità di perdita (5 anni)', pct: true },
   { key: 'prob50', label: 'Probabilità di guadagno netto maggiore del 50% (5 anni)', pct: true },
   // prezzo medio e minimo a 52 settimane e a 90 giorni (in euro) e distanza del prezzo attuale da ciascuno (in %)
@@ -86,6 +96,7 @@ export const INDICATORS = [
   // Esito mediano dei 2.000 scenari simulati (non la media: pochi scenari estremi la gonfiano), in euro sul capitale impostato
   ...SIM_MID.map(([d, , l]) => ({ key: simMidKey(d), label: `Guadagno netto mediano su 2.000 scenari, ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: SIM_KEY, label: 'Guadagno netto mediano su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
+  ...SIM_ADJ.map(([d, l]) => ({ key: simAdjKey(d), label: `Netto mediano 2.000 scenari tolte le perdite, ${l} (€)`, pct: false, eur: true, strict: true })),
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: p90Key(d), label: `Guadagno netto nel 90% degli scenari a ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: SIM_P90_KEY, label: 'Guadagno netto nel 90% degli scenari a 5 anni (€, 2.000 scenari)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),

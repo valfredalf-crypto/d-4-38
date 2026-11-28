@@ -194,3 +194,23 @@ test('differenza tra prezzo più probabile a 6 mesi e prezzo attuale: colonna, i
   assert.equal(passes({ pm6Now: 0.01 }, a), false);
   assert.equal(passes({ pm6Now: null }, a), false);
 });
+
+test('rischio: stress test, guadagno efficiente, bilanciato e corretto per il rischio a 1, 3 e 5 anni; filtri sulle probabilità', async () => {
+  const { INDICATORS, RG_PERIODS, RISK_KEYS, PROB_FILTERS, balKey, radjKey, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(RG_PERIODS.map(([d]) => d), [365, 1095, 1825]);
+  assert.deepEqual(RISK_KEYS, ['stress', 'effNet', 'bal365', 'bal1095', 'bal1825', 'radj365', 'radj1095', 'radj1825']);
+  for (const k of ['stress', 'plausible', balKey(365), balKey(1095), 'balanced', radjKey(365), radjKey(1095), 'riskAdj', 'probLoss', 'prob50']) assert.ok(INDICATORS.some((x) => x.key === k && x.pct), k);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  assert.deepEqual(PROB_FILTERS.map(([k]) => k), ['probLoss', 'prob50']);
+  // probabilità di perdita tra 5% e 20%, probabilità di guadagno oltre il 50% tra 30% e 80%
+  const a = activeFilters({ probLoss: { min: '5', max: '20' }, prob50: { min: '30', max: '80' } });
+  assert.equal(passes({ probLoss: 0.12, prob50: 0.45 }, a), true);
+  assert.equal(passes({ probLoss: 0.25, prob50: 0.45 }, a), false);
+  assert.equal(passes({ probLoss: 0.12, prob50: 0.9 }, a), false);
+  assert.equal(passes({ probLoss: 0.02, prob50: 0.45 }, a), false);
+  assert.equal(passes({ probLoss: null, prob50: 0.45 }, a), false);
+  // stress test: perdita fino al 25% (numero positivo)
+  const s = activeFilters({ stress: { max: '25' } });
+  assert.equal(passes({ stress: 0.2 }, s), true);
+  assert.equal(passes({ stress: 0.3 }, s), false);
+});

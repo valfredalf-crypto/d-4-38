@@ -175,8 +175,10 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
   let pProfit = null;
   let quant = null;
   let medianGross = mu; // variazione lorda nel caso mediano: senza volatilità coincide con quella attesa
+  let lnMean = null; // media del logaritmo di (1 + rendimento lordo del periodo): null senza volatilità
   if (sigma > 0) {
     const a = Math.log(1 + mu) - (sigma * sigma) / 2; // media del logaritmo
+    lnMean = a;
     const d2 = a / sigma;
     const d1 = d2 + sigma;
     // ETC/ETN/ETP (redditi diversi): le minusvalenze compensano le plusvalenze → imposta sul guadagno medio atteso
@@ -215,6 +217,7 @@ export function projectShort(params, capital, years, { vol = null, orderCost = 1
     medianNet: quant?.median ?? netGain, // netto nel caso mediano (più probabile)
     p10Net: quant?.p10 ?? null, // netto raggiunto o superato in 9 casi su 10 (10° percentile); null senza volatilità
     medianGross,
+    lnMean, // con sigma descrive tutta la distribuzione del periodo (riskgain.js)
   };
 }
 

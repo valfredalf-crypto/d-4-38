@@ -97,6 +97,9 @@ code { font-family: var(--mono); }
 .npf-row > span { width: 62px; flex: none; }
 .npf-row button { border-radius: 999px; padding: 4px 10px; font-size: 13px; }
 .npf-row button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.npf-mm > span { width: 110px; }
+.npf-mm input { width: 92px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--text); font: inherit; }
+.npf-mm input.on { border-color: var(--accent); }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
 .presets button { border-radius: 999px; padding: 4px 10px; font-size: 13px; }
 .filters-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 8px 18px; }
@@ -240,7 +243,9 @@ table.mini .num { white-space: nowrap; }
   .npf-row { flex-wrap: nowrap; gap: 4px; }
   .npf-row > span { width: 50px; font-size: 12px; }
   .npf-row button { flex: 1 1 0; min-width: 0; padding: 6px 0; font-size: 12px; white-space: nowrap; }
-  .frow input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
+  .npf-row.npf-mm > span { width: 96px; }
+  .npf-mm input { flex: 1 1 0; min-width: 0; }
+  .frow input, .npf-mm input, #filter, #isin-q { font-size: 16px; } /* sotto i 16px Safari su iPhone ingrandisce la pagina */
   td .name { max-width: 140px; }
   /* Su telefono: posizione, strumento, perdita, guadagno, rapporto (il resto è nel dettaglio) */
   /* Colonne: 1 #, 2 Strumento, 3 corretto rischio €, 4 NR5 €, 5 probabile 75% €, 6 bilanciato/perdita max, 7 medio/perdita max,
@@ -263,10 +268,10 @@ table.mini .num { white-space: nowrap; }
   body.mview-prob #table th:nth-child(n+29):nth-child(-n+30), body.mview-prob #table td:nth-child(n+29):nth-child(-n+30) { display: table-cell; }
   body.mview-prob #table th:nth-child(n+3):nth-child(-n+9), body.mview-prob #table td:nth-child(n+3):nth-child(-n+9) { display: none; }
   /* Sezione «Netto più probabile»: #, Strumento e le 9 colonne dei periodi (3–11), il netto medio degli scenari (12) e le 5 dello storico (13–17), il resto nascosto */
-  body.np-mode #table th:nth-child(n+3):nth-child(-n+31), body.np-mode #table td:nth-child(n+3):nth-child(-n+31) { display: table-cell !important; }
-  body.np-mode #table th:nth-child(n+32), body.np-mode #table td:nth-child(n+32) { display: none !important; }
+  body.np-mode #table th:nth-child(n+3):nth-child(-n+39), body.np-mode #table td:nth-child(n+3):nth-child(-n+39) { display: table-cell !important; }
+  body.np-mode #table th:nth-child(n+40), body.np-mode #table td:nth-child(n+40) { display: none !important; }
   /* «Solidi e in crescita»: una colonna in più (crescita a 30 giorni) */
-  body.np-mode.solid-mode #table th:nth-child(32), body.np-mode.solid-mode #table td:nth-child(32) { display: table-cell !important; }
+  body.np-mode.solid-mode #table th:nth-child(40), body.np-mode.solid-mode #table td:nth-child(40) { display: table-cell !important; }
   body.np-mode .mobile-view { display: none; }
   body.np-mode .m-ind { display: block; }
   th, td { padding: 8px 3px; }

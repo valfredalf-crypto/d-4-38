@@ -11,7 +11,8 @@ import { distanceFrom } from './range.js';
 import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { riskGain } from './riskgain.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
@@ -634,7 +635,7 @@ function buildFiltersPanel() {
   });
   const npf = $('#filters-panel .np-filters');
   if (npf) {
-    npf.innerHTML = `<div class="npf-title"><b>Netto più probabile</b> <span class="muted">su <span id="npf-cap"></span> investiti: solo gli strumenti sopra la soglia</span></div>${NP_FILTER_PERIODS.map(
+    npf.innerHTML = `<div class="npf-title"><b>Probabilità a ${simYears()} anni</b> <span class="muted">sui ${simCount()} scenari simulati: scrivi il minimo e/o il massimo, in % (per esempio perdita max 20; guadagno &gt; 50% min 30)</span></div>${PROB_FILTERS.map(([k, l]) => `<div class="npf-row npf-mm"><span>${l}</span><input data-key="${k}" data-bound="min" inputmode="decimal" placeholder="min %" aria-label="Probabilità: ${l}, minimo in percentuale"><input data-key="${k}" data-bound="max" inputmode="decimal" placeholder="max %" aria-label="Probabilità: ${l}, massimo in percentuale"></div>`).join('')}<div class="npf-title npf-sep"><b>Netto più probabile</b> <span class="muted">su <span id="npf-cap"></span> investiti: solo gli strumenti sopra la soglia</span></div>${NP_FILTER_PERIODS.map(
       ([d, l]) => `<div class="npf-row"><span>${l}</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${npFilterKey(d)}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con netto più probabile a ${l} maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`,
     ).join('')}<div class="npf-title npf-sep"><b>Prezzo più probabile rispetto al prezzo attuale</b> <span class="muted">differenza al periodo scelto nella barra (1 gg … 5 anni): positiva = il modello vede il prezzo più in alto</span></div><div class="npf-row"><span>Differenza</span>${PX_DIFF_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="pxDiff" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con prezzo più probabile almeno il ${x}% sopra il prezzo attuale, al periodo scelto. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-title npf-sep"><b>Prezzo più probabile a 6 mesi rispetto al prezzo attuale</b> <span class="muted">(prezzo più probabile a 6 mesi − prezzo attuale) ÷ prezzo attuale</span></div><div class="npf-row"><span>Sopra il prezzo</span>${PM6_NOW_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="pm6Now" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti il cui prezzo più probabile a 6 mesi è almeno il ${x}% sopra il prezzo attuale. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-title npf-sep"><b>Prezzo più probabile a 6 mesi rispetto al minimo a 52 settimane</b> <span class="muted">(prezzo più probabile a 6 mesi − minimo 52 settimane) ÷ minimo 52 settimane</span></div><div class="npf-row"><span>Sopra il minimo</span>${PM6_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="pm6L52" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti il cui prezzo più probabile a 6 mesi è almeno il ${x}% sopra il minimo delle ultime 52 settimane. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-title npf-sep"><b>Guadagno netto mediano su ${simCount()} scenari</b> <span class="muted">a ${simYears()} anni (metà degli scenari sopra, metà sotto), su <span class="npf-cap2"></span></span></div><div class="npf-row"><span>${simYears()} anni</span>${NP_FILTER_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${SIM_KEY}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con valore mediano dei ${simCount()} scenari a ${simYears()} anni maggiore di ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div><div class="npf-title npf-sep"><b>Guadagno netto nel 90% degli scenari</b> <span class="muted">in euro: raggiunto o superato in 9 casi su 10 (1 e 3 anni dal modello delle previsioni, ${simYears()} anni dai ${simCount()} scenari simulati)</span></div>${[...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l]), [SIM_P90_KEY, `${simYears()} anni`]].map(([k, l]) => `<div class="npf-row"><span>${l}</span>${P90_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="${k}" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti che a ${l} in 9 casi su 10 finiscono sopra ${eur0(x)}. Tocca ancora per togliere il filtro.">&gt; ${eur0(x)}</button>`).join('')}</div>`).join('')}<div class="npf-title npf-sep"><b>Analisti e dividendi</b> <span class="muted">potenziale = prezzo obiettivo medio a 12 mesi rispetto al prezzo; dividendo annuo lordo</span></div><div class="npf-row"><span>Potenziale</span>${AN_UP_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="anUp" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con potenziale secondo gli analisti di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div><div class="npf-row"><span>Analisti</span>${AN_N_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="anN" data-min="${x}" aria-pressed="false" title="Mostra solo le azioni seguite da almeno ${x} analisti. Tocca ancora per togliere il filtro.">≥ ${x}</button>`).join('')}</div><div class="npf-row"><span>Dividendo</span>${DIV_LEVELS.map((x) => `<button type="button" class="ghost" data-npf="divY" data-min="${x}" aria-pressed="false" title="Mostra solo gli strumenti con rendimento da dividendi di almeno il ${x}%. Tocca ancora per togliere il filtro.">≥ ${x}%</button>`).join('')}</div>`;
     npf.addEventListener('click', (e) => {
@@ -649,7 +650,7 @@ function buildFiltersPanel() {
     });
   }
   let t;
-  $('#filters-panel .filters-grid').addEventListener('input', (e) => {
+  $('#filters-panel').addEventListener('input', (e) => {
     const el = e.target.closest('input[data-key]');
     if (!el) return;
     const f = (state.view.filters[el.dataset.key] ||= {});
@@ -893,7 +894,7 @@ function npStats(inst, days) {
   const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
   const med = Math.max(-cap, h.medianNet); // non si può perdere più del capitale investito
   const avg = Math.max(-cap, h.netGain);
-  return { median: med / cap, mean: avg / cap, p: h.pProfit, pxF: priceFactor(inst, r, 1 + h.medianGross, y), p10Eur: h.p10Net != null ? Math.max(-cap, h.p10Net) : null, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null };
+  return { median: med / cap, mean: avg / cap, p: h.pProfit, pxF: priceFactor(inst, r, 1 + h.medianGross, y), p10Eur: h.p10Net != null ? Math.max(-cap, h.p10Net) : null, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null, dist: Number.isFinite(h.lnMean) ? { lnMean: h.lnMean, sigma: h.sigma, tax: Number.isFinite(pp.tax) ? pp.tax : 0.26, costs: h.costs / cap } : null };
 }
 // Chiave delle impostazioni che influenzano il «netto più probabile» (calcolata al massimo ogni 50 ms: serve a ogni riga)
 let npCfgCache = { at: -1, key: '' };
@@ -935,6 +936,14 @@ function npCached(inst, d) {
   if (!m || m.key !== key) npMemo.set(r, (m = { key, v: new Map() }));
   if (!m.v.has(d)) m.v.set(d, npStats(inst, d));
   return m.v.get(d);
+}
+// Guadagno bilanciato crescita/rischio e guadagno corretto per il rischio sulla distribuzione del modello delle previsioni
+// (1 e 3 anni): si calcola solo quando serve e resta in memoria insieme alla previsione del periodo.
+function rgCached(inst, d) {
+  const x = npCached(inst, d);
+  if (!x || !x.dist) return null;
+  if (x.rg === undefined) x.rg = riskGain(x.dist);
+  return x.rg;
 }
 // Posizioni stabili della classifica per periodo: si aggiornano solo con una nuova versione dei dati e chi si sposta di poco
 // (meno del 20% della propria posizione) resta dov'era. Valgono per tutti gli strumenti; le schede filtrano da qui.
@@ -1069,6 +1078,46 @@ function mgCell(r) {
   if (!m) return '<td class="num mg-col muted" title="Max Growth Score non disponibile per questo strumento (vale per ETF e azioni con previsione)">–</td>';
   return `<td class="num mg-col ${cls(r.maxGrowth)}" title="Max Growth Score: ${pct(r.maxGrowth, true, 2)} l'anno, pari a ${m.net > 0 ? '+' : ''}${eur0(m.net)} netti in ${m.yrs} anni su ${eur0(m.amt)}."><b class="big">${m.net > 0 ? '+' : ''}${eur0(m.net)}</b><span class="eur">${pct(r.maxGrowth, true, 1)}/anno</span></td>`;
 }
+// Rischio e guadagno pesato per il rischio, gli stessi indicatori della scheda dello strumento: perdita nello stress test,
+// guadagno netto efficiente, guadagno bilanciato crescita/rischio e guadagno corretto per il rischio a 1, 3 e 5 anni.
+const rgShort = (d) => (d === 1825 ? `${simYears()}a` : d === 365 ? '1a' : '3a');
+const rgLong = (d, l) => (d === 1825 ? `${simYears()} anni` : l);
+const rgSrc = (d) => (d === 1825 ? `sui ${simCount()} scenari simulati, come nella scheda dello strumento` : 'sulla distribuzione del modello delle previsioni (lo stesso del netto più probabile)');
+function riskHeads() {
+  const cols = [
+    ['stress', 'Perdita in stress test', 'Stress test', 'Perdita temporanea stimata se il mercato azionario scende del 30% (recessione / bear market): beta dello strumento × 30%, sul capitale impostato; sotto, la correzione fisiologica (mercato −10%). È lo stesso stress test della scheda dello strumento («Valutazione del rischio»). Senza beta si usa 1. Non vale per le criptovalute. È uno scenario, non una previsione. Tocca per ordinare dalla perdita più piccola.'],
+    ['effNet', `Guadagno netto efficiente ${simYears()}a`, `Netto effic. ${simYears()}a`, `Lo stesso «Guadagno netto efficiente» della scheda dello strumento: guadagno sicuro che vale quanto l’insieme incerto dei ${simCount()} scenari a ${simYears()} anni (equivalente certo), al netto di imposte e costi, sul capitale impostato. Più rischio = valore più basso a parità di guadagno medio. Tocca per ordinare dal più alto.`],
+    ...RG_PERIODS.map(([d, l]) => [balKey(d), `Guadagno bilanciato crescita/rischio ${rgLong(d, l)}`, `Bilanciato ${rgShort(d)}`, `Lo stesso «Guadagno bilanciato crescita/rischio» della scheda dello strumento, a ${rgLong(d, l)}: guadagni attesi (quelli estremi, oltre il 75° percentile, pesano sempre meno) − 2,25 × perdite attese, su tutti gli scenari, ${rgSrc(d)}. Una perdita pesa 2,25 volte un guadagno della stessa entità. Sotto, il valore in euro sul capitale impostato. Tocca per ordinare dal più alto.`]),
+    ...RG_PERIODS.map(([d, l]) => [radjKey(d), `Guadagno corretto per il rischio ${rgLong(d, l)}`, `Corr. rischio ${rgShort(d)}`, `Lo stesso «Guadagno corretto per il rischio» della scheda dello strumento, a ${rgLong(d, l)}: guadagno tipico (mediano) − perdita finale nel caso sfavorevole (5% peggiore degli scenari), ${rgSrc(d)}. Sotto, il valore in euro sul capitale impostato. Tocca per ordinare dal più alto.`]),
+  ];
+  return cols.map(([k, lab, s, tip]) => {
+    const th = document.createElement('th');
+    const on = state.view.sort.key === k;
+    th.className = 'num rk-col' + (on ? ' sorted' : '');
+    th.dataset.sort = k;
+    th.title = tip;
+    th.innerHTML = `<span class="l">${lab}</span><span class="s">${s}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+    return th;
+  });
+}
+const sEur = (x) => `${x > 0 ? '+' : x < 0 ? '−' : ''}${eur0(Math.abs(x))}`;
+function riskCells(r) {
+  const amt = state.settings.mc.amount || 10000;
+  const out = [];
+  if (r.stress == null) out.push('<td class="num rk-col muted" title="Stress test non disponibile per questo strumento (criptovalute o previsione mancante)">–</td>');
+  else out.push(`<td class="num rk-col ${r.stress > 0 ? 'neg' : ''}" title="Se il mercato azionario scende del 30%: perdita temporanea stimata ${pct(r.stress, false, 1)} = ${eur0(r.stress * amt)} su ${eur0(amt)} (beta ${r.stressBeta != null ? nf2.format(r.stressBeta) : 'non disponibile: usato 1,00'} × 30%). Con una correzione del 10%: ${pct(r.stressMild, false, 1)} = ${eur0(r.stressMild * amt)}. Scenario, non previsione."><b class="big">${r.stress > 0 ? '−' : ''}${eur0(r.stress * amt)}</b><span class="eur">${r.stress > 0 ? '−' : ''}${pct(r.stress, false, 1)} · corr. ${r.stressMild > 0 ? '−' : ''}${pct(r.stressMild, false, 1)}</span></td>`);
+  if (r.effNet == null) out.push('<td class="num rk-col muted" title="Guadagno netto efficiente non disponibile: mancano gli scenari simulati per questo strumento">–</td>');
+  else out.push(`<td class="num rk-col ${cls(r.effNet)}" title="Guadagno netto efficiente a ${simYears()} anni: ${sEur(r.effNet)} su ${eur0(amt)} (${pct(r.plausible, true, 1)}): equivalente certo dei ${simCount()} scenari, dopo imposte e costi."><b class="big">${sEur(r.effNet)}</b><span class="eur">${pct(r.plausible, true, 1)}</span></td>`);
+  for (const [d, l] of RG_PERIODS) {
+    const x = r['rg' + d];
+    out.push(!x || x.balanced == null ? `<td class="num rk-col muted" title="Guadagno bilanciato a ${rgLong(d, l)} non disponibile (previsione o volatilità mancante)">–</td>` : `<td class="num rk-col ${cls(x.balanced)}" title="Guadagno bilanciato crescita/rischio a ${rgLong(d, l)}: guadagni attesi ${pct(x.expGain, true)} − 2,25 × perdite attese ${pct(x.expLoss)} = ${pct(x.balanced, true)} (${sEur(x.balanced * amt)} su ${eur0(amt)}), ${rgSrc(d)}."><b class="big">${pct(x.balanced, true, 1)}</b><span class="eur">${sEur(x.balanced * amt)}</span></td>`);
+  }
+  for (const [d, l] of RG_PERIODS) {
+    const x = r['rg' + d];
+    out.push(!x || x.riskAdj == null ? `<td class="num rk-col muted" title="Guadagno corretto per il rischio a ${rgLong(d, l)} non disponibile (previsione o volatilità mancante)">–</td>` : `<td class="num rk-col ${cls(x.riskAdj)}" title="Guadagno corretto per il rischio a ${rgLong(d, l)}: guadagno tipico ${pct(x.median, true)} − perdita finale sfavorevole ${pct(x.finalLoss)} = ${pct(x.riskAdj, true)} (${sEur(x.riskAdj * amt)} su ${eur0(amt)}), ${rgSrc(d)}."><b class="big">${pct(x.riskAdj, true, 1)}</b><span class="eur">${sEur(x.riskAdj * amt)}</span></td>`);
+  }
+  return out.join('');
+}
 function pxCells(r) {
   const now = r.price;
   const med = r.pxMed;
@@ -1087,6 +1136,16 @@ function mInd(r) {
   if (r.avg52 != null) parts.push(`52 sett.: medio <b>${pxFmt(r.avg52, r.price)}</b> · minimo <b>${pxFmt(r.min52, r.price)}</b>`);
   if (r.avg90 != null) parts.push(`90 gg: medio <b>${pxFmt(r.avg90, r.price)}</b> · minimo <b>${pxFmt(r.min90, r.price)}</b>`);
   if (r.pm6Now != null) parts.push(`6 mesi: più probabile <b>${pxFmt(r.pm6, r.price)}</b>, <b class="${cls(r.pm6Now)}">${pct(r.pm6Now, true, 1)}</b> sul prezzo attuale${r.pm6L52 != null ? `, <b class="${cls(r.pm6L52)}">${pct(r.pm6L52, true, 1)}</b> sul minimo 52 sett.` : ''}`);
+  {
+    const amt = state.settings.mc.amount || 10000;
+    const three = (key) => RG_PERIODS.map(([d]) => { const x = r['rg' + d]?.[key]; return `${rgShort(d)} <b class="${cls(x)}">${x != null ? pct(x, true, 1) : '–'}</b>`; }).join(' · ');
+    if (r.stress != null || r.effNet != null) parts.push(`${r.stress != null ? `Stress test (mercato −30%) <b class="${r.stress > 0 ? 'neg' : ''}">${r.stress > 0 ? '−' : ''}${eur0(r.stress * amt)}</b>` : ''}${r.stress != null && r.effNet != null ? ' · ' : ''}${r.effNet != null ? `Guadagno netto efficiente ${simYears()}a <b class="${cls(r.effNet)}">${sEur(r.effNet)}</b>` : ''}`);
+    if (RG_PERIODS.some(([d]) => r['rg' + d])) {
+      parts.push(`Guadagno bilanciato crescita/rischio: ${three('balanced')}`);
+      parts.push(`Guadagno corretto per il rischio: ${three('riskAdj')}`);
+    }
+    if (r.probLoss != null) parts.push(`Probabilità ${simYears()}a: perdita <b>${pct(r.probLoss, false, 0)}</b>${r.prob50 != null ? ` · guadagno &gt; 50% <b>${pct(r.prob50, false, 0)}</b>` : ''}`);
+  }
   return `<span class="m-ind" title="Prezzo attuale → prezzo più probabile al periodo scelto (differenza) · rendimento atteso annuo del modello (lordo) · rendimento da dividendi annuo (lordo; gli ETF ad accumulazione reinvestono) · potenziale secondo gli analisti a 12 mesi">${parts.join('<br>')}</span>`;
 }
 function anCells(r) {
@@ -1398,6 +1457,23 @@ function rowValuesCalc(i) {
   Object.defineProperty(v, 'pm6', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
   Object.defineProperty(v, 'pm6Now', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? f - 1 : null; } });
   Object.defineProperty(v, 'pm6L52', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? distanceFrom(q.priceEur * f, q?.perf?.l52) : null; } });
+  // rischio, come nella scheda dello strumento: perdita nello stress test (mercato −30% × beta; −10% per la correzione),
+  // guadagno netto efficiente in euro, guadagno bilanciato crescita/rischio e guadagno corretto per il rischio a 1 e 3 anni
+  // (distribuzione del modello delle previsioni) e a 5 anni (scenari simulati)
+  const penny = i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR;
+  const st = r && !r.error && i.type !== 'crypto' ? stressTest({ beta: r.forward?.beta, netCagr: 0, capital: 1 }) : null;
+  v.stress = st ? st[1].impact : null;
+  v.stressMild = st ? st[0].impact : null;
+  v.stressBeta = st ? (Number.isFinite(r.forward?.beta) ? st[1].beta : null) : null;
+  v.effNet = v.plausible != null && !penny ? v.plausible * (state.settings.mc.amount || 10000) : null;
+  for (const [d] of RG_PERIODS) {
+    const get = d === 1825
+      ? () => (sim && !penny && sim.balanced != null && sim.finalLoss != null && sim.netMedian != null ? { balanced: sim.balanced, expGain: sim.expGain, expLoss: sim.expLoss, median: sim.netMedian, finalLoss: sim.finalLoss, riskAdj: sim.netMedian - sim.finalLoss } : null)
+      : () => rgCached(i, d);
+    Object.defineProperty(v, 'rg' + d, { enumerable: false, configurable: true, get });
+    Object.defineProperty(v, balKey(d), { enumerable: false, configurable: true, get: () => get()?.balanced ?? null });
+    Object.defineProperty(v, radjKey(d), { enumerable: false, configurable: true, get: () => get()?.riskAdj ?? null });
+  }
   return v;
 }
 
@@ -1457,7 +1533,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.rk-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
   document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
@@ -1498,6 +1574,7 @@ function render() {
       after.after(th);
       after = th;
     }
+    for (const th of riskHeads()) { after.after(th); after = th; }
     if (!analystMode()) for (const th of anHeads()) { after.after(th); after = th; }
     // crescita degli ultimi 30 giorni: ordina la sezione «Solidi e in crescita»
     if (solidMode()) {
@@ -1524,7 +1601,7 @@ function render() {
   // «Netto più probabile»: all'apertura i dati statici (di ore fa) vengono sostituiti dopo pochi secondi da quelli live e la
   // classifica cambiava a vista d'occhio. Si mostra solo con i dati aggiornati (al massimo 25 s di attesa).
   if (STATIC && shortMode() && !state.liveReady && performance.now() < 25000) {
-    $('#table tbody').innerHTML = '<tr><td colspan="40" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
+    $('#table tbody').innerHTML = '<tr><td colspan="48" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
     return;
   }
   const all = filtered();
@@ -1583,6 +1660,7 @@ function render() {
         ${shortMode() ? mgCell(r) : ''}
         ${shortMode() ? (r[SIM_KEY] == null ? '<td class="num sim-col muted">–</td>' : `<td class="num sim-col ${cls(r[SIM_KEY])}" title="Valore mediano dei ${simCount()} scenari a ${simYears()} anni: ${eur0(r[SIM_KEY])}${r.simP != null ? ` · probabilità di guadagno ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · in 3 scenari su 4 il risultato è almeno ${eur0(r.simP25)}` : ''} · media di tutti gli scenari ${pct(r.netMean, true, 1)} (gonfiata dagli scenari estremi: non usarla come previsione)"><b class="big">${r[SIM_KEY] > 0 ? '+' : ''}${eur0(r[SIM_KEY])}</b><span class="eur">${r.simP != null ? `P ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · 3 su 4 ≥ ${r.simP25 > 0 ? '+' : ''}${eur0(r.simP25)}` : ''}</span></td>`) : ''}
         ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
+        ${shortMode() ? riskCells(r) : ''}
         ${shortMode() && !analystMode() ? anCells(r) : ''}
         ${solidMode() ? (r.tScore == null ? '<td class="num trend-col muted" title="Crescita a 30 giorni non ancora disponibile per questo strumento">–</td>' : `<td class="num trend-col ${cls(r.tScore)}" title="Ultimi 30 giorni, per seduta: pendenza della curva del rendimento ${pct(r.tSl, true, 2)} · media ponderata degli incrementi (più peso alle sedute recenti) ${pct(r.tWm, true, 2)}"><b class="big">${pct(r.tScore, true, 2)}</b><span class="eur">pend. ${pct(r.tSl, true, 2)} · media ${pct(r.tWm, true, 2)}</span></td>`) : ''}
         ${shortMode() ? HIST_COLS.map(([k]) => `<td class="num hist-col ${cls(r[k])}">${pct(r[k], true, 2)}</td>`).join('') : ''}
@@ -3656,7 +3734,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress'), 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

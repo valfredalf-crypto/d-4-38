@@ -31,6 +31,14 @@ export const PM6_DAYS = 180; // «6 mesi» del prezzo più probabile
 export const PM6_LEVELS = [10, 20, 30, 50]; // pulsanti rapidi: almeno x% sopra il minimo a 52 settimane
 export const PM6_NOW_LEVELS = [0, 2, 5, 10]; // pulsanti rapidi: prezzo più probabile a 6 mesi almeno x% sopra il prezzo attuale
 export const RANGE_KEYS = [...RANGE_COLS.flatMap(([k, d]) => [k, d]), ...SPREAD_COLS.map(([k]) => k)];
+// Rischio: guadagno bilanciato crescita/rischio e guadagno corretto per il rischio a 1 e 3 anni (modello delle previsioni)
+// e a 5 anni (scenari simulati), perdita nello stress test (mercato −30% × beta) e guadagno netto efficiente
+export const RG_PERIODS = [[365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
+export const balKey = (days) => 'bal' + days;
+export const radjKey = (days) => 'radj' + days;
+export const RISK_KEYS = ['stress', 'effNet', ...RG_PERIODS.map(([d]) => balKey(d)), ...RG_PERIODS.map(([d]) => radjKey(d))];
+// Filtri con minimo e massimo in cima al pannello: probabilità di perdita e di guadagno netto oltre il 50% (5 anni, scenari simulati)
+export const PROB_FILTERS = [['probLoss', 'Perdita'], ['prob50', 'Guadagno > 50%']];
 export const AN_UP_LEVELS = [10, 25, 50];
 export const AN_N_LEVELS = [3, 5, 10];
 export const DIV_LEVELS = [2, 4, 6];
@@ -43,6 +51,17 @@ export const INDICATORS = [
   { key: 'pm6', label: 'Prezzo più probabile a 6 mesi (€)', pct: false },
   { key: 'pm6Now', label: '(Prezzo più probabile a 6 mesi − prezzo attuale) ÷ prezzo attuale (%)', pct: true },
   { key: 'maxGrowth', label: 'Max Growth Score (rendimento annuo del punteggio, %)', pct: true },
+  // rischio: gli stessi indicatori della scheda dello strumento
+  { key: 'stress', label: 'Perdita in stress test: mercato −30% × beta (numero positivo: 25 = perdita fino al 25%)', pct: true },
+  { key: 'plausible', label: 'Guadagno netto efficiente 5a (prudenza scelta)', pct: true },
+  { key: balKey(365), label: 'Guadagno bilanciato crescita/rischio a 1 anno', pct: true },
+  { key: balKey(1095), label: 'Guadagno bilanciato crescita/rischio a 3 anni', pct: true },
+  { key: 'balanced', label: 'Guadagno bilanciato crescita/rischio 5a', pct: true },
+  { key: radjKey(365), label: 'Guadagno corretto per il rischio a 1 anno', pct: true },
+  { key: radjKey(1095), label: 'Guadagno corretto per il rischio a 3 anni', pct: true },
+  { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
+  { key: 'probLoss', label: 'Probabilità di perdita (5 anni)', pct: true },
+  { key: 'prob50', label: 'Probabilità di guadagno netto maggiore del 50% (5 anni)', pct: true },
   // prezzo medio e minimo a 52 settimane e a 90 giorni (in euro) e distanza del prezzo attuale da ciascuno (in %)
   { key: 'pm6L52', label: '(Prezzo più probabile a 6 mesi − minimo 52 settimane) ÷ minimo 52 settimane (%)', pct: true },
   { key: 'sA52', label: '(Prezzo medio − minimo) ÷ minimo, 52 settimane (%)', pct: true },
@@ -67,14 +86,11 @@ export const INDICATORS = [
   { key: 'es5', label: 'Perdita media nel 5% peggiore degli scenari', pct: true },
   { key: 'sharpe', label: 'Indice di Sharpe', pct: false },
   { key: 'sortino', label: 'Indice di Sortino', pct: false },
-  { key: 'plausible', label: 'Guadagno netto efficiente 5a (prudenza scelta)', pct: true },
   { key: 'growthEvidence', label: 'Crescita confermata dalle evidenze (0–100%)', pct: true },
   { key: 'ratio', label: 'Rapporto perdita/guadagno', pct: false },
-  { key: 'balanced', label: 'Guadagno bilanciato crescita/rischio 5a', pct: true },
   { key: 'balancedOverLoss', label: 'Rapporto guadagno bilanciato / perdita max', pct: false },
   { key: 'meanOverLoss', label: 'Rapporto guadagno medio / perdita max', pct: false },
   { key: 'net019OverLoss', label: 'Rapporto Netto 019 / perdita max 5a', pct: false },
-  { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
   { key: 'ratioFinal', label: 'Rapporto perdita finale/guadagno', pct: false },
   { key: 'finalLoss', label: 'Perdita finale 5a (caso sfavorevole)', pct: true },
   { key: 'ratioMedian', label: 'Rapporto drawdown mediano/guadagno', pct: false },
@@ -83,10 +99,8 @@ export const INDICATORS = [
   { key: 'maxLoss', label: 'Perdita massima 5a', pct: true },
   { key: 'mddMedian', label: 'Drawdown mediano 5a', pct: true },
   { key: 'netP25', label: 'Guadagno probabile 5a (75% degli scenari)', pct: true },
-  { key: 'probLoss', label: 'Probabilità di perdita', pct: true },
   { key: 'prob10', label: 'Probabilità netto ≥ +10%', pct: true },
   { key: 'prob25', label: 'Probabilità netto ≥ +25%', pct: true },
-  { key: 'prob50', label: 'Probabilità netto ≥ +50%', pct: true },
   { key: 'expected', label: 'Rendimento atteso (annuo, lordo)', pct: true },
   { key: 'expected5', label: 'Rendimento atteso a 5 anni (lordo)', pct: true },
   { key: 'growthExp', label: 'Crescita utili attesa (annua)', pct: true },

@@ -43,7 +43,13 @@ export const BASE_OUTLOOK = {
 };
 
 // Valori in uso: predefiniti + eventuale taratura dal backtest.
-export const DEFAULT_OUTLOOK = { ...BASE_OUTLOOK, ...(CALIBRATION.outlook || {}) };
+// La riduzione del freno da volatilità (volDrag sotto 1) alza il guadagno tipico soprattutto degli strumenti più volatili e li fa
+// salire in classifica: si applica solo con il consenso esplicito dell'utente (deciso il 28/11/2026: non applicare).
+// Finché è false, una taratura che la contiene viene ignorata per intero (i suoi altri parametri sono stati scelti insieme a quella).
+export const APPLY_VOL_DRAG = false;
+const calibrated = CALIBRATION.outlook || {};
+const dragChanged = Number.isFinite(calibrated.volDrag) && calibrated.volDrag !== BASE_OUTLOOK.volDrag;
+export const DEFAULT_OUTLOOK = { ...BASE_OUTLOOK, ...(dragChanged && !APPLY_VOL_DRAG ? {} : calibrated) };
 
 const WEEK = 7 * 86400;
 

@@ -299,3 +299,10 @@ test('holdingsFundamentals: la parte non coperta non cresce più dei titoli prin
   const r = holdingsFundamentals(slowTop, {}, 0.07, 0.1);
   assert.ok(r.growth < 0.05, String(r.growth));
 });
+
+test('freno da volatilità: senza consenso esplicito il modello in uso resta con il freno per intero', async () => {
+  const { APPLY_VOL_DRAG, DEFAULT_OUTLOOK, BASE_OUTLOOK } = await import('../public/js/outlook.js');
+  assert.equal(APPLY_VOL_DRAG, false);
+  assert.equal(BASE_OUTLOOK.volDrag, 1);
+  assert.equal(DEFAULT_OUTLOOK.volDrag, 1);
+});

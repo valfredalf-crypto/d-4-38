@@ -466,3 +466,30 @@ test('freno da volatilità tarabile: con 1 nulla cambia; sotto 1 il mediano sale
   assert.ok(p5.medianNet > p1.medianNet && p5.pProfit > p1.pProfit);
   assert.equal(typeof forwardParams, 'function');
 });
+
+test('stress test completo: mercato −30% più rischio proprio dello strumento, coerente con la volatilità', async () => {
+  const { stressTotal, stressTest, STRESS_MARKET_VOL } = await import('../public/js/projection.js');
+  assert.equal(STRESS_MARKET_VOL, 0.15);
+  // indice ampio (beta 1, volatilità pari a quella del mercato): coincide con beta × 30%, come nel documento 018
+  const idx = stressTotal({ beta: 1, vol: 0.15 });
+  assert.ok(Math.abs(idx.total - 0.3) < 1e-12 && idx.specificVol === 0);
+  assert.ok(Math.abs(idx.market - stressTest({ beta: 1, netCagr: 0.05, capital: 1 })[1].impact) < 1e-12);
+  // azione volatile con beta basso: la sola parte di mercato dice 17,7%, lo stress completo molto di più
+  const st = stressTotal({ beta: 0.59, vol: 0.39 });
+  assert.ok(Math.abs(st.market - 0.177) < 1e-12);
+  const spec = Math.sqrt(0.39 ** 2 - (0.59 * 0.15) ** 2);
+  assert.ok(Math.abs(st.specificVol - spec) < 1e-12);
+  assert.ok(Math.abs(st.total - (1 - (1 - 0.177) * Math.exp(-spec))) < 1e-12);
+  assert.ok(st.total > 0.4 && st.total < 0.5);
+  // più volatilità o più beta → perdita più alta; mai sotto la parte di mercato, mai oltre il 99%
+  assert.ok(stressTotal({ beta: 0.59, vol: 0.6 }).total > st.total);
+  assert.ok(stressTotal({ beta: 1.2, vol: 0.39 }).total > st.total);
+  for (const [b, v] of [[0, 0.4], [0.5, 0.05], [1.5, 0.2], [3, 2]]) { const x = stressTotal({ beta: b, vol: v }); assert.ok(x.total >= x.market - 1e-12 && x.total <= 0.99); }
+  // beta zero (oro, materie prime): conta solo il rischio proprio
+  assert.ok(Math.abs(stressTotal({ beta: 0, vol: 0.4 }).total - (1 - Math.exp(-0.4))) < 1e-12);
+  // senza beta si usa 1; senza volatilità resta la parte di mercato
+  assert.ok(Math.abs(stressTotal({ vol: 0.15 }).total - 0.3) < 1e-12);
+  assert.ok(Math.abs(stressTotal({ beta: 0.8 }).total - 0.24) < 1e-12);
+  // correzione del 10%
+  assert.ok(Math.abs(stressTotal({ beta: 1, vol: 0.15, market: 0.1 }).total - 0.1) < 1e-12);
+});

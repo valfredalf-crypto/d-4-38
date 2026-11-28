@@ -326,6 +326,24 @@ export function stressTest({ beta, netCagr, capital, shocks = STRESS_SHOCKS }) {
   });
 }
 
+/** Volatilità annua del mercato azionario usata per separare il rischio proprio dello strumento da quello di mercato. */
+export const STRESS_MARKET_VOL = 0.15;
+/**
+ * Stress test COMPLETO di uno strumento: il mercato scende di `market` (30%) e, insieme, il rischio proprio dello strumento
+ * (la volatilità non spiegata dal mercato) va male di `k` deviazioni standard annue.
+ *   parte di mercato = β × calo;   σ_propria = √(σ² − β²·σ_mercato²);   perdita = 1 − (1 − β × calo) × e^(−k·σ_propria)
+ * Per un indice ampio (β ≈ 1, σ ≈ σ_mercato) coincide con β × calo; per un titolo volatile con β basso è molto più alta:
+ * così la perdita dello stress test è coerente con la distribuzione usata per la probabilità di perdita.
+ */
+export function stressTotal({ beta, vol, market = 0.3, marketVol = STRESS_MARKET_VOL, k = 1 } = {}) {
+  const b = Number.isFinite(beta) ? Math.max(0, beta) : 1;
+  const sys = Math.min(0.99, b * market);
+  const v = Number.isFinite(vol) && vol > 0 ? vol : 0;
+  const specificVol = Math.sqrt(Math.max(0, v * v - b * b * marketVol * marketVol));
+  const total = Math.min(0.99, 1 - (1 - sys) * Math.exp(-k * specificVol));
+  return { beta: b, market: sys, specificVol, total };
+}
+
 /**
  * Classifica il tipo di portafoglio dal rischio, per adattare la quantificazione del rischio e lo stress
  * test. Usa la volatilità annua attesa σ_p (misura primaria); in mancanza ripiega sull'MDD storico

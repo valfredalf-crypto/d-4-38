@@ -70,7 +70,7 @@ export const INDICATORS = [
   { key: 'pm6Now', label: '(Prezzo più probabile a 6 mesi − prezzo attuale) ÷ prezzo attuale (%)', pct: true },
   { key: 'maxGrowth', label: 'Max Growth Score (rendimento annuo del punteggio, %)', pct: true },
   // rischio: gli stessi indicatori della scheda dello strumento
-  { key: 'stress', label: 'Perdita in stress test: mercato −30% × beta (numero positivo: 25 = perdita fino al 25%)', pct: true },
+  { key: 'stress', label: 'Perdita in stress test: mercato −30% più rischio proprio dello strumento (numero positivo: 25 = perdita fino al 25%)', pct: true },
   { key: 'plausible', label: 'Guadagno netto efficiente 5a (prudenza scelta)', pct: true },
   ...RG_PERIODS.map(([d, l]) => ({ key: ksKey(d), label: `Guadagno netto efficiente (Kelly) − perdita in stress test, ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: balKey(365), label: 'Guadagno bilanciato crescita/rischio a 1 anno', pct: true },

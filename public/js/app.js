@@ -18,7 +18,7 @@ import { qualityScore } from './quality.js';
 import { WATCH_KEY, FAV_FOLDER, parseWatch, addWatch, removeWatch, cardFileName, cardDocument } from './watch.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
-import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
+import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, stressTotal, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
 
 // Rendimenti passati netti con le stesse regole del guadagno netto (costi ordine, spread, tasse).
 function netPerf(gross, inst) {
@@ -1176,7 +1176,7 @@ const ASYM_MAX = 99;
 const asymFmt = (x) => (x == null || Number.isNaN(x) ? '–' : x > ASYM_MAX ? `> ${ASYM_MAX}` : nf2.format(x));
 function riskHeads(all = false) {
   const cols = [
-    ['stress', 'Perdita in stress test', 'Stress test', 'Perdita temporanea stimata se il mercato azionario scende del 30% (recessione / bear market): beta dello strumento × 30%, sul capitale impostato; sotto, la correzione fisiologica (mercato −10%). È lo stesso stress test della scheda dello strumento («Valutazione del rischio»). Senza beta si usa 1. Non vale per le criptovalute. È uno scenario, non una previsione. Tocca per ordinare dalla perdita più piccola.'],
+    ['stress', 'Perdita in stress test', 'Stress test', 'Perdita temporanea stimata in una recessione: il mercato azionario scende del 30% (parte di mercato: beta × 30%) e, insieme, il rischio proprio dello strumento, cioè la volatilità non spiegata dal mercato, va male di una deviazione standard annua. Sul capitale impostato. Sotto: la sola parte di mercato e la probabilità, secondo la stessa previsione usata per la probabilità di perdita, di perdere almeno tanto entro 1 anno. Per un indice ampio coincide con beta × 30%; per un titolo volatile è più alta. Senza beta si usa 1. Non vale per le criptovalute. È uno scenario, non una previsione. Tocca per ordinare dalla perdita più piccola.'],
     ['effNet', `Guadagno netto efficiente ${simYears()}a`, `Netto effic. ${simYears()}a`, `Lo stesso «Guadagno netto efficiente» della scheda dello strumento: guadagno sicuro che vale quanto l’insieme incerto dei ${simCount()} scenari a ${simYears()} anni (equivalente certo), al netto di imposte e costi, sul capitale impostato. Più rischio = valore più basso a parità di guadagno medio. Tocca per ordinare dal più alto.`],
     ...RG_PERIODS.map(([d, l]) => [balKey(d), `Guadagno bilanciato crescita/rischio ${rgLong(d, l)}`, `Bilanciato ${rgShort(d)}`, `Lo stesso «Guadagno bilanciato crescita/rischio» della scheda dello strumento, a ${rgLong(d, l)}: guadagni attesi (quelli estremi, oltre il 75° percentile, pesano sempre meno) − 2,25 × perdite attese, su tutti gli scenari, ${rgSrc(d)}. Una perdita pesa 2,25 volte un guadagno della stessa entità. Sotto, il valore in euro sul capitale impostato. Tocca per ordinare dal più alto.`]),
     ...RG_PERIODS.map(([d, l]) => [radjKey(d), `Guadagno corretto per il rischio ${rgLong(d, l)}`, `Corr. rischio ${rgShort(d)}`, `Lo stesso «Guadagno corretto per il rischio» della scheda dello strumento, a ${rgLong(d, l)}: guadagno tipico (mediano) − perdita finale nel caso sfavorevole (5% peggiore degli scenari), ${rgSrc(d)}. Sotto, il valore in euro sul capitale impostato. Tocca per ordinare dal più alto.`]),
@@ -1197,7 +1197,10 @@ function riskCells(r) {
   const amt = state.settings.mc.amount || 10000;
   const out = [];
   if (r.stress == null) out.push('<td class="num rk-col muted" title="Stress test non disponibile per questo strumento (criptovalute o previsione mancante)">–</td>');
-  else out.push(`<td class="num rk-col ${r.stress > 0 ? 'neg' : ''}" title="Se il mercato azionario scende del 30%: perdita temporanea stimata ${pct(r.stress, false, 1)} = ${eur0(r.stress * amt)} su ${eur0(amt)} (beta ${r.stressBeta != null ? nf2.format(r.stressBeta) : 'non disponibile: usato 1,00'} × 30%). Con una correzione del 10%: ${pct(r.stressMild, false, 1)} = ${eur0(r.stressMild * amt)}. Scenario, non previsione."><b class="big">${r.stress > 0 ? '−' : ''}${eur0(r.stress * amt)}</b><span class="eur">${r.stress > 0 ? '−' : ''}${pct(r.stress, false, 1)} · corr. ${r.stressMild > 0 ? '−' : ''}${pct(r.stressMild, false, 1)}</span></td>`);
+  else {
+    const p1 = r.stressP1;
+    out.push(`<td class="num rk-col ${r.stress > 0 ? 'neg' : ''}" title="Stress test completo: il mercato azionario scende del 30% (parte di mercato: beta ${r.stressBeta != null ? nf2.format(r.stressBeta) : 'non disponibile, usato 1,00'} × 30% = ${pct(r.stressMkt, false, 1)}) e, insieme, il rischio proprio dello strumento va male di una deviazione standard annua (volatilità propria ${pct(r.stressSpec, false, 0)}): perdita temporanea stimata ${pct(r.stress, false, 1)} = ${eur0(r.stress * amt)} su ${eur0(amt)}.${p1 != null ? ` Secondo la stessa previsione usata per la probabilità di perdita, la probabilità di perdere almeno tanto entro 1 anno è ${pct(p1, false, 0)}.` : ''} Con una correzione del mercato del 10%: ${pct(r.stressMild, false, 1)}. Scenario, non previsione."><b class="big">${r.stress > 0 ? '−' : ''}${eur0(r.stress * amt)}</b><span class="eur">${r.stress > 0 ? '−' : ''}${pct(r.stress, false, 1)} · solo mercato ${r.stressMkt > 0 ? '−' : ''}${pct(r.stressMkt, false, 1)}</span>${p1 != null ? `<span class="eur">prob. in 1 anno ${pct(p1, false, 0)}</span>` : ''}</td>`);
+  }
   if (r.effNet == null) out.push('<td class="num rk-col muted" title="Guadagno netto efficiente non disponibile: mancano gli scenari simulati per questo strumento">–</td>');
   else out.push(`<td class="num rk-col ${cls(r.effNet)}" title="Guadagno netto efficiente a ${simYears()} anni: ${sEur(r.effNet)} su ${eur0(amt)} (${pct(r.plausible, true, 1)}): equivalente certo dei ${simCount()} scenari, dopo imposte e costi."><b class="big">${sEur(r.effNet)}</b><span class="eur">${pct(r.plausible, true, 1)}</span></td>`);
   for (const [d, l] of RG_PERIODS) {
@@ -1362,7 +1365,7 @@ function ksHeads() {
     const on = state.view.sort.key === k;
     th.className = 'num ks-col' + (on ? ' sorted' : '');
     th.dataset.sort = k;
-    th.title = `Guadagno netto efficiente a ${rgLong(d, l)} con la previsione di Kelly (il guadagno sicuro che vale quanto l’insieme incerto dei risultati, secondo il criterio di Kelly: è la voce «Kelly» della scheda dello strumento), ${rgSrc(d)}, meno la perdita in stress test (perdita temporanea se il mercato scende del 30%: beta × 30%), sul capitale impostato. Sotto, i due valori da cui nasce. Non vale per le criptovalute, che non hanno stress test. Tocca per ordinare dal più alto.`;
+    th.title = `Guadagno netto efficiente a ${rgLong(d, l)} con la previsione di Kelly (il guadagno sicuro che vale quanto l’insieme incerto dei risultati, secondo il criterio di Kelly: è la voce «Kelly» della scheda dello strumento), ${rgSrc(d)}, meno la perdita in stress test (mercato −30% più rischio proprio dello strumento), sul capitale impostato. Sotto, i due valori da cui nasce. Non vale per le criptovalute, che non hanno stress test. Tocca per ordinare dal più alto.`;
     th.innerHTML = `<span class="l">Guadagno efficiente (Kelly) − stress test ${rgLong(d, l)}</span><span class="s">Kelly−stress ${rgShort(d)}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
     return th;
   });
@@ -1373,7 +1376,7 @@ function ksCells(r) {
     const x = r['ksx' + d];
     if (!x) return `<td class="num ks-col muted" title="Non disponibile a ${rgLong(d, l)}: ${r.stress == null ? 'lo stress test non vale per le criptovalute o manca la previsione' : 'previsione o volatilità mancante'}">–</td>`;
     const v = x.value * amt;
-    return `<td class="num ks-col ${cls(v)}" title="A ${rgLong(d, l)}: guadagno netto efficiente con la previsione di Kelly ${sEur(x.kelly * amt)} (${pct(x.kelly, true, 1)}) − perdita in stress test ${eur0(x.stress * amt)} (${pct(x.stress, false, 1)}, mercato −30% × beta) = ${sEur(v)} su ${eur0(amt)}, ${rgSrc(d)}."><b class="big">${sEur(v)}</b><span class="eur">Kelly ${sEur(x.kelly * amt)} − stress ${eur0(x.stress * amt)}</span></td>`;
+    return `<td class="num ks-col ${cls(v)}" title="A ${rgLong(d, l)}: guadagno netto efficiente con la previsione di Kelly ${sEur(x.kelly * amt)} (${pct(x.kelly, true, 1)}) − perdita in stress test ${eur0(x.stress * amt)} (${pct(x.stress, false, 1)}, mercato −30% più rischio proprio) = ${sEur(v)} su ${eur0(amt)}, ${rgSrc(d)}."><b class="big">${sEur(v)}</b><span class="eur">Kelly ${sEur(x.kelly * amt)} − stress ${eur0(x.stress * amt)}</span></td>`;
   }).join('');
 }
 function pxCells(r) {
@@ -1398,7 +1401,7 @@ function mInd(r) {
   {
     const amt = state.settings.mc.amount || 10000;
     const three = (key) => RG_PERIODS.map(([d]) => { const x = r['rg' + d]?.[key]; return `${rgShort(d)} <b class="${cls(x)}">${x != null ? pct(x, true, 1) : '–'}</b>`; }).join(' · ');
-    if (r.stress != null || r.effNet != null) parts.push(`${r.stress != null ? `Stress test (mercato −30%) <b class="${r.stress > 0 ? 'neg' : ''}">${r.stress > 0 ? '−' : ''}${eur0(r.stress * amt)}</b>` : ''}${r.stress != null && r.effNet != null ? ' · ' : ''}${r.effNet != null ? `Guadagno netto efficiente ${simYears()}a <b class="${cls(r.effNet)}">${sEur(r.effNet)}</b>` : ''}`);
+    if (r.stress != null || r.effNet != null) parts.push(`${r.stress != null ? `Stress test (mercato −30% + rischio proprio) <b class="${r.stress > 0 ? 'neg' : ''}">${r.stress > 0 ? '−' : ''}${eur0(r.stress * amt)}</b>${r.stressP1 != null ? ` (prob. in 1 anno ${pct(r.stressP1, false, 0)})` : ''}` : ''}${r.stress != null && r.effNet != null ? ' · ' : ''}${r.effNet != null ? `Guadagno netto efficiente ${simYears()}a <b class="${cls(r.effNet)}">${sEur(r.effNet)}</b>` : ''}`);
     if (RG_PERIODS.some(([d]) => r['rg' + d])) {
       parts.push(`Guadagno bilanciato crescita/rischio: ${three('balanced')}`);
       parts.push(`Guadagno corretto per il rischio: ${three('riskAdj')}`);
@@ -1739,8 +1742,15 @@ function rowValuesCalc(i) {
   // (distribuzione del modello delle previsioni) e a 5 anni (scenari simulati)
   const penny = i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR;
   const st = r && !r.error && i.type !== 'crypto' ? stressTest({ beta: r.forward?.beta, netCagr: 0, capital: 1 }) : null;
-  v.stress = st ? st[1].impact : null;
-  v.stressMild = st ? st[0].impact : null;
+  // stress test completo: calo del mercato (beta × 30%) più rischio proprio dello strumento (volatilità non spiegata dal mercato)
+  const volS = Number.isFinite(r?.forward?.vol) && r.forward.vol > 0.001 ? r.forward.vol : r?.forward ? priorVol(i) : null;
+  const stT = st ? stressTotal({ beta: r.forward?.beta, vol: volS }) : null;
+  v.stress = stT ? stT.total : null;
+  v.stressMkt = st ? st[1].impact : null; // sola parte di mercato (beta × 30%)
+  v.stressSpec = stT ? stT.specificVol : null;
+  v.stressMild = st ? stressTotal({ beta: r.forward?.beta, vol: volS, market: 0.1 }).total : null;
+  // ponte con la probabilità di perdita: probabilità di perdere, entro 1 anno, almeno quanto dice lo stress test
+  Object.defineProperty(v, 'stressP1', { enumerable: false, configurable: true, get: () => { const dist = v.stress != null ? distCached(i, 365) : null; const pr = dist ? probNetAtLeast(dist, -v.stress) : null; return pr != null ? 1 - pr : null; } });
   v.stressBeta = st ? (Number.isFinite(r.forward?.beta) ? st[1].beta : null) : null;
   v.penny = penny; // titolo a centesimi: valori mostrati con ⚠, fuori dalla classifica del netto più probabile
   v.npShow = npShow;
@@ -2455,7 +2465,7 @@ function renderDetail(inst, r, d) {
           </tbody></table>`;
         })() : ''}
       </div>
-      ${pp && inst.type !== 'crypto' ? `<div class="card"><h3>Valutazione del rischio (stress test e tempo di recupero)</h3>${stressTable({ beta: f?.beta, netCagr: pp.net, capital: amt })}</div>` : ''}
+      ${pp && inst.type !== 'crypto' ? `<div class="card"><h3>Valutazione del rischio (stress test e tempo di recupero)</h3>${stressTable({ beta: f?.beta, netCagr: pp.net, capital: amt, vol: pp.vol, lossProb: (() => { const t = stressTotal({ beta: f?.beta, vol: pp.vol }).total; const dist = distCached(inst, 365); const pr = dist ? probNetAtLeast(dist, -t) : null; return pr != null ? 1 - pr : null; })() })}</div>` : ''}
       <div class="card">
         <h3>Stima prospettica del rendimento annuo</h3>
         <table class="mini">
@@ -2946,15 +2956,18 @@ function histScenariosHtml(items, years) {
       )
       .join('')}`;
 }
-function stressTable({ beta, netCagr, capital, betaNote = '', profile = null }) {
+function stressTable({ beta, netCagr, capital, betaNote = '', profile = null, vol = null, lossProb = null }) {
   const rows = stressTest({ beta, netCagr, capital });
+  // riga con lo stress completo dello strumento: mercato −30% più rischio proprio (è il valore dell'indicatore «Perdita in stress test»)
+  const full = Number.isFinite(vol) ? stressTotal({ beta, vol }) : null;
+  const fullMonths = full ? (netCagr > 0 && full.total > 0 ? (12 * Math.log(1 / (1 - full.total))) / Math.log(1 + netCagr) : full.total > 0 ? null : 0) : null;
   const months = (m) => (m == null ? '<span class="neg">nessun recupero con questo CAGR</span>' : m === 0 ? '–' : `≈ ${Math.round(m)} mesi`);
   // L'azione operativa sul bear market si adatta al tipo di portafoglio (prudente → speculativo)
   const sopFor = (x) => (profile?.bear && x.market >= 0.3 ? profile.bear : x.sop);
   return `<table class="mini"><thead><tr><th>Evento di mercato</th><th class="num">Impatto (β ${nf2.format(rows[0].beta)}${betaNote})</th><th class="num">Capitale temporaneo</th><th class="num">Tempo di recupero</th><th>Azione operativa</th></tr></thead><tbody>${rows
     .map((x) => `<tr><td>${x.label} (mercato −${pct(x.market, false, 0)})</td><td class="num neg">−${pct(x.impact, false, 1)}</td><td class="num">${eur(Math.round(x.capitalAfter))}</td><td class="num">${months(x.recoveryMonths)}</td><td class="muted">${sopFor(x)}</td></tr>`)
-    .join('')}</tbody></table>
-  <p class="muted small-note">Impatto = β × calo del mercato. Tempo di recupero = mesi necessari a tornare al capitale iniziale componendo al CAGR netto pre-tasse (${pct(netCagr, false, 2)}): 12 × ln(1 ÷ (1 − impatto)) ÷ ln(1 + CAGR).</p>`;
+    .join('')}${full ? `<tr><td><b>Recessione + rischio proprio dello strumento</b> (mercato −30%, volatilità propria ${pct(full.specificVol, false, 0)})</td><td class="num neg"><b>−${pct(full.total, false, 1)}</b></td><td class="num">${eur(Math.round(capital * (1 - full.total)))}</td><td class="num">${months(fullMonths)}</td><td class="muted">È la «Perdita in stress test» della tabella${lossProb != null ? `: secondo la previsione usata per la probabilità di perdita, la probabilità di perdere almeno tanto entro 1 anno è ${pct(lossProb, false, 0)}` : ''}.</td></tr>` : ''}</tbody></table>
+  <p class="muted small-note">${full ? 'Le prime due righe contano solo il legame con il mercato; la terza aggiunge il rischio proprio dello strumento (la volatilità non spiegata dal mercato, una deviazione standard annua): 1 − (1 − β × 30%) × e^(−volatilità propria). ' : ''}Impatto = β × calo del mercato. Tempo di recupero = mesi necessari a tornare al capitale iniziale componendo al CAGR netto pre-tasse (${pct(netCagr, false, 2)}): 12 × ln(1 ÷ (1 − impatto)) ÷ ln(1 + CAGR).</p>`;
 }
 
 // ---------- proiezione di portafoglio (algoritmo deterministico del documento PRJ-FIN-2026-018)

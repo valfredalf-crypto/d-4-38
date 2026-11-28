@@ -11,8 +11,9 @@ import { distanceFrom } from './range.js';
 import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, erKey, QUALITY_KEYS, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { riskGain, probNetAtLeast, netQuantile } from './riskgain.js';
+import { qualityScore } from './quality.js';
 import { WATCH_KEY, FAV_FOLDER, parseWatch, addWatch, removeWatch, cardFileName, cardDocument } from './watch.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
@@ -542,8 +543,10 @@ function filtered() {
   const levTab = type === 'lev';
   const solid = solidMode();
   const watch = watchMode();
+  const quality = qualityMode();
   return state.instruments.filter((i) => {
     if (watch && !watchSet.has(i.symbol)) return false;
+    if (quality && !needle && !qCached(i)?.pass) return false;
     if (levTab) {
       if (!(i.leveraged && i.type === 'etf')) return false;
     } else if (type === 'growth') {
@@ -948,6 +951,33 @@ function rgCached(inst, d) {
   if (x.rg === undefined) x.rg = riskGain(x.dist);
   return x.rg;
 }
+// Asimmetria del rischio a 1 e 3 anni senza passare dai 400 scenari: bastano il mediano e il 5° percentile della distribuzione
+function asymQuick(dist) {
+  if (!dist) return null;
+  const med = netQuantile(dist, 0.5);
+  const low = netQuantile(dist, 0.05);
+  if (med == null || low == null) return null;
+  return med > 0 ? Math.max(0, -low) / med : Infinity;
+}
+// Punteggio qualità dello strumento (quality.js): in memoria insieme alle previsioni, si ricalcola quando cambiano i dati
+function qStats(inst) {
+  const r = state.results[inst.symbol];
+  if (!r || r.error) return null;
+  const P = RG_PERIODS.map(([d]) => npCached(inst, d));
+  if (P.some((x) => !x)) return null;
+  const sim = r.sim;
+  const asym = RG_PERIODS.map(([d], k) => (d === 1825 ? (sim && sim.netMedian != null && sim.finalLoss != null ? (Number.isFinite(sim.ratioFinal) ? sim.ratioFinal : sim.netMedian > 0 ? sim.finalLoss / sim.netMedian : Infinity) : null) : asymQuick(P[k].dist)));
+  const ret = RG_PERIODS.map(([d], k) => [P[k].periodMove, d / 365]);
+  const q = qualityScore({ growth: r.forward?.growth ?? r.forward?.expectedGrowth ?? null, evidence: r.forward?.evidence ?? r.forward?.fundamentalsDetail?.evidence ?? null, dividendYield: consensusValues(inst, r).divY ?? 0, asym, ret });
+  return q ? { ...q, asym, ret } : null;
+}
+function qCached(inst) {
+  if (!npCached(inst, 365)) return null; // crea (o rinnova) la memoria dello strumento
+  const m = npMemo.get(state.results[inst.symbol]);
+  if (!m) return null;
+  if (!m.v.has('q')) m.v.set('q', qStats(inst));
+  return m.v.get('q');
+}
 // Posizioni stabili della classifica per periodo: si aggiornano solo con una nuova versione dei dati e chi si sposta di poco
 // (meno del 20% della propria posizione) resta dov'era. Valgono per tutti gli strumenti; le schede filtrano da qui.
 const npStable = new Map();
@@ -966,7 +996,10 @@ function stablePositions(days) {
   npStable.set(days, { ver, cfg, pos });
   return pos;
 }
-const shortMode = () => state.view.funnel === 'short' || state.view.funnel === 'solid' || state.view.funnel === 'analyst' || state.view.funnel === 'watch';
+const shortMode = () => state.view.funnel === 'short' || state.view.funnel === 'solid' || state.view.funnel === 'analyst' || state.view.funnel === 'watch' || state.view.funnel === 'quality';
+// Sezione «Qualità»: stesse colonne di «Netto più probabile», con davanti punteggio, qualità della crescita, asimmetria del
+// rischio e rendimento atteso a 1, 3 e 5 anni; entra solo chi supera i tre controlli in tutti i periodi (quality.js).
+const qualityMode = () => state.view.funnel === 'quality';
 // Sezione «Watch list»: stesse colonne di «Netto più probabile», solo gli strumenti preferiti (aggiunti con «Condividi» dalla scheda).
 // La lista è salvata in questo browser; ogni voce ricorda data e prezzo di quando è stata aggiunta.
 const watchMode = () => state.view.funnel === 'watch';
@@ -1111,7 +1144,7 @@ const rgLong = (d, l) => (d === 1825 ? `${simYears()} anni` : l);
 const rgSrc = (d) => (d === 1825 ? `sui ${simCount()} scenari simulati, come nella scheda dello strumento` : 'sulla distribuzione del modello delle previsioni (lo stesso del netto più probabile)');
 const asymOf = (x, published = null) => (!x || x.median == null || x.finalLoss == null ? null : Number.isFinite(published) ? published : x.median > 0 ? x.finalLoss / x.median : Infinity);
 const asymFmt = (x) => (x == null ? '–' : Number.isFinite(x) ? nf2.format(x) : '∞');
-function riskHeads() {
+function riskHeads(all = false) {
   const cols = [
     ['stress', 'Perdita in stress test', 'Stress test', 'Perdita temporanea stimata se il mercato azionario scende del 30% (recessione / bear market): beta dello strumento × 30%, sul capitale impostato; sotto, la correzione fisiologica (mercato −10%). È lo stesso stress test della scheda dello strumento («Valutazione del rischio»). Senza beta si usa 1. Non vale per le criptovalute. È uno scenario, non una previsione. Tocca per ordinare dalla perdita più piccola.'],
     ['effNet', `Guadagno netto efficiente ${simYears()}a`, `Netto effic. ${simYears()}a`, `Lo stesso «Guadagno netto efficiente» della scheda dello strumento: guadagno sicuro che vale quanto l’insieme incerto dei ${simCount()} scenari a ${simYears()} anni (equivalente certo), al netto di imposte e costi, sul capitale impostato. Più rischio = valore più basso a parità di guadagno medio. Tocca per ordinare dal più alto.`],
@@ -1119,7 +1152,7 @@ function riskHeads() {
     ...RG_PERIODS.map(([d, l]) => [radjKey(d), `Guadagno corretto per il rischio ${rgLong(d, l)}`, `Corr. rischio ${rgShort(d)}`, `Lo stesso «Guadagno corretto per il rischio» della scheda dello strumento, a ${rgLong(d, l)}: guadagno tipico (mediano) − perdita finale nel caso sfavorevole (5% peggiore degli scenari), ${rgSrc(d)}. Sotto, il valore in euro sul capitale impostato. Tocca per ordinare dal più alto.`]),
     ...RG_PERIODS.map(([d, l]) => [asymKey(d), `Asimmetria del rischio ${rgLong(d, l)}`, `Asimmetria ${rgShort(d)}`, `La stessa «Asimmetria del rischio» della scheda dello strumento, a ${rgLong(d, l)}: perdita finale nel caso sfavorevole (5% peggiore degli scenari) ÷ guadagno tipico (mediano), ${rgSrc(d)}. Sotto 1 (✓) il guadagno tipico è più grande della perdita sfavorevole; da 1 in su (⚠) la perdita sfavorevole pesa di più; ∞ se il guadagno tipico non è positivo. Più basso = meglio. Tocca per ordinare dal più basso.`]),
   ];
-  return cols.map(([k, lab, s, tip]) => {
+  return cols.filter(([k]) => all || !(qualityMode() && k.startsWith('asym'))).map(([k, lab, s, tip]) => {
     const th = document.createElement('th');
     const on = state.view.sort.key === k;
     th.className = 'num rk-col' + (on ? ' sorted' : '');
@@ -1145,12 +1178,55 @@ function riskCells(r) {
     const x = r['rg' + d];
     out.push(!x || x.riskAdj == null ? `<td class="num rk-col muted" title="Guadagno corretto per il rischio a ${rgLong(d, l)} non disponibile (previsione o volatilità mancante)">–</td>` : `<td class="num rk-col ${cls(x.riskAdj)}" title="Guadagno corretto per il rischio a ${rgLong(d, l)}: guadagno tipico ${pct(x.median, true)} − perdita finale sfavorevole ${pct(x.finalLoss)} = ${pct(x.riskAdj, true)} (${sEur(x.riskAdj * amt)} su ${eur0(amt)}), ${rgSrc(d)}."><b class="big">${pct(x.riskAdj, true, 1)}</b><span class="eur">${sEur(x.riskAdj * amt)}</span></td>`);
   }
+  if (!qualityMode()) out.push(asymCells(r));
+  return out.join('');
+}
+function asymCells(r) {
+  const out = [];
   for (const [d, l] of RG_PERIODS) {
     const x = r['rg' + d];
     const v = r[asymKey(d)];
     out.push(v == null ? `<td class="num rk-col muted" title="Asimmetria del rischio a ${rgLong(d, l)} non disponibile (previsione o volatilità mancante)">–</td>` : `<td class="num rk-col ${v < 1 ? 'pos' : 'neg'}" title="Asimmetria del rischio a ${rgLong(d, l)}: perdita nel 5% peggiore −${pct(x.finalLoss)} contro guadagno tipico ${pct(x.median, true)} (rapporto ${asymFmt(v)}), ${rgSrc(d)}. ${v < 1 ? 'Sotto 1: il guadagno tipico supera la perdita sfavorevole.' : 'Da 1 in su: la perdita sfavorevole pesa più del guadagno tipico.'}"><b class="big">${asymFmt(v)}</b><span class="eur">${v < 1 ? '✓' : '⚠'} −${pct(x.finalLoss, false, 0)} / ${pct(x.median, true, 0)}</span></td>`);
   }
   return out.join('');
+}
+// Colonne della sezione «Qualità»: punteggio, qualità della crescita, (asimmetria del rischio) e rendimento atteso a 1, 3 e 5 anni.
+// Nella sezione «Qualità» stanno subito dopo il nome, con l'asimmetria in mezzo; nelle altre sezioni dopo gli indicatori di rischio.
+function qHeads() {
+  const mk = (k, lab, s, tip) => {
+    const th = document.createElement('th');
+    const on = state.view.sort.key === k;
+    th.className = 'num q-col' + (on ? ' sorted' : '');
+    th.dataset.sort = k;
+    th.title = tip;
+    th.innerHTML = `<span class="l">${lab}</span><span class="s">${s}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+    return th;
+  };
+  const score = mk('qScore', 'Punteggio qualità', 'Qualità', 'Punteggio da 0 a 100: media di tre voti con lo stesso peso. Crescita: crescita degli utili attesa × (½ + ½ × quota confermata dalle evidenze), 15% l’anno = voto pieno. Asimmetria: media a 1, 3 e 5 anni di 1 ÷ (1 + perdita nel 5% peggiore ÷ guadagno tipico). Rendimento: rendimento atteso annualizzato a 1, 3 e 5 anni, 15% l’anno = voto pieno. Sotto, i tre voti. È un ordinamento del modello, non una raccomandazione. Tocca per ordinare dal più alto.');
+  const growth = mk('qGrowth', 'Qualità della crescita', 'Crescita utili', 'La stessa «Qualità della crescita» della scheda dello strumento: crescita annua degli utili attesa (per gli ETF dalle partecipazioni del fondo) e, sotto, quanto è confermata dalle evidenze (ricavi realizzati e attesi, utili attesi, copertura degli analisti). ✓ se è almeno il 2% e non c’è un dividendo alto senza crescita (possibile value trap). Tocca per ordinare dalla più alta.');
+  const er = RG_PERIODS.map(([d, l]) => mk(erKey(d), `Rendimento atteso ${l}`, `Rend. atteso ${d === 365 ? '1a' : d === 1095 ? '3a' : '5a'}`, `Rendimento atteso a ${l}: totale del periodo, lordo (prima di costi e imposte), dal modello delle previsioni (lo stesso del netto più probabile: analisti e fondamentali per il primo anno, poi il rendimento atteso di lungo periodo). Sotto, l’equivalente annuo. È una stima, non una garanzia. Tocca per ordinare dal più alto.`));
+  if (!qualityMode()) return [...er, growth, score];
+  return [score, growth, ...riskHeads(true).filter((th) => th.dataset.sort.startsWith('asym')), ...er];
+}
+function qCells(r) {
+  const q = r.q;
+  const vote = (x) => Math.round(x * 100);
+  const score = !q
+    ? '<td class="num q-col muted" title="Punteggio non disponibile: manca la crescita degli utili attesa, la previsione o la volatilità (le criptovalute non hanno utili)">–</td>'
+    : `<td class="num q-col" title="Punteggio qualità ${nf1.format(q.score)} su 100 = media dei tre voti: crescita ${vote(q.sq)}, asimmetria del rischio ${vote(q.sa)}, rendimento atteso ${vote(q.sr)}.${q.pass ? '' : ' Non supera tutti i controlli (crescita almeno 2% senza value trap, guadagno tipico e rendimento atteso positivi a 1, 3 e 5 anni): fuori dalla sezione «Qualità».'}"><b class="big">${Math.round(q.score)}</b><span class="eur">cresc. ${vote(q.sq)} · asimm. ${vote(q.sa)} · rend. ${vote(q.sr)}</span></td>`;
+  const g = r.qGrowth;
+  const gq = q?.quality;
+  const growth = g == null
+    ? '<td class="num q-col muted" title="Crescita degli utili attesa non disponibile per questo strumento">–</td>'
+    : `<td class="num q-col ${gq ? (gq.ok ? 'pos' : 'neg') : ''}" title="Crescita annua degli utili attesa ${pct(g, true, 1)}${gq?.evidence != null ? `, confermata dalle evidenze al ${pct(gq.evidence, false, 0)}` : ', evidenze non disponibili (peso neutro)'}.${gq?.trap ? ' Dividendo alto senza crescita: possibile value trap.' : ''}${gq && !gq.ok && !gq.trap ? ' Sotto il 2%: non supera il controllo di qualità della crescita.' : ''}"><b class="big">${pct(g, true, 1)}</b><span class="eur">${gq ? (gq.ok ? '✓ ' : '⚠ ') : ''}${gq?.trap ? 'value trap?' : gq?.evidence != null ? `confermata ${pct(gq.evidence, false, 0)}` : 'evidenze n.d.'}</span></td>`;
+  const er = RG_PERIODS.map(([d, l]) => {
+    const x = r[erKey(d)];
+    if (x == null) return `<td class="num q-col muted" title="Rendimento atteso a ${l} non disponibile">–</td>`;
+    const y = d / 365;
+    const ann = x > -1 ? (1 + x) ** (1 / y) - 1 : -1;
+    return `<td class="num q-col ${cls(x)}" title="Rendimento atteso a ${l}: ${pct(x, true, 1)} lordo sul periodo${y > 1 ? `, pari a ${pct(ann, true, 1)} l’anno` : ''}. Stima del modello, non una garanzia."><b class="big">${pct(x, true, 1)}</b>${y > 1 ? `<span class="eur">${pct(ann, true, 1)}/anno</span>` : ''}</td>`;
+  }).join('');
+  return qualityMode() ? score + growth + asymCells(r) + er : er + growth + score;
 }
 function pxCells(r) {
   const now = r.price;
@@ -1178,6 +1254,7 @@ function mInd(r) {
     if (RG_PERIODS.some(([d]) => r['rg' + d])) {
       parts.push(`Guadagno bilanciato crescita/rischio: ${three('balanced')}`);
       parts.push(`Guadagno corretto per il rischio: ${three('riskAdj')}`);
+      { const q = r.q; if (q || r.qGrowth != null) parts.push(`${q ? `Punteggio qualità <b>${Math.round(q.score)}</b> · ` : ''}crescita utili <b class="${cls(r.qGrowth)}">${r.qGrowth != null ? pct(r.qGrowth, true, 1) : '–'}</b> · rend. atteso ${RG_PERIODS.map(([d]) => { const x = r[erKey(d)]; return `${rgShort(d)} <b class="${cls(x)}">${x != null ? pct(x, true, 0) : '–'}</b>`; }).join(' · ')}`); }
       parts.push(`Asimmetria del rischio: ${RG_PERIODS.map(([d]) => { const v = r[asymKey(d)]; return `${rgShort(d)} <b class="${v == null ? '' : v < 1 ? 'pos' : 'neg'}">${asymFmt(v)}</b>`; }).join(' · ')}`);
     }
     if (r.probLoss != null) parts.push(`Probabilità ${simYears()}a: perdita <b>${pct(r.probLoss, false, 0)}</b>${r.prob50 != null ? ` · guadagno &gt; 50% <b>${pct(r.prob50, false, 0)}</b>` : ''}`);
@@ -1502,6 +1579,10 @@ function rowValuesCalc(i) {
   v.stressMild = st ? st[0].impact : null;
   v.stressBeta = st ? (Number.isFinite(r.forward?.beta) ? st[1].beta : null) : null;
   v.effNet = v.plausible != null && !penny ? v.plausible * (state.settings.mc.amount || 10000) : null;
+  // sezione «Qualità»: punteggio e crescita degli utili attesa
+  Object.defineProperty(v, 'q', { enumerable: false, configurable: true, get: () => qCached(i) });
+  Object.defineProperty(v, 'qScore', { enumerable: false, configurable: true, get: () => qCached(i)?.score ?? null });
+  Object.defineProperty(v, 'qGrowth', { enumerable: false, configurable: true, get: () => qCached(i)?.quality.growth ?? v.growthExp ?? null });
   for (const [d] of RG_PERIODS) {
     const get = d === 1825
       ? () => (sim && !penny && sim.balanced != null && sim.finalLoss != null && sim.netMedian != null ? { balanced: sim.balanced, expGain: sim.expGain, expLoss: sim.expLoss, median: sim.netMedian, finalLoss: sim.finalLoss, riskAdj: sim.netMedian - sim.finalLoss } : null)
@@ -1511,7 +1592,9 @@ function rowValuesCalc(i) {
     Object.defineProperty(v, radjKey(d), { enumerable: false, configurable: true, get: () => get()?.riskAdj ?? null });
     // asimmetria del rischio: perdita finale nel 5% peggiore ÷ guadagno tipico; ∞ se il guadagno tipico non è positivo.
     // A 5 anni è il rapporto pubblicato con gli scenari (lo stesso della scheda).
-    Object.defineProperty(v, asymKey(d), { enumerable: false, configurable: true, get: () => asymOf(get(), d === 1825 ? sim?.ratioFinal : null) });
+    Object.defineProperty(v, asymKey(d), { enumerable: false, configurable: true, get: () => (d === 1825 ? asymOf(get(), sim?.ratioFinal) : asymQuick(npCached(i, d)?.dist)) });
+    // rendimento atteso del periodo (lordo), dal modello delle previsioni
+    Object.defineProperty(v, erKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.periodMove ?? null });
   }
   return v;
 }
@@ -1572,12 +1655,13 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.rk-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.simp-col, #table thead th.rk-col, #table thead th.q-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
   document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
     let after = nameTh;
     if (analystMode()) for (const th of anHeads()) { after.after(th); after = th; }
+    if (qualityMode()) for (const th of qHeads()) { after.after(th); after = th; }
     for (const [d, l] of NP_PERIODS) {
       const th = document.createElement('th');
       th.className = 'num np-col' + (state.view.sort.key === 'np' + d ? ' sorted' : '');
@@ -1614,6 +1698,7 @@ function render() {
       after = th;
     }
     for (const th of riskHeads()) { after.after(th); after = th; }
+    if (!qualityMode()) for (const th of qHeads()) { after.after(th); after = th; }
     if (!analystMode()) for (const th of anHeads()) { after.after(th); after = th; }
     // crescita degli ultimi 30 giorni: ordina la sezione «Solidi e in crescita»
     if (solidMode()) {
@@ -1640,7 +1725,7 @@ function render() {
   // «Netto più probabile»: all'apertura i dati statici (di ore fa) vengono sostituiti dopo pochi secondi da quelli live e la
   // classifica cambiava a vista d'occhio. Si mostra solo con i dati aggiornati (al massimo 25 s di attesa).
   if (STATIC && shortMode() && !state.liveReady && performance.now() < 25000) {
-    $('#table tbody').innerHTML = '<tr><td colspan="48" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
+    $('#table tbody').innerHTML = '<tr><td colspan="56" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
     return;
   }
   const all = filtered();
@@ -1652,7 +1737,10 @@ function render() {
   }
   const sn = $('#solid-note');
   if (sn) {
-    sn.hidden = !solidMode() && !analystMode() && !watchMode();
+    sn.hidden = !solidMode() && !analystMode() && !watchMode() && !qualityMode();
+    if (qualityMode()) {
+      sn.innerHTML = `<b>Qualità: ${all.length.toLocaleString('it-IT')} strumenti</b> che superano i tre controlli a 1, 3 e 5 anni · <b>qualità della crescita</b>: crescita degli utili attesa di almeno il 2% l’anno, senza dividendo alto privo di crescita · <b>asimmetria del rischio</b>: guadagno tipico positivo in tutti e tre i periodi (più è bassa, meglio è: sotto 1 il guadagno tipico supera la perdita nel 5% peggiore) · <b>rendimento atteso</b> positivo in tutti e tre i periodi · ordinati per <b>punteggio qualità</b> (0–100: media dei tre voti, stesso peso); tocca un’intestazione per ordinare per una sola voce · le criptovalute e gli strumenti senza stima degli utili non hanno punteggio · <span class="muted">stime del modello, non una raccomandazione</span>`;
+    }
     if (watchMode()) {
       const n = watchList.length;
       sn.innerHTML = n
@@ -1699,6 +1787,7 @@ function render() {
           return fc.pass ? `<span class="growth-tag" title="Imbuto superato: indice globale puro, accumulazione, ${esc(fc.reason)}">✅ imbuto</span> · ` : '';
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span>${shortMode() ? mInd(r) : ''}</td>
         ${analystMode() ? anCells(r) : ''}
+        ${qualityMode() ? qCells(r) : ''}
         ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
         ${shortMode() ? pxCells(r) : ''}
         ${shortMode() ? rangeCells(r) : ''}
@@ -1706,6 +1795,7 @@ function render() {
         ${shortMode() ? (r[SIM_KEY] == null ? '<td class="num sim-col muted">–</td>' : `<td class="num sim-col ${cls(r[SIM_KEY])}" title="Valore mediano dei ${simCount()} scenari a ${simYears()} anni: ${eur0(r[SIM_KEY])}${r.simP != null ? ` · probabilità di guadagno ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · in 3 scenari su 4 il risultato è almeno ${eur0(r.simP25)}` : ''} · media di tutti gli scenari ${pct(r.netMean, true, 1)} (gonfiata dagli scenari estremi: non usarla come previsione)"><b class="big">${r[SIM_KEY] > 0 ? '+' : ''}${eur0(r[SIM_KEY])}</b><span class="eur">${r.simP != null ? `P ${pct(r.simP, false, 0)}` : ''}${r.simP25 != null ? ` · 3 su 4 ≥ ${r.simP25 > 0 ? '+' : ''}${eur0(r.simP25)}` : ''}</span></td>`) : ''}
         ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
         ${shortMode() ? riskCells(r) : ''}
+        ${shortMode() && !qualityMode() ? qCells(r) : ''}
         ${shortMode() && !analystMode() ? anCells(r) : ''}
         ${solidMode() ? (r.tScore == null ? '<td class="num trend-col muted" title="Crescita a 30 giorni non ancora disponibile per questo strumento">–</td>' : `<td class="num trend-col ${cls(r.tScore)}" title="Ultimi 30 giorni, per seduta: pendenza della curva del rendimento ${pct(r.tSl, true, 2)} · media ponderata degli incrementi (più peso alle sedute recenti) ${pct(r.tWm, true, 2)}"><b class="big">${pct(r.tScore, true, 2)}</b><span class="eur">pend. ${pct(r.tSl, true, 2)} · media ${pct(r.tWm, true, 2)}</span></td>`) : ''}
         ${shortMode() ? HIST_COLS.map(([k]) => `<td class="num hist-col ${cls(r[k])}">${pct(r[k], true, 2)}</td>`).join('') : ''}
@@ -3947,12 +4037,13 @@ function bind() {
     // all'avvio con la sezione «Netto più probabile» già scelta: ordinamento per il periodo salvato
     if (analystMode()) state.view.sort = { key: 'anUp', dir: -1 };
     else if (solidMode()) state.view.sort = { key: 'tScore', dir: -1 };
+    else if (qualityMode()) state.view.sort = { key: 'qScore', dir: -1 };
     else if (shortMode() && !npViewSort(state.view.sort.key)) state.view.sort = { key: 'np' + state.view.np, dir: -1 };
     fm.addEventListener('change', (e) => {
       state.view.funnel = e.target.value;
       state.view.limit = PAGE;
       if (shortMode()) {
-        state.view.sort = analystMode() ? { key: 'anUp', dir: -1 } : solidMode() ? { key: 'tScore', dir: -1 } : { key: 'np' + state.view.np, dir: -1 };
+        state.view.sort = analystMode() ? { key: 'anUp', dir: -1 } : solidMode() ? { key: 'tScore', dir: -1 } : qualityMode() ? { key: 'qScore', dir: -1 } : { key: 'np' + state.view.np, dir: -1 };
         if (window.matchMedia?.('(max-width: 700px)').matches) setMview('short');
       } else if (mgMode()) state.view.sort = { key: 'maxGrowth', dir: -1 };
       else if (npViewSort(state.view.sort.key) || state.view.sort.key === 'maxGrowth') state.view.sort = { key: 'projOpt', dir: -1 };
@@ -4002,7 +4093,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress' && !k.startsWith('asym')), 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress' && !k.startsWith('asym')), ...QUALITY_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

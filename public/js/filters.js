@@ -39,6 +39,9 @@ export const radjKey = (days) => 'radj' + days;
 // Asimmetria del rischio: perdita finale nel 5% peggiore ÷ guadagno tipico (mediano); sotto 1 il guadagno tipico supera la perdita sfavorevole
 export const asymKey = (days) => 'asym' + days;
 export const RISK_KEYS = ['stress', 'effNet', ...RG_PERIODS.map(([d]) => balKey(d)), ...RG_PERIODS.map(([d]) => radjKey(d)), ...RG_PERIODS.map(([d]) => asymKey(d))];
+// Sezione «Qualità»: punteggio (0–100), crescita degli utili attesa e rendimento atteso del periodo a 1, 3 e 5 anni
+export const erKey = (days) => 'er' + days;
+export const QUALITY_KEYS = ['qScore', 'qGrowth', ...RG_PERIODS.map(([d]) => erKey(d))];
 // Filtri con minimo e massimo in cima al pannello: probabilità di perdita e di guadagno netto oltre il 50% (5 anni, scenari simulati)
 export const PROB_FILTERS = [['probLoss', 'Perdita'], ['prob50', 'Guadagno > 50%']];
 export const AN_UP_LEVELS = [10, 25, 50];
@@ -65,6 +68,10 @@ export const INDICATORS = [
   { key: asymKey(365), label: 'Asimmetria del rischio a 1 anno: perdita nel 5% peggiore ÷ guadagno tipico (più basso = meglio)', pct: false },
   { key: asymKey(1095), label: 'Asimmetria del rischio a 3 anni: perdita nel 5% peggiore ÷ guadagno tipico (più basso = meglio)', pct: false },
   { key: 'ratioFinal', label: 'Asimmetria del rischio a 5 anni (rapporto perdita finale/guadagno)', pct: false },
+  { key: 'qScore', label: 'Punteggio qualità (0–100): crescita, asimmetria del rischio e rendimento atteso a 1, 3 e 5 anni', pct: false },
+  { key: erKey(365), label: 'Rendimento atteso a 1 anno (lordo, totale del periodo)', pct: true },
+  { key: erKey(1095), label: 'Rendimento atteso a 3 anni (lordo, totale del periodo)', pct: true },
+  { key: erKey(1825), label: 'Rendimento atteso a 5 anni dal modello delle previsioni (lordo, totale del periodo)', pct: true },
   { key: 'probLoss', label: 'Probabilità di perdita (5 anni)', pct: true },
   { key: 'prob50', label: 'Probabilità di guadagno netto maggiore del 50% (5 anni)', pct: true },
   // prezzo medio e minimo a 52 settimane e a 90 giorni (in euro) e distanza del prezzo attuale da ciascuno (in %)

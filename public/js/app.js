@@ -1827,7 +1827,14 @@ function rowValuesCalc(i) {
   return v;
 }
 
+// I titoli a centesimi (azioni sotto 0,50 €) stanno SEMPRE in fondo, con qualsiasi ordinamento e in ogni sezione
+// (regola dell'utente, 28/11/2026): previsioni poco affidabili, non devono comparire in cima a nessuna classifica.
 function sortRows(rows) {
+  const sorted = sortRowsBase(rows);
+  if (!sorted.some((r) => r.penny)) return sorted;
+  return [...sorted.filter((r) => !r.penny), ...sorted.filter((r) => r.penny)];
+}
+function sortRowsBase(rows) {
   const { key, dir } = state.view.sort;
   const k = key === 'rank' ? (shortMode() ? npSortKey() : 'projOpt') : key;
   if (shortMode() && /^np\d+$/.test(k)) {

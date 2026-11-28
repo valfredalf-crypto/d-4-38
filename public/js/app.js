@@ -2034,6 +2034,15 @@ function bindRemove(inst) {
 
 // Scheda: probabilità di rendimento netto a 1 e 3 anni, dalla distribuzione del modello delle previsioni (la stessa del
 // «netto più probabile» di quel periodo); a 5 anni restano i 2.000 scenari simulati.
+// Differenziale nei riquadri delle probabilità: probabilità di guadagno netto di almeno +50% − probabilità di perdita,
+// in punti percentuali (calcolato sui valori mostrati, così la riga torna con le due sopra).
+const PROB50_INDEX = PROB_THRESHOLDS.indexOf(0.5);
+function probDiffRow(p50, pLoss, label) {
+  if (p50 == null || pLoss == null || !Number.isFinite(p50) || !Number.isFinite(pLoss)) return '';
+  const pts = Math.round(p50 * 100) - Math.round(pLoss * 100);
+  const sign = pts > 0 ? '+' : pts < 0 ? '−' : '';
+  return `<div class="prob-row prob-diff" title="Differenziale a ${label}: probabilità di guadagno netto di almeno +50% (${pct(p50, false, 0)}) − probabilità di perdita (${pct(pLoss, false, 0)}) = ${sign}${Math.abs(pts)} punti percentuali. Positivo: è più probabile guadagnare oltre il 50% che chiudere in perdita."><span>differenziale: almeno +50% − in perdita</span><div class="bar"><i class="${pts < 0 ? 'neg-bar' : ''}" style="width:${Math.min(100, Math.abs(pts))}%"></i></div><b class="${cls(pts)}">${sign}${Math.abs(pts)} pt</b></div>`;
+}
 function probCardShort(inst, days, label) {
   const dist = npCached(inst, days)?.dist;
   if (!dist) return '';
@@ -2045,6 +2054,7 @@ function probCardShort(inst, days, label) {
         <div class="prob-bars">
           <div class="prob-row"><span>in perdita</span><div class="bar"><i class="neg-bar" style="width:${((1 - pa[0]) * 100).toFixed(1)}%"></i></div><b>${pct(1 - pa[0], false, 0)}</b></div>
           ${PROB_THRESHOLDS.map((t, k) => `<div class="prob-row"><span>${t === 0 ? 'almeno pari (≥ 0%)' : 'almeno ' + pct(t, true, 0)}</span><div class="bar"><i style="width:${(pa[k] * 100).toFixed(1)}%"></i></div><b>${pct(pa[k], false, 0)}</b></div>`).join('')}
+          ${probDiffRow(pa[PROB50_INDEX], 1 - pa[0], label)}
         </div>
         <div class="legend"><span>5%: ${q(0.05)}</span><span>25%: ${q(0.25)}</span><span>mediana: ${q(0.5)}</span><span>75%: ${q(0.75)}</span><span>95%: ${q(0.95)}</span></div>
         <p class="muted small-note">Netto di costi e tasse, a ${label}: distribuzione del modello delle previsioni, la stessa del «netto più probabile» di questo periodo (previsione di analisti e fondamentali, volatilità dello strumento). La mediana è il netto più probabile della tabella. A ${simYears()} anni valgono invece i ${simCount()} scenari simulati. Stima, non una garanzia.</p>
@@ -2114,6 +2124,7 @@ function renderDetail(inst, r, d) {
         <div class="prob-bars">
           <div class="prob-row"><span>in perdita</span><div class="bar"><i class="neg-bar" style="width:${(sim.probLoss * 100).toFixed(1)}%"></i></div><b>${pct(sim.probLoss, false, 0)}</b></div>
           ${PROB_THRESHOLDS.map((t, k) => `<div class="prob-row"><span>${t === 0 ? 'almeno pari (≥ 0%)' : 'almeno ' + pct(t, true, 0)}</span><div class="bar"><i style="width:${(sim.probAtLeast[k] * 100).toFixed(1)}%"></i></div><b>${pct(sim.probAtLeast[k], false, 0)}</b></div>`).join('')}
+          ${probDiffRow(sim.probAtLeast[PROB50_INDEX], sim.probLoss, `${s.mc.years} anni`)}
         </div>
         <p class="muted small-note">Netto di costi e tasse, su ${s.mc.sims.toLocaleString('it-IT')} scenari: il rendimento atteso include le prospettive di crescita${inst.type === 'etf' && f?.growthSource === 'holdings' ? ' delle partecipazioni' : ''}, il ventaglio include il rischio di perdita stimato (volatilità e drawdown).</p>
       </div>` : ''}

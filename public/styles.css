@@ -194,6 +194,9 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .prob-row .bar i { display: block; height: 100%; background: var(--chart-line); border-radius: 5px; }
 .prob-row .bar i.neg-bar { background: var(--neg, #d33); }
 .prob-row b { text-align: right; font-variant-numeric: tabular-nums; }
+.prob-row.prob-diff { grid-template-columns: 9.5em 1fr 4.2em; margin-top: 6px; padding-top: 7px; border-top: 1px dashed var(--line); font-weight: 600; }
+.prob-row.prob-diff b.pos { color: var(--pos, #0a7d4f); }
+.prob-row.prob-diff b.neg { color: var(--neg, #b3261e); }
 .kpi { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
 .kpi .k { color: var(--muted); font-size: 12px; }
 .kpi .v { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }

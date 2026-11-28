@@ -4,6 +4,8 @@
 export const WEEKS_PER_YEAR = 52;
 /** Soglie di rendimento netto per le probabilità (0 = non perdere, 0.25 = almeno +25%, …). */
 export const PROB_THRESHOLDS = [0, 0.1, 0.25, 0.5, 1];
+/** Orizzonti intermedi (anni) letti sugli stessi scenari: guadagno netto mediano, probabilità di perdita, perdite attese. */
+export const MID_YEARS = [1, 3];
 /**
  * Avversione al rischio per l'equivalente certo (utilità CRRA, γ = 3: investitore moderatamente prudente).
  * L'equivalente certo è il guadagno sicuro che vale quanto la distribuzione incerta dei risultati:
@@ -163,6 +165,10 @@ export function simulate(prices, options = {}) {
   // escono dal percorso del prezzo e si accumulano in contanti sul controvalore di ogni settimana
   const cashYieldNet = (o.cashYield || 0) * (1 - (o.cashTax ?? o.taxRate) / 100);
   const cash = new Float64Array(o.sims);
+  // orizzonti intermedi: valore di ogni scenario (e dividendi incassati fin lì) alla settimana corrispondente
+  const mids = (o.midYears ?? MID_YEARS).map((y) => ({ y, t: Math.round(y * WEEKS_PER_YEAR) })).filter((x) => x.t > 0 && x.t < steps).map((x) => ({ ...x, v: new Float64Array(o.sims), c: new Float64Array(o.sims) }));
+  const midAt = new Int8Array(steps + 1).fill(-1); // settimana → indice dell'orizzonte intermedio (una sola lettura per passo)
+  mids.forEach((md, k) => { midAt[md.t] = k; });
   let downSq = 0; // per la deviazione negativa (Sortino)
   let nRet = 0;
   for (let s = 0; s < o.sims; s++) {
@@ -195,6 +201,11 @@ export function simulate(prices, options = {}) {
         if (dd > mdd) mdd = dd;
       }
       if (t % checkpointEvery === 0) fan[t / checkpointEvery][s] = v;
+      const mi = midAt[t];
+      if (mi >= 0) {
+        mids[mi].v[s] = v;
+        mids[mi].c[s] = (cashYieldNet * cashAcc) / WEEKS_PER_YEAR;
+      }
     }
     finals[s] = Math.exp(v) - 1;
     mdds[s] = mdd;
@@ -286,6 +297,11 @@ export function simulate(prices, options = {}) {
     histogram: { lo, width, counts: histogram },
   };
   stats.balanced = stats.expGain - LOSS_AVERSION * stats.expLoss;
+  // Stesse grandezze agli orizzonti intermedi (uscita a 1 e 3 anni: costi e imposta come a fine periodo)
+  stats.mid = Object.fromEntries(mids.map((md) => {
+    const ns = Array.from(md.v, (v, i) => netReturn(Math.exp(v) - 1, o) + md.c[i]).sort((a, b) => a - b);
+    return [md.y, { netMedian: percentile(ns, 0.5), netP25: percentile(ns, 0.25), probLoss: ns.filter((x) => x < 0).length / ns.length, expLoss: ns.reduce((a, x) => a + Math.max(-x, 0), 0) / ns.length }];
+  }));
   // NR5 = guadagno netto medio − ½ × perdita media nel 5% peggiore. La media usa i guadagni "credibili"
   // (oltre il 75° percentile pesano sempre meno): altrimenti titoli-lotteria con l'89% di probabilità di
   // perdere tutto finiscono primi grazie a pochi scenari da +5000%, mentre la perdita è limitata al 100%.

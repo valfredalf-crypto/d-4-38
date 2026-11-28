@@ -6,6 +6,9 @@ export const NP_FILTER_PERIODS = [[7, '7 giorni'], [30, '1 mese'], [90, '3 mesi'
 export const NP_FILTER_LEVELS = [0, 1000, 2000, 3000];
 export const npFilterKey = (days) => 'npEur' + days;
 export const SIM_KEY = 'simMed';
+// Stessi scenari letti a 1 e 3 anni: [giorni, anni, nome]
+export const SIM_MID = [[365, 1, '1 anno'], [1095, 3, '3 anni']];
+export const simMidKey = (days) => SIM_KEY + days;
 // Probabilità di guadagno a 5 anni: quota dei 2.000 scenari che finisce in positivo; soglie dei pulsanti rapidi in punti percentuali
 export const SIM_P_KEY = 'simP';
 export const SIM_P_LEVELS = [70, 80, 90];
@@ -81,6 +84,7 @@ export const INDICATORS = [
   ...RANGE_COLS.flatMap(([k, d, l]) => [{ key: k, label: `${l} (€)`, pct: false }, { key: d, label: `Prezzo attuale rispetto al ${l.replace('Prezzo ', '')} (%)`, pct: true }]),
   ...NP_FILTER_PERIODS.map(([d, l]) => ({ key: npFilterKey(d), label: `Netto più probabile a ${l} (€)`, pct: false, eur: true, strict: true })),
   // Esito mediano dei 2.000 scenari simulati (non la media: pochi scenari estremi la gonfiano), in euro sul capitale impostato
+  ...SIM_MID.map(([d, , l]) => ({ key: simMidKey(d), label: `Guadagno netto mediano su 2.000 scenari, ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: SIM_KEY, label: 'Guadagno netto mediano su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: p90Key(d), label: `Guadagno netto nel 90% degli scenari a ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: SIM_P90_KEY, label: 'Guadagno netto nel 90% degli scenari a 5 anni (€, 2.000 scenari)', pct: false, eur: true, strict: true },

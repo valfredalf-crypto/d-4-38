@@ -111,3 +111,33 @@ test('equivalente certo: tra il minimo e la media, più basso con più volatilit
   assert.ok(ceWild > -0.5);
   assert.ok(Math.abs(certaintyEquivalent([0.1, 0.1, 0.1]) - 0.1) < 1e-12, 'risultato certo → equivalente certo uguale');
 });
+
+test('scenari letti a 1 e 3 anni: stessi scenari, risultati a 5 anni invariati, perdite attese e probabilità coerenti', async () => {
+  const { MID_YEARS } = await import('../public/js/montecarlo.js');
+  const { tableResult } = await import('../public/js/analyze.js');
+  assert.deepEqual(MID_YEARS, [1, 3]);
+  const prices = gbmSeries(400, 0.07, 0.2);
+  const a = simulate(prices, { sims: 2000, targetDrift: 0.07, targetVol: 0.2 });
+  const b = simulate(prices, { sims: 2000, targetDrift: 0.07, targetVol: 0.2, midYears: [] });
+  // nessuna estrazione casuale in più: i risultati a 5 anni sono identici con o senza orizzonti intermedi
+  for (const k of ['netMedian', 'netP25', 'netP10', 'probLoss', 'expLoss', 'balanced', 'mddMedian']) assert.equal(a[k], b[k], k);
+  assert.deepEqual(Object.keys(a.mid), ['1', '3']);
+  assert.deepEqual(Object.keys(b.mid), []);
+  for (const y of [1, 3]) {
+    const x = a.mid[y];
+    assert.ok(Number.isFinite(x.netMedian) && x.netP25 <= x.netMedian);
+    assert.ok(x.probLoss >= 0 && x.probLoss <= 1 && x.expLoss >= 0 && x.expLoss <= 1);
+  }
+  // con rendimento atteso positivo il mediano cresce con l'orizzonte e le perdite attese restano sotto il capitale
+  assert.ok(a.mid[1].netMedian < a.mid[3].netMedian && a.mid[3].netMedian < a.netMedian);
+  assert.ok(a.mid[1].probLoss > a.probLoss);
+  // riproducibile
+  assert.deepEqual(simulate(prices, { sims: 2000, targetDrift: 0.07, targetVol: 0.2 }).mid, a.mid);
+  // orizzonti oltre la fine della simulazione: ignorati
+  assert.deepEqual(Object.keys(simulate(prices, { sims: 200, years: 2 }).mid), ['1']);
+  // pubblicazione compatta
+  const tr = tableResult({ forward: {}, sim: { netMedian: 0.3, mid: a.mid } });
+  assert.deepEqual(Object.keys(tr.sim.mid['1']), ['m', 'q', 'l', 'e']);
+  assert.ok(Math.abs(tr.sim.mid['3'].m - a.mid[3].netMedian) < 1e-4);
+  assert.equal('mid' in tableResult({ forward: {}, sim: { netMedian: 0.3 } }).sim, false);
+});

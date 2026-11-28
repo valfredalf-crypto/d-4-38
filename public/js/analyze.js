@@ -89,6 +89,7 @@ export function tableResult(r) {
       ...(s.taxRate != null && s.taxRate !== 26 ? { taxRate: r4(s.taxRate) } : {}),
       ...(Number.isFinite(s.cagrHist) ? { cagrHist: r4(s.cagrHist), cagrYears: s.cagrYears, ...(Number.isFinite(s.cagr10) ? { cagr10: r4(s.cagr10) } : {}) } : {}),
       probAtLeast: s.probAtLeast ? s.probAtLeast.map(r4) : null,
+      ...(s.mid && Object.keys(s.mid).length ? { mid: Object.fromEntries(Object.entries(s.mid).map(([y, x]) => [y, { m: r4(x.netMedian ?? x.m), q: r4(x.netP25 ?? x.q), l: r4(x.probLoss ?? x.l), e: r4(x.expLoss ?? x.e) }])) } : {}),
     },
   };
 }

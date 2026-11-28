@@ -300,7 +300,9 @@ export function simulate(prices, options = {}) {
   // Stesse grandezze agli orizzonti intermedi (uscita a 1 e 3 anni: costi e imposta come a fine periodo)
   stats.mid = Object.fromEntries(mids.map((md) => {
     const ns = Array.from(md.v, (v, i) => netReturn(Math.exp(v) - 1, o) + md.c[i]).sort((a, b) => a - b);
-    return [md.y, { netMedian: percentile(ns, 0.5), netP25: percentile(ns, 0.25), probLoss: ns.filter((x) => x < 0).length / ns.length, expLoss: ns.reduce((a, x) => a + Math.max(-x, 0), 0) / ns.length }];
+    const nWorst = Math.max(1, Math.floor(ns.length * 0.05));
+    const es5 = Math.max(0, -ns.slice(0, nWorst).reduce((a, x) => a + x, 0) / nWorst); // perdita media nel 5% peggiore degli scenari
+    return [md.y, { netMedian: percentile(ns, 0.5), netP25: percentile(ns, 0.25), probLoss: ns.filter((x) => x < 0).length / ns.length, expLoss: ns.reduce((a, x) => a + Math.max(-x, 0), 0) / ns.length, es5 }];
   }));
   // NR5 = guadagno netto medio − ½ × perdita media nel 5% peggiore. La media usa i guadagni "credibili"
   // (oltre il 75° percentile pesano sempre meno): altrimenti titoli-lotteria con l'89% di probabilità di

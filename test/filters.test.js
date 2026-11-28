@@ -278,3 +278,11 @@ test('mediano e rendimento atteso pesati per la probabilità di perdita a 1, 3 e
   assert.equal(passes({ simMp1825: value(0.6, 0.2, 0.3, 10000) }, a), true);
   assert.equal(passes({ simMp1825: null }, a), false);
 });
+
+test('Netto Reale (mediano) a 1, 3 e 5 anni: chiavi e indicatori in euro', async () => {
+  const { INDICATORS, NR5P_KEYS, nr5pKey } = await import('../public/js/filters.js');
+  assert.deepEqual(NR5P_KEYS, ['nr5p365', 'nr5p1095', 'nr5p1825']);
+  assert.equal(nr5pKey(1095), 'nr5p1095');
+  for (const k of NR5P_KEYS) assert.ok(INDICATORS.some((x) => x.key === k && x.eur && x.strict && !x.pct && /Netto Reale \(mediano\)/.test(x.label)), k);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+});

@@ -11,7 +11,7 @@ import { distanceFrom } from './range.js';
 import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_MID, simMidKey, SIM_ADJ, simAdjKey, SIM_ADJ_KEYS, simMpKey, SIM_MP_KEYS, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, erKey, QUALITY_KEYS, pdKey, PD_KEYS, ksKey, KS_KEYS, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_MID, simMidKey, SIM_ADJ, simAdjKey, SIM_ADJ_KEYS, simMpKey, SIM_MP_KEYS, nr5pKey, NR5P_KEYS, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, erKey, QUALITY_KEYS, pdKey, PD_KEYS, ksKey, KS_KEYS, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { riskGain, probNetAtLeast, netQuantile } from './riskgain.js';
 import { DEFAULT_OUTLOOK } from './outlook.js';
 import { qualityScore } from './quality.js';
@@ -863,7 +863,7 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore' || RISK_KEYS.includes(key) || QUALITY_KEYS.includes(key) || PD_KEYS.includes(key) || KS_KEYS.includes(key) || SIM_ADJ_KEYS.includes(key) || SIM_MP_KEYS.includes(key) || SIM_MID.some(([d]) => simMidKey(d) === key);
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore' || RISK_KEYS.includes(key) || QUALITY_KEYS.includes(key) || PD_KEYS.includes(key) || KS_KEYS.includes(key) || SIM_ADJ_KEYS.includes(key) || SIM_MP_KEYS.includes(key) || NR5P_KEYS.includes(key) || SIM_MID.some(([d]) => simMidKey(d) === key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
@@ -1389,7 +1389,7 @@ function simMpHeads() {
     const on = state.view.sort.key === k;
     th.className = 'num mp-col' + (on ? ' sorted' : '');
     th.dataset.sort = k;
-    th.title = `A ${lab}, in euro sul capitale impostato: rendimento atteso del periodo × probabilità di guadagno − capitale × probabilità di perdita + guadagno netto mediano dei ${simCount()} scenari. Probabilità e mediano vengono dagli stessi scenari; il rendimento atteso è quello del modello delle previsioni (colonna «Rend. atteso»). Esempio: atteso +6.410 € con probabilità di guadagno 53%, probabilità di perdita 47% su 10.000 €, mediano +580 € → 3.397 − 4.700 + 580 = −723 €. È un indice di confronto tra strumenti, non un importo previsto. Sotto, le tre parti. Tocca per ordinare dal più alto.`;
+    th.title = `A ${lab}, in euro sul capitale impostato: rendimento atteso del periodo × probabilità di guadagno − capitale × probabilità di perdita + guadagno netto mediano dei ${simCount()} scenari + Netto Reale del periodo (mediano − perdita media − quota × perdita nel 5% peggiore). Probabilità, mediano e Netto Reale vengono dagli stessi scenari; il rendimento atteso è quello del modello delle previsioni (colonna «Rend. atteso»). Esempio: atteso +6.410 € con probabilità di guadagno 53%, probabilità di perdita 47% su 10.000 €, mediano +580 € → 3.397 − 4.700 + 580 = −723 €. È un indice di confronto tra strumenti, non un importo previsto. Sotto, le tre parti. Tocca per ordinare dal più alto.`;
     th.innerHTML = `<span class="l">Mediano ${simCount()} scenari e atteso pesati per la probabilità di perdita ${lab}</span><span class="s">Mediano−prob. perdita ${rgShort(d)}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
     return th;
   });
@@ -1400,7 +1400,31 @@ function simMpCells(r) {
     const x = r['simMpx' + d];
     const lab = d === 1825 ? `${simYears()} anni` : l;
     if (!x) return `<td class="num mp-col muted" title="Non disponibile a ${lab}: mancano gli scenari o il rendimento atteso${d !== 1825 ? ' (gli scenari a 1 e 3 anni arrivano con il prossimo aggiornamento dei dati)' : ''}">–</td>`;
-    return `<td class="num mp-col ${cls(x.value)}" title="A ${lab}: rendimento atteso ${pct(x.er, true, 1)} = ${sEur(x.er * amt)}, per la probabilità di guadagno ${pct(1 - x.pl, false, 0)} = ${sEur(x.gain)}; meno capitale ${eur0(amt)} per la probabilità di perdita ${pct(x.pl, false, 0)} = ${eur0(x.loss)}; più mediano dei ${simCount()} scenari ${sEur(x.med)}. Totale ${sEur(x.value)}."><b class="big">${sEur(x.value)}</b><span class="eur">atteso×P ${sEur(x.gain)} − perdita×P ${eur0(x.loss)}</span><span class="eur">+ mediano ${sEur(x.med)}</span></td>`;
+    return `<td class="num mp-col ${cls(x.value)}" title="A ${lab}: rendimento atteso ${pct(x.er, true, 1)} = ${sEur(x.er * amt)}, per la probabilità di guadagno ${pct(1 - x.pl, false, 0)} = ${sEur(x.gain)}; meno capitale ${eur0(amt)} per la probabilità di perdita ${pct(x.pl, false, 0)} = ${eur0(x.loss)}; più mediano dei ${simCount()} scenari ${sEur(x.med)}; più Netto Reale (mediano) del periodo ${sEur(x.nr5)}. Totale ${sEur(x.value)}."><b class="big">${sEur(x.value)}</b><span class="eur">atteso×P ${sEur(x.gain)} − perdita×P ${eur0(x.loss)}</span><span class="eur">+ mediano ${sEur(x.med)} + NR ${sEur(x.nr5)}</span></td>`;
+  }).join('');
+}
+// Netto Reale del periodo con il guadagno MEDIANO: mediano − perdita media − quota (profilo NR5) × perdita nel 5% peggiore
+function nr5pHeads() {
+  return SIM_ADJ.map(([d, l]) => {
+    const k = nr5pKey(d);
+    const lab = d === 1825 ? `${simYears()} anni` : l;
+    const th = document.createElement('th');
+    const on = state.view.sort.key === k;
+    th.className = 'num nr-col' + (on ? ' sorted' : '');
+    th.dataset.sort = k;
+    th.title = `Netto Reale a ${lab}, sul capitale impostato, con il guadagno MEDIANO dei ${simCount()} scenari di quel periodo: guadagno netto mediano − perdita media (su tutti gli scenari) − quota × perdita media nel 5% peggiore. La quota è quella del profilo «NR5» scelto in alto (Standard: ⅓ azioni, ½ ETF). È come il «Netto Reale 5A» ma con la mediana al posto della media e calcolato anche a 1 e 3 anni. Sotto, la percentuale. Tocca per ordinare dal più alto.`;
+    th.innerHTML = `<span class="l">Netto Reale (mediano) ${lab}</span><span class="s">Netto Reale ${rgShort(d)}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+    return th;
+  });
+}
+function nr5pCells(r) {
+  const amt = state.settings.mc.amount || 10000;
+  return SIM_ADJ.map(([d, l]) => {
+    const lab = d === 1825 ? `${simYears()} anni` : l;
+    const e = r[nr5pKey(d)];
+    const x = r.simH?.[d];
+    if (e == null || !x) return `<td class="num nr-col muted" title="Netto Reale a ${lab} non disponibile${d !== 1825 ? ' (gli scenari a 1 e 3 anni arrivano con il prossimo aggiornamento dei dati)' : ''}">–</td>`;
+    return `<td class="num nr-col ${cls(e)}" title="Netto Reale (mediano) a ${lab}: guadagno mediano ${pct(x.median, true, 1)} − perdita media ${pct(x.expLoss, false, 1)} − quota × perdita nel 5% peggiore ${pct(x.es5, false, 1)} = ${sEur(e)} su ${eur0(amt)} (${pct(e / amt, true, 1)})."><b class="big">${sEur(e)}</b><span class="eur">${pct(e / amt, true, 1)}</span></td>`;
   }).join('');
 }
 function pxCells(r) {
@@ -1433,6 +1457,7 @@ function mInd(r) {
       { const amt2 = state.settings.mc.amount || 10000; const hs = [[365, '1a'], [1095, '3a'], [1825, `${simYears()}a`]].filter(([d]) => r.simH?.[d]); if (hs.length) parts.push(`Mediano ${simCount()} scenari: ${hs.map(([d, s]) => { const x = r.simH[d]; return `${s} <b class="${cls(x.median)}">${sEur(x.median * amt2)}</b>${x.expLoss != null ? ` (perdite attese ${x.expLoss > 0 ? '−' : ''}${eur0(x.expLoss * amt2)}; tolte le perdite <b class="${cls(x.median - x.expLoss)}">${sEur((x.median - x.expLoss) * amt2)}</b>)` : ''}`; }).join(' · ')}`); }
       if (RG_PERIODS.some(([d]) => r['pdx' + d])) parts.push(`Differenziale probabilità: ${RG_PERIODS.map(([d]) => { const x = r['pdx' + d]; return `${rgShort(d)} <b class="${x ? cls(x.diff) : ''}">${x ? ptFmt(x.diff) : '–'}</b>`; }).join(' · ')}`);
       if (RG_PERIODS.some(([d]) => r['ksx' + d])) parts.push(`Efficiente (Kelly) − stress test: ${RG_PERIODS.map(([d]) => { const x = r['ksx' + d]; const amt3 = state.settings.mc.amount || 10000; return `${rgShort(d)} <b class="${x ? cls(x.value) : ''}">${x ? sEur(x.value * amt3) : '–'}</b>`; }).join(' · ')}`);
+      if (SIM_ADJ.some(([d]) => r[nr5pKey(d)] != null)) parts.push(`Netto Reale (mediano): ${SIM_ADJ.map(([d]) => { const e = r[nr5pKey(d)]; return `${rgShort(d)} <b class="${e != null ? cls(e) : ''}">${e != null ? sEur(e) : '–'}</b>`; }).join(' · ')}`);
       if (SIM_ADJ.some(([d]) => r['simMpx' + d])) parts.push(`Mediano e atteso pesati per la prob. di perdita: ${SIM_ADJ.map(([d]) => { const x = r['simMpx' + d]; return `${rgShort(d)} <b class="${x ? cls(x.value) : ''}">${x ? sEur(x.value) : '–'}</b>`; }).join(' · ')}`);
       parts.push(`Asimmetria del rischio: ${RG_PERIODS.map(([d]) => { const v = r[asymKey(d)]; return `${rgShort(d)} <b class="${v == null ? '' : v < 1 ? 'pos' : 'neg'}">${asymFmt(v)}</b>`; }).join(' · ')}`);
     }
@@ -1728,9 +1753,9 @@ function rowValuesCalc(i) {
       for (const [d, y] of SIM_MID) {
         const x = sim.mid?.[y];
         const med = x?.netMedian ?? x?.m;
-        if (Number.isFinite(med)) out[d] = { median: med, p25: x.netP25 ?? x.q ?? null, probLoss: x.probLoss ?? x.l ?? null, expLoss: x.expLoss ?? x.e ?? null };
+        if (Number.isFinite(med)) out[d] = { median: med, p25: x.netP25 ?? x.q ?? null, probLoss: x.probLoss ?? x.l ?? null, expLoss: x.expLoss ?? x.e ?? null, es5: x.es5 ?? x.s5 ?? null };
       }
-      if (Number.isFinite(sim.netMedian)) out[1825] = { median: sim.netMedian, p25: sim.netP25 ?? null, probLoss: sim.probLoss ?? null, expLoss: sim.expLoss ?? null };
+      if (Number.isFinite(sim.netMedian)) out[1825] = { median: sim.netMedian, p25: sim.netP25 ?? null, probLoss: sim.probLoss ?? null, expLoss: sim.expLoss ?? null, es5: sim.es5 ?? null };
       return out;
     })(),
     [SIM_P90_KEY]: sim && Number.isFinite(sim.netP10) ? Math.max(-1, sim.netP10) * (state.settings.mc.amount || 10000) : null, // non si può perdere più del capitale
@@ -1782,6 +1807,10 @@ function rowValuesCalc(i) {
   v.effNet = v.plausible != null ? v.plausible * (state.settings.mc.amount || 10000) : null;
   for (const [d] of SIM_MID) Object.defineProperty(v, simMidKey(d), { enumerable: false, configurable: true, get: () => (v.simH[d] ? v.simH[d].median * (state.settings.mc.amount || 10000) : null) });
   for (const [d] of SIM_ADJ) Object.defineProperty(v, simAdjKey(d), { enumerable: false, configurable: true, get: () => { const x = v.simH[d]; return x && x.expLoss != null ? (x.median - x.expLoss) * (state.settings.mc.amount || 10000) : null; } });
+  // Netto Reale del periodo con il guadagno MEDIANO (variante scelta dall'utente): mediano − perdita media − quota × perdita
+  // media nel 5% peggiore; la quota dipende dal profilo NR5 scelto in alto. In frazione del capitale.
+  const nr5Med = (d) => { const x = v.simH[d]; return x && x.expLoss != null && x.es5 != null && x.median != null ? x.median - x.expLoss - nr5Weight(i.type) * x.es5 : null; };
+  for (const [d] of SIM_ADJ) Object.defineProperty(v, nr5pKey(d), { enumerable: false, configurable: true, get: () => { const n = nr5Med(d); return n != null ? n * (state.settings.mc.amount || 10000) : null; } });
   // atteso pesato per le probabilità (formula scelta dall'utente), in euro: rendimento atteso del periodo × probabilità di guadagno
   // − capitale × probabilità di perdita + mediano degli scenari; probabilità e mediano dagli stessi 2.000 scenari
   for (const [d] of SIM_ADJ) {
@@ -1793,7 +1822,9 @@ function rowValuesCalc(i) {
       const gain = er * (1 - x.probLoss) * amt;
       const loss = x.probLoss * amt;
       const med = x.median * amt;
-      return { er, pl: x.probLoss, gain, loss, med, value: gain - loss + med };
+      const nr5 = nr5Med(d);
+      const nr5e = nr5 != null ? nr5 * amt : 0;
+      return { er, pl: x.probLoss, gain, loss, med, nr5: nr5e, value: gain - loss + med + nr5e };
     } });
     Object.defineProperty(v, simMpKey(d), { enumerable: false, configurable: true, get: () => v['simMpx' + d]?.value ?? null });
   }
@@ -1890,7 +1921,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.sa-col, #table thead th.mp-col, #table thead th.simp-col, #table thead th.pd-col, #table thead th.rk-col, #table thead th.ks-col, #table thead th.q-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.sa-col, #table thead th.mp-col, #table thead th.nr-col, #table thead th.simp-col, #table thead th.pd-col, #table thead th.rk-col, #table thead th.ks-col, #table thead th.q-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
   document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
@@ -1914,6 +1945,7 @@ function render() {
     for (const th of simHeads()) { after.after(th); after = th; }
     for (const th of simAdjHeads()) { after.after(th); after = th; }
     for (const th of simMpHeads()) { after.after(th); after = th; }
+    for (const th of nr5pHeads()) { after.after(th); after = th; }
     // guadagno netto raggiunto o superato nel 90% degli scenari, in euro: 1 e 3 anni dal modello delle previsioni, 5 anni dagli scenari simulati
     for (const [k, l, s, src] of [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, d === 365 ? '1a' : '3a', 'secondo il modello delle previsioni (lo stesso del netto più probabile)']), [SIM_P90_KEY, `${simYears()} anni`, `${simYears()}a`, `sui ${simCount()} scenari simulati`]]) {
       const th = document.createElement('th');
@@ -1955,7 +1987,7 @@ function render() {
   // «Netto più probabile»: all'apertura i dati statici (di ore fa) vengono sostituiti dopo pochi secondi da quelli live e la
   // classifica cambiava a vista d'occhio. Si mostra solo con i dati aggiornati (al massimo 25 s di attesa).
   if (STATIC && shortMode() && !state.liveReady && performance.now() < 25000) {
-    $('#table tbody').innerHTML = '<tr><td colspan="68" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
+    $('#table tbody').innerHTML = '<tr><td colspan="72" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
     return;
   }
   const all = filtered();
@@ -2025,6 +2057,7 @@ function render() {
         ${shortMode() ? simCells(r) : ''}
         ${shortMode() ? simAdjCells(r) : ''}
         ${shortMode() ? simMpCells(r) : ''}
+        ${shortMode() ? nr5pCells(r) : ''}
         ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
         ${shortMode() ? pdCells(r) : ''}
         ${shortMode() ? riskCells(r) : ''}
@@ -4330,7 +4363,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, ...SIM_MID.map(([d]) => simMidKey(d)), SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress' && !k.startsWith('asym')), ...QUALITY_KEYS, ...PD_KEYS, ...KS_KEYS, ...SIM_ADJ_KEYS, ...SIM_MP_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, ...SIM_MID.map(([d]) => simMidKey(d)), SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress' && !k.startsWith('asym')), ...QUALITY_KEYS, ...PD_KEYS, ...KS_KEYS, ...SIM_ADJ_KEYS, ...SIM_MP_KEYS, ...NR5P_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

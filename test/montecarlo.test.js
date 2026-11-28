@@ -137,7 +137,20 @@ test('scenari letti a 1 e 3 anni: stessi scenari, risultati a 5 anni invariati, 
   assert.deepEqual(Object.keys(simulate(prices, { sims: 200, years: 2 }).mid), ['1']);
   // pubblicazione compatta
   const tr = tableResult({ forward: {}, sim: { netMedian: 0.3, mid: a.mid } });
-  assert.deepEqual(Object.keys(tr.sim.mid['1']), ['m', 'q', 'l', 'e']);
+  assert.deepEqual(Object.keys(tr.sim.mid['1']), ['m', 'q', 'l', 'e', 's5']);
   assert.ok(Math.abs(tr.sim.mid['3'].m - a.mid[3].netMedian) < 1e-4);
   assert.equal('mid' in tableResult({ forward: {}, sim: { netMedian: 0.3 } }).sim, false);
+});
+
+test('scenari a 1 e 3 anni: perdita media nel 5% peggiore (es5) per il Netto Reale per periodo', () => {
+  const prices = gbmSeries(400, 0.08, 0.3);
+  const a = simulate(prices, { sims: 2000, targetDrift: 0.08, targetVol: 0.3 });
+  for (const y of [1, 3]) {
+    const x = a.mid[y];
+    assert.ok(x.es5 >= 0 && x.es5 <= 1);
+    // la perdita media nel 5% peggiore è peggiore della perdita media su tutti gli scenari
+    assert.ok(x.es5 >= x.expLoss - 1e-9);
+  }
+  // cresce con l'orizzonte e resta sotto quella a 5 anni
+  assert.ok(a.mid[1].es5 <= a.es5 + 1e-9 && a.mid[3].es5 <= a.es5 + 1e-9);
 });

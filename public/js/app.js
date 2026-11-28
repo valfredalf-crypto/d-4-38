@@ -13,6 +13,7 @@ import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { riskGain } from './riskgain.js';
+import { WATCH_KEY, FAV_FOLDER, parseWatch, addWatch, removeWatch, cardFileName, cardDocument } from './watch.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
 import { project, projectAny, projectShort, portfolioTax, momentumTilt, MOMENTUM_RHO, autoRho, leveredScenario, projectPortfolio, portfolioRisk, stressTest, classifyPortfolio, portfolioStress, totalPortfolioStress, GEMINI_PORTFOLIO, HORIZON_PRESETS, daysToYears, isShortHorizon, horizonShort, horizonLong, horizonExp, normalizeHorizons } from './projection.js';
@@ -540,7 +541,9 @@ function filtered() {
   const phase1On = state.view.funnel === 'maxgrowth';
   const levTab = type === 'lev';
   const solid = solidMode();
+  const watch = watchMode();
   return state.instruments.filter((i) => {
+    if (watch && !watchSet.has(i.symbol)) return false;
     if (levTab) {
       if (!(i.leveraged && i.type === 'etf')) return false;
     } else if (type === 'growth') {
@@ -963,7 +966,30 @@ function stablePositions(days) {
   npStable.set(days, { ver, cfg, pos });
   return pos;
 }
-const shortMode = () => state.view.funnel === 'short' || state.view.funnel === 'solid' || state.view.funnel === 'analyst';
+const shortMode = () => state.view.funnel === 'short' || state.view.funnel === 'solid' || state.view.funnel === 'analyst' || state.view.funnel === 'watch';
+// Sezione «Watch list»: stesse colonne di «Netto più probabile», solo gli strumenti preferiti (aggiunti con «Condividi» dalla scheda).
+// La lista è salvata in questo browser; ogni voce ricorda data e prezzo di quando è stata aggiunta.
+const watchMode = () => state.view.funnel === 'watch';
+let watchList = (() => {
+  try {
+    return parseWatch(localStorage.getItem(WATCH_KEY));
+  } catch {
+    return [];
+  }
+})();
+let watchSet = new Set(watchList.map((x) => x.symbol));
+const watchItem = (symbol) => (watchSet.has(symbol) ? watchList.find((x) => x.symbol === symbol) : null);
+function setWatch(list) {
+  watchList = list;
+  watchSet = new Set(list.map((x) => x.symbol));
+  try {
+    localStorage.setItem(WATCH_KEY, JSON.stringify(list));
+  } catch {
+    /* memoria del browser non disponibile: la lista vale fino alla chiusura della pagina */
+  }
+}
+const watchWhen = (t) => (t ? new Date(t).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '');
+const watchSince = (w, price) => `in Watch list dal ${watchWhen(w.at)}${w.px ? ` · prezzo allora ${pxFmt(w.px, w.px)}${price > 0 ? `, ora ${pxFmt(price, price)} (${pct(price / w.px - 1, true, 1)})` : ''}` : ''}`;
 // Sezione «Analisti e dividendi»: stesse colonne di «Netto più probabile», con davanti il potenziale secondo gli analisti
 // (prezzo obiettivo a 12 mesi) e il rendimento da dividendi; classifica per potenziale, poi per dividendo (consensus.js).
 const analystMode = () => state.view.funnel === 'analyst';
@@ -1131,6 +1157,7 @@ function mInd(r) {
   const div = r.divY != null ? `${pct(r.divY, false, 1)}${r.divY > DIV_EXTREME ? ' ⚠' : r.divAcc ? ' (accumula)' : ''}` : r.divAcc ? 'accumula' : '–';
   const px = r.price != null && r.pxMed != null ? `Prezzo <b>${pxFmt(r.price, r.price)}</b> → <b>${pxFmt(r.pxMed, r.price)}</b> a ${npNow()} (<b class="${cls(r.pxDiff)}">${pct(r.pxDiff, true, 1)}</b>)` : r.price != null ? `Prezzo <b>${eur(r.price)}</b>` : null;
   const parts = [...(px ? [px] : []), `Rendimento atteso <b class="${cls(r.expected)}">${r.expected != null ? pct(r.expected, true, 1) : '–'}</b>`, `Rend. da dividendi <b>${div}</b>`];
+  { const w = watchItem(r.inst?.symbol); if (w) parts.unshift(`⭐ ${watchSince(w, r.price)}`); }
   if (r.anUp != null) parts.push(`Analisti <b class="${cls(r.anUp)}">${pct(r.anUp, true, 0)}${r.anWarn ? ' ⚠' : ''}</b>`);
   { const m = mgNet(r); if (m) parts.push(`Max Growth <b class="${cls(r.maxGrowth)}">${m.net > 0 ? '+' : ''}${eur0(m.net)}</b> (${pct(r.maxGrowth, true, 1)}/anno)`); }
   if (r.avg52 != null) parts.push(`52 sett.: medio <b>${pxFmt(r.avg52, r.price)}</b> · minimo <b>${pxFmt(r.min52, r.price)}</b>`);
@@ -1613,7 +1640,13 @@ function render() {
   }
   const sn = $('#solid-note');
   if (sn) {
-    sn.hidden = !solidMode() && !analystMode();
+    sn.hidden = !solidMode() && !analystMode() && !watchMode();
+    if (watchMode()) {
+      const n = watchList.length;
+      sn.innerHTML = n
+        ? `<b>⭐ Watch list: ${n} ${n === 1 ? 'strumento preferito' : 'strumenti preferiti'}</b>${all.length !== n ? ` (${all.length} in questa scheda)` : ''} · si aggiungono con il pulsante «Condividi» nella scheda dello strumento, si tolgono con «Togli» · sotto il nome: data e prezzo di quando l’hai aggiunto e variazione da allora · stesse colonne di «Netto più probabile» · la lista è salvata in questo browser: su un altro telefono o PC va ricreata · <span class="muted">stime del modello, non una raccomandazione</span>`
+        : '<b>⭐ Watch list vuota</b> · apri la scheda di uno strumento (tocca la riga) e premi «Condividi» in alto: lo strumento entra qui e la scheda viene salvata come file.';
+    }
     if (analystMode()) {
       const withUp = rows.filter((x) => x.anUp != null).length;
       const withDiv = rows.filter((x) => x.divY != null).length;
@@ -1643,7 +1676,7 @@ function render() {
       }
       return `<tr data-symbol="${esc(i.symbol)}">
         <td class="num muted">${rank ?? ''}</td>
-        <td><span class="name" title="${esc(i.name)}">${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${i.leveraged && i.type === 'etf' ? '<span class="added-tag" title="Prodotto a leva / short / inverse: la previsione a 5 anni è poco affidabile, usa orizzonti brevi">⚡</span> ' : ''}${esc(i.name)}</span><span class="ids">${(() => {
+        <td><span class="name" title="${esc(i.name)}">${watchSet.has(i.symbol) ? `<span class="added-tag" title="${esc(watchSince(watchItem(i.symbol), r.price))}">⭐</span> ` : ''}${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${i.leveraged && i.type === 'etf' ? '<span class="added-tag" title="Prodotto a leva / short / inverse: la previsione a 5 anni è poco affidabile, usa orizzonti brevi">⚡</span> ' : ''}${esc(i.name)}</span><span class="ids">${(() => {
           const g = state.results[i.symbol]?.forward;
           const ge = g ? g.growth ?? g.expectedGrowth : null;
           if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
@@ -1769,6 +1802,9 @@ async function openDetail(symbol) {
   $('#d-title').textContent = inst.name;
   $('#d-sub').innerHTML = `${esc(inst.symbol)}${inst.isin ? ' · ' + esc(inst.isin) : ''} · ${TYPE_LABEL[inst.type]}${inst.note ? ` · <span class="neg">${esc(inst.note)}</span>` : ''}`;
   $('#d-body').innerHTML = '<p class="muted">Calcolo in corso…</p>';
+  detailInst = inst;
+  preloadCss();
+  updateShareUi(true);
   dlg.showModal();
   try {
     let r = state.results[inst.symbol];
@@ -1786,6 +1822,184 @@ async function openDetail(symbol) {
     $('#d-body').innerHTML = `<p class="neg">${est ? 'Nessun dato di prezzo disponibile per questo strumento' : 'Impossibile recuperare i dati: ' + esc(e.message)}</p>${estimateHtml(est, inst)}${removeButton(inst)}`;
     bindRemove(inst);
   }
+}
+
+// ---------- «Condividi» nella scheda dello strumento: Watch list + file della scheda
+// Il file è una pagina HTML autonoma (grafici compresi). Sul PC (Edge/Chrome) si scrive direttamente nella cartella scelta
+// una volta sola, per esempio D:\Strumenti preferiti; sul telefono si apre il menu di condivisione del sistema
+// (File, posta, Drive…) o parte il download: un sito non può scrivere da solo sul disco di un altro dispositivo.
+let detailInst = null;
+let cardCss = null;
+const CARD_CSS_MIN = 'body{font-family:system-ui,sans-serif;line-height:1.4;color:#16202c}.muted{color:#667}.pos{color:#0a7d4f}.neg{color:#b3261e}.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}.kpi,.card{border:1px solid #d9dde3;border-radius:10px;padding:10px;margin-bottom:10px}.kpi .v{font-size:20px;font-weight:700}table{border-collapse:collapse;width:100%}td,th{padding:4px 6px;border-bottom:1px solid #e6e9ee;text-align:left}.num{text-align:right}';
+function preloadCss() {
+  if (cardCss != null) return;
+  cardCss = '';
+  fetch('styles.css')
+    .then((r) => (r.ok ? r.text() : ''))
+    .then((t) => {
+      cardCss = t;
+    })
+    .catch(() => {
+      /* resta lo stile minimo */
+    });
+}
+function shareMsg(html) {
+  const el = $('#d-share-msg');
+  if (!el) return;
+  el.hidden = !html;
+  el.innerHTML = html || '';
+}
+function updateShareUi(reset = false) {
+  const on = !!detailInst && watchSet.has(detailInst.symbol);
+  const b = $('#d-share');
+  if (b) b.textContent = on ? '⭐ Condividi' : '☆ Condividi';
+  const u = $('#d-unwatch');
+  if (u) u.hidden = !on;
+  if (reset) shareMsg(on ? `⭐ ${esc(watchSince(watchItem(detailInst.symbol), state.quotes[detailInst.symbol]?.priceEur))}` : '');
+}
+function buildCard(inst, now) {
+  const src = $('#d-body');
+  const clone = src.cloneNode(true);
+  const canv = [...src.querySelectorAll('canvas')];
+  [...clone.querySelectorAll('canvas')].forEach((cv, k) => {
+    const img = document.createElement('img');
+    img.className = 'chart';
+    img.alt = 'grafico';
+    try {
+      img.src = canv[k].toDataURL('image/png');
+    } catch {
+      /* grafico non esportabile: resta il testo */
+    }
+    cv.replaceWith(img);
+  });
+  clone.querySelectorAll('button, input, select, script').forEach((el) => el.remove());
+  return cardDocument({
+    title: inst.name,
+    sub: $('#d-sub').textContent,
+    bodyHtml: clone.innerHTML,
+    css: cardCss || CARD_CSS_MIN,
+    exportedAt: new Date(now).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    dataAt: dataWhen(),
+    source: /^https?:/.test(location.href) ? location.origin + location.pathname : '',
+  });
+}
+// cartella scelta sul PC: resta salvata in questo browser (IndexedDB), il permesso di scrittura si conferma con un clic
+function favDb() {
+  return new Promise((res, rej) => {
+    const q = indexedDB.open('trmc-fs', 1);
+    q.onupgradeneeded = () => q.result.createObjectStore('kv');
+    q.onsuccess = () => res(q.result);
+    q.onerror = () => rej(q.error);
+  });
+}
+async function favGet() {
+  const db = await favDb();
+  return new Promise((res, rej) => {
+    const q = db.transaction('kv').objectStore('kv').get('favDir');
+    q.onsuccess = () => res(q.result || null);
+    q.onerror = () => rej(q.error);
+  });
+}
+async function favSet(handle) {
+  const db = await favDb();
+  return new Promise((res, rej) => {
+    const t = db.transaction('kv', 'readwrite');
+    t.objectStore('kv').put(handle, 'favDir');
+    t.oncomplete = () => res();
+    t.onerror = () => rej(t.error);
+  });
+}
+async function favDir(pick) {
+  let dir = pick ? null : await favGet().catch(() => null);
+  if (dir) {
+    let p = dir.queryPermission ? await dir.queryPermission({ mode: 'readwrite' }) : 'granted';
+    if (p !== 'granted' && dir.requestPermission) p = await dir.requestPermission({ mode: 'readwrite' });
+    if (p === 'granted') return dir;
+  }
+  dir = await window.showDirectoryPicker({ id: 'trmc-preferiti', mode: 'readwrite' });
+  await favSet(dir).catch(() => {
+    /* la cartella andrà scelta di nuovo la prossima volta */
+  });
+  return dir;
+}
+function downloadCard(html, name) {
+  const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+async function shareCard({ pick = false, download = false } = {}) {
+  const inst = detailInst;
+  if (!inst) return;
+  const now = Date.now();
+  const was = watchSet.has(inst.symbol);
+  setWatch(addWatch(watchList, inst, { now, price: state.quotes[inst.symbol]?.priceEur ?? null }));
+  updateShareUi();
+  setTimeout(render, 60); // stella accanto al nome e sezione «Watch list» aggiornate
+  const name = cardFileName(inst, now);
+  const html = buildCard(inst, now);
+  const head = was ? '⭐ Già nella Watch list' : '⭐ Aggiunto alla Watch list';
+  const fsApi = typeof window.showDirectoryPicker === 'function';
+  if (download) {
+    downloadCard(html, name);
+    shareMsg(`${head} · scheda scaricata: <b>${esc(name)}</b>`);
+    return;
+  }
+  if (fsApi) {
+    try {
+      if (pick || !(await favGet().catch(() => null))) shareMsg(`${head} · nella finestra che si apre scegli la cartella «${FAV_FOLDER}» sul disco D (si fa una volta sola)…`);
+      const dir = await favDir(pick);
+      const fh = await dir.getFileHandle(name, { create: true });
+      const w = await fh.createWritable();
+      await w.write(new Blob([html], { type: 'text/html' }));
+      await w.close();
+      shareMsg(`${head} · scheda salvata nella cartella «${esc(dir.name)}»: <b>${esc(name)}</b> <button type="button" class="ghost small" data-share="folder">Cambia cartella</button>`);
+      return;
+    } catch (e) {
+      if (e?.name === 'AbortError') {
+        shareMsg(`${head} · cartella non scelta, file non salvato. <button type="button" class="ghost small" data-share="folder">Scegli la cartella</button> <button type="button" class="ghost small" data-share="download">Scarica il file</button>`);
+        return;
+      }
+      /* scrittura non riuscita (permesso negato, cartella spostata): si scarica il file */
+    }
+  }
+  if (!fsApi) {
+    try {
+      const file = new File([html], name, { type: 'text/html' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: inst.name });
+        shareMsg(`${head} · scheda condivisa: <b>${esc(name)}</b>`);
+        return;
+      }
+    } catch (e) {
+      if (e?.name === 'AbortError') {
+        shareMsg(`${head} · condivisione del file annullata. <button type="button" class="ghost small" data-share="download">Scarica il file</button>`);
+        return;
+      }
+      /* condivisione non disponibile: si scarica il file */
+    }
+  }
+  downloadCard(html, name);
+  shareMsg(`${head} · scheda scaricata: <b>${esc(name)}</b> (cartella dei download di questo dispositivo)`);
+}
+function bindShare() {
+  $('#d-share')?.addEventListener('click', () => shareCard());
+  $('#d-unwatch')?.addEventListener('click', () => {
+    if (!detailInst) return;
+    setWatch(removeWatch(watchList, detailInst.symbol));
+    updateShareUi();
+    shareMsg('Tolto dalla Watch list (i file già salvati restano dove sono).');
+    render();
+  });
+  $('#d-share-msg')?.addEventListener('click', (e) => {
+    const k = e.target.closest('[data-share]')?.dataset.share;
+    if (k === 'folder') shareCard({ pick: true });
+    else if (k === 'download') shareCard({ download: true });
+  });
 }
 
 // Versione online: richieste di aggiunta/rimozione come issue GitHub (gestite da manage-isin.yml).
@@ -3673,6 +3887,7 @@ function bind() {
     w.scrollTo({ left: back ? 0 : x, behavior: 'smooth' });
     $('#np-jump').textContent = back ? 'Vai agli indicatori →' : '← Torna ai periodi';
   });
+  bindShare();
   const fm = $('#funnel-mode');
   if (fm) {
     fm.value = state.view.funnel || 'short';

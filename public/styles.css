@@ -173,6 +173,18 @@ dialog.sheet {
 dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
 .sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); z-index: 1; }
 .sheet-head h2 { margin: 0; font-size: 18px; }
+#detail .sheet-head { flex-wrap: wrap; }
+#detail .sheet-head > div:first-child { flex: 1 1 0; min-width: 0; }
+.sheet-actions { display: flex; gap: 6px; align-items: center; flex: none; }
+.share-msg { flex: 1 0 100%; font-size: 13px; line-height: 1.4; padding: 8px 10px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); overflow-wrap: anywhere; }
+.share-msg button { margin-left: 4px; }
+@media (max-width: 700px) {
+  /* telefono: i pulsanti della scheda su una riga propria, sopra il nome dello strumento */
+  #detail .sheet-head { padding: 10px 14px; gap: 8px; }
+  #detail .sheet-actions { order: -1; flex: 1 0 100%; justify-content: flex-end; }
+  #detail .sheet-head > div:first-child { flex: 1 1 100%; }
+  .share-msg { font-size: 12px; padding: 6px 8px; }
+}
 #d-body, .add-body { padding: 16px 20px 22px; }
 
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }

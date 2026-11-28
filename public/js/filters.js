@@ -36,7 +36,9 @@ export const RANGE_KEYS = [...RANGE_COLS.flatMap(([k, d]) => [k, d]), ...SPREAD_
 export const RG_PERIODS = [[365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
 export const balKey = (days) => 'bal' + days;
 export const radjKey = (days) => 'radj' + days;
-export const RISK_KEYS = ['stress', 'effNet', ...RG_PERIODS.map(([d]) => balKey(d)), ...RG_PERIODS.map(([d]) => radjKey(d))];
+// Asimmetria del rischio: perdita finale nel 5% peggiore ÷ guadagno tipico (mediano); sotto 1 il guadagno tipico supera la perdita sfavorevole
+export const asymKey = (days) => 'asym' + days;
+export const RISK_KEYS = ['stress', 'effNet', ...RG_PERIODS.map(([d]) => balKey(d)), ...RG_PERIODS.map(([d]) => radjKey(d)), ...RG_PERIODS.map(([d]) => asymKey(d))];
 // Filtri con minimo e massimo in cima al pannello: probabilità di perdita e di guadagno netto oltre il 50% (5 anni, scenari simulati)
 export const PROB_FILTERS = [['probLoss', 'Perdita'], ['prob50', 'Guadagno > 50%']];
 export const AN_UP_LEVELS = [10, 25, 50];
@@ -60,6 +62,9 @@ export const INDICATORS = [
   { key: radjKey(365), label: 'Guadagno corretto per il rischio a 1 anno', pct: true },
   { key: radjKey(1095), label: 'Guadagno corretto per il rischio a 3 anni', pct: true },
   { key: 'riskAdj', label: 'Guadagno corretto per il rischio 5a', pct: true },
+  { key: asymKey(365), label: 'Asimmetria del rischio a 1 anno: perdita nel 5% peggiore ÷ guadagno tipico (più basso = meglio)', pct: false },
+  { key: asymKey(1095), label: 'Asimmetria del rischio a 3 anni: perdita nel 5% peggiore ÷ guadagno tipico (più basso = meglio)', pct: false },
+  { key: 'ratioFinal', label: 'Asimmetria del rischio a 5 anni (rapporto perdita finale/guadagno)', pct: false },
   { key: 'probLoss', label: 'Probabilità di perdita (5 anni)', pct: true },
   { key: 'prob50', label: 'Probabilità di guadagno netto maggiore del 50% (5 anni)', pct: true },
   // prezzo medio e minimo a 52 settimane e a 90 giorni (in euro) e distanza del prezzo attuale da ciascuno (in %)
@@ -91,7 +96,6 @@ export const INDICATORS = [
   { key: 'balancedOverLoss', label: 'Rapporto guadagno bilanciato / perdita max', pct: false },
   { key: 'meanOverLoss', label: 'Rapporto guadagno medio / perdita max', pct: false },
   { key: 'net019OverLoss', label: 'Rapporto Netto 019 / perdita max 5a', pct: false },
-  { key: 'ratioFinal', label: 'Rapporto perdita finale/guadagno', pct: false },
   { key: 'finalLoss', label: 'Perdita finale 5a (caso sfavorevole)', pct: true },
   { key: 'ratioMedian', label: 'Rapporto drawdown mediano/guadagno', pct: false },
   { key: 'netGain', label: 'Guadagno mediano 5a', pct: true },

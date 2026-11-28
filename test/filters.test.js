@@ -198,7 +198,13 @@ test('differenza tra prezzo più probabile a 6 mesi e prezzo attuale: colonna, i
 test('rischio: stress test, guadagno efficiente, bilanciato e corretto per il rischio a 1, 3 e 5 anni; filtri sulle probabilità', async () => {
   const { INDICATORS, RG_PERIODS, RISK_KEYS, PROB_FILTERS, balKey, radjKey, activeFilters, passes } = await import('../public/js/filters.js');
   assert.deepEqual(RG_PERIODS.map(([d]) => d), [365, 1095, 1825]);
-  assert.deepEqual(RISK_KEYS, ['stress', 'effNet', 'bal365', 'bal1095', 'bal1825', 'radj365', 'radj1095', 'radj1825']);
+  assert.deepEqual(RISK_KEYS, ['stress', 'effNet', 'bal365', 'bal1095', 'bal1825', 'radj365', 'radj1095', 'radj1825', 'asym365', 'asym1095', 'asym1825']);
+  // asimmetria del rischio: rapporto (non percentuale), più basso = meglio; ∞ non passa un filtro con massimo
+  for (const k of ['asym365', 'asym1095', 'ratioFinal']) assert.ok(INDICATORS.some((x) => x.key === k && !x.pct && /Asimmetria del rischio/.test(x.label)), k);
+  const as = activeFilters({ asym365: { max: '1' } });
+  assert.equal(passes({ asym365: 0.8 }, as), true);
+  assert.equal(passes({ asym365: 1.31 }, as), false);
+  assert.equal(passes({ asym365: Infinity }, as), false);
   for (const k of ['stress', 'plausible', balKey(365), balKey(1095), 'balanced', radjKey(365), radjKey(1095), 'riskAdj', 'probLoss', 'prob50']) assert.ok(INDICATORS.some((x) => x.key === k && x.pct), k);
   assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
   assert.deepEqual(PROB_FILTERS.map(([k]) => k), ['probLoss', 'prob50']);

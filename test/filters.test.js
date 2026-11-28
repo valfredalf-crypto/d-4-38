@@ -263,3 +263,18 @@ test('guadagno efficiente (Kelly) meno stress test a 1, 3 e 5 anni: chiavi, indi
   assert.equal(passes({ ks1825: 2447 - 3480 }, a), false);
   assert.equal(passes({ ks1825: 500 }, a), true);
 });
+
+test('mediano e rendimento atteso pesati per la probabilità di perdita a 1, 3 e 5 anni: in euro', async () => {
+  const { INDICATORS, SIM_MP_KEYS, simMpKey, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(SIM_MP_KEYS, ['simMp365', 'simMp1095', 'simMp1825']);
+  assert.equal(simMpKey(365), 'simMp365');
+  for (const k of SIM_MP_KEYS) assert.ok(INDICATORS.some((x) => x.key === k && x.eur && x.strict && !x.pct && /pesati per la probabilità di perdita/.test(x.label)), k);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  // formula scelta dall'utente: atteso € × prob. di guadagno − capitale × prob. di perdita + mediano €
+  const value = (er, pl, median, cap) => er * (1 - pl) * cap - pl * cap + median * cap;
+  assert.equal(Math.round(value(0.641, 0.47, 0.058, 10000)), -723);
+  const a = activeFilters({ simMp1825: { min: '0' } });
+  assert.equal(passes({ simMp1825: value(0.641, 0.47, 0.058, 10000) }, a), false);
+  assert.equal(passes({ simMp1825: value(0.6, 0.2, 0.3, 10000) }, a), true);
+  assert.equal(passes({ simMp1825: null }, a), false);
+});

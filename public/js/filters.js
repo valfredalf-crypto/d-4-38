@@ -13,6 +13,10 @@ export const simMidKey = (days) => SIM_KEY + days;
 export const SIM_ADJ = [[365, '1 anno'], [1095, '3 anni'], [1825, '5 anni']];
 export const simAdjKey = (days) => 'simAdj' + days;
 export const SIM_ADJ_KEYS = SIM_ADJ.map(([d]) => simAdjKey(d));
+// Atteso pesato per le probabilità, in euro: rendimento atteso × probabilità di guadagno − capitale × probabilità di perdita
+// + mediano degli scenari (formula scelta dall'utente)
+export const simMpKey = (days) => 'simMp' + days;
+export const SIM_MP_KEYS = SIM_ADJ.map(([d]) => simMpKey(d));
 // Probabilità di guadagno a 5 anni: quota dei 2.000 scenari che finisce in positivo; soglie dei pulsanti rapidi in punti percentuali
 export const SIM_P_KEY = 'simP';
 export const SIM_P_LEVELS = [70, 80, 90];
@@ -101,6 +105,7 @@ export const INDICATORS = [
   ...SIM_MID.map(([d, , l]) => ({ key: simMidKey(d), label: `Guadagno netto mediano su 2.000 scenari, ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: SIM_KEY, label: 'Guadagno netto mediano su 2.000 scenari, 5 anni (€)', pct: false, eur: true, strict: true },
   ...SIM_ADJ.map(([d, l]) => ({ key: simAdjKey(d), label: `Netto mediano 2.000 scenari tolte le perdite, ${l} (€)`, pct: false, eur: true, strict: true })),
+  ...SIM_ADJ.map(([d, l]) => ({ key: simMpKey(d), label: `Mediano 2.000 scenari e rendimento atteso pesati per la probabilità di perdita, ${l} (€)`, pct: false, eur: true, strict: true })),
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: p90Key(d), label: `Guadagno netto nel 90% degli scenari a ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: SIM_P90_KEY, label: 'Guadagno netto nel 90% degli scenari a 5 anni (€, 2.000 scenari)', pct: false, eur: true, strict: true },
   ...P_GAIN_PERIODS.map(([d, l]) => ({ key: pGainKey(d), label: `Probabilità di guadagno a ${l}`, pct: true })),

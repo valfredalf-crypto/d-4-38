@@ -52,6 +52,9 @@ export const QUALITY_KEYS = ['qScore', 'qGrowth', ...RG_PERIODS.map(([d]) => erK
 // Differenziale delle probabilità (come nella scheda): a 1 e 3 anni «almeno +25%» − «in perdita», a 5 anni «almeno +50%» − «in perdita»
 export const pdKey = (days) => 'pd' + days;
 export const PD_KEYS = RG_PERIODS.map(([d]) => pdKey(d));
+// Guadagno netto efficiente con la previsione di Kelly meno la perdita in stress test (mercato −30% × beta), a 1, 3 e 5 anni
+export const ksKey = (days) => 'ks' + days;
+export const KS_KEYS = RG_PERIODS.map(([d]) => ksKey(d));
 // Filtri con minimo e massimo in cima al pannello: probabilità di perdita e di guadagno netto oltre il 50% (5 anni, scenari simulati)
 export const PROB_FILTERS = [['probLoss', 'Perdita'], ['prob50', 'Guadagno > 50%']];
 export const AN_UP_LEVELS = [10, 25, 50];
@@ -69,6 +72,7 @@ export const INDICATORS = [
   // rischio: gli stessi indicatori della scheda dello strumento
   { key: 'stress', label: 'Perdita in stress test: mercato −30% × beta (numero positivo: 25 = perdita fino al 25%)', pct: true },
   { key: 'plausible', label: 'Guadagno netto efficiente 5a (prudenza scelta)', pct: true },
+  ...RG_PERIODS.map(([d, l]) => ({ key: ksKey(d), label: `Guadagno netto efficiente (Kelly) − perdita in stress test, ${l} (€)`, pct: false, eur: true, strict: true })),
   { key: balKey(365), label: 'Guadagno bilanciato crescita/rischio a 1 anno', pct: true },
   { key: balKey(1095), label: 'Guadagno bilanciato crescita/rischio a 3 anni', pct: true },
   { key: 'balanced', label: 'Guadagno bilanciato crescita/rischio 5a', pct: true },

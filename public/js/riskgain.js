@@ -53,14 +53,16 @@ export function riskGain({ lnMean, sigma, tax = 0.26, costs = 0 } = {}) {
   const finalLoss = Math.max(0, -net(Z05));
   let eg = 0;
   let el = 0;
+  let lg = 0; // somma dei logaritmi della ricchezza finale: equivalente certo di Kelly (utilità logaritmica)
   for (const z of Z) {
     const x = net(z);
     eg += credibleGain(x, p75);
     if (x < 0) el -= x;
+    lg += Math.log(Math.max(1 + x, 0.02)); // stesso limite inferiore dell'equivalente certo degli scenari simulati
   }
   const expGain = eg / RG_POINTS;
   const expLoss = el / RG_POINTS;
-  return { expGain, expLoss, balanced: expGain - LOSS_AVERSION * expLoss, median, finalLoss, riskAdj: median - finalLoss };
+  return { expGain, expLoss, balanced: expGain - LOSS_AVERSION * expLoss, median, finalLoss, riskAdj: median - finalLoss, kelly: Math.exp(lg / RG_POINTS) - 1 };
 }
 
 /**

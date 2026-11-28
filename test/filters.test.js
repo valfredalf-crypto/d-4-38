@@ -251,3 +251,15 @@ test('netto mediano degli scenari tolte le perdite a 1, 3 e 5 anni: chiavi, indi
   assert.equal(passes({ simAdj1825: 1200 }, a), true);
   assert.equal(passes({ simAdj1825: 0 }, a), false);
 });
+
+test('guadagno efficiente (Kelly) meno stress test a 1, 3 e 5 anni: chiavi, indicatori in euro e filtro', async () => {
+  const { INDICATORS, KS_KEYS, ksKey, activeFilters, passes } = await import('../public/js/filters.js');
+  assert.deepEqual(KS_KEYS, ['ks365', 'ks1095', 'ks1825']);
+  assert.equal(ksKey(1825), 'ks1825');
+  for (const k of KS_KEYS) assert.ok(INDICATORS.some((x) => x.key === k && x.eur && x.strict && !x.pct && /Kelly\) − perdita in stress test/.test(x.label)), k);
+  assert.equal(new Set(INDICATORS.map((x) => x.key)).size, INDICATORS.length, 'nessun indicatore doppio');
+  // esempio della scheda: Kelly +2.447 € − stress 3.480 € = −1.033 €: non supera il filtro «maggiore di 0 €»
+  const a = activeFilters({ ks1825: { min: '0' } });
+  assert.equal(passes({ ks1825: 2447 - 3480 }, a), false);
+  assert.equal(passes({ ks1825: 500 }, a), true);
+});

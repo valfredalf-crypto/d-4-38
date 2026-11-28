@@ -11,7 +11,7 @@ import { distanceFrom } from './range.js';
 import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
-import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_MID, simMidKey, SIM_ADJ, simAdjKey, SIM_ADJ_KEYS, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, erKey, QUALITY_KEYS, pdKey, PD_KEYS, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
+import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_MID, simMidKey, SIM_ADJ, simAdjKey, SIM_ADJ_KEYS, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, erKey, QUALITY_KEYS, pdKey, PD_KEYS, ksKey, KS_KEYS, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { riskGain, probNetAtLeast, netQuantile } from './riskgain.js';
 import { DEFAULT_OUTLOOK } from './outlook.js';
 import { qualityScore } from './quality.js';
@@ -863,7 +863,7 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore' || RISK_KEYS.includes(key) || QUALITY_KEYS.includes(key) || PD_KEYS.includes(key) || SIM_ADJ_KEYS.includes(key) || SIM_MID.some(([d]) => simMidKey(d) === key);
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore' || RISK_KEYS.includes(key) || QUALITY_KEYS.includes(key) || PD_KEYS.includes(key) || KS_KEYS.includes(key) || SIM_ADJ_KEYS.includes(key) || SIM_MID.some(([d]) => simMidKey(d) === key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;
@@ -1354,6 +1354,28 @@ function pdCells(r) {
     return `<td class="num pd-col ${cls(x.diff)}" title="Differenziale a ${rgLong(d, l)}: probabilità di guadagno netto di almeno ${s} (${pct(x.pg, false, 0)}) − probabilità di perdita (${pct(x.pl, false, 0)}) = ${ptFmt(x.diff)}, ${rgSrc(d)}."><b class="big">${ptFmt(x.diff)}</b><span class="eur">≥ ${s} ${pct(x.pg, false, 0)} · perdita ${pct(x.pl, false, 0)}</span></td>`;
   }).join('');
 }
+// Guadagno netto efficiente con la previsione di Kelly meno la perdita in stress test, a 1, 3 e 5 anni
+function ksHeads() {
+  return RG_PERIODS.map(([d, l]) => {
+    const k = ksKey(d);
+    const th = document.createElement('th');
+    const on = state.view.sort.key === k;
+    th.className = 'num ks-col' + (on ? ' sorted' : '');
+    th.dataset.sort = k;
+    th.title = `Guadagno netto efficiente a ${rgLong(d, l)} con la previsione di Kelly (il guadagno sicuro che vale quanto l’insieme incerto dei risultati, secondo il criterio di Kelly: è la voce «Kelly» della scheda dello strumento), ${rgSrc(d)}, meno la perdita in stress test (perdita temporanea se il mercato scende del 30%: beta × 30%), sul capitale impostato. Sotto, i due valori da cui nasce. Non vale per le criptovalute, che non hanno stress test. Tocca per ordinare dal più alto.`;
+    th.innerHTML = `<span class="l">Guadagno efficiente (Kelly) − stress test ${rgLong(d, l)}</span><span class="s">Kelly−stress ${rgShort(d)}</span>${on ? (state.view.sort.dir < 0 ? ' ▼' : ' ▲') : ''}`;
+    return th;
+  });
+}
+function ksCells(r) {
+  const amt = state.settings.mc.amount || 10000;
+  return RG_PERIODS.map(([d, l]) => {
+    const x = r['ksx' + d];
+    if (!x) return `<td class="num ks-col muted" title="Non disponibile a ${rgLong(d, l)}: ${r.stress == null ? 'lo stress test non vale per le criptovalute o manca la previsione' : 'previsione o volatilità mancante'}">–</td>`;
+    const v = x.value * amt;
+    return `<td class="num ks-col ${cls(v)}" title="A ${rgLong(d, l)}: guadagno netto efficiente con la previsione di Kelly ${sEur(x.kelly * amt)} (${pct(x.kelly, true, 1)}) − perdita in stress test ${eur0(x.stress * amt)} (${pct(x.stress, false, 1)}, mercato −30% × beta) = ${sEur(v)} su ${eur0(amt)}, ${rgSrc(d)}."><b class="big">${sEur(v)}</b><span class="eur">Kelly ${sEur(x.kelly * amt)} − stress ${eur0(x.stress * amt)}</span></td>`;
+  }).join('');
+}
 function pxCells(r) {
   const now = r.price;
   const med = r.pxMed;
@@ -1383,6 +1405,7 @@ function mInd(r) {
       { const q = r.q; if (q || r.qGrowth != null) parts.push(`${q ? `Punteggio qualità <b>${Math.round(q.score)}</b> · ` : ''}crescita utili <b class="${cls(r.qGrowth)}">${r.qGrowth != null ? pct(r.qGrowth, true, 1) : '–'}</b> · rend. atteso ${RG_PERIODS.map(([d]) => { const x = r[erKey(d)]; return `${rgShort(d)} <b class="${cls(x)}">${x != null ? pct(x, true, 0) : '–'}</b>`; }).join(' · ')}`); }
       { const amt2 = state.settings.mc.amount || 10000; const hs = [[365, '1a'], [1095, '3a'], [1825, `${simYears()}a`]].filter(([d]) => r.simH?.[d]); if (hs.length) parts.push(`Mediano ${simCount()} scenari: ${hs.map(([d, s]) => { const x = r.simH[d]; return `${s} <b class="${cls(x.median)}">${sEur(x.median * amt2)}</b>${x.expLoss != null ? ` (perdite attese ${x.expLoss > 0 ? '−' : ''}${eur0(x.expLoss * amt2)}; tolte le perdite <b class="${cls(x.median - x.expLoss)}">${sEur((x.median - x.expLoss) * amt2)}</b>)` : ''}`; }).join(' · ')}`); }
       if (RG_PERIODS.some(([d]) => r['pdx' + d])) parts.push(`Differenziale probabilità: ${RG_PERIODS.map(([d]) => { const x = r['pdx' + d]; return `${rgShort(d)} <b class="${x ? cls(x.diff) : ''}">${x ? ptFmt(x.diff) : '–'}</b>`; }).join(' · ')}`);
+      if (RG_PERIODS.some(([d]) => r['ksx' + d])) parts.push(`Efficiente (Kelly) − stress test: ${RG_PERIODS.map(([d]) => { const x = r['ksx' + d]; const amt3 = state.settings.mc.amount || 10000; return `${rgShort(d)} <b class="${x ? cls(x.value) : ''}">${x ? sEur(x.value * amt3) : '–'}</b>`; }).join(' · ')}`);
       parts.push(`Asimmetria del rischio: ${RG_PERIODS.map(([d]) => { const v = r[asymKey(d)]; return `${rgShort(d)} <b class="${v == null ? '' : v < 1 ? 'pos' : 'neg'}">${asymFmt(v)}</b>`; }).join(' · ')}`);
     }
     if (r.probLoss != null) parts.push(`Probabilità ${simYears()}a: perdita <b>${pct(r.probLoss, false, 0)}</b>${r.prob50 != null ? ` · guadagno &gt; 50% <b>${pct(r.prob50, false, 0)}</b>` : ''}`);
@@ -1740,6 +1763,13 @@ function rowValuesCalc(i) {
     Object.defineProperty(v, asymKey(d), { enumerable: false, configurable: true, get: () => (d === 1825 ? asymOf(get(), sim?.ratioFinal) : asymQuick(distCached(i, d))) });
     // rendimento atteso del periodo (lordo), dal modello delle previsioni
     Object.defineProperty(v, erKey(d), { enumerable: false, configurable: true, get: () => npShown(i, d)?.periodMove ?? null });
+    // guadagno netto efficiente con la previsione di Kelly (5 anni: scenari simulati, come nella scheda; 1 e 3 anni: modello
+    // delle previsioni) meno la perdita in stress test (mercato −30% × beta)
+    Object.defineProperty(v, 'ksx' + d, { enumerable: false, configurable: true, get: () => {
+      const k = d === 1825 ? (sim && Number.isFinite(sim.ce1) ? sim.ce1 : null) : rgCached(i, d)?.kelly ?? null;
+      return k == null || v.stress == null ? null : { kelly: k, stress: v.stress, value: k - v.stress };
+    } });
+    Object.defineProperty(v, ksKey(d), { enumerable: false, configurable: true, get: () => { const x = v['ksx' + d]; return x ? x.value * (state.settings.mc.amount || 10000) : null; } });
     // differenziale delle probabilità, come nella scheda
     Object.defineProperty(v, 'pdx' + d, { enumerable: false, configurable: true, get: () => probDiff(i, d, sim) });
     Object.defineProperty(v, pdKey(d), { enumerable: false, configurable: true, get: () => probDiff(i, d, sim)?.diff ?? null });
@@ -1803,7 +1833,7 @@ function render() {
   }
   document.body.classList.toggle('np-mode', shortMode());
   // intestazioni delle 9 colonne dei periodi, subito dopo «Strumento»
-  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.sa-col, #table thead th.simp-col, #table thead th.pd-col, #table thead th.rk-col, #table thead th.q-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
+  $$('#table thead th.np-col, #table thead th.px-col, #table thead th.rg-col, #table thead th.mg-col, #table thead th.sim-col, #table thead th.sa-col, #table thead th.simp-col, #table thead th.pd-col, #table thead th.rk-col, #table thead th.ks-col, #table thead th.q-col, #table thead th.an-col, #table thead th.trend-col, #table thead th.hist-col').forEach((th) => th.remove());
   document.body.classList.toggle('solid-mode', solidMode());
   if (shortMode()) {
     const nameTh = $('#table thead th[data-sort="name"]');
@@ -1839,6 +1869,7 @@ function render() {
     }
     for (const th of pdHeads()) { after.after(th); after = th; }
     for (const th of riskHeads()) { after.after(th); after = th; }
+    for (const th of ksHeads()) { after.after(th); after = th; }
     if (!qualityMode()) for (const th of qHeads()) { after.after(th); after = th; }
     if (!analystMode()) for (const th of anHeads()) { after.after(th); after = th; }
     // crescita degli ultimi 30 giorni: ordina la sezione «Solidi e in crescita»
@@ -1866,7 +1897,7 @@ function render() {
   // «Netto più probabile»: all'apertura i dati statici (di ore fa) vengono sostituiti dopo pochi secondi da quelli live e la
   // classifica cambiava a vista d'occhio. Si mostra solo con i dati aggiornati (al massimo 25 s di attesa).
   if (STATIC && shortMode() && !state.liveReady && performance.now() < 25000) {
-    $('#table tbody').innerHTML = '<tr><td colspan="60" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
+    $('#table tbody').innerHTML = '<tr><td colspan="64" class="muted">Carico gli ultimi dati di mercato… La classifica «Netto più probabile» si mostra solo con dati aggiornati, per non farla cambiare subito dopo l’apertura.</td></tr>';
     return;
   }
   const all = filtered();
@@ -1938,6 +1969,7 @@ function render() {
         ${shortMode() ? [...P_GAIN_PERIODS.map(([d, l]) => [p90Key(d), l, r[pGainKey(d)]]), [SIM_P90_KEY, `${simYears()} anni`, r.simP]].map(([k, l, p]) => { const x = r[k]; return x == null ? '<td class="num simp-col muted">–</td>' : `<td class="num simp-col ${cls(x)}" title="In 9 casi su 10 il guadagno netto a ${l} è almeno ${eur0(x)}; in 1 caso su 10 va peggio.${p != null ? ` Probabilità di guadagno a ${l}: ${Math.round(p * 100)}%.` : ''}"><b class="big">${x > 0 ? '+' : ''}${eur0(x)}</b></td>`; }).join('') : ''}
         ${shortMode() ? pdCells(r) : ''}
         ${shortMode() ? riskCells(r) : ''}
+        ${shortMode() ? ksCells(r) : ''}
         ${shortMode() && !qualityMode() ? qCells(r) : ''}
         ${shortMode() && !analystMode() ? anCells(r) : ''}
         ${solidMode() ? (r.tScore == null ? '<td class="num trend-col muted" title="Crescita a 30 giorni non ancora disponibile per questo strumento">–</td>' : `<td class="num trend-col ${cls(r.tScore)}" title="Ultimi 30 giorni, per seduta: pendenza della curva del rendimento ${pct(r.tSl, true, 2)} · media ponderata degli incrementi (più peso alle sedute recenti) ${pct(r.tWm, true, 2)}"><b class="big">${pct(r.tScore, true, 2)}</b><span class="eur">pend. ${pct(r.tSl, true, 2)} · media ${pct(r.tWm, true, 2)}</span></td>`) : ''}
@@ -4236,7 +4268,7 @@ function bind() {
       if (s.key === key) s.dir = -s.dir;
       else {
         s.key = key;
-        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, ...SIM_MID.map(([d]) => simMidKey(d)), SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress' && !k.startsWith('asym')), ...QUALITY_KEYS, ...PD_KEYS, ...SIM_ADJ_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
+        s.dir = [...NP_KEYS, ...HIST_KEYS, 'tScore', SIM_KEY, ...SIM_MID.map(([d]) => simMidKey(d)), SIM_P_KEY, ...P_GAIN_PERIODS.map(([d]) => pGainKey(d)), ...P90_KEYS, ...AN_KEYS, 'pxMed', 'pxDiff', ...RANGE_KEYS, ...RISK_KEYS.filter((k) => k !== 'stress' && !k.startsWith('asym')), ...QUALITY_KEYS, ...PD_KEYS, ...KS_KEYS, ...SIM_ADJ_KEYS, 'mgScore', 'maxGrowth', 'proj', 'proj019', 'projOpt', 'cagr', 'netGain', 'netMean', 'netP25', 'riskAdj', 'balanced', 'plausible', 'overall', 'sharpe', 'sortino', 'balancedOverLoss', 'meanOverLoss', 'net019OverLoss', 'prob50', 'prob25', 'expected', 'growthExp', 'change', 'varM', 'varM3', 'varY', 'price', 'growth'].includes(key) ? -1 : 1;
       }
       render();
     }

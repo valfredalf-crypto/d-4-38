@@ -112,3 +112,20 @@ test('probabilità di rendimento netto a 1 e 3 anni: coerenti con gli scenari si
   assert.ok(Math.abs(netQuantile(d1, 0.5) * cap - h.medianNet) < 1e-6);
   assert.ok(Math.abs(netQuantile(d1, 0.1) * cap - h.p10Net) < 0.01);
 });
+
+test('equivalente certo di Kelly sulla distribuzione del modello: media geometrica dei risultati, come negli scenari simulati', async () => {
+  const { certaintyEquivalent } = await import('../public/js/montecarlo.js');
+  const dist = { lnMean: 0.08, sigma: 0.3, tax: 0.26, costs: 0.0002 };
+  const x = riskGain(dist);
+  // stesso calcolo dell'equivalente certo degli scenari (γ = 1) sugli stessi 400 punti
+  const nets = [];
+  for (let k = 0; k < RG_POINTS; k++) { const g = Math.exp(dist.lnMean + normInv((k + 0.5) / RG_POINTS) * dist.sigma) - 1; nets.push(Math.max(-1, g - (g > 0 ? g * dist.tax : 0) - dist.costs)); }
+  assert.ok(Math.abs(x.kelly - certaintyEquivalent(nets, 1)) < 1e-12);
+  // Kelly sta sotto la media dei risultati e non sopra il mediano gonfiato dai guadagni: più rischio, valore più basso
+  const mean = nets.reduce((a, b) => a + b, 0) / nets.length;
+  assert.ok(x.kelly < mean);
+  assert.ok(riskGain({ ...dist, sigma: 0.6 }).kelly < x.kelly);
+  // quasi senza rischio coincide con il guadagno netto
+  const calm = riskGain({ lnMean: 0.05, sigma: 0.0005, tax: 0.26, costs: 0 });
+  assert.ok(Math.abs(calm.kelly - (Math.exp(0.05) - 1) * 0.74) < 1e-4);
+});

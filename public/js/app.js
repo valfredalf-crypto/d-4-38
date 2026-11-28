@@ -12,7 +12,7 @@ import { evaluateSolid, stampAlerts } from './solid-alerts.js';
 import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
-import { riskGain } from './riskgain.js';
+import { riskGain, probNetAtLeast, netQuantile } from './riskgain.js';
 import { WATCH_KEY, FAV_FOLDER, parseWatch, addWatch, removeWatch, cardFileName, cardDocument } from './watch.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
 import { funnelCheck, aumEur, phase1Check, maxGrowthScore } from './funnel.js';
@@ -2032,6 +2032,24 @@ function bindRemove(inst) {
   });
 }
 
+// Scheda: probabilità di rendimento netto a 1 e 3 anni, dalla distribuzione del modello delle previsioni (la stessa del
+// «netto più probabile» di quel periodo); a 5 anni restano i 2.000 scenari simulati.
+function probCardShort(inst, days, label) {
+  const dist = npCached(inst, days)?.dist;
+  if (!dist) return '';
+  const pa = PROB_THRESHOLDS.map((t) => probNetAtLeast(dist, t));
+  if (pa.some((x) => x == null)) return '';
+  const q = (p) => pct(netQuantile(dist, p), true);
+  return `<div class="card">
+        <h3>Probabilità di rendimento netto a ${label}</h3>
+        <div class="prob-bars">
+          <div class="prob-row"><span>in perdita</span><div class="bar"><i class="neg-bar" style="width:${((1 - pa[0]) * 100).toFixed(1)}%"></i></div><b>${pct(1 - pa[0], false, 0)}</b></div>
+          ${PROB_THRESHOLDS.map((t, k) => `<div class="prob-row"><span>${t === 0 ? 'almeno pari (≥ 0%)' : 'almeno ' + pct(t, true, 0)}</span><div class="bar"><i style="width:${(pa[k] * 100).toFixed(1)}%"></i></div><b>${pct(pa[k], false, 0)}</b></div>`).join('')}
+        </div>
+        <div class="legend"><span>5%: ${q(0.05)}</span><span>25%: ${q(0.25)}</span><span>mediana: ${q(0.5)}</span><span>75%: ${q(0.75)}</span><span>95%: ${q(0.95)}</span></div>
+        <p class="muted small-note">Netto di costi e tasse, a ${label}: distribuzione del modello delle previsioni, la stessa del «netto più probabile» di questo periodo (previsione di analisti e fondamentali, volatilità dello strumento). La mediana è il netto più probabile della tabella. A ${simYears()} anni valgono invece i ${simCount()} scenari simulati. Stima, non una garanzia.</p>
+      </div>`;
+}
 function renderDetail(inst, r, d) {
   const { sim, forward: f } = r;
   const s = state.settings;
@@ -2089,6 +2107,8 @@ function renderDetail(inst, r, d) {
         <canvas id="c-hist"></canvas>
         <div class="legend"><span>5%: ${pct(sim.netP5, true)}</span><span>25%: ${pct(sim.netP25, true)}</span><span>mediana: ${pct(sim.netMedian, true)}</span><span>75%: ${pct(sim.netP75, true)}</span><span>95%: ${pct(sim.netP95, true)}</span></div>
       </div>
+      ${probCardShort(inst, 365, '1 anno')}
+      ${probCardShort(inst, 1095, '3 anni')}
       ${sim.probAtLeast ? `<div class="card">
         <h3>Probabilità di rendimento netto a ${s.mc.years} anni</h3>
         <div class="prob-bars">

@@ -4,6 +4,7 @@
 //   guadagno bilanciato = guadagni attesi (oltre il 75° percentile pesano sempre meno) − 2,25 × perdite attese
 //   guadagno corretto per il rischio = guadagno tipico (mediano) − perdita finale nel caso sfavorevole (5° percentile)
 import { LOSS_AVERSION, credibleGain } from './montecarlo.js';
+import { normCdf } from './projection.js';
 
 /** Quantile della normale standard (algoritmo di Acklam, errore relativo < 1,2e-9). */
 export function normInv(p) {
@@ -60,4 +61,26 @@ export function riskGain({ lnMean, sigma, tax = 0.26, costs = 0 } = {}) {
   const expGain = eg / RG_POINTS;
   const expLoss = el / RG_POINTS;
   return { expGain, expLoss, balanced: expGain - LOSS_AVERSION * expLoss, median, finalLoss, riskAdj: median - finalLoss };
+}
+
+/**
+ * Probabilità che il rendimento netto del periodo sia almeno `threshold` (frazione: 0 = almeno pari, 0.25 = almeno +25%),
+ * sulla stessa distribuzione di riskGain. Il netto cresce con il lordo, quindi basta il lordo che dà quel netto:
+ * netto = lordo − imposta (solo sui guadagni) − costi.
+ */
+export function probNetAtLeast({ lnMean, sigma, tax = 0.26, costs = 0 } = {}, threshold = 0) {
+  if (!Number.isFinite(lnMean) || !(sigma > 0) || !Number.isFinite(threshold)) return null;
+  const t = Number.isFinite(tax) ? tax : 0.26;
+  const y = threshold + (Number.isFinite(costs) ? costs : 0);
+  const gross = y > 0 ? y / (1 - t) : y;
+  if (gross <= -1) return 1; // non si può perdere più del capitale
+  return 1 - normCdf((Math.log(1 + gross) - lnMean) / sigma);
+}
+
+/** Rendimento netto al percentile `p` (0,05 = caso sfavorevole, 0,5 = mediano) della stessa distribuzione. */
+export function netQuantile({ lnMean, sigma, tax = 0.26, costs = 0 } = {}, p = 0.5) {
+  if (!Number.isFinite(lnMean) || !(sigma > 0) || !(p > 0 && p < 1)) return null;
+  const t = Number.isFinite(tax) ? tax : 0.26;
+  const g = Math.exp(lnMean + normInv(p) * sigma) - 1;
+  return Math.max(-1, g - (g > 0 ? g * t : 0) - (Number.isFinite(costs) ? costs : 0));
 }

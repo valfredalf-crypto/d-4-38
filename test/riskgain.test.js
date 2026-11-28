@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normInv, riskGain, RG_POINTS } from '../public/js/riskgain.js';
+import { normInv, riskGain, RG_POINTS, probNetAtLeast, netQuantile } from '../public/js/riskgain.js';
 import { normCdf, projectShort } from '../public/js/projection.js';
 import { LOSS_AVERSION, credibleGain, percentile, netReturn, mulberry32 } from '../public/js/montecarlo.js';
 
@@ -77,4 +77,38 @@ test('il modello delle previsioni pubblica i parametri della distribuzione e il 
   assert.equal(flat.lnMean, null);
   // la formula del netto per scenario è quella della simulazione: imposta solo sui guadagni
   assert.ok(Math.abs(netReturn(-0.1, { amount: cap, orderCost: 0, spreadPct: 0, taxRate: 26 }) + 0.1) < 1e-12);
+});
+
+test('probabilità di rendimento netto a 1 e 3 anni: coerenti con gli scenari simulati e con il modello delle previsioni', () => {
+  const dist = { lnMean: 0.1, sigma: 0.3, tax: 0.26, costs: 0.0002 };
+  const rand = mulberry32(11);
+  const nets = [];
+  for (let k = 0; k < 200000; k++) {
+    let u = 0;
+    while (u === 0) u = rand();
+    const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rand());
+    const g = Math.exp(dist.lnMean + z * dist.sigma) - 1;
+    nets.push(g - (g > 0 ? g * dist.tax : 0) - dist.costs);
+  }
+  let prev = 1;
+  for (const th of [-0.2, 0, 0.1, 0.25, 0.5, 1]) {
+    const p = probNetAtLeast(dist, th);
+    const sim = nets.filter((x) => x >= th).length / nets.length;
+    assert.ok(Math.abs(p - sim) < 0.005, `${th}: ${p} vs ${sim}`);
+    assert.ok(p <= prev, 'soglia più alta, probabilità più bassa');
+    prev = p;
+  }
+  assert.equal(probNetAtLeast(dist, -1.5), 1);
+  assert.equal(probNetAtLeast({ lnMean: 0.1, sigma: 0 }, 0), null);
+  nets.sort((a, b) => a - b);
+  for (const p of [0.05, 0.25, 0.5, 0.75, 0.95]) assert.ok(Math.abs(netQuantile(dist, p) - percentile(nets, p)) < 0.01, String(p));
+  assert.ok(Math.abs(netQuantile(dist, 0.5) - riskGain(dist).median) < 1e-12);
+  assert.ok(Math.abs(probNetAtLeast(dist, netQuantile(dist, 0.25)) - 0.75) < 1e-6);
+  // «almeno pari» coincide (a meno dei costi degli ordini) con la probabilità di guadagno del netto più probabile
+  const cap = 10000;
+  const h = projectShort({ cagr: 0.06, ter: 0, tax: 0.26, net: 0.06 }, cap, 1, { vol: 0.25, orderCost: 1, positions: 1 });
+  const d1 = { lnMean: h.lnMean, sigma: h.sigma, tax: 0.26, costs: h.costs / cap };
+  assert.ok(Math.abs(probNetAtLeast(d1, 0) - h.pProfit) < 0.002);
+  assert.ok(Math.abs(netQuantile(d1, 0.5) * cap - h.medianNet) < 1e-6);
+  assert.ok(Math.abs(netQuantile(d1, 0.1) * cap - h.p10Net) < 0.01);
 });

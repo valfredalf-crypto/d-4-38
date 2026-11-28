@@ -862,7 +862,7 @@ const HIST_COLS = [
 const HIST_KEYS = HIST_COLS.map(([k]) => k);
 const simYears = () => state.settings.mc.years || 5;
 const simCount = () => eur0(state.settings.mc.sims || 2000).slice(0, -2);
-const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore';
+const npViewSort = (key) => /^np\d+$/.test(key) || HIST_KEYS.includes(key) || key === 'tScore' || key === SIM_KEY || key === SIM_P_KEY || /^pG\d+$/.test(key) || P90_KEYS.includes(key) || AN_KEYS.includes(key) || PX_KEYS.includes(key) || RANGE_KEYS.includes(key) || key === 'expected' || key === 'mgScore' || RISK_KEYS.includes(key) || QUALITY_KEYS.includes(key) || SIM_MID.some(([d]) => simMidKey(d) === key);
 const npSortKey = () => (/^np\d+$/.test(state.view.sort.key) ? state.view.sort.key : 'np' + state.view.np);
 // Titoli a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono inaffidabile ogni previsione, quindi nessun netto più probabile
 const PENNY_MIN_EUR = 0.5;

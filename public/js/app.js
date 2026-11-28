@@ -953,15 +953,24 @@ function npCached(inst, d) {
 // (1 e 3 anni): si calcola solo quando serve e resta in memoria insieme alla previsione del periodo.
 // Distribuzione del periodo per gli indicatori di rischio: quella del «netto più probabile»; per le azioni sotto 0,50 €
 // (che non hanno il netto più probabile) si calcola a parte, così asimmetria, guadagno bilanciato e corretto restano valorizzati.
-function distCached(inst, d) {
+// Previsione DA MOSTRARE: quella del «netto più probabile»; per i titoli a centesimi (azioni sotto 0,50 €), che restano fuori
+// dalla classifica, dalle sezioni «Solidi» e «Qualità» e dai suggerimenti, si calcola a parte e porta il segno `penny`,
+// così nessuna colonna resta vuota. Classifica, filtri sul netto più probabile e avvisi continuano a usare npCached.
+function npShown(inst, d) {
   const x = npCached(inst, d);
-  if (x) return x.dist || null;
+  if (x) return x;
   const r = state.results[inst.symbol];
   const m = r && !r.error ? npMemo.get(r) : null;
   if (!m) return null;
-  const k = 'dist' + d;
-  if (!m.v.has(k)) m.v.set(k, npStats(inst, d, true)?.dist ?? null);
+  const k = 'any' + d;
+  if (!m.v.has(k)) {
+    const y = npStats(inst, d, true);
+    m.v.set(k, y ? { ...y, penny: true } : null);
+  }
   return m.v.get(k);
+}
+function distCached(inst, d) {
+  return npShown(inst, d)?.dist ?? null;
 }
 function rgCached(inst, d) {
   const dist = distCached(inst, d);
@@ -981,16 +990,17 @@ function asymQuick(dist) {
 function qStats(inst) {
   const r = state.results[inst.symbol];
   if (!r || r.error) return null;
-  const P = RG_PERIODS.map(([d]) => npCached(inst, d));
+  const P = RG_PERIODS.map(([d]) => npShown(inst, d));
   if (P.some((x) => !x)) return null;
   const sim = r.sim;
   const asym = RG_PERIODS.map(([d], k) => (d === 1825 ? (sim && sim.netMedian != null && sim.finalLoss != null ? (Number.isFinite(sim.ratioFinal) ? sim.ratioFinal : sim.netMedian > 0 ? sim.finalLoss / sim.netMedian : Infinity) : null) : asymQuick(P[k].dist)));
   const ret = RG_PERIODS.map(([d], k) => [P[k].periodMove, d / 365]);
   const q = qualityScore({ growth: r.forward?.growth ?? r.forward?.expectedGrowth ?? null, evidence: r.forward?.evidence ?? r.forward?.fundamentalsDetail?.evidence ?? null, dividendYield: consensusValues(inst, r).divY ?? 0, asym, ret });
-  return q ? { ...q, asym, ret } : null;
+  // i titoli a centesimi hanno il punteggio ma non entrano nella sezione «Qualità»
+  return q ? { ...q, pass: q.pass && !P[0].penny, asym, ret } : null;
 }
 function qCached(inst) {
-  if (!npCached(inst, 365)) return null; // crea (o rinnova) la memoria dello strumento
+  npCached(inst, 365); // crea (o rinnova) la memoria dello strumento
   const m = npMemo.get(state.results[inst.symbol]);
   if (!m) return null;
   if (!m.v.has('q')) m.v.set('q', qStats(inst));
@@ -1510,6 +1520,7 @@ function rowValuesCalc(i) {
   const sim = r && !r.error ? r.sim : null;
   // sezione «Netto più probabile»: tutti i periodi (1 gg … 5 anni), calcolati solo in quella sezione
   const npx = shortMode() ? (d) => npCached(i, d) : null;
+  const npShow = shortMode() ? (d) => npShown(i, d) : null; // per le celle: anche i titoli a centesimi
   const v = {
     npx,
     // Guadagno netto efficiente a 5 anni secondo la prudenza scelta (fisco incluso nella simulazione)
@@ -1656,12 +1667,12 @@ function rowValuesCalc(i) {
     sA52: distanceFrom(q?.perf?.a52, q?.perf?.l52),
     sA90: distanceFrom(q?.perf?.a90, q?.perf?.l90),
     ...consensusValues(i, r),
-    [SIM_KEY]: sim && Number.isFinite(sim.netMedian) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? sim.netMedian * (state.settings.mc.amount || 10000) : null,
-    simP: sim && Number.isFinite(sim.probLoss) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? 1 - sim.probLoss : null,
+    [SIM_KEY]: sim && Number.isFinite(sim.netMedian) ? sim.netMedian * (state.settings.mc.amount || 10000) : null,
+    simP: sim && Number.isFinite(sim.probLoss) ? 1 - sim.probLoss : null,
     simP25: sim && Number.isFinite(sim.netP25) ? sim.netP25 * (state.settings.mc.amount || 10000) : null,
     // scenari simulati a 1, 3 e 5 anni: mediano, probabilità di guadagno, 25° percentile e perdite attese (frazioni del capitale)
     simH: (() => {
-      if (!sim || (i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR)) return {};
+      if (!sim) return {};
       const out = {};
       for (const [d, y] of SIM_MID) {
         const x = sim.mid?.[y];
@@ -1671,7 +1682,7 @@ function rowValuesCalc(i) {
       if (Number.isFinite(sim.netMedian)) out[1825] = { median: sim.netMedian, p25: sim.netP25 ?? null, probLoss: sim.probLoss ?? null, expLoss: sim.expLoss ?? null };
       return out;
     })(),
-    [SIM_P90_KEY]: sim && Number.isFinite(sim.netP10) && !(i.type === 'stock' && (q?.priceEur ?? Infinity) < PENNY_MIN_EUR) ? Math.max(-1, sim.netP10) * (state.settings.mc.amount || 10000) : null, // non si può perdere più del capitale
+    [SIM_P90_KEY]: sim && Number.isFinite(sim.netP10) ? Math.max(-1, sim.netP10) * (state.settings.mc.amount || 10000) : null, // non si può perdere più del capitale
     tSl: q?.perf?.sl ?? null,
     tWm: q?.perf?.wm ?? null,
     perfW: netPerf(q?.perf?.w, i),
@@ -1689,17 +1700,17 @@ function rowValuesCalc(i) {
   }
   // filtri «netto più probabile» in euro: valgono in ogni classifica; il valore si calcola solo se un filtro lo chiede
   for (const [d] of NP_FILTER_PERIODS) Object.defineProperty(v, npFilterKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.medianEur ?? null });
-  for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, pGainKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.p ?? null });
-  for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, p90Key(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.p10Eur ?? null });
+  for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, pGainKey(d), { enumerable: false, configurable: true, get: () => npShown(i, d)?.p ?? null });
+  for (const [d] of P_GAIN_PERIODS) Object.defineProperty(v, p90Key(d), { enumerable: false, configurable: true, get: () => npShown(i, d)?.p10Eur ?? null });
   // prezzo più probabile al periodo scelto nella barra (1 gg … 5 anni) e differenza dal prezzo attuale
-  Object.defineProperty(v, 'pxDiff', { enumerable: false, configurable: true, get: () => { const f = npCached(i, state.view.np)?.pxF; return f != null ? f - 1 : null; } });
-  Object.defineProperty(v, 'pxMed', { enumerable: false, configurable: true, get: () => { const f = npCached(i, state.view.np)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
+  Object.defineProperty(v, 'pxDiff', { enumerable: false, configurable: true, get: () => { const f = npShown(i, state.view.np)?.pxF; return f != null ? f - 1 : null; } });
+  Object.defineProperty(v, 'pxMed', { enumerable: false, configurable: true, get: () => { const f = npShown(i, state.view.np)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
   // Max Growth Score nelle sezioni «Netto più probabile»: stesso valore della sezione Max Growth, con una chiave propria per l'ordinamento
   Object.defineProperty(v, 'mgScore', { enumerable: false, configurable: true, get: () => v.maxGrowth ?? null });
   // prezzo più probabile a 6 mesi e sua distanza dal minimo a 52 settimane: (prezzo a 6 mesi − minimo) ÷ minimo
-  Object.defineProperty(v, 'pm6', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
-  Object.defineProperty(v, 'pm6Now', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? f - 1 : null; } });
-  Object.defineProperty(v, 'pm6L52', { enumerable: false, configurable: true, get: () => { const f = npCached(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? distanceFrom(q.priceEur * f, q?.perf?.l52) : null; } });
+  Object.defineProperty(v, 'pm6', { enumerable: false, configurable: true, get: () => { const f = npShown(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? q.priceEur * f : null; } });
+  Object.defineProperty(v, 'pm6Now', { enumerable: false, configurable: true, get: () => { const f = npShown(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? f - 1 : null; } });
+  Object.defineProperty(v, 'pm6L52', { enumerable: false, configurable: true, get: () => { const f = npShown(i, PM6_DAYS)?.pxF; return f != null && q?.priceEur > 0 ? distanceFrom(q.priceEur * f, q?.perf?.l52) : null; } });
   // rischio, come nella scheda dello strumento: perdita nello stress test (mercato −30% × beta; −10% per la correzione),
   // guadagno netto efficiente in euro, guadagno bilanciato crescita/rischio e guadagno corretto per il rischio a 1 e 3 anni
   // (distribuzione del modello delle previsioni) e a 5 anni (scenari simulati)
@@ -1708,7 +1719,9 @@ function rowValuesCalc(i) {
   v.stress = st ? st[1].impact : null;
   v.stressMild = st ? st[0].impact : null;
   v.stressBeta = st ? (Number.isFinite(r.forward?.beta) ? st[1].beta : null) : null;
-  v.effNet = v.plausible != null && !penny ? v.plausible * (state.settings.mc.amount || 10000) : null;
+  v.penny = penny; // titolo a centesimi: valori mostrati con ⚠, fuori dalla classifica del netto più probabile
+  v.npShow = npShow;
+  v.effNet = v.plausible != null ? v.plausible * (state.settings.mc.amount || 10000) : null;
   for (const [d] of SIM_MID) Object.defineProperty(v, simMidKey(d), { enumerable: false, configurable: true, get: () => (v.simH[d] ? v.simH[d].median * (state.settings.mc.amount || 10000) : null) });
   for (const [d] of SIM_ADJ) Object.defineProperty(v, simAdjKey(d), { enumerable: false, configurable: true, get: () => { const x = v.simH[d]; return x && x.expLoss != null ? (x.median - x.expLoss) * (state.settings.mc.amount || 10000) : null; } });
   // sezione «Qualità»: punteggio e crescita degli utili attesa
@@ -1726,7 +1739,7 @@ function rowValuesCalc(i) {
     // A 5 anni è il rapporto pubblicato con gli scenari (lo stesso della scheda).
     Object.defineProperty(v, asymKey(d), { enumerable: false, configurable: true, get: () => (d === 1825 ? asymOf(get(), sim?.ratioFinal) : asymQuick(distCached(i, d))) });
     // rendimento atteso del periodo (lordo), dal modello delle previsioni
-    Object.defineProperty(v, erKey(d), { enumerable: false, configurable: true, get: () => npCached(i, d)?.periodMove ?? null });
+    Object.defineProperty(v, erKey(d), { enumerable: false, configurable: true, get: () => npShown(i, d)?.periodMove ?? null });
     // differenziale delle probabilità, come nella scheda
     Object.defineProperty(v, 'pdx' + d, { enumerable: false, configurable: true, get: () => probDiff(i, d, sim) });
     Object.defineProperty(v, pdKey(d), { enumerable: false, configurable: true, get: () => probDiff(i, d, sim)?.diff ?? null });
@@ -1904,7 +1917,7 @@ function render() {
       }
       return `<tr data-symbol="${esc(i.symbol)}">
         <td class="num muted">${rank ?? ''}</td>
-        <td><span class="name" title="${esc(i.name)}">${watchSet.has(i.symbol) ? `<span class="added-tag" title="${esc(watchSince(watchItem(i.symbol), r.price))}">⭐</span> ` : ''}${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${i.leveraged && i.type === 'etf' ? '<span class="added-tag" title="Prodotto a leva / short / inverse: la previsione a 5 anni è poco affidabile, usa orizzonti brevi">⚡</span> ' : ''}${esc(i.name)}</span><span class="ids">${(() => {
+        <td><span class="name" title="${esc(i.name)}">${r.penny ? '<span class="added-tag" title="Titolo a centesimi (prezzo sotto 0,50 €): spread e liquidità rendono poco affidabili le previsioni. I valori sono mostrati, ma lo strumento resta fuori dalla classifica del netto più probabile, dalle sezioni «Solidi» e «Qualità» e dai suggerimenti.">⚠ cent.</span> ' : ''}${watchSet.has(i.symbol) ? `<span class="added-tag" title="${esc(watchSince(watchItem(i.symbol), r.price))}">⭐</span> ` : ''}${i.source === 'extra' || i.source === 'user' ? '<span class="added-tag">＋</span> ' : ''}${i.leveraged && i.type === 'etf' ? '<span class="added-tag" title="Prodotto a leva / short / inverse: la previsione a 5 anni è poco affidabile, usa orizzonti brevi">⚡</span> ' : ''}${esc(i.name)}</span><span class="ids">${(() => {
           const g = state.results[i.symbol]?.forward;
           const ge = g ? g.growth ?? g.expectedGrowth : null;
           if (i.growth != null) return `<span class="growth-tag" title="Selezione crescita: crescita attesa anno prossimo (consenso analisti)">🚀 ${pct(i.growth, true, 0)}</span> · `;
@@ -1916,7 +1929,7 @@ function render() {
         })()}${esc(i.symbol)}${i.isin ? ' · ' + esc(i.isin) : ''}</span>${shortMode() ? mInd(r) : ''}</td>
         ${analystMode() ? anCells(r) : ''}
         ${qualityMode() ? qCells(r) : ''}
-        ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npx?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
+        ${shortMode() ? NP_PERIODS.map(([d, l]) => { const x = r.npShow?.(d); if (!x) return '<td class="num muted">–</td>'; const tip = `${x.penny ? 'Titolo a centesimi (prezzo sotto 0,50 €): previsione poco affidabile, fuori dalla classifica. ' : ''}${l}: più probabile ${Math.round(x.medianEur)} € · atteso (media) ${Math.round(x.meanEur)} € · probabilità di guadagno ${x.p != null ? Math.round(x.p * 100) + '%' : 'n.d.'} · previsione ${pct(x.rate, true, 1)}/anno${x.estimated ? ' · stima provvisoria' : ''}${x.src ? ' · ' + esc(x.src) : ''}`; return `<td class="num ${cls(x.median)}" title="${tip}"><b class="big">${x.medianEur > 0 ? '+' : ''}${Math.round(x.medianEur).toLocaleString('it-IT')} €</b><span class="eur">${pct(x.median, true, 1)}${x.p != null ? ` · P ${pct(x.p, false, 0)}` : ''}</span></td>`; }).join('') : ''}
         ${shortMode() ? pxCells(r) : ''}
         ${shortMode() ? rangeCells(r) : ''}
         ${shortMode() ? mgCell(r) : ''}
@@ -2280,7 +2293,7 @@ function probDiffRow(pGain, pLoss, label, threshold) {
   return `<div class="prob-row prob-diff" title="Differenziale a ${label}: probabilità di guadagno netto di almeno ${th} (${pct(p50, false, 0)}) − probabilità di perdita (${pct(pLoss, false, 0)}) = ${sign}${Math.abs(pts)} punti percentuali. Positivo: è più probabile guadagnare almeno il ${th} che chiudere in perdita."><span>differenziale: almeno ${th} − in perdita</span><div class="bar"><i class="${pts < 0 ? 'neg-bar' : ''}" style="width:${Math.min(100, Math.abs(pts))}%"></i></div><b class="${cls(pts)}">${sign}${Math.abs(pts)} pt</b></div>`;
 }
 function probCardShort(inst, days, label) {
-  const dist = npCached(inst, days)?.dist;
+  const dist = distCached(inst, days);
   if (!dist) return '';
   const pa = PROB_THRESHOLDS.map((t) => probNetAtLeast(dist, t));
   if (pa.some((x) => x == null)) return '';

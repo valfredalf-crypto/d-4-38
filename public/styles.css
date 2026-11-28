@@ -336,6 +336,12 @@ table.mini .num { white-space: nowrap; }
 .m-ind b.pos { color: var(--pos, #0a7d4f); }
 .m-ind b.neg { color: var(--neg, #b3261e); }
 .np-bar .small-note { flex-basis: 100%; }
+.np-legend { flex-basis: 100%; font-size: 13px; line-height: 1.45; color: var(--muted); }
+.np-legend summary { cursor: pointer; }
+.np-legend b { color: var(--text); font-weight: 650; }
+.np-legend ol { margin: 8px 0 6px; padding-left: 22px; }
+.np-legend li { margin: 3px 0; }
+.np-legend p { margin: 6px 0 0; }
 .solid-alerts { flex-basis: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
 .solid-alerts .notif { margin: 6px 0; }
 .notif-osc { border-left-color: #7a5cff; }

@@ -44,7 +44,7 @@ test('modello prospettico: pesi, analisti e coerenza log/aritmetico', () => {
   const noAnalysts = forwardParams(base, B);
   assert.equal(noAnalysts.components.analysts, null);
   assert.ok(Math.abs(noAnalysts.weights.history + noAnalysts.weights.equilibrium - 1) < 1e-12);
-  assert.ok(Math.abs(Math.log(1 + noAnalysts.expected) - noAnalysts.vol ** 2 / 2 - noAnalysts.drift) < 1e-12);
+  assert.ok(Math.abs(Math.log(1 + noAnalysts.expected) - (noAnalysts.volDrag * noAnalysts.vol ** 2) / 2 - noAnalysts.drift) < 1e-12);
 
   const bullish = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 130, analysts: 20, dividendYield: 0.02 } }, B);
   const bearish = forwardParams({ ...base, fundamentals: { price: 100, targetMean: 80, analysts: 20 } }, B);

@@ -439,3 +439,30 @@ test('projectShort: variazione lorda del prezzo nel caso mediano (base del prezz
     assert.ok(Math.abs(r.medianNet - (g - (g > 0 ? g * 0.26 : 0) - 2)) < 1e-6);
   }
 });
+
+test('freno da volatilità tarabile: con 1 nulla cambia; sotto 1 il mediano sale e la probabilità di perdita scende', async () => {
+  const { projectShort, projectPortfolio } = await import('../public/js/projection.js');
+  const { BASE_OUTLOOK, forwardParams } = await import('../public/js/outlook.js');
+  assert.equal(BASE_OUTLOOK.volDrag, 1);
+  const prm = { cagr: 0.09, ter: 0, tax: 0.26, net: 0.09 };
+  const base = projectShort(prm, 10000, 3, { vol: 0.35, orderCost: 1 });
+  const same = projectShort({ ...prm, volDrag: 1 }, 10000, 3, { vol: 0.35, orderCost: 1 });
+  assert.deepEqual(same, base);
+  const half = projectShort({ ...prm, volDrag: 0.5 }, 10000, 3, { vol: 0.35, orderCost: 1 });
+  assert.ok(half.medianNet > base.medianNet);
+  assert.ok(half.pProfit > base.pProfit);
+  assert.ok(half.p10Net > base.p10Net);
+  // media del logaritmo: ln(1 + μ) − quota × σ²·T/2
+  assert.ok(Math.abs(half.lnMean - (Math.log(1 + base.mu) - (0.5 * 0.35 * 0.35 * 3) / 2)) < 1e-12);
+  assert.ok(Math.abs(base.lnMean - (Math.log(1 + base.mu) - (0.35 * 0.35 * 3) / 2)) < 1e-12);
+  // valori fuori intervallo: limitati tra 0 e 1
+  assert.deepEqual(projectShort({ ...prm, volDrag: 7 }, 10000, 3, { vol: 0.35, orderCost: 1 }), base);
+  // senza volatilità il parametro non ha effetto
+  assert.deepEqual(projectShort({ ...prm, volDrag: 0.5 }, 10000, 1, {}), projectShort(prm, 10000, 1, {}));
+  // portafoglio: stesso parametro
+  const rows = [{ weight: 1, cagr: 0.09, ter: 0, tax: 0.26, vol: 0.35 }];
+  const p1 = projectPortfolio({ rows, capital: 10000, years: [0.5] }).horizons[0];
+  const p5 = projectPortfolio({ rows, capital: 10000, years: [0.5], volDrag: 0.5 }).horizons[0];
+  assert.ok(p5.medianNet > p1.medianNet && p5.pProfit > p1.pProfit);
+  assert.equal(typeof forwardParams, 'function');
+});

@@ -29,6 +29,9 @@ const GRID = {
   minStockBeta: [0.3, 0.5, 0.7],
   ewmaWeight: [0, 0.2, 0.4, 0.6],
   volScale: [0.9, 1.0, 1.1, 1.2, 1.3, 1.4],
+  // quota del freno da volatilità tolta dal rendimento atteso: non sotto 0,5 (metà del rendimento atteso letta come
+  // tasso composto è il limite economicamente sensato; più in basso si proietterebbe un periodo favorevole)
+  volDrag: [1.0, 0.75, 0.5],
 };
 // Ogni parametro si tara sull'errore che gli compete: la volatilità sulle perdite massime reali,
 // i parametri del rendimento atteso sui rendimenti reali (così migliorare i rendimenti non può

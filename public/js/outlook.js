@@ -35,6 +35,11 @@ export const BASE_OUTLOOK = {
   fullHistoryYears: 5,    // sotto questi anni di dati reali la credibilità dello storico si riduce in proporzione
   maxSharpe: 1.0,         // rendimento storico oltre il tasso privo di rischio limitato a maxSharpe × volatilità
   volScale: 1.0,          // correzione complessiva della volatilità (tarata sulle perdite massime reali)
+  // Quota del «freno da volatilità» (σ²/2) tolta dal rendimento atteso per ottenere la crescita tipica (mediana).
+  // 1 = il rendimento atteso è una media aritmetica: mediana = atteso − σ²/2 per intero (comportamento storico del modello).
+  // Sotto 1 = parte del rendimento atteso (crescita degli utili, valutazione, prezzi obiettivo) è già un tasso composto.
+  // Tarata dal backtest: con 1 le probabilità di perdita previste sono risultate più alte di quelle reali.
+  volDrag: 1.0,
 };
 
 // Valori in uso: predefiniti + eventuale taratura dal backtest.
@@ -227,11 +232,13 @@ export function forwardParams(p, settings = {}) {
     expected = Math.min(expected, leverageCap);
   }
   // Rendimento logaritmico coerente con media aritmetica `expected` e volatilità `vol`.
-  const drift = Math.log(1 + Math.max(expected, -0.95)) - vol ** 2 / 2;
+  const volDrag = Number.isFinite(s.volDrag) ? Math.max(0, Math.min(1, s.volDrag)) : 1;
+  const drift = Math.log(1 + Math.max(expected, -0.95)) - (volDrag * vol ** 2) / 2;
 
   return {
     mode: 'forward',
     drift,
+    volDrag,
     vol,
     expected,
     beta,

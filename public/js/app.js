@@ -13,6 +13,7 @@ import { analystView, combineForecasts } from './analysts.js';
 import { AN_MIN_RELIABLE, AN_EXTREME, ETF_UPSIDE_CAP, DIV_EXTREME, doubtfulTarget, compareConsensus, compareDividend, recoLabel } from './consensus.js';
 import { INDICATORS, PRESETS, NP_FILTER_PERIODS, NP_FILTER_LEVELS, SIM_KEY, SIM_MID, simMidKey, SIM_ADJ, simAdjKey, SIM_ADJ_KEYS, SIM_P_KEY, SIM_P_LEVELS, P_GAIN_PERIODS, pGainKey, p90Key, SIM_P90_KEY, P90_KEYS, P90_LEVELS, AN_KEYS, PX_KEYS, PX_DIFF_LEVELS, RANGE_COLS, RANGE_KEYS, SPREAD_COLS, PM6_DAYS, PM6_LEVELS, PM6_NOW_LEVELS, RG_PERIODS, balKey, radjKey, asymKey, erKey, QUALITY_KEYS, pdKey, PD_KEYS, RISK_KEYS, PROB_FILTERS, AN_UP_LEVELS, AN_N_LEVELS, DIV_LEVELS, npFilterKey, parseNum, activeFilters, passes } from './filters.js';
 import { riskGain, probNetAtLeast, netQuantile } from './riskgain.js';
+import { DEFAULT_OUTLOOK } from './outlook.js';
 import { qualityScore } from './quality.js';
 import { WATCH_KEY, FAV_FOLDER, parseWatch, addWatch, removeWatch, cardFileName, cardDocument } from './watch.js';
 import { netReturn, DEFAULT_OPTIONS, PROB_THRESHOLDS } from './montecarlo.js';
@@ -874,6 +875,8 @@ function priceFactor(inst, r, grossFactor, years) {
   const dy = pays ? Math.max(0, Math.min(0.08, r.sim?.distYield ?? r.sim?.divYield ?? 0)) : 0;
   return grossFactor * (1 - dy) ** years;
 }
+// quota del freno da volatilità in uso (parametro del modello tarato dal backtest): la stessa degli scenari simulati
+const modelDrag = () => { const x = state.settings?.outlook?.volDrag ?? DEFAULT_OUTLOOK.volDrag; return Number.isFinite(x) ? x : 1; };
 function npStats(inst, days, anyPrice = false) {
   const r = resOf(inst);
   if (!r || r.error) return null;
@@ -900,7 +903,7 @@ function npStats(inst, days, anyPrice = false) {
     net = g > 0 ? g ** (1 / y) - 1 : -0.99;
   }
   net = smoothNet(inst, days, net); // media mobile degli ultimi aggiornamenti: niente oscillazioni tra un ricalcolo e l'altro
-  const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
+  const h = projectShort({ cagr: net + ter, ter, tax: pp.tax, net, symTax: symTaxOfInst(inst), volDrag: modelDrag(), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol: pp.vol, orderCost: state.settings.mc.orderCost ?? 1, positions: 1 });
   const med = Math.max(-cap, h.medianNet); // non si può perdere più del capitale investito
   const avg = Math.max(-cap, h.netGain);
   return { median: med / cap, mean: avg / cap, p: h.pProfit, pxF: priceFactor(inst, r, 1 + h.medianGross, y), p10Eur: h.p10Net != null ? Math.max(-cap, h.p10Net) : null, medianEur: med, meanEur: avg, rate: base, periodMove: h.mu, estimated: !!r.estimated, src: pp.shortSrc || null, dist: Number.isFinite(h.lnMean) ? { lnMean: h.lnMean, sigma: h.sigma, tax: Number.isFinite(pp.tax) ? pp.tax : 0.26, costs: h.costs / cap } : null };
@@ -2834,7 +2837,7 @@ const HIST_SCEN = [
 // `mom` = tendenza recente dello strumento (rendimenti 1/4/13/26 settimane): per gli orizzonti brevi corregge il CAGR.
 // `symTax`: ETC/ETN/ETP (non UCITS): minusvalenze compensabili. `momRho`: persistenza della tendenza (impostabile nel portafoglio).
 const projectH = (prm, cap, y, vol = null, positions = 1, mom = null, symTax = false) => projectAny({ ...prm, ...(mom ? { mom } : {}), ...(symTax ? { symTax } : {}), ...(state.portfolio?.taxPrudent ? { taxPrudent: true } : {}) }, cap, y, { vol, orderCost: state.settings.mc.orderCost ?? 1, positions, momRho: state.portfolio?.momRho });
-const projectPortfolioH = (args) => projectPortfolio({ momRho: state.portfolio?.momRho, taxPrudent: !!state.portfolio?.taxPrudent, ...args });
+const projectPortfolioH = (args) => projectPortfolio({ momRho: state.portfolio?.momRho, taxPrudent: !!state.portfolio?.taxPrudent, volDrag: modelDrag(), ...args });
 // Risultato utilizzabile dal portafoglio: la previsione completa oppure, con storico < 1 anno, la stima provvisoria
 // (CAGR, volatilità, MDD calcolati sui dati disponibili). Altrimenti l'oggetto con l'errore (o null).
 function resOf(inst) {
